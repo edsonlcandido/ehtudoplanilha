@@ -2,3 +2,4 @@ pocketbase
 pb_data/**
 pb_public/js/js-sdk-master.zip
 pocketbase.exe
+/.vs
