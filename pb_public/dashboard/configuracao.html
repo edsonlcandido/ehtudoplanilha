@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuração - Seu App Financeiro</title>
+    <link rel="stylesheet" href="../css/picnic.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <!-- SDK PocketBase -->
+    <script src="../js/pocketbase/dist/pocketbase.umd.js"></script>
+</head>
+<body>
+    <!-- NAV: menu dinâmico igual ao index.html -->
+    <nav>
+        <a href="/" class="brand">
+            <span>Planilha</span>
+        </a>
+        <input id="bmenub" type="checkbox" class="show">
+        <label for="bmenub" class="burger pseudo button">menu</label>
+        <div class="menu" id="menu-user">
+            <a href="#" class="pseudo button icon-picture">Demo</a>
+            <a href="../login.html" class="button icon-puzzle" id="loginBtn">Login</a>
+            <a href="../registro.html" class="button icon-user" id="registerBtn">Registrar</a>
+        </div>
+    </nav>
+    <!-- SECTION MAIN: conteúdo principal ocupando toda tela -->
+    <section class="section section-light" style="min-height: 70vh; display: flex; align-items: center; justify-content: center;">
+        <div class="container">
+            <div style="text-align: left; margin-bottom: 2rem;">
+                <a href="index.html" class="button">← Voltar ao Dashboard</a>
+            </div>
+            <h2 style="text-align: center; margin-bottom: 3rem;">Configuração do Dashboard</h2>
+            <p style="text-align: center; margin-bottom: 3rem; max-width: 800px; margin-left: auto; margin-right: auto;">
+                Configure sua conta para integrar com o Google Drive e selecione sua planilha de controle financeiro.
+            </p>
+            
+            <!-- Grid com os dois cartões de configuração -->
+            <div class="solutions-grid" style="max-width: 1000px; margin: 0 auto;">
+                <!-- Cartão 1: Autorização Google Drive -->
+                <div class="solution-card">
+                    <div class="icon">🔐</div>
+                    <h3>Autorização Google Drive</h3>
+                    <p>Para que nossa aplicação possa acessar e criar sua planilha de controle financeiro, precisamos de autorização para acessar seu Google Drive. Isso permitirá que copiemos nossa planilha base para sua conta.</p>
+                    <div style="margin-top: 2rem;">
+                        <button class="button primary large" style="display: flex; align-items: center; justify-content: center; margin: 0 auto; gap: 10px;">
+                            <span style="font-size: 1.2em;">📊</span>
+                            Autorizar Acesso ao Drive
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Cartão 2: Seleção da Planilha -->
+                <div class="solution-card">
+                    <div class="icon">📋</div>
+                    <h3>Selecionar Planilha</h3>
+                    <p>Indique qual planilha do Google Sheets nossa ferramenta deve utilizar para fazer os lançamentos financeiros. Você pode escolher uma planilha existente ou criar uma nova baseada em nosso modelo.</p>
+                    <div style="margin-top: 2rem;">
+                        <button class="button primary large" style="display: flex; align-items: center; justify-content: center; margin: 0 auto; gap: 10px;">
+                            <span style="font-size: 1.2em;">📊</span>
+                            Selecionar Planilha
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Seu App Financeiro. Todos os direitos reservados.</p>
+        </div>
+        <p>
+            <small>Produzido por
+                <a href="https://www.ehtudo.app">Eh!Tudo.app</a></small>
+        </p>
+    </footer>
+    <!-- Script para verificação de autenticação e menu dinâmico -->
+    <script src="../js/api-config.js"></script>
+    <script src="../js/dashboard-auth.js"></script>
+</body>
+</html>
