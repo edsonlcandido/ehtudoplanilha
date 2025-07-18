@@ -1,0 +1,228 @@
+/* Estilos customizados para a landing page */
+
+:root {
+    --primary-color: #3498db;
+    --secondary-color: #2c3e50;
+    --light-gray: #f8f9fa;
+    --dark-gray: #ecf0f1;
+    --text-color: #333;
+    --white-color: #fff;
+    --border-radius: 8px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    color: var(--text-color);
+}
+
+/* Header e Hero Section */
+.header-hero {
+    background: linear-gradient(rgba(44, 62, 80, 0.7), rgba(44, 62, 80, 0.7)), url('../img/hero.png');
+    background-size: cover;
+    background-position: center;
+    color: var(--white-color);
+    padding: 5rem 0;
+    text-align: center;
+}
+
+.header-hero h1 {
+    font-size: 3em;
+    font-weight: bold;
+    line-height: 1.2;
+}
+
+.header-hero p {
+    font-size: 1.25em;
+    max-width: 700px;
+    margin: 1rem auto 2rem;
+}
+
+/* Botões */
+.button.primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    font-weight: bold;
+    text-transform: uppercase;
+    padding: 0.8em 1.8em;
+    transition: background-color 0.3s ease;
+}
+
+.button.primary:hover {
+    background-color: #2980b9;
+    border-color: #2980b9;
+}
+
+.button.large {
+    font-size: 1.1em;
+    padding: 1em 2.5em;
+}
+
+/* Seções */
+.section {
+    padding: 4rem 1rem;
+}
+
+.section-light {
+    background-color: var(--light-gray);
+}
+
+.section-dark {
+    background-color: var(--dark-gray);
+}
+
+.section h2 {
+    font-size: 2.2em;
+    font-weight: bold;
+    color: var(--secondary-color);
+    margin-bottom: 1rem;
+}
+
+.section > .container > p,
+.section > .container > h2 {
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 1rem;
+    font-size: 1.1em;
+    text-align: center;
+}
+
+.section > .container > h2 {
+    font-size: 2.2em;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+}
+
+/* Cards de Soluções e Features */
+.solutions-grid, .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+}
+
+/* Específico para features-grid no desktop */
+@media (min-width: 768px) {
+    .features-grid {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+}
+
+.solution-card, .feature-card {
+    background-color: var(--white-color);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.solution-card:hover, .feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+.feature-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Garante que todos os cards na mesma linha tenham a mesma altura */
+}
+
+.feature-card p {
+    flex-grow: 1; /* Faz o parágrafo ocupar o espaço restante, alinhando os botões */
+}
+
+.solution-card h3, .feature-card h3 {
+    color: var(--secondary-color);
+    font-size: 1.4em;
+    margin-bottom: 1rem;
+}
+
+.icon {
+    font-size: 3em;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+/* Cards de Preços */
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    align-items: stretch;
+}
+
+.pricing-card {
+    background-color: var(--white-color);
+    padding: 2.5rem 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.pricing-card.highlight {
+    border-color: var(--primary-color);
+    transform: scale(1.05);
+}
+
+.pricing-card h3 {
+    font-size: 1.8em;
+    color: var(--secondary-color);
+}
+
+.pricing-card .price {
+    font-size: 2.8em;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin: 1rem 0;
+}
+
+.pricing-card .price small {
+    font-size: 0.5em;
+    font-weight: normal;
+    color: #777;
+}
+
+.pricing-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0;
+    text-align: left;
+    flex-grow: 1;
+}
+
+.pricing-card ul li {
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+}
+
+.pricing-card ul li::before {
+    content: '✔';
+    color: #28a745;
+    margin-right: 0.8rem;
+    font-weight: bold;
+}
+
+/* Call to Action */
+.call-to-action {
+    background-color: var(--secondary-color);
+    color: var(--white-color);
+    padding: 4rem 1rem;
+    text-align: center;
+}
+
+.call-to-action h2 {
+    color: var(--white-color);
+}
+
+/* Footer */
+.footer {
+    background-color: #212f3c;
+    color: #bdc3c7;
+    padding: 2rem 1rem;
+    text-align: center;
+}

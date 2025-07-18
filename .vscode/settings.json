@@ -1,0 +1,4 @@
+{
+  // Configurações do Live Server para iniciar na pasta pb_public
+  "liveServer.settings.root": "/pb_public"
+}
