@@ -41,23 +41,8 @@
                 <a href="https://www.ehtudo.app">Eh!Tudo.app</a></small>
         </p>
     </footer>
-    <!-- Script para menu dinâmico -->
-    <script>
-      const pb = new PocketBase('http://localhost:8090'); // ajuste a URL se necessário
-      const menuUser = document.getElementById('menu-user');
-      function renderUserMenu() {
-        if (pb.authStore.isValid && pb.authStore.model) {
-          menuUser.innerHTML = `
-            <span class=\"pseudo button\">${pb.authStore.model.email}</span>
-            <button class=\"button error\" id=\"logoutBtn\">Sair</button>
-          `;
-          document.getElementById('logoutBtn').onclick = function() {
-            pb.authStore.clear();
-            window.location.reload();
-          };
-        }
-      }
-      renderUserMenu();
-    </script>
+    <!-- Script para verificação de autenticação e menu dinâmico -->
+    <script src="../js/api-config.js"></script>
+    <script src="../js/dashboard-auth.js"></script>
 </body>
 </html>
