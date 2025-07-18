@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuração - Seu App Financeiro</title>
+    <link rel="stylesheet" href="../css/picnic.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <!-- SDK PocketBase -->
+    <script src="../js/pocketbase/dist/pocketbase.umd.js"></script>
+</head>
+<body>
+    <!-- NAV: menu dinâmico igual ao index.html -->
+    <nav>
+        <a href="/" class="brand">
+            <span>Planilha</span>
+        </a>
+        <input id="bmenub" type="checkbox" class="show">
+        <label for="bmenub" class="burger pseudo button">menu</label>
+        <div class="menu" id="menu-user">
+            <a href="#" class="pseudo button icon-picture">Demo</a>
+            <a href="../login.html" class="button icon-puzzle" id="loginBtn">Login</a>
+            <a href="../registro.html" class="button icon-user" id="registerBtn">Registrar</a>
+        </div>
+    </nav>
+    <!-- SECTION MAIN: conteúdo principal ocupando toda tela -->
+    <section class="section section-light" style="min-height: 70vh; display: flex; align-items: center; justify-content: center;">
+        <div class="container">
+            <div style="text-align: left; margin-bottom: 2rem;">
+                <a href="index.html" class="button">← Voltar ao Dashboard</a>
+            </div>
+            <h2 style="text-align: center; margin-bottom: 3rem;">Configuração do Dashboard</h2>
+            <p style="text-align: center; margin-bottom: 3rem; max-width: 800px; margin-left: auto; margin-right: auto;">
+                Configure sua conta para integrar com o Google Drive e selecione sua planilha de controle financeiro.
+            </p>
+            
+            <!-- Grid com os dois cartões de configuração -->
+            <div style="max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 2rem;">
+                <!-- Cartão 1: Autorização Google Drive -->
+                <div class="solution-card" style="display: flex; flex-direction: column; justify-content: space-between; min-height: 200px;">
+                    <div>
+                        <h3>Autorização Google Drive</h3>
+                        <p>Autorize o acesso ao Google Drive para integrar sua planilha de controle financeiro.</p>
+                    </div>
+                    <div style="margin-top: auto; padding-top: 1.5rem;">
+                        <button class="button primary large" style="width: 100%;">
+                            Autorizar Acesso ao Drive
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Cartão 2: Seleção da Planilha -->
+                <div class="solution-card" style="display: flex; flex-direction: column; justify-content: space-between; min-height: 200px;">
+                    <div>
+                        <h3>Selecionar Planilha</h3>
+                        <p>Escolha qual planilha do Google Sheets será utilizada para os lançamentos financeiros.</p>
+                    </div>
+                    <div style="margin-top: auto; padding-top: 1.5rem;">
+                        <button class="button primary large" style="width: 100%;">
+                            Selecionar Planilha
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Seu App Financeiro. Todos os direitos reservados.</p>
+        </div>
+        <p>
+            <small>Produzido por
+                <a href="https://www.ehtudo.app">Eh!Tudo.app</a></small>
+        </p>
+    </footer>
+    <!-- Script para verificação de autenticação e menu dinâmico -->
+    <script src="../js/api-config.js"></script>
+    <script src="../js/dashboard-auth.js"></script>
+</body>
+</html>
