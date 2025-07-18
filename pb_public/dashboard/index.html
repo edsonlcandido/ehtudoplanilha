@@ -31,6 +31,77 @@
             <!-- Adicione aqui os componentes do dashboard -->
         </div>
     </section>
+
+    <!-- SECTION FORM: Formulário de lançamento de despesas -->
+    <section class="section" style="padding: 2rem 0;">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-8 col-lg-6 mx-auto">
+                    <div class="solution-card">
+                            <h3 style="margin-bottom: 1.5rem;">Lançamento de Despesa</h3>
+                            <form id="expenseForm" disabled>
+                                <fieldset disabled>
+                                    <!-- Data e Hora -->
+                                    <div class="form-group" style="margin-bottom: 1rem;">
+                                        <label for="expenseDate">Data:</label>
+                                        <input type="datetime-local" id="expenseDate" name="data" class="form-control" required>
+                                    </div>
+
+                                    <!-- Conta -->
+                                    <div class="form-group" style="margin-bottom: 1rem;">
+                                        <label for="expenseAccount">Conta:</label>
+                                        <input type="text" id="expenseAccount" name="conta" class="form-control" placeholder="Ex: Conta Corrente, Cartão de Crédito" required>
+                                    </div>
+
+                                    <!-- Valor -->
+                                    <div class="form-group" style="margin-bottom: 1rem;">
+                                        <label for="expenseValue">Valor:</label>
+                                        <input type="number" id="expenseValue" name="valor" class="form-control" step="0.01" min="0" placeholder="0,00" required>
+                                    </div>
+
+                                    <!-- Descrição -->
+                                    <div class="form-group" style="margin-bottom: 1rem;">
+                                        <label for="expenseDescription">Descrição:</label>
+                                        <input type="text" id="expenseDescription" name="descricao" class="form-control" placeholder="Descrição da despesa" required>
+                                    </div>
+
+                                    <!-- Categoria -->
+                                    <div class="form-group" style="margin-bottom: 1rem;">
+                                        <label for="expenseCategory">Categoria:</label>
+                                        <select id="expenseCategory" name="categoria" class="form-control" required>
+                                            <option value="">Selecione uma categoria</option>
+                                            <option value="alimentacao">Alimentação</option>
+                                            <option value="transporte">Transporte</option>
+                                            <option value="moradia">Moradia</option>
+                                            <option value="saude">Saúde</option>
+                                            <option value="educacao">Educação</option>
+                                            <option value="lazer">Lazer</option>
+                                            <option value="vestuario">Vestuário</option>
+                                            <option value="outros">Outros</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Orçamento -->
+                                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                                        <label for="expenseBudget">Orçamento:</label>
+                                        <input type="date" id="expenseBudget" name="orcamento" class="form-control" required>
+                                    </div>
+
+                                    <!-- Botões -->
+                                    <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem;">
+                                        <button type="reset" class="button secondary">Limpar</button>
+                                        <button type="submit" class="button primary">Salvar Despesa</button>
+                                    </div>
+                                </fieldset>
+                            </form>
+                            <p style="margin-top: 1rem; color: #666; font-style: italic; text-align: center;">
+                                Formulário temporariamente desabilitado
+                            </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
     <!-- FOOTER -->
     <footer class="footer">
         <div class="container">
