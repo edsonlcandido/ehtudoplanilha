@@ -16,7 +16,7 @@ class ApiConfig {
       return 'http://localhost:8090';
     }
     // Em produção, usa a mesma origem
-    return '';
+    return window.location.origin;
   }
 
   // Método helper para construir URLs
