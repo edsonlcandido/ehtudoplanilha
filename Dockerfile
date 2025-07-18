@@ -75,5 +75,5 @@ CMD ["pocketbase", "serve", "--http=0.0.0.0:8090"]
 
 # Opcional: Se você tiver migrations ou hooks, descomente e copie
 COPY ./pb_public $PB_WORKDIR/pb_public
-# COPY ./pb_migrations $PB_WORKDIR/pb_migrations
+COPY ./pb_migrations $PB_WORKDIR/pb_migrations
 # COPY ./pb_hooks $PB_WORKDIR/pb_hooks
