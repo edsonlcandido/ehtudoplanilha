@@ -1,3 +1,10 @@
+/* Faz a section ocupar o espaço restante até o footer */
+.section {
+    flex: 1 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 /* Estilos customizados para a landing page */
 
 :root {
@@ -14,6 +21,17 @@
 body {
     font-family: 'Helvetica Neue', Arial, sans-serif;
     color: var(--text-color);
+}
+
+/* Container e elementos comuns */
+.container {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.text-center {
+    text-align: center;
 }
 
 /* Header e Hero Section */
@@ -76,25 +94,17 @@ body {
     font-weight: bold;
     color: var(--secondary-color);
     margin-bottom: 1rem;
+    text-align: center;
 }
 
-.section > .container > p,
-.section > .container > h2 {
+.section > .container > p {
     max-width: 800px;
-    margin-left: auto;
-    margin-right: auto;
-    margin-bottom: 1rem;
+    margin: 0 auto 2rem;
     font-size: 1.1em;
     text-align: center;
 }
 
-.section > .container > h2 {
-    font-size: 2.2em;
-    font-weight: bold;
-    margin-bottom: 1.5rem;
-}
-
-/* Cards de Soluções e Features */
+/* Grids e Cards */
 .solutions-grid, .features-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -125,11 +135,11 @@ body {
 .feature-card {
     display: flex;
     flex-direction: column;
-    height: 100%; /* Garante que todos os cards na mesma linha tenham a mesma altura */
+    height: 100%;
 }
 
 .feature-card p {
-    flex-grow: 1; /* Faz o parágrafo ocupar o espaço restante, alinhando os botões */
+    flex-grow: 1;
 }
 
 .solution-card h3, .feature-card h3 {
@@ -142,69 +152,6 @@ body {
     font-size: 3em;
     color: var(--primary-color);
     margin-bottom: 1rem;
-}
-
-/* Cards de Preços */
-.pricing-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 2rem;
-    align-items: stretch;
-}
-
-.pricing-card {
-    background-color: var(--white-color);
-    padding: 2.5rem 2rem;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
-    display: flex;
-    flex-direction: column;
-    border: 2px solid transparent;
-    transition: all 0.3s ease;
-}
-
-.pricing-card.highlight {
-    border-color: var(--primary-color);
-    transform: scale(1.05);
-}
-
-.pricing-card h3 {
-    font-size: 1.8em;
-    color: var(--secondary-color);
-}
-
-.pricing-card .price {
-    font-size: 2.8em;
-    font-weight: bold;
-    color: var(--primary-color);
-    margin: 1rem 0;
-}
-
-.pricing-card .price small {
-    font-size: 0.5em;
-    font-weight: normal;
-    color: #777;
-}
-
-.pricing-card ul {
-    list-style: none;
-    padding: 0;
-    margin: 1.5rem 0;
-    text-align: left;
-    flex-grow: 1;
-}
-
-.pricing-card ul li {
-    margin-bottom: 0.8rem;
-    display: flex;
-    align-items: center;
-}
-
-.pricing-card ul li::before {
-    content: '✔';
-    color: #28a745;
-    margin-right: 0.8rem;
-    font-weight: bold;
 }
 
 /* Call to Action */
@@ -225,4 +172,24 @@ body {
     color: #bdc3c7;
     padding: 2rem 1rem;
     text-align: center;
+}
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.footer {
+    margin-top: auto;
+    width: 100%;
+    padding: 2rem 1rem;
+    text-align: center;
+    background-color: #212f3c;
+    color: #bdc3c7;
 }
