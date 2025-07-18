@@ -130,7 +130,7 @@
     </footer>
 
 <script>
-  const pb = new PocketBase('http://localhost:8090'); // ajuste a URL se necessário
+  const pb = new PocketBase(apiConfig.getBaseURL()); // ajuste a URL se necessário
   const menuUser = document.getElementById('menu-user');
 
   function renderUserMenu() {
