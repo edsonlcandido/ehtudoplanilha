@@ -5,15 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Seu App Financeiro</title>
-    <link rel="stylesheet" href="../css/picnic.css">
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="css/picnic.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/pocketbase/dist/pocketbase.umd.js"></script>
 </head>
 
 <body>
     <nav>
-        <a href="/" class="brand">
-            <span>Planilha</span>
-        </a>
+
+            <span class="brand">Planilha</span>
+
         <input id="bmenub" type="checkbox" class="show">
         <label for="bmenub" class="burger pseudo button">menu</label>
         <div class="menu">
@@ -35,6 +36,7 @@
                     <input type="password" id="password" name="password" placeholder="Sua senha" required>
                 </div>
                 <button type="submit" class="button primary">Entrar</button>
+                <p id="errorMsg" style="color: red; margin-top: 1em; display: none;"></p>
             </form>
             <p style="margin-top: 1em;">
                 <a href="#">Esqueceu a senha?</a>
@@ -50,6 +52,28 @@
                 <a href="https://www.ehtudo.app">Eh!Tudo.app</a></small>
         </p>
     </footer>
+</body>
+<script>
+    document.querySelector('form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const errorMsg = document.getElementById('errorMsg');
+        errorMsg.style.display = 'none';
+        const data = {
+            identity: email,
+            password: password
+        };
+        try {
+            const pb = new PocketBase('http://localhost:8090'); // ajuste a URL se necessário
+            await pb.collection('users').authWithPassword(email, password);
+            window.location.href = '/dashboard';
+        } catch (err) {
+            errorMsg.textContent = err?.message || 'Usuário ou senha inválidos.';
+            errorMsg.style.display = 'block';
+        }
+    });
+</script>
 </body>
 
 </html>

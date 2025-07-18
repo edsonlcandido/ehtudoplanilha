@@ -7,6 +7,7 @@
     <title>Simplifique Suas Finanças com Planilhas Google – O App Que Você Vai Amar!</title>
     <link rel="stylesheet" href="css/picnic.css">
     <link rel="stylesheet" href="css/style.css">
+    <script src="js/pocketbase/dist/pocketbase.umd.js"></script>
 </head>
 
 <body>
@@ -19,10 +20,10 @@
         <input id="bmenub" type="checkbox" class="show">
         <label for="bmenub" class="burger pseudo button">menu</label>
 
-        <div class="menu">
+        <div class="menu" id="menu-user">
             <a href="#" class="pseudo button icon-picture">Demo</a>
-            <a href="login/index.html" class="button icon-puzzle">Login</a>
-            <a href="registro.html" class="button icon-user">Registrar</a>
+            <a href="login.html" class="button icon-puzzle" id="loginBtn">Login</a>
+            <a href="registro.html" class="button icon-user" id="registerBtn">Registrar</a>
         </div>
     </nav>
     <header class="header-hero">
@@ -128,6 +129,27 @@
         </p>
     </footer>
 
+<script>
+  const pb = new PocketBase('http://localhost:8090'); // ajuste a URL se necessário
+  const menuUser = document.getElementById('menu-user');
+
+  function renderUserMenu() {
+    if (pb.authStore.isValid && pb.authStore.model) {
+      // Usuário logado: mostra email e botão logout
+      menuUser.innerHTML = `
+        <span class=\"pseudo button\">${pb.authStore.model.email}</span>
+        <a href=\"dashboard/index.html\" class=\"button success\" id=\"dashboardBtn\">Dashboard</a>
+        <button class=\"button error\" id=\"logoutBtn\">Sair</button>
+      `;
+      document.getElementById('logoutBtn').onclick = function() {
+        pb.authStore.clear();
+        window.location.reload();
+      };
+    }
+  }
+
+  renderUserMenu();
+</script>
 </body>
 
 </html>

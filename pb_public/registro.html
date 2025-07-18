@@ -6,12 +6,13 @@
     <title>Registrar - Seu App Financeiro</title>
     <link rel="stylesheet" href="../css/picnic.css">
     <link rel="stylesheet" href="../css/style.css">
+    <script src="js/pocketbase/dist/pocketbase.umd.js"></script>
 </head>
 <body>
     <nav>
-        <a href="/" class="brand">
-            <span>Planilha</span>
-        </a>
+
+            <span  class="brand">Planilha</span>
+
         <input id="bmenub" type="checkbox" class="show">
         <label for="bmenub" class="burger pseudo button">menu</label>
         <div class="menu">
@@ -64,31 +65,17 @@
             } else {
                 errorMsg.style.display = 'none';
             }
-            // Monta o objeto conforme esperado pelo backend
-            const data = {
-                email: email,
-                emailVisibility: true,
-                password: password,
-                passwordConfirm: confirmPassword
-            };
+            const pb = new PocketBase('http://localhost:8090'); // ajuste a URL se necessário
             try {
-                const response = await fetch('/api/collections/users/records', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
+                await pb.collection('users').create({
+                    email: email,
+                    emailVisibility: true,
+                    password: password,
+                    passwordConfirm: confirmPassword
                 });
-                if (response.ok) {
-                    // Registro realizado com sucesso
-                    window.location.href = '/login.html';
-                } else {
-                    const result = await response.json();
-                    errorMsg.textContent = result?.message || 'Erro ao registrar usuário.';
-                    errorMsg.style.display = 'block';
-                }
+                window.location.href = '/login.html';
             } catch (err) {
-                errorMsg.textContent = 'Erro de conexão com o servidor.';
+                errorMsg.textContent = err?.message || 'Erro ao registrar usuário.';
                 errorMsg.style.display = 'block';
             }
         });
