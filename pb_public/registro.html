@@ -6,6 +6,7 @@
     <title>Registrar - Seu App Financeiro</title>
     <link rel="stylesheet" href="../css/picnic.css">
     <link rel="stylesheet" href="../css/style.css">
+    <script src="js/api-config.js"></script>
     <script src="js/pocketbase/dist/pocketbase.umd.js"></script>
 </head>
 <body>
@@ -65,7 +66,7 @@
             } else {
                 errorMsg.style.display = 'none';
             }
-            const pb = new PocketBase('http://localhost:8090'); // ajuste a URL se necessário
+            const pb = new PocketBase(apiConfig.getBaseURL()); // ajuste a URL se necessário
             try {
                 await pb.collection('users').create({
                     email: email,
