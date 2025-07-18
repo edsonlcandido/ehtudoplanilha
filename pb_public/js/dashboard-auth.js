@@ -47,7 +47,8 @@ function renderDashboardUserMenu(menuElementId = 'menu-user') {
         
         document.getElementById('logoutBtn').onclick = function() {
             pb.authStore.clear();
-            window.location.href = loginPath;
+            // Redirect to home page instead of login page
+            window.location.href = '/';
         };
     }
 }
