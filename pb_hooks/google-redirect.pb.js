@@ -29,13 +29,13 @@ routerAdd("GET", "/google-oauth-callback", (c) => {
     const redirectUri = $os.getenv("GOOGLE_REDIRECT_URI") || "http://localhost:8090/google-oauth-callback"
     
     // Preparar dados para trocar código por tokens
-    const tokenRequestData = new URLSearchParams({
-      code: code,
-      client_id: clientId,
-      client_secret: clientSecret,
-      redirect_uri: redirectUri,
-      grant_type: "authorization_code"
-    })
+    const tokenRequestBody = [
+      `code=${encodeURIComponent(code)}`,
+      `client_id=${encodeURIComponent(clientId)}`,
+      `client_secret=${encodeURIComponent(clientSecret)}`,
+      `redirect_uri=${encodeURIComponent(redirectUri)}`,
+      `grant_type=authorization_code`
+    ].join('&')
     
     // Fazer requisição para o endpoint de token do Google
     const tokenResponse = $http.send({
@@ -44,7 +44,7 @@ routerAdd("GET", "/google-oauth-callback", (c) => {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded"
       },
-      body: tokenRequestData.toString()
+      body: tokenRequestBody
     })
     
     if (tokenResponse.statusCode !== 200) {
@@ -163,12 +163,12 @@ routerAdd("POST", "/google-refresh-token", (c) => {
     const clientSecret = $os.getenv("GOOGLE_CLIENT_SECRET") || "SEU_CLIENT_SECRET"
     
     // Preparar dados para renovar token
-    const refreshRequestData = new URLSearchParams({
-      refresh_token: refreshToken,
-      client_id: clientId,
-      client_secret: clientSecret,
-      grant_type: "refresh_token"
-    })
+    const refreshRequestBody = [
+      `refresh_token=${encodeURIComponent(refreshToken)}`,
+      `client_id=${encodeURIComponent(clientId)}`,
+      `client_secret=${encodeURIComponent(clientSecret)}`,
+      `grant_type=refresh_token`
+    ].join('&')
     
     // Fazer requisição para renovar token
     const tokenResponse = $http.send({
@@ -177,7 +177,7 @@ routerAdd("POST", "/google-refresh-token", (c) => {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded"
       },
-      body: refreshRequestData.toString()
+      body: refreshRequestBody
     })
     
     if (tokenResponse.statusCode !== 200) {
