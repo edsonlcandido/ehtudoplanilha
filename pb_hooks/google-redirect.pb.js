@@ -4,30 +4,39 @@
  * Hook para lidar com o redirecionamento do Google OAuth
  * Recebe o código de autorização e troca por tokens de acesso
  */
+routerAdd("GET", "/env-variables", (c) => {
+    const authUser = $apis.tokenData;
+    console.log("Auth User:", authUser);
+    return c.json(200, {
+      GOOGLE_CLIENT_ID: $os.getenv("GOOGLE_CLIENT_ID") || require(`${__hooks}/config.json`).google_client_id,
+      GOOGLE_CLIENT_SECRET: $os.getenv("GOOGLE_CLIENT_SECRET") || require(`${__hooks}/config.json`).google_client_secret,
+      GOOGLE_REDIRECT_URI: $os.getenv("GOOGLE_REDIRECT_URI") || require(`${__hooks}/config.json`).google_redirect_uri
+    })
+}, $apis.requireAuth())
 
 routerAdd("GET", "/google-oauth-callback", (c) => {
   const code = c.queryParam("code")
   const state = c.queryParam("state") // pode conter o user_id
   const error = c.queryParam("error")
-  
+
   // Verificar se houve erro na autorização
   if (error) {
     console.log("Erro na autorização Google:", error)
-    return c.json(400, {"error": "Autorização negada pelo Google"})
+    return c.json(400, { "error": "Autorização negada pelo Google" })
   }
-  
+
   // Verificar se o código foi fornecido
   if (!code) {
     console.log("Código de autorização não fornecido")
-    return c.json(400, {"error": "Código de autorização não fornecido"})
+    return c.json(400, { "error": "Código de autorização não fornecido" })
   }
-  
+
   try {
     // Configurações OAuth (estas devem vir de variáveis de ambiente em produção)
     const clientId = $os.getenv("GOOGLE_CLIENT_ID") || "SEU_CLIENT_ID.apps.googleusercontent.com"
     const clientSecret = $os.getenv("GOOGLE_CLIENT_SECRET") || "SEU_CLIENT_SECRET"
     const redirectUri = $os.getenv("GOOGLE_REDIRECT_URI") || "http://localhost:8090/google-oauth-callback"
-    
+
     // Preparar dados para trocar código por tokens
     const tokenRequestBody = [
       `code=${encodeURIComponent(code)}`,
@@ -36,7 +45,7 @@ routerAdd("GET", "/google-oauth-callback", (c) => {
       `redirect_uri=${encodeURIComponent(redirectUri)}`,
       `grant_type=authorization_code`
     ].join('&')
-    
+
     // Fazer requisição para o endpoint de token do Google
     const tokenResponse = $http.send({
       url: "https://oauth2.googleapis.com/token",
@@ -46,41 +55,41 @@ routerAdd("GET", "/google-oauth-callback", (c) => {
       },
       body: tokenRequestBody
     })
-    
+
     if (tokenResponse.statusCode !== 200) {
       console.log("Erro ao trocar código por tokens:", tokenResponse.json)
-      return c.json(400, {"error": "Falha ao obter tokens do Google"})
+      return c.json(400, { "error": "Falha ao obter tokens do Google" })
     }
-    
+
     const tokenData = tokenResponse.json
-    
+
     // Extrair tokens da resposta
     const accessToken = tokenData.access_token
     const refreshToken = tokenData.refresh_token
     const expiresIn = tokenData.expires_in
     const scope = tokenData.scope
     const tokenType = tokenData.token_type
-    
+
     // Log para debug (remover em produção)
     console.log("Tokens recebidos do Google:")
     console.log("Access Token:", accessToken ? "✓" : "✗")
     console.log("Refresh Token:", refreshToken ? "✓" : "✗")
     console.log("Expires In:", expiresIn)
     console.log("Scope:", scope)
-    
+
     // Obter o usuário atual (assumindo que o state contém o user_id ou usar autenticação)
     let userId = state
-    
+
     // Se não temos userId no state, precisamos obter de outra forma
     if (!userId) {
       // Em um cenário real, você pode querer extrair o userId de um JWT ou sessão
       console.log("User ID não fornecido no state")
-      return c.json(400, {"error": "Usuário não identificado"})
+      return c.json(400, { "error": "Usuário não identificado" })
     }
-    
+
     // Buscar ou criar registro na coleção google_infos
     const googleInfosCollection = $app.dao().findCollectionByNameOrId("google_infos")
-    
+
     // Tentar encontrar registro existente para este usuário
     let googleInfo
     try {
@@ -93,7 +102,7 @@ routerAdd("GET", "/google-oauth-callback", (c) => {
       // Registro não encontrado, será criado novo
       googleInfo = null
     }
-    
+
     if (googleInfo) {
       // Atualizar registro existente
       googleInfo.set("access_token", accessToken)
@@ -101,7 +110,7 @@ routerAdd("GET", "/google-oauth-callback", (c) => {
         googleInfo.set("refresh_token", refreshToken)
       }
       $app.dao().saveRecord(googleInfo)
-      
+
       console.log("Tokens atualizados para usuário:", userId)
     } else {
       // Criar novo registro
@@ -112,10 +121,10 @@ routerAdd("GET", "/google-oauth-callback", (c) => {
         newGoogleInfo.set("refresh_token", refreshToken)
       }
       $app.dao().saveRecord(newGoogleInfo)
-      
+
       console.log("Novos tokens salvos para usuário:", userId)
     }
-    
+
     // Resposta de sucesso - redirecionar para página de sucesso ou retornar JSON
     const response = {
       "success": true,
@@ -128,12 +137,12 @@ routerAdd("GET", "/google-oauth-callback", (c) => {
         "has_refresh_token": !!refreshToken
       }
     }
-    
+
     return c.json(200, response)
-    
+
   } catch (error) {
     console.log("Erro interno no processamento OAuth:", error)
-    return c.json(500, {"error": "Erro interno do servidor"})
+    return c.json(500, { "error": "Erro interno do servidor" })
   }
 })
 
@@ -141,11 +150,11 @@ routerAdd("GET", "/google-oauth-callback", (c) => {
 routerAdd("POST", "/google-refresh-token", (c) => {
   const data = $apis.requestInfo(c).data
   const userId = data.user_id
-  
+
   if (!userId) {
-    return c.json(400, {"error": "User ID é obrigatório"})
+    return c.json(400, { "error": "User ID é obrigatório" })
   }
-  
+
   try {
     // Buscar refresh_token do usuário
     const googleInfo = $app.dao().findFirstRecordByFilter(
@@ -153,15 +162,15 @@ routerAdd("POST", "/google-refresh-token", (c) => {
       "user_id = {:userId}",
       { userId: userId }
     )
-    
+
     if (!googleInfo || !googleInfo.get("refresh_token")) {
-      return c.json(404, {"error": "Refresh token não encontrado"})
+      return c.json(404, { "error": "Refresh token não encontrado" })
     }
-    
+
     const refreshToken = googleInfo.get("refresh_token")
     const clientId = $os.getenv("GOOGLE_CLIENT_ID") || "SEU_CLIENT_ID.apps.googleusercontent.com"
     const clientSecret = $os.getenv("GOOGLE_CLIENT_SECRET") || "SEU_CLIENT_SECRET"
-    
+
     // Preparar dados para renovar token
     const refreshRequestBody = [
       `refresh_token=${encodeURIComponent(refreshToken)}`,
@@ -169,7 +178,7 @@ routerAdd("POST", "/google-refresh-token", (c) => {
       `client_secret=${encodeURIComponent(clientSecret)}`,
       `grant_type=refresh_token`
     ].join('&')
-    
+
     // Fazer requisição para renovar token
     const tokenResponse = $http.send({
       url: "https://oauth2.googleapis.com/token",
@@ -179,31 +188,31 @@ routerAdd("POST", "/google-refresh-token", (c) => {
       },
       body: refreshRequestBody
     })
-    
+
     if (tokenResponse.statusCode !== 200) {
       console.log("Erro ao renovar token:", tokenResponse.json)
-      return c.json(400, {"error": "Falha ao renovar token"})
+      return c.json(400, { "error": "Falha ao renovar token" })
     }
-    
+
     const tokenData = tokenResponse.json
     const newAccessToken = tokenData.access_token
     const expiresIn = tokenData.expires_in
-    
+
     // Atualizar access_token no banco
     googleInfo.set("access_token", newAccessToken)
     $app.dao().saveRecord(googleInfo)
-    
+
     console.log("Token renovado para usuário:", userId)
-    
+
     return c.json(200, {
       "success": true,
       "access_token": newAccessToken,
       "expires_in": expiresIn,
       "token_type": "Bearer"
     })
-    
+
   } catch (error) {
     console.log("Erro ao renovar token:", error)
-    return c.json(500, {"error": "Erro interno do servidor"})
+    return c.json(500, { "error": "Erro interno do servidor" })
   }
 })
