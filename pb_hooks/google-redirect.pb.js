@@ -5,18 +5,92 @@
  * Recebe o código de autorização e troca por tokens de acesso
  */
 routerAdd("GET", "/env-variables", (c) => {
-    const authUser = $apis.tokenData;
-    console.log("Auth User:", authUser);
-    return c.json(200, {
-      GOOGLE_CLIENT_ID: $os.getenv("GOOGLE_CLIENT_ID"),
-      GOOGLE_CLIENT_SECRET: $os.getenv("GOOGLE_CLIENT_SECRET"),
-      GOOGLE_REDIRECT_URI: $os.getenv("GOOGLE_REDIRECT_URI")
-    })
+  const authUser = $apis.tokenData;
+  console.log("Auth User:", authUser);
+  return c.json(200, {
+    GOOGLE_CLIENT_ID: $os.getenv("GOOGLE_CLIENT_ID"),
+    GOOGLE_CLIENT_SECRET: $os.getenv("GOOGLE_CLIENT_SECRET"),
+    GOOGLE_REDIRECT_URI: $os.getenv("GOOGLE_REDIRECT_URI")
+  })
 }, $apis.requireAuth())
 
 routerAdd("GET", "/google-oauth-callback", (c) => {
-    const code = c.queryParam("code")
+  const code = c.requestInfo().query["code"];
+  const state = c.requestInfo().query["state"]; // pode conter o user_id
+  const error = c.requestInfo().query["error"];
 
+  // Verificar se houve erro na autorização
+  if (error) {
+    console.log("Erro na autorização Google:", error)
+    return c.json(400, { "error": "Autorização negada pelo Google" })
+  }
+
+  // Verificar se o código foi fornecido
+  if (!code) {
+    console.log("Código de autorização não fornecido")
+    return c.json(400, { "error": "Código de autorização não fornecido" })
+  }
+
+  try {
+    // Configurações OAuth (estas devem vir de variáveis de ambiente em produção)
+    const clientId = $os.getenv("GOOGLE_CLIENT_ID") || "SEU_CLIENT_ID.apps.googleusercontent.com"
+    const clientSecret = $os.getenv("GOOGLE_CLIENT_SECRET") || "SEU_CLIENT_SECRET"
+    const redirectUri = $os.getenv("GOOGLE_REDIRECT_URI") || "http://localhost:8090/google-oauth-callback"
+
+    console.log("Iniciando troca de código por tokens...")
+    console.log("Código recebido:", code);
+    console.log("Client ID:", clientId);
+    console.log("Client Secret:", clientSecret);
+    console.log("Redirect URI:", redirectUri);  
+
+    // Preparar dados para trocar código por tokens
+    const tokenRequestBody = [
+      `code=${encodeURIComponent(code)}`,
+      `client_id=${encodeURIComponent(clientId)}`,
+      `client_secret=${encodeURIComponent(clientSecret)}`,
+      `redirect_uri=${encodeURIComponent(redirectUri)}`,
+      `grant_type=authorization_code`
+    ].join('&')
+    console.log("Dados da requisição de token:", tokenRequestBody);
+    
+    // Fazer requisição para o endpoint de token do Google
+    const tokenResponse = $http.send({
+      url: "https://oauth2.googleapis.com/token",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: tokenRequestBody
+    })
+
+    if (tokenResponse.statusCode !== 200) {
+      console.log("Erro ao trocar código por tokens:", tokenResponse.json.access_token)
+      return c.json(400, { "error": "Falha ao obter tokens do Google" })
+    }
+
+    const tokenData = tokenResponse.json
+
+    // Extrair tokens da resposta
+    const accessToken = tokenData.access_token
+    const refreshToken = tokenData.refresh_token
+    const expiresIn = tokenData.expires_in
+    const scope = tokenData.scope
+    const tokenType = tokenData.token_type
+
+    // Log para debug (remover em produção)
+    console.log("Tokens recebidos do Google:")
+    console.log("Access Token:", accessToken)
+    console.log("Refresh Token:", refreshToken)
+    console.log("Expires In:", expiresIn)
+    console.log("Scope:", scope)
+
+    // Obter o usuário atual (assumindo que o state contém o user_id ou usar autenticação)
+    let userId = state
+    console.log("userId:", userId)
+
+  } catch (error) {
+    console.log("Erro interno no processamento OAuth:", error)
+  }
 })
 
 

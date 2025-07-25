@@ -13,12 +13,9 @@
     const pb = new PocketBase(apiConfig.getBaseURL()); // Substitua pela URL do seu PocketBase
 
     async function startOAuth() {
+        const userId = pb.authStore.model?.id || '';
 
 
-        if (!userId) {
-            alert('Por favor, digite um User ID');
-            return;
-        }
         try {
             // Obter as variáveis do sistema do backend
             const response = await fetch('/env-variables', {
@@ -86,8 +83,6 @@
     window.onload = function () {
         // Obter o userId do modelo autenticado ou deixar vazio
         const userId = pb.authStore.model?.id || '';
-        const userIdInput = document.getElementById('userId');
-        userIdInput.value = userId;
         const urlParams = new URLSearchParams(window.location.search);
         const success = urlParams.get('success');
         const error = urlParams.get('error');
@@ -114,11 +109,6 @@
                 <li><code>GOOGLE_REDIRECT_URI</code> - URL de callback (ex: http://localhost:8090/google-oauth-callback)
                 </li>
             </ul>
-
-            <div class="form-group">
-                <label for="userId">User ID (para teste):</label>
-                <input type="text" id="userId" placeholder="Digite um ID de usuário">
-            </div>
 
             <button onclick="startOAuth()" class="button">Iniciar Autorização Google</button>
         </div>
