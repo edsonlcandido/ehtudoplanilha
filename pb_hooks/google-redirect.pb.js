@@ -8,13 +8,19 @@ routerAdd("GET", "/env-variables", (c) => {
     const authUser = $apis.tokenData;
     console.log("Auth User:", authUser);
     return c.json(200, {
-      GOOGLE_CLIENT_ID: $os.getenv("GOOGLE_CLIENT_ID") || require(`${__hooks}/config.json`).google_client_id,
-      GOOGLE_CLIENT_SECRET: $os.getenv("GOOGLE_CLIENT_SECRET") || require(`${__hooks}/config.json`).google_client_secret,
-      GOOGLE_REDIRECT_URI: $os.getenv("GOOGLE_REDIRECT_URI") || require(`${__hooks}/config.json`).google_redirect_uri
+      GOOGLE_CLIENT_ID: $os.getenv("GOOGLE_CLIENT_ID"),
+      GOOGLE_CLIENT_SECRET: $os.getenv("GOOGLE_CLIENT_SECRET"),
+      GOOGLE_REDIRECT_URI: $os.getenv("GOOGLE_REDIRECT_URI")
     })
 }, $apis.requireAuth())
 
 routerAdd("GET", "/google-oauth-callback", (c) => {
+    const code = c.queryParam("code")
+
+})
+
+
+routerAdd("GET", "/v1/google-oauth-callback", (c) => {
   const code = c.queryParam("code")
   const state = c.queryParam("state") // pode conter o user_id
   const error = c.queryParam("error")

@@ -1,5 +1,0 @@
-{
-    "google_client_id":"SEU_CLIENT_ID.apps.googleusercontent.com",
-    "google_client_secret":"SEU_CLIENT_SECRET",
-    "google_redirect_uri":"http://localhost:8090/google-oauth-callback"
-}
