@@ -88,6 +88,59 @@ routerAdd("GET", "/google-oauth-callback", (c) => {
     let userId = state
     console.log("userId:", userId)
 
+    // Buscar ou criar registro na coleção google_infos
+    const googleInfosCollection = $app.findCollectionByNameOrId("google_infos")
+
+    // Tentar encontrar registro existente para este usuário
+    let googleInfo
+    try {
+      googleInfo = $app.findFirstRecordByFilter(
+        "google_infos",
+        "user_id = {:userId}",
+        { userId: userId }
+      )
+    } catch (e) {
+      // Registro não encontrado, será criado novo
+      googleInfo = null
+    }
+
+    if (googleInfo) {
+      // Atualizar registro existente
+      googleInfo.set("access_token", accessToken)
+      if (refreshToken) {
+        googleInfo.set("refresh_token", refreshToken)
+      }
+      $app.save(googleInfo)
+
+      console.log("Tokens atualizados para usuário:", userId)
+    } else {
+      // Criar novo registro
+      const newGoogleInfo = new Record(googleInfosCollection)
+      newGoogleInfo.set("user_id", userId)
+      newGoogleInfo.set("access_token", accessToken)
+      if (refreshToken) {
+        newGoogleInfo.set("refresh_token", refreshToken)
+      }
+      $app.save(newGoogleInfo)
+
+      console.log("Novos tokens salvos para usuário:", userId)
+    }
+
+    // Resposta de sucesso - redirecionar para página de sucesso ou retornar JSON
+    const response = {
+      "success": true,
+      "message": "Autorização Google concluída com sucesso",
+      "data": {
+        "access_token": accessToken ? "***" : null, // Mascarar token na resposta
+        "expires_in": expiresIn,
+        "scope": scope,
+        "token_type": tokenType,
+        "has_refresh_token": !!refreshToken
+      }
+    }
+
+    return c.json(200, response)
+
   } catch (error) {
     console.log("Erro interno no processamento OAuth:", error)
   }
