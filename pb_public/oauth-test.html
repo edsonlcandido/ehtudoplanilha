@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Google OAuth</title>
+    <link rel="stylesheet" href="https://picnicss.com/picnic.min.css">
+    <script src="/js/pocketbase/dist/pocketbase.umd.js"></script>
+    <script src="/js/api-config.js"></script>
+</head>
+<script>
+    const pb = new PocketBase(apiConfig.getBaseURL()); // Substitua pela URL do seu PocketBase
+
+    async function startOAuth() {
+        const userId = pb.authStore.model?.id || '';
+
+
+        try {
+            // Obter as variáveis do sistema do backend
+            const response = await fetch('/env-variables', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${pb.authStore.token}` // Adiciona o cabeçalho Authorization
+                },
+                credentials: 'include' // Inclui cookies para autenticação
+            });
+
+            if (!response.ok) {
+                throw new Error('Erro ao buscar variáveis do sistema: ' + response.statusText);
+            }
+
+            const data = await response.json();
+            // Construir URL do Google OAuth com as variáveis obtidas
+            const clientId = data.GOOGLE_CLIENT_ID;
+            const redirectUri = data.GOOGLE_REDIRECT_URI;
+            const scope = 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/spreadsheets';
+            const state = userId; // Pode ser usado para identificar o usuário após o callback
+            const oauthUrl = `https://accounts.google.com/o/oauth2/v2/auth` +
+                `?client_id=${encodeURIComponent(clientId)}` +
+                `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+                `&scope=${encodeURIComponent(scope)}` +
+                `&response_type=code` +
+                `&access_type=offline` +
+                `&prompt=consent` +
+                `&state=${encodeURIComponent(userId)}`;
+
+            // Abrir janela do OAuth
+            window.location.href = oauthUrl;
+        } catch (error) {
+            console.error(error);
+            alert('Erro ao iniciar OAuth: ' + error.message);
+        }
+    }
+
+    async function refreshToken() {
+        const userId = document.getElementById('userId').value;
+        if (!userId) {
+            alert('Por favor, digite um User ID');
+            return;
+        }
+
+        try {
+            const response = await fetch('/google-refresh-token', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ user_id: userId })
+            });
+
+            const data = await response.json();
+            document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+            document.getElementById('result-section').style.display = 'block';
+        } catch (error) {
+            document.getElementById('result').textContent = 'Erro: ' + error.message;
+            document.getElementById('result-section').style.display = 'block';
+        }
+    }
+
+    // Se a página foi carregada com parâmetros de sucesso ou erro, mostrar o resultado
+    window.onload = function () {
+        // Obter o userId do modelo autenticado ou deixar vazio
+        const userId = pb.authStore.model?.id || '';
+        const urlParams = new URLSearchParams(window.location.search);
+        const success = urlParams.get('success');
+        const error = urlParams.get('error');
+
+        if (success || error) {
+            const result = success ? 'OAuth concluído com sucesso!' : 'Erro: ' + error;
+            document.getElementById('result').textContent = result;
+            document.getElementById('result-section').style.display = 'block';
+            document.getElementById('refresh-section').style.display = 'block';
+        }
+    };
+</script>
+
+<body>
+    <main class="container">
+        <h1>Teste de Autorização Google Sheets</h1>
+
+        <div id="oauth-section">
+            <h2>Passo 1: Autorizar com Google</h2>
+            <p>Configure as variáveis de ambiente antes de testar:</p>
+            <ul>
+                <li><code>GOOGLE_CLIENT_ID</code> - Seu Client ID do Google</li>
+                <li><code>GOOGLE_CLIENT_SECRET</code> - Seu Client Secret do Google</li>
+                <li><code>GOOGLE_REDIRECT_URI</code> - URL de callback (ex: http://localhost:8090/google-oauth-callback)
+                </li>
+            </ul>
+
+            <button onclick="startOAuth()" class="button">Iniciar Autorização Google</button>
+        </div>
+
+        <div id="result-section" style="display: none;">
+            <h2>Resultado</h2>
+            <pre id="result"></pre>
+        </div>
+
+        <div id="refresh-section" style="display: none;">
+            <h2>Renovar Token</h2>
+            <button onclick="refreshToken()" class="button secondary">Renovar Access Token</button>
+        </div>
+    </main>
+
+
+</body>
+
+</html>

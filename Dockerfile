@@ -44,7 +44,11 @@ ARG REPO_DIR # <--- Diretório temporário para o clone GLOBAL
 ENV TZ=America/Sao_Paulo \
     PB_PORT=8090 \
     PB_WORKDIR=$PB_WORKDIR \
-    PB_HOME=$PB_HOME
+    PB_HOME=$PB_HOME \
+    # Variáveis de ambiente para configuração do Google OAuth
+    GOOGLE_CLIENT_ID=SEU_CLIENT_ID.apps.googleusercontent.com \
+    GOOGLE_CLIENT_SECRET=SEU_CLIENT_SECRET \
+    GOOGLE_REDIRECT_URI=http://localhost:8090/google-oauth-callback 
 
 EXPOSE $PB_PORT
 
@@ -76,4 +80,4 @@ CMD ["pocketbase", "serve", "--http=0.0.0.0:8090"]
 # Opcional: Se você tiver migrations ou hooks, descomente e copie
 COPY ./pb_public $PB_WORKDIR/pb_public
 COPY ./pb_migrations $PB_WORKDIR/pb_migrations
-# COPY ./pb_hooks $PB_WORKDIR/pb_hooks
+COPY ./pb_hooks $PB_WORKDIR/pb_hooks
