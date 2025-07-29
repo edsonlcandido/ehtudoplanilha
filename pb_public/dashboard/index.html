@@ -116,8 +116,12 @@
                 <a href="https://www.ehtudo.app">Eh!Tudo.app</a></small>
         </p>
     </footer>
-    <!-- Script para verificação de autenticação e menu dinâmico -->
-    <script src="../js/api-config.js"></script>
-    <script src="../js/dashboard-auth.js"></script>
+    <!-- Script PocketBase e módulos da aplicação -->
+    <script src="../js/pocketbase/dist/pocketbase.umd.js"></script>
+    <script>
+        // Inicializa o PocketBase globalmente antes dos módulos
+        window.pb = new PocketBase('http://127.0.0.1:8090');
+    </script>
+    <script src="../js/dashboard-auth.js" type="module"></script>
 </body>
 </html>

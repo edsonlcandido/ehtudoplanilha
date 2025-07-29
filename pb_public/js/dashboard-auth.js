@@ -5,11 +5,11 @@
  * Include this script in any dashboard page to ensure only authenticated users can access it.
  * 
  * Usage:
- * <script src="../js/dashboard-auth.js"></script>
+ * <script type="module" src="../js/dashboard-auth.js"></script>
  */
 
-// Initialize PocketBase with API configuration
-const pb = new PocketBase(apiConfig.getBaseURL());
+// Usa a instância global do PocketBase
+const pb = window.pb;
 
 /**
  * Checks if user is authenticated and redirects to login if not

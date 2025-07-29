@@ -27,3 +27,5 @@ class ApiConfig {
 
 // Cria uma instância global
 const apiConfig = new ApiConfig();
+
+export default apiConfig;

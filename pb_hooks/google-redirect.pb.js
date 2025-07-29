@@ -5,13 +5,42 @@
  * Recebe o código de autorização e troca por tokens de acesso
  */
 routerAdd("GET", "/env-variables", (c) => {
-  const authUser = $apis.tokenData;
-  console.log("Auth User:", authUser);
+  const authUser = c.auth;
+  console.log("Auth User:", authUser.id);
   return c.json(200, {
     GOOGLE_CLIENT_ID: $os.getenv("GOOGLE_CLIENT_ID"),
     GOOGLE_CLIENT_SECRET: $os.getenv("GOOGLE_CLIENT_SECRET"),
     GOOGLE_REDIRECT_URI: $os.getenv("GOOGLE_REDIRECT_URI")
   })
+}, $apis.requireAuth())
+
+// Endpoint to check if user has a refresh token
+routerAdd("GET", "/check-refresh-token", (c) => {
+  const authUser = c.auth;
+  console.log("Auth User:", authUser);
+  const userId = authUser.id;
+
+  try {
+    // Try to find existing google_info record for this user
+    const googleInfo = $app.findFirstRecordByFilter(
+      "google_infos",
+      "user_id = {:userId}",
+      { userId: userId }
+    )
+
+    const hasRefreshToken = googleInfo && googleInfo.get("refresh_token") && googleInfo.get("refresh_token").trim() !== "";
+
+    return c.json(200, {
+      hasRefreshToken: hasRefreshToken,
+      userId: userId
+    })
+  } catch (e) {
+    // Record not found or other error
+    return c.json(200, {
+      hasRefreshToken: false,
+      userId: userId
+    })
+  }
 }, $apis.requireAuth())
 
 routerAdd("GET", "/google-oauth-callback", (c) => {
@@ -22,13 +51,13 @@ routerAdd("GET", "/google-oauth-callback", (c) => {
   // Verificar se houve erro na autorização
   if (error) {
     console.log("Erro na autorização Google:", error)
-    return c.json(400, { "error": "Autorização negada pelo Google" })
+    return c.redirect(302, "/dashboard/configuracao.html?error=" + encodeURIComponent(error))
   }
 
   // Verificar se o código foi fornecido
   if (!code) {
     console.log("Código de autorização não fornecido")
-    return c.json(400, { "error": "Código de autorização não fornecido" })
+    return c.redirect(302, "/dashboard/configuracao.html?error=" + encodeURIComponent("Código de autorização não fornecido"))
   }
 
   try {
@@ -64,8 +93,8 @@ routerAdd("GET", "/google-oauth-callback", (c) => {
     })
 
     if (tokenResponse.statusCode !== 200) {
-      console.log("Erro ao trocar código por tokens:", tokenResponse.json.access_token)
-      return c.json(400, { "error": "Falha ao obter tokens do Google" })
+      console.log("Erro ao trocar código por tokens:", tokenResponse.json)
+      return c.redirect(302, "/dashboard/configuracao.html?error=" + encodeURIComponent("Falha ao obter tokens do Google"))
     }
 
     const tokenData = tokenResponse.json
@@ -139,10 +168,12 @@ routerAdd("GET", "/google-oauth-callback", (c) => {
       }
     }
 
-    return c.json(200, response)
+    // Redirect to configuration page with success parameter
+    return c.redirect(302, "/dashboard/configuracao.html?success=true")
 
   } catch (error) {
     console.log("Erro interno no processamento OAuth:", error)
+    return c.redirect(302, "/dashboard/configuracao.html?error=" + encodeURIComponent("Erro interno do servidor"))
   }
 })
 
