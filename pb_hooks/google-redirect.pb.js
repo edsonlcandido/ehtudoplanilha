@@ -5,8 +5,8 @@
  * Recebe o código de autorização e troca por tokens de acesso
  */
 routerAdd("GET", "/env-variables", (c) => {
-  const authUser = $apis.tokenData;
-  console.log("Auth User:", authUser);
+  const authUser = c.auth;
+  console.log("Auth User:", authUser.id);
   return c.json(200, {
     GOOGLE_CLIENT_ID: $os.getenv("GOOGLE_CLIENT_ID"),
     GOOGLE_CLIENT_SECRET: $os.getenv("GOOGLE_CLIENT_SECRET"),
@@ -16,7 +16,8 @@ routerAdd("GET", "/env-variables", (c) => {
 
 // Endpoint to check if user has a refresh token
 routerAdd("GET", "/check-refresh-token", (c) => {
-  const authUser = $apis.tokenData;
+  const authUser = c.auth;
+  console.log("Auth User:", authUser);
   const userId = authUser.id;
 
   try {

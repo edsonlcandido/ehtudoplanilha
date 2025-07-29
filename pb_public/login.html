@@ -7,7 +7,6 @@
     <title>Login - Seu App Financeiro</title>
     <link rel="stylesheet" href="css/picnic.css">
     <link rel="stylesheet" href="css/style.css">
-    <script src="js/api-config.js"></script>
     <script src="js/pocketbase/dist/pocketbase.umd.js"></script>
 </head>
 
@@ -54,7 +53,8 @@
         </p>
     </footer>
 </body>
-<script>
+<script type="module">
+    import apiConfig from './js/api-config.js';
     document.querySelector('form').addEventListener('submit', async function(e) {
         e.preventDefault();
         const email = document.getElementById('email').value;

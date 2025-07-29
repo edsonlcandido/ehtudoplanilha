@@ -3,8 +3,8 @@
  * Handles Google OAuth integration and refresh token checking
  */
 
-// Initialize PocketBase
-const pb = new PocketBase(apiConfig.getBaseURL());
+// Use a instância global do PocketBase
+const pb = window.pb;
 
 // State management
 let hasRefreshToken = false;
@@ -14,7 +14,8 @@ let hasRefreshToken = false;
  */
 async function checkRefreshTokenStatus() {
     try {
-        const response = await fetch('/check-refresh-token', {
+        const baseUrl = pb.baseUrl;
+        const response = await fetch(`${baseUrl}/check-refresh-token`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -47,7 +48,8 @@ async function startOAuth() {
 
     try {
         // Get system variables from backend
-        const response = await fetch('/env-variables', {
+        const baseUrl = pb.baseUrl;
+        const response = await fetch(`${baseUrl}/env-variables`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
