@@ -193,3 +193,13 @@ body {
     background-color: #212f3c;
     color: #bdc3c7;
 }
+
+/* Estilos para modal de seleção de planilhas */
+.sheet-item {
+    transition: all 0.2s ease;
+}
+
+.sheet-item:hover {
+    background-color: #f0f8ff !important;
+    border-color: #90caf9 !important;
+}

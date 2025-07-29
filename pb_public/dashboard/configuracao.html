@@ -56,7 +56,7 @@
                         <p>Escolha qual planilha do Google Sheets será utilizada para os lançamentos financeiros.</p>
                     </div>
                     <div style="margin-top: auto; padding-top: 1.5rem;">
-                        <button class="button primary large" style="width: 100%;">
+                        <button class="button primary large" style="width: 100%;" id="selectSheetBtn">
                             Selecionar Planilha
                         </button>
                     </div>
@@ -64,6 +64,38 @@
             </div>
         </div>
     </section>
+
+    <!-- Modal para seleção de planilha -->
+    <div class="modal" id="sheetsModal">
+        <input type="checkbox" id="modal_sheets">
+        <label for="modal_sheets" class="overlay" id="modalOverlay"></label>
+        <article>
+            <header>
+                <h3>Selecionar Planilha Google Sheets</h3>
+                <label for="modal_sheets" class="close">&times;</label>
+            </header>
+            <section class="content" id="modalContent">
+                <div id="loadingState" style="text-align: center; padding: 2rem;">
+                    <p>Carregando suas planilhas...</p>
+                </div>
+                <div id="errorState" style="display: none; text-align: center; padding: 2rem;">
+                    <p id="errorMessage" style="color: #e74c3c;">Erro ao carregar planilhas.</p>
+                    <button class="button" onclick="loadGoogleSheets()">Tentar Novamente</button>
+                </div>
+                <div id="sheetsListState" style="display: none;">
+                    <p>Selecione uma planilha da lista abaixo:</p>
+                    <div id="sheetsList" style="max-height: 300px; overflow-y: auto; margin: 1rem 0;">
+                        <!-- Lista de planilhas será inserida aqui -->
+                    </div>
+                </div>
+            </section>
+            <footer>
+                <button class="button" id="cancelBtn">Cancelar</button>
+                <button class="button primary" id="confirmBtn" style="display: none;">Confirmar Seleção</button>
+            </footer>
+        </article>
+    </div>
+
     <!-- FOOTER -->
     <footer class="footer">
         <div class="container">
@@ -77,5 +109,224 @@
     <!-- Script para verificação de autenticação e menu dinâmico -->
     <script src="../js/api-config.js"></script>
     <script src="../js/dashboard-auth.js"></script>
+    
+    <!-- Script para funcionalidade de seleção de planilha -->
+    <script>
+        let selectedSheetId = null;
+        let selectedSheetName = null;
+
+        // Inicialização quando DOM carregado
+        document.addEventListener('DOMContentLoaded', function() {
+            const selectSheetBtn = document.getElementById('selectSheetBtn');
+            const modal = document.getElementById('sheetsModal');
+            const modalCheckbox = document.getElementById('modal_sheets');
+            const cancelBtn = document.getElementById('cancelBtn');
+            const confirmBtn = document.getElementById('confirmBtn');
+            const modalOverlay = document.getElementById('modalOverlay');
+
+            // Abrir modal ao clicar no botão
+            selectSheetBtn.addEventListener('click', function() {
+                openSheetsModal();
+            });
+
+            // Fechar modal ao clicar em cancelar ou overlay
+            cancelBtn.addEventListener('click', closeSheetsModal);
+            modalOverlay.addEventListener('click', closeSheetsModal);
+
+            // Confirmar seleção
+            confirmBtn.addEventListener('click', function() {
+                if (selectedSheetId) {
+                    saveSelectedSheet();
+                }
+            });
+        });
+
+        function openSheetsModal() {
+            const modalCheckbox = document.getElementById('modal_sheets');
+            modalCheckbox.checked = true;
+            
+            // Reset modal state
+            resetModalState();
+            
+            // Carregar planilhas
+            loadGoogleSheets();
+        }
+
+        function closeSheetsModal() {
+            const modalCheckbox = document.getElementById('modal_sheets');
+            modalCheckbox.checked = false;
+            selectedSheetId = null;
+            selectedSheetName = null;
+        }
+
+        function resetModalState() {
+            document.getElementById('loadingState').style.display = 'block';
+            document.getElementById('errorState').style.display = 'none';
+            document.getElementById('sheetsListState').style.display = 'none';
+            document.getElementById('confirmBtn').style.display = 'none';
+            selectedSheetId = null;
+            selectedSheetName = null;
+        }
+
+        async function loadGoogleSheets() {
+            try {
+                resetModalState();
+
+                const response = await fetch('/list-google-sheets', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': pb.authStore.token,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Erro ao carregar planilhas');
+                }
+
+                if (data.success && data.sheets) {
+                    displaySheetsList(data.sheets);
+                } else {
+                    throw new Error('Resposta inválida do servidor');
+                }
+
+            } catch (error) {
+                console.error('Erro ao carregar planilhas:', error);
+                showError(error.message);
+            }
+        }
+
+        function displaySheetsList(sheets) {
+            const sheetsList = document.getElementById('sheetsList');
+            
+            if (sheets.length === 0) {
+                sheetsList.innerHTML = '<p style="text-align: center; color: #666;">Nenhuma planilha encontrada. Crie uma planilha no Google Sheets primeiro.</p>';
+            } else {
+                sheetsList.innerHTML = sheets.map(sheet => `
+                    <div class="sheet-item" style="border: 1px solid #ddd; padding: 1rem; margin: 0.5rem 0; border-radius: 4px; cursor: pointer; transition: background-color 0.2s;" 
+                         onclick="selectSheet('${sheet.id}', '${escapeHtml(sheet.name)}')"
+                         data-sheet-id="${sheet.id}">
+                        <strong>${escapeHtml(sheet.name)}</strong>
+                        ${sheet.createdTime ? `<small style="display: block; color: #666; margin-top: 0.25rem;">Criada em: ${formatDate(sheet.createdTime)}</small>` : ''}
+                    </div>
+                `).join('');
+            }
+
+            // Mostrar lista
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('sheetsListState').style.display = 'block';
+        }
+
+        function selectSheet(sheetId, sheetName) {
+            // Remove seleção anterior
+            document.querySelectorAll('.sheet-item').forEach(item => {
+                item.style.backgroundColor = '';
+                item.style.borderColor = '#ddd';
+            });
+
+            // Adiciona seleção atual
+            const selectedItem = document.querySelector(`[data-sheet-id="${sheetId}"]`);
+            if (selectedItem) {
+                selectedItem.style.backgroundColor = '#e3f2fd';
+                selectedItem.style.borderColor = '#2196f3';
+            }
+
+            selectedSheetId = sheetId;
+            selectedSheetName = sheetName;
+            
+            // Mostrar botão confirmar
+            document.getElementById('confirmBtn').style.display = 'inline-block';
+        }
+
+        async function saveSelectedSheet() {
+            if (!selectedSheetId) return;
+
+            try {
+                // Mostrar loading no botão
+                const confirmBtn = document.getElementById('confirmBtn');
+                const originalText = confirmBtn.textContent;
+                confirmBtn.textContent = 'Salvando...';
+                confirmBtn.disabled = true;
+
+                const response = await fetch('/save-sheet-id', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': pb.authStore.token,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        sheet_id: selectedSheetId,
+                        sheet_name: selectedSheetName
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Erro ao salvar planilha');
+                }
+
+                if (data.success) {
+                    // Sucesso - fechar modal e mostrar feedback
+                    closeSheetsModal();
+                    showSuccessMessage(`Planilha "${selectedSheetName}" selecionada com sucesso!`);
+                } else {
+                    throw new Error(data.message || 'Erro desconhecido');
+                }
+
+            } catch (error) {
+                console.error('Erro ao salvar planilha:', error);
+                alert('Erro ao salvar planilha: ' + error.message);
+                
+                // Restaurar botão
+                const confirmBtn = document.getElementById('confirmBtn');
+                confirmBtn.textContent = originalText;
+                confirmBtn.disabled = false;
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('sheetsListState').style.display = 'none';
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorState').style.display = 'block';
+        }
+
+        function showSuccessMessage(message) {
+            // Criar elemento de feedback temporário
+            const feedback = document.createElement('div');
+            feedback.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #4caf50; color: white; padding: 1rem; border-radius: 4px; z-index: 9999; box-shadow: 0 2px 10px rgba(0,0,0,0.2);';
+            feedback.textContent = message;
+            document.body.appendChild(feedback);
+
+            // Remover após 3 segundos
+            setTimeout(() => {
+                if (feedback.parentNode) {
+                    feedback.parentNode.removeChild(feedback);
+                }
+            }, 3000);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatDate(dateString) {
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('pt-BR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+            } catch (e) {
+                return dateString;
+            }
+        }
+    </script>
 </body>
 </html>
