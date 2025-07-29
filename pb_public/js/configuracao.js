@@ -98,15 +98,34 @@ function updateAuthorizationButton() {
     }
 
     if (hasRefreshToken) {
-        // User already has a refresh token, hide the authorization card
-        authCard.style.display = 'none';
-        console.log('User already authorized, hiding authorization button');
+        // User already has a refresh token, show connected status
+        authCard.style.display = 'flex';
+        authButton.style.backgroundColor = '#28a745';
+        authButton.style.borderColor = '#28a745';
+        authButton.disabled = true;
+        authButton.textContent = '✓ Google Drive Conectado';
+        authButton.onclick = null;
+        
+        // Update card description
+        const cardDescription = authCard.querySelector('p');
+        if (cardDescription) {
+            cardDescription.textContent = 'Sua conta está conectada ao Google Drive e pronta para usar.';
+        }
+        
+        console.log('User already authorized, showing connected status');
     } else {
         // User needs to authorize, show the button and make it functional
         authCard.style.display = 'flex';
         authButton.onclick = startOAuth;
         authButton.disabled = false;
         authButton.textContent = 'Autorizar Acesso ao Drive';
+        
+        // Ensure card description is correct
+        const cardDescription = authCard.querySelector('p');
+        if (cardDescription) {
+            cardDescription.textContent = 'Autorize o acesso ao Google Drive para integrar sua planilha de controle financeiro.';
+        }
+        
         console.log('User needs to authorize, showing authorization button');
     }
 }
