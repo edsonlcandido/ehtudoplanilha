@@ -1,85 +1,76 @@
-nformações desse projeto
-### Guia Arquitetural para o Agente de Código: SaaS Multi-Tenant com N8N e PocketBase para Google Sheets
+# Arquitetura do SaaS Multi-Tenant com PocketBase e Google Sheets
 
-Como arquiteto de software, a sua missão é desenvolver um SaaS multi-tenant utilizando uma abordagem low-code, focado na integração com o Google Sheets para gerenciamento de entradas financeiras. Este guia conciso fornecerá as diretrizes essenciais para o agente de código.
+## 1. Visão Geral
+Este projeto é um SaaS multi-tenant que permite a cada cliente gerenciar entradas financeiras em sua própria planilha do Google Sheets.  
+O backend é 100% PocketBase (SQLite), com hooks para integrar Google OAuth e interações com a API do Sheets.
 
----
+## 2. Multi-Tenancy e Isolamento de Dados
+- Modelo: Banco de Dados Único, Esquema Compartilhado no PocketBase.  
+- Coleções:
+  - `users`: cadastro e autenticação (email/senha).  
+  - `google_infos`: credenciais e metadados do Sheets.  
+    - `user_id` (Relacionamento com users)  
+    - `access_token` (Texto)  
+    - `refresh_token` (Texto)  
+    - `sheet_id` (Texto)  
+- Regras de API:
+  - Usuários só acessam seu próprio registro em `users`.  
+  - Endpoints e hooks validam `@request.auth.id` antes de operar em `google_infos`.  
 
-#### **1. Visão Geral da Arquitetura**
+## 3. Componentes Principais
+- PocketBase  
+  - Autenticação de usuários.  
+  - Hooks em `pb_hooks/`:
+    - **GET /google-oauth-callback**: troca `code` → tokens → cria/atualiza em `google_infos`.  
+    - **POST /google-refresh-token**: renova `access_token` usando `refresh_token`.  
+    - **POST /provision-sheet**: copia planilha modelo e grava `sheet_id` em `google_infos`.  
+    - **POST /append-entry**: insere lançamentos direto na planilha via Sheets API.  
+- Google Sheets API  
+  - `drive/v3/files/{templateId}/copy`  
+  - `sheets/v4/spreadsheets/{id}/values:append`  
+- Frontend (`/pb_public`)
+  - HTML + Picnic CSS + PocketBase UMD.  
+  - Página inicial (dashboard) e página de configuração OAuth/Provisionamento.
 
+## 4. Fluxos de Trabalho Essenciais
 
-O projeto consiste em um SaaS multi-tenant que permite a clientes gerenciar entradas financeiras em suas planilhas privadas do Google Sheets através de um formulário web simples. A arquitetura será baseada em:
+### A. Onboarding e Configuração
+1. Usuário registra-se no PocketBase.  
+2. Após login, acessa página inicial do dashboard.  
+3. Do dashboard, navega para a página de configuração.  
+4. Clica em “Conectar Google Sheets” → `startGoogleAuth(userId)` → redireciona para consentimento Google.  
+5. Google retorna em `/google-oauth-callback?code=&state={userId}`.  
+6. Hook processa o callback, troca `code` por tokens e atualiza/cria registro em `google_infos`.
 
+### B. Provisionamento da Planilha Modelo
+1. Na página de configuração, usuário aciona POST `/provision-sheet`.  
+2. Hook usa `google_infos.access_token` para:
+   - Copiar planilha modelo (`drive/v3/files/{templateId}/copy`).
+   - **Obs:** não é preciso limpar a planilha modelo neste momento.
+3. Atualiza `google_infos.sheet_id` com o novo ID.
 
-**N8N**: Orquestrador de fluxos de trabalho e automação
-**PocketBase**: Backend leve para autenticação de usuários, persistência de dados e armazenamento de credenciais de clientes
-**Google Sheets**: Camada de armazenamento de dados específica para cada cliente (tenant)
+### C. Inserção de Lançamentos Financeiros
+1. Frontend envia POST para `/append-entry?userId={userId}` com JSON:
+   ```json
+   { "title": "...", "amount": 123.45, "timestamp": "2025-07-29T12:00:00Z" }
+   ```
+2. Hook busca registro em `google_infos` por `user_id`.  
+3. Valida `access_token`; se expirado, chama `/google-refresh-token`.  
+4. Chama `sheets/v4/spreadsheets/{sheet_id}/values:append` com o payload.  
+5. Retorna status (sucesso/erro) ao frontend.
 
-A abordagem é low-code/no-code para reduzir o tempo e custo de desenvolvimento, ideal para prototipagem rápida e implantação escalável
-
-#### **2. Multi-Tenancy e Isolamento de Dados**
-
-
-Adotaremos o modelo de **Banco de Dados Único, Esquema Compartilhado** no PocketBase
-
-
-**Identificação de Tenant**: Cada registro no PocketBase incluirá um campo `tenantId` (ou `userId`) para segregação lógica dos dados
-* **Regras de API do PocketBase**: Essenciais para aplicar o isolamento de dados na camada da aplicação. Configure permissões granulares para que os usuários só acessem registros associados ao seu próprio `tenantId` (`@request.auth.id`)
-
-#### **3. Componentes Principais e Funções**
-
-* **N8N (Orquestrador)**:
-
-    **Webhook Trigger**: Ponto de entrada para receber dados do frontend (entradas financeiras, eventos de onboarding)
-    **HTTP Request Node**: Crucial para interagir com a API do PocketBase (autenticação, recuperação de dados/tokens do Google) e com a API do Google Sheets (para chamadas diretas com tokens dinâmicos)
-    **Function/Code Node**: Para lógica personalizada, manipulação de dados, construção de requisições API complexas e gerenciamento de expiração de tokens Google
-    **Respond to Webhook Node**: Envia respostas ao frontend
-
-* **PocketBase (Backend)**:
-
-    **Gerenciamento de Usuários**: Registro, login e perfis
-    **Armazenamento de Credenciais**: Armazenar `google_access_token`, `google_refresh_token` e `google_sheet_id` como campos personalizados na coleção de usuários
-    **Isolamento de Dados**: Garanta que as regras de API permitam acesso apenas ao próprio usuário (`@request.auth.id`) para seus tokens e IDs de planilha
-
-* **Google Sheets (Dados Multi-Tenant)**:
-
-    Camada de armazenamento de dados para cada cliente
-    A API do Google Sheets permite criar, manipular e duplicar planilhas
-
-#### **4. Fluxos de Trabalho Essenciais (N8N)**
-
-* **A. Onboarding de Usuários e Autorização do Google Sheets**:
-
-    * **Frontend (Appsmith, UI Bakery, Bubble)**: Coleta registro, interage com PocketBase para criar conta e inicia o fluxo OAuth 2.0 do Google. Envia tokens resultantes para N8N/PocketBase
-    * **Google Cloud Console**: Configurar novo projeto, habilitar Google Sheets API e Google Drive API. Criar "ID do Cliente OAuth" (Tipo "Aplicação Web") e configurar URI de redirecionamento do N8N
-    **Armazenamento de Tokens**: O N8N, após o fluxo OAuth, armazenará `access_token` e `refresh_token` nos campos personalizados do usuário no PocketBase. **É crucial solicitar `access_type=offline` e `prompt=consent` para obter um `refresh_token` de longo prazo**
-
-* **B. Provisionamento Automatizado do Google Sheet**:
-
-    **Gatilho**: Após a autorização bem-sucedida do Google Sheets
-    **Cópia de Modelo**: N8N usará o nó HTTP Request (com tokens dinâmicos do usuário) para copiar uma planilha modelo
-    **Limpeza**: Limpar os dados da nova planilha, mantendo cabeçalhos e formatação
-    **Associação de ID**: Armazenar o ID da nova planilha no campo `google_sheet_id` do usuário no PocketBase
-
-* **C. Webhook para Envio de Lançamentos Financeiros**:
-
-    **Webhook Trigger**: Recebe requisições POST do frontend
-    **Segurança**: Configure autenticação por cabeçalho (`X-API-Key`) e inclua `userId` no URL do webhook para identificação
-    * **Recuperação de Credenciais**: Extraia `userId` do webhook. Use HTTP Request para obter `google_sheet_id` e tokens OAuth do PocketBase para aquele usuário
-    * **Gerenciamento de Expiração de Token**: Implemente lógica para verificar validade do `access_token`. Se expirado, use `refresh_token` para obter um novo e atualize no PocketBase
-    **Inserção no Google Sheets**: Use HTTP Request para inserir dados na planilha correta do cliente, usando o `google_sheet_id` e o `access_token` dinamicamente
-
-#### **5. Implantação, Segurança e Escalabilidade**
-
-* **Hospedagem**:
-    **N8N**: Google Cloud Run (escalabilidade automática, custo-benefício) ou Google Compute Engine (para cargas constantes)
-    * **PocketBase**: Qualquer provedor de VPS com armazenamento persistente (Hetzner, Vultr, DigitalOcean). Configure como serviço Systemd
-* **Segurança**:
-    **Isolamento de Dados**: Reforce as regras de API do PocketBase
-    * **Credenciais**: Armazene com segurança. Proteja tokens OAuth no PocketBase com regras de API
-    **Webhook**: Use autenticação por cabeçalho
-    **Monitoramento e Auditoria**: Habilite logs no N8N
-* **Escalabilidade**:
-    **N8N**: Suporta filas de trabalho (BullMQ, Redis) e escalonamento de workers
-    * **PocketBase**: Escala verticalmente em um único servidor. Suficiente para aplicações de pequeno a médio porte
-    **Limites da API Google Sheets**: Esteja ciente das cotas e implemente lógica de backoff exponencial no N8N para lidar com erros de limite de taxa
+## 5. Implantação, Segurança e Escalabilidade
+- Hospedagem PocketBase: Linux (Systemd) ou Docker.  
+- Variáveis de ambiente:
+  ```env
+  GOOGLE_CLIENT_ID=
+  GOOGLE_CLIENT_SECRET=
+  GOOGLE_REDIRECT_URI=https://seu-dominio.com/google-oauth-callback
+  ```
+- Segurança:
+  - HTTPS obrigatório.  
+  - CORS e regras de API no PocketBase.  
+  - Rate limiting e logs em hooks.  
+- Escalabilidade:
+  - Backup diário do SQLite.  
+  - Monitorar cotas da API Google e implementar backoff.
