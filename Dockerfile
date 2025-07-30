@@ -48,7 +48,7 @@ ENV TZ=America/Sao_Paulo \
     # Variáveis de ambiente para configuração do Google OAuth
     GOOGLE_CLIENT_ID=SEU_CLIENT_ID.apps.googleusercontent.com \
     GOOGLE_CLIENT_SECRET=SEU_CLIENT_SECRET \
-    GOOGLE_REDIRECT_URI=http://localhost:8090/google-oauth-callback 
+    GOOGLE_REDIRECT_URI=http://localhost:8090/google-oauth-callback \
     SHEET_TEMPLATE_ID=SHEET_TEMPLATE_ID
 
 EXPOSE $PB_PORT
