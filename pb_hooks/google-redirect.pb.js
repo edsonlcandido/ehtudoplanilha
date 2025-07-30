@@ -383,9 +383,9 @@ routerAdd("POST", "/google-refresh-token", (c) => {
 
 // Endpoint para listar planilhas Google Sheets do usuário
 routerAdd("GET", "/list-google-sheets", (c) => {
-  const info = $apis.requestInfo(c)
-  const userId = info.authRecord?.id
-  
+  const auth = c.auth
+  const userId = auth?.id
+
   if (!userId) {
     return c.json(401, { "error": "Usuário não autenticado" })
   }
@@ -394,7 +394,7 @@ routerAdd("GET", "/list-google-sheets", (c) => {
     // Buscar informações do Google para o usuário
     let googleInfo
     try {
-      googleInfo = $app.dao().findFirstRecordByFilter(
+      googleInfo = $app.findFirstRecordByFilter(
         "google_infos",
         "user_id = {:userId}",
         { userId: userId }
@@ -411,7 +411,7 @@ routerAdd("GET", "/list-google-sheets", (c) => {
 
     // Tentar listar planilhas com o token atual
     let driveResponse = $http.send({
-      url: "https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet'&fields=files(id,name,createdTime)&orderBy=name",
+      url: "https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet'&fields=files(id,name,modifiedTime,createdTime)&orderBy=modifiedTime%20desc",
       method: "GET",
       headers: {
         "Authorization": `Bearer ${accessToken}`,
@@ -456,11 +456,11 @@ routerAdd("GET", "/list-google-sheets", (c) => {
       const newTokenData = tokenResponse.json
       accessToken = newTokenData.access_token
       googleInfo.set("access_token", accessToken)
-      $app.dao().saveRecord(googleInfo)
+      $app.save(googleInfo)
 
       // Tentar novamente com o novo token
       driveResponse = $http.send({
-        url: "https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet'&fields=files(id,name,createdTime)&orderBy=name",
+        url: "https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet'&fields=files(id,name,modifiedTime,createdTime)&orderBy=modifiedTime%20desc",
         method: "GET",
         headers: {
           "Authorization": `Bearer ${accessToken}`,
@@ -482,7 +482,8 @@ routerAdd("GET", "/list-google-sheets", (c) => {
       "sheets": sheets.map(sheet => ({
         id: sheet.id,
         name: sheet.name,
-        createdTime: sheet.createdTime
+        createdTime: sheet.createdTime,
+        modifiedTime: sheet.modifiedTime
       }))
     })
 
@@ -494,10 +495,10 @@ routerAdd("GET", "/list-google-sheets", (c) => {
 
 // Endpoint para salvar sheet_id selecionado
 routerAdd("POST", "/save-sheet-id", (c) => {
-  const info = $apis.requestInfo(c)
-  const userId = info.authRecord?.id
-  const data = info.data
-  
+  const auth = c.auth
+  const userId = auth.id
+  const data = c.requestInfo().body
+  console.log("Dados recebidos:", data)
   if (!userId) {
     return c.json(401, { "error": "Usuário não autenticado" })
   }
@@ -513,7 +514,7 @@ routerAdd("POST", "/save-sheet-id", (c) => {
     // Buscar registro do usuário
     let googleInfo
     try {
-      googleInfo = $app.dao().findFirstRecordByFilter(
+      googleInfo = $app.findFirstRecordByFilter(
         "google_infos",
         "user_id = {:userId}",
         { userId: userId }
@@ -524,7 +525,7 @@ routerAdd("POST", "/save-sheet-id", (c) => {
 
     // Atualizar sheet_id
     googleInfo.set("sheet_id", sheetId)
-    $app.dao().saveRecord(googleInfo)
+    $app.save(googleInfo)
 
     console.log(`Sheet ID atualizado para usuário ${userId}: ${sheetId} (${sheetName})`)
 
