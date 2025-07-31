@@ -228,6 +228,8 @@ routerAdd("GET", "/google-oauth-callback", (c) => {
       // Ainda redireciona com sucesso OAuth, mas sem provisionamento
       return c.redirect(302, "/dashboard/configuracao.html?success=true&provision=false");
     }
+    // Redirect to configuration page with success parameter
+    return c.redirect(302, "/dashboard/configuracao.html?success=true")
 
   } catch (error) {
     console.log("Erro interno no processamento OAuth:", error)

@@ -111,7 +111,7 @@ function updateAuthorizationButton() {
         // Update card description
         const cardDescription = authCard.querySelector('p');
         if (cardDescription) {
-            cardDescription.textContent = 'Sua conta está conectada ao Google Drive. Sua planilha está pronta para uso.';
+            cardDescription.textContent = 'Sua conta está conectada ao Google Drive e pronta para usar.';
         }
         
         console.log('User already authorized, showing connected status');

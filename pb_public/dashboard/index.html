@@ -117,10 +117,10 @@
         </p>
     </footer>
     <!-- Script PocketBase e módulos da aplicação -->
-    <script src="../js/pocketbase/dist/pocketbase.umd.js"></script>
-    <script>
+    <script type="module">
+                import apiConfig from '../js/api-config.js';
         // Inicializa o PocketBase globalmente antes dos módulos
-        window.pb = new PocketBase('http://127.0.0.1:8090');
+        window.pb = new PocketBase(apiConfig.getBaseURL());
     </script>
     <script src="../js/dashboard-auth.js" type="module"></script>
 </body>

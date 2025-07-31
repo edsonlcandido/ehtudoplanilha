@@ -7,13 +7,12 @@
     <title>Simplifique Suas Finanças com Planilhas Google – O App Que Você Vai Amar!</title>
     <link rel="stylesheet" href="css/picnic.css">
     <link rel="stylesheet" href="css/style.css">
-    <script src="js/api-config.js"></script>
     <script src="js/pocketbase/dist/pocketbase.umd.js"></script>
 </head>
 
 <body>
     <nav>
-            <span class="brand">Planilha</span>
+        <span class="brand">Planilha</span>
 
         <!-- responsive-->
         <input id="bmenub" type="checkbox" class="show">
@@ -126,28 +125,29 @@
                 <a href="https://www.ehtudo.app">Eh!Tudo.app</a></small>
         </p>
     </footer>
+    <script type="module">
+        import apiConfig from '../js/api-config.js';
+        // Inicializa o PocketBase globalmente antes dos módulos
+        window.pb = new PocketBase(apiConfig.getBaseURL());
+        const menuUser = document.getElementById('menu-user');
 
-<script>
-  const pb = new PocketBase(apiConfig.getBaseURL()); // ajuste a URL se necessário
-  const menuUser = document.getElementById('menu-user');
-
-  function renderUserMenu() {
-    if (pb.authStore.isValid && pb.authStore.model) {
-      // Usuário logado: mostra email e botão logout
-      menuUser.innerHTML = `
+        function renderUserMenu() {
+            if (pb.authStore.isValid && pb.authStore.model) {
+                // Usuário logado: mostra email e botão logout
+                menuUser.innerHTML = `
         <span class=\"pseudo button\">${pb.authStore.model.email}</span>
         <a href=\"dashboard/index.html\" class=\"button success\" id=\"dashboardBtn\">Dashboard</a>
         <button class=\"button error\" id=\"logoutBtn\">Sair</button>
       `;
-      document.getElementById('logoutBtn').onclick = function() {
-        pb.authStore.clear();
-        window.location.reload();
-      };
-    }
-  }
+                document.getElementById('logoutBtn').onclick = function () {
+                    pb.authStore.clear();
+                    window.location.reload();
+                };
+            }
+        }
 
-  renderUserMenu();
-</script>
+        renderUserMenu();
+    </script>
 </body>
 
 </html>
