@@ -125,7 +125,7 @@ function updateAuthorizationButton() {
         // Ensure card description is correct
         const cardDescription = authCard.querySelector('p');
         if (cardDescription) {
-            cardDescription.textContent = 'Autorize o acesso ao Google Drive para integrar sua planilha de controle financeiro.';
+            cardDescription.textContent = 'Autorize o acesso ao Google Drive. Após a autorização, uma planilha template será automaticamente copiada para o seu Drive, pronta para uso.';
         }
         
         console.log('User needs to authorize, showing authorization button');
@@ -133,20 +133,90 @@ function updateAuthorizationButton() {
 }
 
 /**
- * Handle OAuth callback success or error
+ * Handle OAuth callback success or error, including template provision status
  */
 function handleOAuthCallback() {
     const urlParams = new URLSearchParams(window.location.search);
     const success = urlParams.get('success');
     const error = urlParams.get('error');
+    const provision = urlParams.get('provision');
+    const sheetName = urlParams.get('sheet_name');
+    const message = urlParams.get('message');
 
     if (success) {
-        alert('Autorização Google concluída com sucesso!');
-        // Refresh the page to update the button status
-        window.location.href = window.location.pathname;
+        if (provision === 'true') {
+            // OAuth e provisionamento de template bem-sucedidos
+            const successMessage = message || `Autorização Google concluída e planilha "${sheetName || 'Controle Financeiro'}" copiada com sucesso!`;
+            showSuccessMessage(successMessage);
+        } else if (provision === 'false') {
+            // OAuth bem-sucedido, mas falha no provisionamento automático
+            showWarningMessage('Autorização Google concluída, mas houve um problema ao copiar a planilha template automaticamente. Você pode usar o botão "Selecionar Planilha" para escolher uma planilha existente ou tentar provisionar manualmente.');
+        } else {
+            // OAuth bem-sucedido, status de provisionamento desconhecido
+            showSuccessMessage('Autorização Google concluída com sucesso!');
+        }
+        
+        // Limpar URL e atualizar a página
+        setTimeout(() => {
+            window.history.replaceState({}, document.title, window.location.pathname);
+            window.location.reload();
+        }, 3000);
     } else if (error) {
-        alert('Erro na autorização: ' + error);
+        showErrorMessage('Erro na autorização: ' + decodeURIComponent(error));
     }
+}
+
+/**
+ * Show success message with green background
+ */
+function showSuccessMessage(message) {
+    showMessage(message, '#4caf50', '#ffffff');
+}
+
+/**
+ * Show warning message with orange background
+ */
+function showWarningMessage(message) {
+    showMessage(message, '#ff9800', '#ffffff');
+}
+
+/**
+ * Show error message with red background
+ */
+function showErrorMessage(message) {
+    showMessage(message, '#f44336', '#ffffff');
+}
+
+/**
+ * Generic function to show messages
+ */
+function showMessage(message, backgroundColor, textColor) {
+    // Criar elemento de feedback temporário
+    const feedback = document.createElement('div');
+    feedback.style.cssText = `
+        position: fixed; 
+        top: 20px; 
+        right: 20px; 
+        background: ${backgroundColor}; 
+        color: ${textColor}; 
+        padding: 1rem 1.5rem; 
+        border-radius: 4px; 
+        z-index: 9999; 
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        max-width: 400px;
+        word-wrap: break-word;
+        font-size: 14px;
+        line-height: 1.4;
+    `;
+    feedback.textContent = message;
+    document.body.appendChild(feedback);
+
+    // Remover após 5 segundos para mensagens mais longas
+    setTimeout(() => {
+        if (feedback.parentNode) {
+            feedback.parentNode.removeChild(feedback);
+        }
+    }, 5000);
 }
 
 /**

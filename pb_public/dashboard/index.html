@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
     <!-- SDK PocketBase -->
     <script src="../js/pocketbase/dist/pocketbase.umd.js"></script>
 </head>
+
 <body>
     <!-- NAV: menu dinâmico igual ao index.html -->
     <nav>
@@ -24,7 +26,8 @@
         </div>
     </nav>
     <!-- SECTION MAIN: conteúdo principal ocupando toda tela -->
-    <section class="section section-light" style="min-height: 70vh; display: flex; align-items: center; justify-content: center;">
+    <section class="section section-light"
+        style="min-height: 70vh; display: flex; align-items: center; justify-content: center;">
         <div class="container text-center">
             <h2>Bem-vindo ao seu Dashboard!</h2>
             <p>Aqui você pode visualizar e gerenciar suas finanças de forma simples e rápida.</p>
@@ -41,65 +44,71 @@
             <div class="row">
                 <div class="col-md-8 col-lg-6 mx-auto">
                     <div class="solution-card">
-                            <h3 style="margin-bottom: 1.5rem;">Lançamento de Despesa</h3>
-                            <form id="expenseForm" disabled>
-                                <fieldset disabled>
-                                    <!-- Data e Hora -->
-                                    <div class="form-group" style="margin-bottom: 1rem;">
-                                        <label for="expenseDate">Data:</label>
-                                        <input type="datetime-local" id="expenseDate" name="data" class="form-control" required>
-                                    </div>
+                        <h3 style="margin-bottom: 1.5rem;">Lançamento de Despesa</h3>
+                        <form id="expenseForm" disabled>
+                            <fieldset disabled>
+                                <!-- Data e Hora -->
+                                <div class="form-group" style="margin-bottom: 1rem;">
+                                    <label for="expenseDate">Data:</label>
+                                    <input type="datetime-local" id="expenseDate" name="data" class="form-control"
+                                        required>
+                                </div>
 
-                                    <!-- Conta -->
-                                    <div class="form-group" style="margin-bottom: 1rem;">
-                                        <label for="expenseAccount">Conta:</label>
-                                        <input type="text" id="expenseAccount" name="conta" class="form-control" placeholder="Ex: Conta Corrente, Cartão de Crédito" required>
-                                    </div>
+                                <!-- Conta -->
+                                <div class="form-group" style="margin-bottom: 1rem;">
+                                    <label for="expenseAccount">Conta:</label>
+                                    <input type="text" id="expenseAccount" name="conta" class="form-control"
+                                        placeholder="Ex: Conta Corrente, Cartão de Crédito" required>
+                                </div>
 
-                                    <!-- Valor -->
-                                    <div class="form-group" style="margin-bottom: 1rem;">
-                                        <label for="expenseValue">Valor:</label>
-                                        <input type="number" id="expenseValue" name="valor" class="form-control" step="0.01" min="0" placeholder="0,00" required>
-                                    </div>
+                                <!-- Valor -->
+                                <div class="form-group" style="margin-bottom: 1rem;">
+                                    <label for="expenseValue">Valor:</label>
+                                    <input type="number" id="expenseValue" name="valor" class="form-control" step="0.01"
+                                        min="0" placeholder="0,00" required>
+                                </div>
 
-                                    <!-- Descrição -->
-                                    <div class="form-group" style="margin-bottom: 1rem;">
-                                        <label for="expenseDescription">Descrição:</label>
-                                        <input type="text" id="expenseDescription" name="descricao" class="form-control" placeholder="Descrição da despesa" required>
-                                    </div>
+                                <!-- Descrição -->
+                                <div class="form-group" style="margin-bottom: 1rem;">
+                                    <label for="expenseDescription">Descrição:</label>
+                                    <input type="text" id="expenseDescription" name="descricao" class="form-control"
+                                        placeholder="Descrição da despesa" required>
+                                </div>
 
-                                    <!-- Categoria -->
-                                    <div class="form-group" style="margin-bottom: 1rem;">
-                                        <label for="expenseCategory">Categoria:</label>
-                                        <select id="expenseCategory" name="categoria" class="form-control" required>
-                                            <option value="">Selecione uma categoria</option>
-                                            <option value="alimentacao">Alimentação</option>
-                                            <option value="transporte">Transporte</option>
-                                            <option value="moradia">Moradia</option>
-                                            <option value="saude">Saúde</option>
-                                            <option value="educacao">Educação</option>
-                                            <option value="lazer">Lazer</option>
-                                            <option value="vestuario">Vestuário</option>
-                                            <option value="outros">Outros</option>
-                                        </select>
-                                    </div>
+                                <!-- Categoria -->
+                                <div class="form-group" style="margin-bottom: 1rem;">
+                                    <label for="expenseCategory">Categoria:</label>
+                                    <select id="expenseCategory" name="categoria" class="form-control" required>
+                                        <option value="">Selecione uma categoria</option>
+                                        <option value="alimentacao">Alimentação</option>
+                                        <option value="transporte">Transporte</option>
+                                        <option value="moradia">Moradia</option>
+                                        <option value="saude">Saúde</option>
+                                        <option value="educacao">Educação</option>
+                                        <option value="lazer">Lazer</option>
+                                        <option value="vestuario">Vestuário</option>
+                                        <option value="outros">Outros</option>
+                                    </select>
+                                </div>
 
-                                    <!-- Orçamento -->
-                                    <div class="form-group" style="margin-bottom: 1.5rem;">
-                                        <label for="expenseBudget">Orçamento:</label>
-                                        <input type="date" id="expenseBudget" name="orcamento" class="form-control" required>
-                                    </div>
+                                <!-- Orçamento -->
+                                <div class="form-group" style="margin-bottom: 1.5rem;">
+                                    <label for="expenseBudget">Orçamento:</label>
+                                    <input type="date" id="expenseBudget" name="orcamento" class="form-control"
+                                        required>
+                                </div>
 
-                                    <!-- Botões -->
-                                    <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem;">
-                                        <button type="reset" class="button secondary">Limpar</button>
-                                        <button type="submit" class="button primary">Salvar Despesa</button>
-                                    </div>
-                                </fieldset>
-                            </form>
-                            <p style="margin-top: 1rem; color: #666; font-style: italic; text-align: center;">
-                                Formulário temporariamente desabilitado
-                            </p>
+                                <!-- Botões -->
+                                <div class="form-group"
+                                    style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem;">
+                                    <button type="reset" class="button secondary">Limpar</button>
+                                    <button type="submit" class="button primary">Salvar Despesa</button>
+                                </div>
+                            </fieldset>
+                        </form>
+                        <p style="margin-top: 1rem; color: #666; font-style: italic; text-align: center;">
+                            Formulário temporariamente desabilitado
+                        </p>
                     </div>
                 </div>
             </div>
@@ -117,11 +126,25 @@
         </p>
     </footer>
     <!-- Script PocketBase e módulos da aplicação -->
-    <script src="../js/pocketbase/dist/pocketbase.umd.js"></script>
-    <script>
+    <script type="module">
+        import apiConfig from '../js/api-config.js';
+        import { inicializarMenuUsuario } from '../js/menu-usuario.js';
+
         // Inicializa o PocketBase globalmente antes dos módulos
-        window.pb = new PocketBase('http://127.0.0.1:8090');
+        window.pb = new PocketBase(apiConfig.getBaseURL());
+
+        inicializarMenuUsuario();
+
+        setTimeout(() => {
+            import('../js/protecao-dashboard.js')
+                .then(() => {
+                    console.log('Módulo de proteção do dashboard carregado com sucesso.');
+                })
+                .catch(err => {
+                    console.error('Erro ao carregar o módulo de proteção do dashboard:', err);
+                });
+        }, 100); // Aguarda 100 milissegundos para garantir que a autenticação seja verificada
     </script>
-    <script src="../js/dashboard-auth.js" type="module"></script>
 </body>
+
 </html>

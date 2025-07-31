@@ -13,7 +13,7 @@
 <body>
     <nav>
 
-            <span class="brand">Planilha</span>
+        <span class="brand">Planilha</span>
 
         <input id="bmenub" type="checkbox" class="show">
         <label for="bmenub" class="burger pseudo button">menu</label>
@@ -55,22 +55,25 @@
 </body>
 <script type="module">
     import apiConfig from './js/api-config.js';
-    document.querySelector('form').addEventListener('submit', async function(e) {
-        e.preventDefault();
+    import { realizarLogin } from './js/auth-service.js';
+
+    window.pb = new PocketBase(apiConfig.getBaseURL()); // ajuste a URL se necessário
+
+    document.querySelector('form').addEventListener('submit', async function (e) {
+        e.preventDefault(); // Evita o envio padrão do formulário
+
         const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const errorMsg = document.getElementById('errorMsg');
+        const senha = document.getElementById('password').value;
+
+        // Esconde mensagem de erro anterior
         errorMsg.style.display = 'none';
-        const data = {
-            identity: email,
-            password: password
-        };
+
         try {
-            const pb = new PocketBase(apiConfig.getBaseURL()); // ajuste a URL se necessário
-            await pb.collection('users').authWithPassword(email, password);
+            await realizarLogin(email, senha);
             window.location.href = '/dashboard';
         } catch (err) {
-            errorMsg.textContent = err?.message || 'Usuário ou senha inválidos.';
+            const errorMsg = document.getElementById('errorMsg');
+            errorMsg.textContent = 'Erro ao realizar login. Verifique suas credenciais.';
             errorMsg.style.display = 'block';
         }
     });
