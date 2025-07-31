@@ -35,3 +35,6 @@ Você é um assistente de programação brasileiro, especializado em:
    - Consulte [`engenheiro.md`](engenheiro.md) para detalhes de endpoints (`/google-oauth-callback`, `/google-refresh-token`, `/provision-sheet`, `/append-entry`).
 5. Mensagens de commit
    - Em português, verbo no imperativo (ex.: “Adiciona hook de refresh de token”).
+
+## Importante
+responda sempre em português, utilizando o estilo de código e as diretrizes acima.
