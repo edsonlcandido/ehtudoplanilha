@@ -1,19 +1,59 @@
-# Google OAuth Integration - PocketBase Hook
+# Google OAuth Integration - PocketBase Hooks
 
-Este arquivo implementa a integração com Google OAuth para obter tokens de acesso ao Google Sheets API.
+Este conjunto de arquivos implementa a integração com Google OAuth para obter tokens de acesso ao Google Sheets API usando uma estrutura modular.
 
 ## Arquivos Criados
 
-### 1. `pb_hooks/google-redirect.pb.js`
-Hook principal que implementa:
+### Backend Hooks (pb_hooks)
+
+#### 1. `pb_hooks/google-oauth-callback.pb.js`
+Hook para o callback do Google OAuth:
 - **Endpoint GET `/google-oauth-callback`**: Recebe o código de autorização do Google e troca por tokens
+- Provisiona planilha template automaticamente após autorização
+
+#### 2. `pb_hooks/google-refresh-token.pb.js`
+Hook para renovação de tokens:
 - **Endpoint POST `/google-refresh-token`**: Renova o access_token usando o refresh_token
 
-### 2. `.env.example`
-Arquivo com exemplo das variáveis de ambiente necessárias
+#### 3. `pb_hooks/google-endpoints.pb.js`
+Endpoints auxiliares para integração Google:
+- **Endpoint GET `/env-variables`**: Retorna variáveis de ambiente OAuth
+- **Endpoint GET `/check-refresh-token`**: Verifica se usuário possui refresh token
+- **Endpoint GET `/list-google-sheets`**: Lista planilhas do usuário
+- **Endpoint POST `/save-sheet-id`**: Salva planilha selecionada
 
-### 3. `pb_public/oauth-test.html`
-Página de teste para verificar o fluxo OAuth
+#### 4. `pb_hooks/provision-sheet.pb.js`
+Hook para provisionamento de planilhas:
+- **Endpoint POST `/provision-sheet`**: Copia planilha template para o usuário
+
+### Frontend Modules (pb_public/js)
+
+#### 1. `pb_public/js/google/oauth-service.js`
+Módulo ES6 para serviços OAuth:
+- Gerencia fluxo de autenticação OAuth
+- Verifica status de refresh token
+- Inicia fluxo de autorização
+
+#### 2. `pb_public/js/google/sheets-api.js`
+Módulo ES6 para API Sheets:
+- Lista planilhas do usuário
+- Salva planilha selecionada
+- Provisiona templates
+- Formata dados para exibição
+
+#### 3. `pb_public/js/config/api-config.js`
+Configurações da API e OAuth:
+- URLs base da aplicação
+- Configurações OAuth do Google
+- Endpoints da API
+
+### Páginas Atualizadas
+
+#### 1. `pb_public/oauth-test.html`
+Página de teste refatorada para usar módulos ES6
+
+#### 2. `pb_public/dashboard/configuracao.html`
+Página de configuração usando módulos ES6 para gerenciamento de planilhas
 
 ## Configuração Necessária
 
@@ -130,39 +170,48 @@ curl -X POST http://localhost:8090/google-refresh-token \
 
 ## Integração com Frontend
 
-### JavaScript Example
+### JavaScript Example (usando módulos ES6)
 ```javascript
+// Importar serviços
+import googleOAuthService from './js/google/oauth-service.js';
+import googleSheetsService from './js/google/sheets-api.js';
+
+// Inicializar serviços
+googleOAuthService.init(pb);
+googleSheetsService.init(pb);
+
 // Iniciar OAuth
-function startGoogleAuth(userId) {
-  const params = new URLSearchParams({
-    client_id: 'SEU_CLIENT_ID.apps.googleusercontent.com',
-    redirect_uri: 'http://localhost:8090/google-oauth-callback',
-    scope: 'https://www.googleapis.com/auth/spreadsheets',
-    response_type: 'code',
-    access_type: 'offline',
-    prompt: 'consent',
-    state: userId
-  });
-  
-  window.location.href = `https://accounts.google.com/oauth/authorize?${params}`;
+async function startGoogleAuth() {
+  try {
+    await googleOAuthService.startOAuthFlow();
+  } catch (error) {
+    console.error('Erro OAuth:', error);
+  }
 }
 
-// Renovar token
-async function refreshGoogleToken(userId) {
-  const response = await fetch('/google-refresh-token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ user_id: userId })
-  });
-  
-  return response.json();
+// Listar planilhas
+async function listSheets() {
+  try {
+    const data = await googleSheetsService.listUserSheets();
+    console.log('Planilhas:', data.sheets);
+  } catch (error) {
+    console.error('Erro ao listar planilhas:', error);
+  }
 }
 ```
 
+## Vantagens da Estrutura Modular
+
+1. **Separação de responsabilidades**: Cada arquivo tem uma função específica
+2. **Manutenibilidade**: Mais fácil de entender e modificar
+3. **Reutilização**: Módulos podem ser importados em diferentes páginas
+4. **Testabilidade**: Cada módulo pode ser testado independentemente
+5. **Escalabilidade**: Fácil adicionar novos módulos ou funcionalidades
+
 ## Próximos Passos
 
-1. **Implementar frontend**: Integrar com as páginas existentes
-2. **Adicionar provisionamento**: Criar planilha modelo automaticamente
-3. **Implementar N8N integration**: Webhook para inserir dados na planilha
-4. **Adicionar validação de escopo**: Verificar permissões necessárias
-5. **Implementar revogação**: Endpoint para revogar tokens
+1. **Testes automatizados**: Implementar testes unitários para os módulos
+2. **Validação de tipos**: Adicionar TypeScript para maior segurança
+3. **Cache de tokens**: Implementar cache local para melhor performance
+4. **Error handling**: Melhorar tratamento de erros com retry automático
+5. **Documentação**: Expandir JSDoc nos módulos
