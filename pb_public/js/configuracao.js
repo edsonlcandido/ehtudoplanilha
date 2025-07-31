@@ -3,6 +3,8 @@
  * Handles Google OAuth integration and refresh token checking
  */
 
+import googleOAuthService from './google/oauth-service.js';
+
 // Use a instância global do PocketBase
 const pb = window.pb;
 
@@ -14,24 +16,7 @@ let hasRefreshToken = false;
  */
 async function checkRefreshTokenStatus() {
     try {
-        const baseUrl = pb.baseUrl;
-        const response = await fetch(`${baseUrl}/check-refresh-token`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${pb.authStore.token}`
-            },
-            credentials: 'include'
-        });
-
-        if (!response.ok) {
-            throw new Error('Erro ao verificar status do token: ' + response.statusText);
-        }
-
-        const data = await response.json();
-        hasRefreshToken = data.hasRefreshToken;
-        
-        console.log('Refresh token status:', hasRefreshToken);
+        hasRefreshToken = await googleOAuthService.checkRefreshTokenStatus();
         return hasRefreshToken;
     } catch (error) {
         console.error('Error checking refresh token:', error);
@@ -41,46 +26,11 @@ async function checkRefreshTokenStatus() {
 }
 
 /**
- * Start Google OAuth flow (based on oauth-test.html)
+ * Start Google OAuth flow
  */
 async function startOAuth() {
-    const userId = pb.authStore.model?.id || '';
-
     try {
-        // Get system variables from backend
-        const baseUrl = pb.baseUrl;
-        const response = await fetch(`${baseUrl}/env-variables`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${pb.authStore.token}`
-            },
-            credentials: 'include'
-        });
-
-        if (!response.ok) {
-            throw new Error('Erro ao buscar variáveis do sistema: ' + response.statusText);
-        }
-
-        const data = await response.json();
-        
-        // Build Google OAuth URL with obtained variables
-        const clientId = data.GOOGLE_CLIENT_ID;
-        const redirectUri = data.GOOGLE_REDIRECT_URI;
-        const scope = 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/spreadsheets';
-        const state = userId; // Used to identify user after callback
-        
-        const oauthUrl = `https://accounts.google.com/o/oauth2/v2/auth` +
-            `?client_id=${encodeURIComponent(clientId)}` +
-            `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-            `&scope=${encodeURIComponent(scope)}` +
-            `&response_type=code` +
-            `&access_type=offline` +
-            `&prompt=consent` +
-            `&state=${encodeURIComponent(userId)}`;
-
-        // Redirect to OAuth URL
-        window.location.href = oauthUrl;
+        await googleOAuthService.startOAuthFlow();
     } catch (error) {
         console.error(error);
         alert('Erro ao iniciar OAuth: ' + error.message);
@@ -223,6 +173,9 @@ function showMessage(message, backgroundColor, textColor) {
  * Initialize the configuration page
  */
 async function initConfigurationPage() {
+    // Initialize OAuth service with PocketBase instance
+    googleOAuthService.init(pb);
+    
     // Check if this is an OAuth callback
     handleOAuthCallback();
     

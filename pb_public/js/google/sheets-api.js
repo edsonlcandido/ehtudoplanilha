@@ -1,0 +1,202 @@
+/**
+ * Serviço para interação com Google Sheets API
+ * Responsável por operações de planilhas e gerenciamento
+ */
+
+class GoogleSheetsService {
+    constructor() {
+        this.pb = null;
+    }
+
+    /**
+     * Inicializa o serviço com instância do PocketBase
+     * @param {PocketBase} pocketbaseInstance 
+     */
+    init(pocketbaseInstance) {
+        this.pb = pocketbaseInstance;
+    }
+
+    /**
+     * Lista todas as planilhas do Google Sheets do usuário
+     * @returns {Promise<Object>}
+     */
+    async listUserSheets() {
+        if (!this.pb) {
+            throw new Error('Serviço Sheets não inicializado');
+        }
+
+        try {
+            const response = await fetch(`${this.pb.baseUrl}/list-google-sheets`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': this.pb.authStore.token,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error || 'Erro ao carregar planilhas');
+            }
+
+            return data;
+        } catch (error) {
+            console.error('Erro ao listar planilhas:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Salva o ID da planilha selecionada pelo usuário
+     * @param {string} sheetId - ID da planilha
+     * @param {string} sheetName - Nome da planilha
+     * @returns {Promise<Object>}
+     */
+    async saveSelectedSheet(sheetId, sheetName = '') {
+        if (!sheetId) {
+            throw new Error('sheet_id é obrigatório');
+        }
+
+        try {
+            const response = await fetch(`${this.pb.baseUrl}/save-sheet-id`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': this.pb.authStore.token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    sheet_id: sheetId,
+                    sheet_name: sheetName
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Erro ao salvar planilha');
+            }
+
+            return data;
+        } catch (error) {
+            console.error('Erro ao salvar planilha selecionada:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Provisiona (copia) uma planilha template para o usuário
+     * @returns {Promise<Object>}
+     */
+    async provisionTemplateSheet() {
+        if (!this.pb) {
+            throw new Error('Serviço Sheets não inicializado');
+        }
+
+        try {
+            const response = await fetch(`${this.pb.baseUrl}/provision-sheet`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': this.pb.authStore.token,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Erro ao copiar template');
+            }
+
+            return data;
+        } catch (error) {
+            console.error('Erro ao provisionar template:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Adiciona uma nova entrada na planilha (para lançamentos financeiros)
+     * @param {Object} entryData - Dados da entrada
+     * @returns {Promise<Object>}
+     */
+    async addEntry(entryData) {
+        if (!this.pb) {
+            throw new Error('Serviço Sheets não inicializado');
+        }
+
+        try {
+            const response = await fetch(`${this.pb.baseUrl}/append-entry`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': this.pb.authStore.token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(entryData)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Erro ao adicionar entrada');
+            }
+
+            return data;
+        } catch (error) {
+            console.error('Erro ao adicionar entrada na planilha:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Formata dados para exibição em listas
+     * @param {Array} sheets - Array de planilhas
+     * @returns {Array}
+     */
+    formatSheetsForDisplay(sheets) {
+        if (!Array.isArray(sheets)) {
+            return [];
+        }
+
+        return sheets.map(sheet => ({
+            id: sheet.id,
+            name: this.escapeHtml(sheet.name),
+            createdTime: sheet.createdTime,
+            modifiedTime: sheet.modifiedTime,
+            formattedModifiedDate: this.formatDate(sheet.modifiedTime)
+        }));
+    }
+
+    /**
+     * Escapa HTML para prevenir XSS
+     * @param {string} text 
+     * @returns {string}
+     */
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    /**
+     * Formata data para exibição em português
+     * @param {string} dateString 
+     * @returns {string}
+     */
+    formatDate(dateString) {
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pt-BR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+        } catch (e) {
+            return dateString;
+        }
+    }
+}
+
+// Exportar instância singleton
+const googleSheetsService = new GoogleSheetsService();
+export default googleSheetsService;
