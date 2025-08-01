@@ -15,7 +15,7 @@ routerAdd("POST", "/google-refresh-token", (c) => {
 
   try {
     // Buscar refresh_token do usuário
-    const googleInfo = $app.dao().findFirstRecordByFilter(
+    const googleInfo = $app.findFirstRecordByFilter(
       "google_infos",
       "user_id = {:userId}",
       { userId: userId }
