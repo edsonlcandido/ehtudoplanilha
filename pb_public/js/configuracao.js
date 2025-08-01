@@ -151,7 +151,7 @@ function showMessage(message, backgroundColor, textColor) {
         color: ${textColor}; 
         padding: 1rem 1.5rem; 
         border-radius: 4px; 
-        z-index: 9999; 
+        z-index: 10001; 
         box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         max-width: 400px;
         word-wrap: break-word;
