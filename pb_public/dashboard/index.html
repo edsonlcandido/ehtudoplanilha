@@ -7,7 +7,13 @@
     <title>Dashboard - Seu App Financeiro</title>
     <link rel="stylesheet" href="../css/picnic.css">
     <link rel="stylesheet" href="../css/style.css">
-    <!-- SDK PocketBase -->
+    <            if (tipo === 'success') {
+                msgEl.style.backgroundColor = '#4CAF50';
+                msgEl.style.color = 'white';
+            } else {
+                msgEl.style.backgroundColor = '#F44336';
+                msgEl.style.color = 'white';
+            }SDK PocketBase -->
     <script src="../js/pocketbase/dist/pocketbase.umd.js"></script>
 </head>
 
@@ -85,7 +91,7 @@
                                 <div class="form-group" style="margin-bottom: 1rem;">
                                     <label for="expenseCategory">Categoria:</label>
                                     <select id="expenseCategory" name="categoria" class="form-control" required>
-                                        <option value="">Outras</option>
+                                        <option value="">Selecione uma categoria</option>
                                     </select>
                                 </div>
 
@@ -95,7 +101,7 @@
                                     <input type="date" id="expenseBudget" name="orcamento" class="form-control"
                                         required>
                                 </div>
-
+                                
                                 <!-- Botões -->
                                 <div class="form-group"
                                     style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem;">
@@ -127,11 +133,15 @@
     <script type="module">
         import apiConfig from '../js/config/api-config.js';
         import { inicializarMenuUsuario } from '../js/menu-usuario.js';
+        import googleSheetsService from '../js/google/sheets-api.js';
 
         // Inicializa o PocketBase globalmente antes dos módulos
         window.pb = new PocketBase(apiConfig.getBaseURL());
 
         inicializarMenuUsuario();
+
+        // Inicializa o serviço Google Sheets
+        googleSheetsService.init(window.pb);
 
         setTimeout(() => {
             import('../js/protecao-dashboard.js')
@@ -167,6 +177,7 @@
                 configBtn.style.display = '';
             }
         })();
+
         // Controle de sinal de valor
         const expenseSignBtn = document.getElementById('expenseSignBtn');
         const expenseSignValue = document.getElementById('expenseSignValue');
@@ -181,6 +192,7 @@
             updateSign();
         });
         updateSign();
+
         // Define valores iniciais dos inputs de data e orçamento
         const expenseDateInput = document.getElementById('expenseDate');
         // Define data e hora atuais no horário local
@@ -197,6 +209,7 @@
             const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
             expenseBudgetInput.value = firstDay.toISOString().slice(0,10);
         }
+
         // Popula categorias dinamicamente (mock a partir da aba 'Categorias')
         const categoriasMock = [
             { value: 'Alimentação', label: 'Alimentação' },
@@ -205,7 +218,9 @@
             { value: 'Saúde', label: 'Saúde' },
             { value: 'Educação', label: 'Educação' },
             { value: 'Lazer', label: 'Lazer' },
-            { value: 'Vestuário', label: 'Vestuário' }        ];
+            { value: 'Vestuário', label: 'Vestuário' },
+            { value: 'Outras', label: 'Outras' }
+        ];
         const categorySelect = document.getElementById('expenseCategory');
         categoriasMock.forEach(cat => {
             const opt = document.createElement('option');
@@ -213,6 +228,105 @@
             opt.textContent = cat.label;
             categorySelect.appendChild(opt);
         });
+
+        // --- ENVIO DO FORMULÁRIO PARA APENDAR NA PLANILHA DO GOOGLE ---
+        const expenseForm = document.getElementById('expenseForm');
+        if (expenseForm) {
+            expenseForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalBtnText = submitBtn.textContent;
+                submitBtn.textContent = 'Enviando...';
+                submitBtn.disabled = true;
+                try {
+                    // Coleta e prepara os dados do formulário
+                    const data = formatarData(document.getElementById('expenseDate').value);
+                    const conta = document.getElementById('expenseAccount').value.trim();
+                    const valorBase = parseFloat(document.getElementById('expenseValue').value);
+                    const sinal = document.getElementById('expenseSignValue').value;
+                    const valor = sinal === '-' ? -Math.abs(valorBase) : Math.abs(valorBase);
+                    const descricao = document.getElementById('expenseDescription').value.trim();
+                    const categoria = document.getElementById('expenseCategory').value.trim();
+                    const orcamento = formatarDataOrcamento(document.getElementById('expenseBudget').value);
+
+                    const entryData = {
+                        data,
+                        conta,
+                        valor: valor.toFixed(2),
+                        descricao,
+                        categoria,
+                        orcamento
+                    };
+
+                    // Chama o serviço para apendar na planilha
+                    const resultado = await googleSheetsService.addEntry(entryData);
+
+                    if (resultado.success) {
+                        mostrarMensagem('success', 'Lançamento enviado com sucesso!');
+                        limparCamposFormulario();
+                    } else {
+                        throw new Error(resultado.error || 'Erro ao enviar lançamento');
+                    }
+                } catch (error) {
+                    console.error('Erro ao enviar dados:', error);
+                    mostrarMensagem('error', 'Erro ao enviar lançamento: ' + (error.message || error));
+                } finally {
+                    submitBtn.textContent = originalBtnText;
+                    submitBtn.disabled = false;
+                }
+            });
+        }
+
+        // Funções auxiliares
+        function formatarData(dataHora) {
+            // Converte 2025-08-01T14:30 para 01/08/2025
+            const dt = new Date(dataHora);
+            return `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}/${dt.getFullYear()}`;
+        }
+        function formatarDataOrcamento(data) {
+            // Converte 2025-08-01 para 2025-08
+            return data.substring(0, 7);
+        }
+        function limparCamposFormulario() {
+            document.getElementById('expenseAccount').value = '';
+            document.getElementById('expenseValue').value = '';
+            document.getElementById('expenseDescription').value = '';
+            document.getElementById('expenseCategory').selectedIndex = 0;
+            currentSign = '-';
+            updateSign();
+        }
+        function mostrarMensagem(tipo, texto) {
+            let msgEl = document.getElementById('feedback-message');
+            if (!msgEl) {
+                msgEl = document.createElement('div');
+                msgEl.id = 'feedback-message';
+                msgEl.style.position = 'fixed';
+                msgEl.style.top = '70px';
+                msgEl.style.right = '20px';
+                msgEl.style.padding = '15px 20px';
+                msgEl.style.borderRadius = '4px';
+                msgEl.style.fontSize = '16px';
+                msgEl.style.fontWeight = 'bold';
+                msgEl.style.zIndex = '10000';
+                document.body.appendChild(msgEl);
+            }
+            if (tipo === 'success') {
+                msgEl.style.backgroundColor = '#4CAF50';
+                msgEl.style.color = 'white';
+            } else {
+                msgEl.style.backgroundColor = '#F44336';
+                msgEl.style.color = 'white';
+            }
+            msgEl.textContent = texto;
+            msgEl.style.display = 'block';
+            setTimeout(() => {
+                msgEl.style.display = 'none';
+            }, 5000);
+        }
+
+        // Remove aviso de formulário desabilitado
+        const aviso = document.querySelector('.solution-card > p');
+        if (aviso) aviso.style.display = 'none';
     </script>
 </body>
 
