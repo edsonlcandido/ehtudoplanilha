@@ -2,11 +2,11 @@
 migrate((app) => {
   const collection = app.findCollectionByNameOrId("google_infos")
 
-  // add
-  collection.schema.addField(new SchemaField({
+  // Add sheet_name field to google_infos collection
+  collection.fields.addField({
     "autogeneratePattern": "",
     "hidden": false,
-    "id": "text_sheet_name",
+    "id": "text2333214374",
     "max": 0,
     "min": 0,
     "name": "sheet_name",
@@ -16,14 +16,14 @@ migrate((app) => {
     "required": false,
     "system": false,
     "type": "text"
-  }))
+  })
 
   return app.save(collection)
 }, (app) => {
   const collection = app.findCollectionByNameOrId("google_infos")
 
-  // remove
-  collection.schema.removeField("text_sheet_name")
+  // Remove sheet_name field
+  collection.fields.removeField("text2333214374")
 
   return app.save(collection)
 })
