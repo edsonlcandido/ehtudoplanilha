@@ -12,6 +12,7 @@ export function exibirMenuUsuario(menuElementId = 'menu-user') {
         menuUser.innerHTML = `
             <span class="pseudo button">${usuario.email}</span>
             <a href="/dashboard/index.html" class="button success">Dashboard</a>
+            <a href="/dashboard/configuracao.html" class="button icon-cog">Configuração</a>
             <button class="button error" id="logoutBtn">Sair</button>
         `;
 
