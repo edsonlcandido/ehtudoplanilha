@@ -362,3 +362,33 @@ routerAdd("POST", "/clear-sheet-content", (c) => {
     return c.json(500, { "error": "Erro interno do servidor" })
   }
 }, $apis.requireAuth())
+
+// Endpoint para verificar status de configuração completa
+routerAdd("GET", "/config-status", (c) => {
+  const authUser = c.auth;
+  const userId = authUser?.id;
+  if (!userId) {
+    return c.json(401, { error: "Usuário não autenticado" });
+  }
+
+  try {
+    const googleInfo = $app.findFirstRecordByFilter(
+      "google_infos",
+      "user_id = {:userId}",
+      { userId }
+    );
+
+    const missing = [];
+    if (!googleInfo.get("access_token") || googleInfo.get("access_token").trim() === "") missing.push("access_token");
+    if (!googleInfo.get("refresh_token") || googleInfo.get("refresh_token").trim() === "") missing.push("refresh_token");
+    if (!googleInfo.get("sheet_id") || googleInfo.get("sheet_id").trim() === "") missing.push("sheet_id");
+    if (!googleInfo.get("sheet_name") || googleInfo.get("sheet_name").trim() === "") missing.push("sheet_name");
+
+    const validConfig = missing.length === 0;
+    return c.json(200, { validConfig: validConfig, missing: missing });
+  } catch (error) {
+    console.log("Erro ao verificar configuração:", error);
+    // Em caso de erro, considera configuração incompleta
+    return c.json(200, { validConfig: false, missing: ["registro_nao_encontrado"] });
+  }
+}, $apis.requireAuth());

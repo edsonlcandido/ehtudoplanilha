@@ -33,7 +33,8 @@
             <p>Aqui você pode visualizar e gerenciar suas finanças de forma simples e rápida.</p>
             <!-- Adicione aqui os componentes do dashboard -->
             <div style="margin-top: 2rem;">
-                <a href="configuracao.html" class="button primary">⚙️ Configurar Integração</a>
+                <a href="configuracao.html" id="configBtn" class="button primary" style="display: none;">⚙️ Configurar
+                    Integração</a>
             </div>
         </div>
     </section>
@@ -144,6 +145,31 @@
                     console.error('Erro ao carregar o módulo de proteção do dashboard:', err);
                 });
         }, 100); // Aguarda 100 milissegundos para garantir que a autenticação seja verificada
+
+        // Substitui verificação frontend por rota de configuração no servidor
+        (async () => {
+            const configBtn = document.getElementById('configBtn');
+            if (!configBtn) return;
+            try {
+                const response = await fetch(`${apiConfig.getBaseURL()}/config-status`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${pb.authStore.token}`
+                    }
+                });
+                if (!response.ok) throw new Error('Erro na requisição de configuração');
+                const data = await response.json();
+                // Exibe botão se configuração inválida ou campos faltando
+                if (!data.validConfig) {
+                    console.log('Configuração incompleta, campos faltando:', data.missing);
+                    configBtn.style.display = '';
+                }
+            } catch (error) {
+                console.error('Erro ao verificar configuração do Google:', error);
+                configBtn.style.display = '';
+            }
+        })();
     </script>
 </body>
 
