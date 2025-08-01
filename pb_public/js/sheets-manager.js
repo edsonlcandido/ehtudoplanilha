@@ -18,6 +18,9 @@ function initSheetsManager() {
     
     // Registra os event listeners para os botões e elementos do modal
     registerEventListeners();
+    
+    // Carrega informações da planilha atual
+    loadCurrentSheetInfo();
 }
 
 /**
@@ -26,6 +29,7 @@ function initSheetsManager() {
 function registerEventListeners() {
     const selectSheetBtn = document.getElementById('selectSheetBtn');
     const provisionSheetBtn = document.getElementById('provisionSheetBtn');
+    const clearSheetBtn = document.getElementById('clearSheetBtn');
     const cancelBtn = document.getElementById('cancelBtn');
     const confirmBtn = document.getElementById('confirmBtn');
     const modalOverlay = document.getElementById('modalOverlay');
@@ -37,6 +41,10 @@ function registerEventListeners() {
     
     if (provisionSheetBtn) {
         provisionSheetBtn.addEventListener('click', provisionTemplate);
+    }
+    
+    if (clearSheetBtn) {
+        clearSheetBtn.addEventListener('click', clearSheetContent);
     }
     
     if (cancelBtn) {
@@ -209,6 +217,11 @@ async function saveSelectedSheet() {
             // Sucesso - fechar modal e mostrar feedback
             closeSheetsModal();
             showSuccessMessage(`Planilha "${selectedSheetName}" selecionada com sucesso!`);
+            
+            // Recarregar informações da planilha atual
+            setTimeout(() => {
+                loadCurrentSheetInfo();
+            }, 1000);
         } else {
             throw new Error(data.message || 'Erro desconhecido');
         }
@@ -265,6 +278,10 @@ async function provisionTemplate() {
                 showSuccessMessage('Você já possui uma planilha configurada!');
             } else {
                 showSuccessMessage(`Template copiado com sucesso! Planilha "${data.sheet_name}" criada no seu Google Drive.`);
+                // Recarregar informações da planilha atual
+                setTimeout(() => {
+                    loadCurrentSheetInfo();
+                }, 1000);
             }
         } else {
             throw new Error(data.message || 'Erro desconhecido');
@@ -331,6 +348,78 @@ function showMessage(message, backgroundColor, textColor) {
     }, 5000);
 }
 
+/**
+ * Carrega e exibe informações da planilha atual do usuário
+ */
+async function loadCurrentSheetInfo() {
+    try {
+        const data = await googleSheetsService.getCurrentSheetInfo();
+        
+        const currentSheetCard = document.getElementById('current-sheet-card');
+        const currentSheetName = document.getElementById('current-sheet-name');
+        const currentSheetDescription = document.getElementById('current-sheet-description');
+        
+        if (!currentSheetCard || !currentSheetName || !currentSheetDescription) {
+            console.warn('Elementos do card da planilha atual não encontrados');
+            return;
+        }
+        
+        if (data.success && data.hasSheet) {
+            // Usuário tem uma planilha configurada
+            currentSheetCard.style.display = 'flex';
+            currentSheetName.textContent = data.sheet_name || 'Planilha sem nome';
+            currentSheetDescription.textContent = 'Sua planilha de controle financeiro está configurada e pronta para uso.';
+        } else {
+            // Usuário não tem planilha configurada
+            currentSheetCard.style.display = 'none';
+        }
+        
+    } catch (error) {
+        console.error('Erro ao carregar informações da planilha atual:', error);
+        // Em caso de erro, ocultar o card
+        const currentSheetCard = document.getElementById('current-sheet-card');
+        if (currentSheetCard) {
+            currentSheetCard.style.display = 'none';
+        }
+    }
+}
+
+/**
+ * Limpa o conteúdo da planilha atual
+ */
+async function clearSheetContent() {
+    const clearBtn = document.getElementById('clearSheetBtn');
+    if (!clearBtn) return;
+    
+    // Confirmar ação com o usuário
+    const confirmClear = confirm('Tem certeza que deseja limpar todo o conteúdo da planilha? Esta ação não pode ser desfeita.');
+    if (!confirmClear) return;
+    
+    const originalText = clearBtn.textContent;
+
+    try {
+        // Mostrar loading
+        clearBtn.textContent = 'Limpando...';
+        clearBtn.disabled = true;
+
+        const data = await googleSheetsService.clearSheetContent();
+
+        if (data.success) {
+            showSuccessMessage('Conteúdo da planilha limpo com sucesso!');
+        } else {
+            throw new Error(data.message || 'Erro desconhecido');
+        }
+
+    } catch (error) {
+        console.error('Erro ao limpar planilha:', error);
+        showErrorMessage('Erro ao limpar planilha: ' + error.message);
+    } finally {
+        // Restaurar botão
+        clearBtn.textContent = originalText;
+        clearBtn.disabled = false;
+    }
+}
+
 // Inicialização quando o DOM estiver carregado
 document.addEventListener('DOMContentLoaded', initSheetsManager);
 
@@ -339,6 +428,8 @@ export {
     initSheetsManager,
     openSheetsModal,
     provisionTemplate,
+    loadCurrentSheetInfo,
+    clearSheetContent,
     showSuccessMessage,
     showErrorMessage,
     showMessage
