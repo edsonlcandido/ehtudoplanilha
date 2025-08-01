@@ -212,11 +212,11 @@ async function saveSelectedSheet() {
         confirmBtn.disabled = true;
 
         const data = await googleSheetsService.saveSelectedSheet(selectedSheetId, selectedSheetName);
-
+        console.log('Dados recebidos ao salvar planilha:', data);
         if (data.success) {
             // Sucesso - fechar modal e mostrar feedback
             closeSheetsModal();
-            showSuccessMessage(`Planilha "${selectedSheetName}" selecionada com sucesso!`);
+            showSuccessMessage(`Planilha "${data.sheet_name}" selecionada com sucesso!`);
             
             // Recarregar informações da planilha atual
             setTimeout(() => {
@@ -364,22 +364,62 @@ async function loadCurrentSheetInfo() {
             return;
         }
         
+        // O card sempre é exibido, independente de ter planilha ou não
+        currentSheetCard.style.display = 'flex';
+        
+        const clearSheetBtn = document.getElementById('clearSheetBtn');
+        const provisionSheetBtn = document.getElementById('provisionSheetBtn');
+        
         if (data.success && data.hasSheet) {
             // Usuário tem uma planilha configurada
-            currentSheetCard.style.display = 'flex';
             currentSheetName.textContent = data.sheet_name || 'Planilha sem nome';
             currentSheetDescription.textContent = 'Sua planilha de controle financeiro está configurada e pronta para uso.';
+            if (clearSheetBtn) clearSheetBtn.style.display = 'block';
+            if (provisionSheetBtn) {
+                provisionSheetBtn.className = 'button secondary';
+                provisionSheetBtn.style.flex = '1';
+            }
         } else {
             // Usuário não tem planilha configurada
-            currentSheetCard.style.display = 'none';
+            currentSheetName.textContent = 'Nenhuma planilha selecionada';
+            currentSheetDescription.textContent = 'Você ainda não possui uma planilha configurada.';
+            if (clearSheetBtn) clearSheetBtn.style.display = 'none';
+            if (provisionSheetBtn) {
+                provisionSheetBtn.className = 'button primary';
+                provisionSheetBtn.style.flex = '1';
+                provisionSheetBtn.style.width = '100%';
+            }
         }
         
     } catch (error) {
         console.error('Erro ao carregar informações da planilha atual:', error);
-        // Em caso de erro, ocultar o card
+        // Em caso de erro, mostrar o card mas sem planilha configurada
         const currentSheetCard = document.getElementById('current-sheet-card');
+        const currentSheetName = document.getElementById('current-sheet-name');
+        const currentSheetDescription = document.getElementById('current-sheet-description');
+        const clearSheetBtn = document.getElementById('clearSheetBtn');
+        const provisionSheetBtn = document.getElementById('provisionSheetBtn');
+        
         if (currentSheetCard) {
-            currentSheetCard.style.display = 'none';
+            currentSheetCard.style.display = 'flex';
+        }
+        
+        if (currentSheetName) {
+            currentSheetName.textContent = 'Nenhuma planilha selecionada';
+        }
+        
+        if (currentSheetDescription) {
+            currentSheetDescription.textContent = 'Erro ao carregar informações da planilha. Tente novamente mais tarde.';
+        }
+        
+        if (clearSheetBtn) {
+            clearSheetBtn.style.display = 'none';
+        }
+        
+        if (provisionSheetBtn) {
+            provisionSheetBtn.className = 'button primary';
+            provisionSheetBtn.style.flex = '1';
+            provisionSheetBtn.style.width = '100%';
         }
     }
 }

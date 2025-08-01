@@ -296,7 +296,7 @@ routerAdd("POST", "/clear-sheet-content", (c) => {
 
     // Função para tentar a requisição com renovação de token se necessário
     const clearWithTokenRefresh = (token) => {
-      const clearUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1!A2:Z1000:clear`
+      const clearUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Lançamentos!A2:Z2000:clear`
       
       const clearResponse = $http.send({
         url: clearUrl,
