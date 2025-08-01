@@ -58,7 +58,7 @@ routerAdd("POST", "/provision-sheet", (c) => {
 
         // Preparar o corpo da requisição para copiar a planilha
         const copyRequestBody = JSON.stringify({
-            "name": `Controle Financeiro - ${new Date().toLocaleDateString('pt-BR')}`
+            "name": `Planilha Eh Tudo`
         });
 
         // Fazer requisição para copiar a planilha template
@@ -147,7 +147,7 @@ routerAdd("POST", "/provision-sheet", (c) => {
                 "success": true,
                 "message": "Planilha template copiada com sucesso para seu Google Drive!",
                 "sheet_id": newSheetId,
-                "sheet_name": copyData.name || `Controle Financeiro - ${new Date().toLocaleDateString('pt-BR')}`,
+                "sheet_name": copyData.name || `Planilha Eh Tudo`,
                 "action": "created"
             });
 
@@ -173,7 +173,7 @@ routerAdd("POST", "/provision-sheet", (c) => {
             "success": true,
             "message": "Planilha template copiada com sucesso para seu Google Drive!",
             "sheet_id": newSheetId,
-            "sheet_name": copyData.name || `Controle Financeiro - ${new Date().toLocaleDateString('pt-BR')}`,
+            "sheet_name": copyData.name || `Planilha Eh Tudo`,
             "action": "created"
         });
 
