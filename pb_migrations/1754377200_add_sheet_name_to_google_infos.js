@@ -2,11 +2,10 @@
 migrate((app) => {
   const collection = app.findCollectionByNameOrId("google_infos")
 
-  // Add sheet_name field to google_infos collection
-  collection.fields.addField({
+  collection.fields.addAt(5, new Field({
     "autogeneratePattern": "",
     "hidden": false,
-    "id": "text2333214374",
+    "id": "text224202267",
     "max": 0,
     "min": 0,
     "name": "sheet_name",
@@ -16,14 +15,14 @@ migrate((app) => {
     "required": false,
     "system": false,
     "type": "text"
-  })
+  }))
 
   return app.save(collection)
 }, (app) => {
   const collection = app.findCollectionByNameOrId("google_infos")
 
   // Remove sheet_name field
-  collection.fields.removeField("text2333214374")
+  collection.fields.removeField("text224202267")
 
   return app.save(collection)
 })
