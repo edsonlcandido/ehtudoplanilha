@@ -137,8 +137,10 @@ routerAdd("POST", "/provision-sheet", (c) => {
             const copyData = retryResponse.json;
             const newSheetId = copyData.id;
 
-            // Salvar o ID da nova planilha
+
+            // Salvar o ID e o nome da nova planilha
             googleInfo.set("sheet_id", newSheetId);
+            googleInfo.set("sheet_name", copyData.name || "Planilha Eh Tudo");
             $app.save(googleInfo);
 
             console.log(`Planilha copiada com sucesso: ${newSheetId} para usuário ${userId}`);
@@ -163,17 +165,21 @@ routerAdd("POST", "/provision-sheet", (c) => {
         const copyData = copyResponse.json;
         const newSheetId = copyData.id;
 
-        // Salvar o ID da nova planilha
+
+        // Salvar o ID e o nome da nova planilha
         googleInfo.set("sheet_id", newSheetId);
+        googleInfo.set("sheet_name", copyData.name || "Planilha Eh Tudo");
         $app.save(googleInfo);
 
         console.log(`Planilha copiada com sucesso: ${newSheetId} para usuário ${userId}`);
 
+        // Corrigir mensagem para garantir nome válido
+        const nomePlanilha = (copyData.name && copyData.name.trim()) ? copyData.name : 'Planilha Eh Tudo';
         return c.json(200, {
             "success": true,
-            "message": "Planilha template copiada com sucesso para seu Google Drive!",
+            "message": `Planilha template copiada com sucesso para seu Google Drive! Planilha "${nomePlanilha}" criada.`,
             "sheet_id": newSheetId,
-            "sheet_name": copyData.name || `Planilha Eh Tudo`,
+            "sheet_name": nomePlanilha,
             "action": "created"
         });
 

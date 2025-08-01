@@ -212,11 +212,11 @@ async function saveSelectedSheet() {
         confirmBtn.disabled = true;
 
         const data = await googleSheetsService.saveSelectedSheet(selectedSheetId, selectedSheetName);
-
+        console.log('Dados recebidos ao salvar planilha:', data);
         if (data.success) {
             // Sucesso - fechar modal e mostrar feedback
             closeSheetsModal();
-            showSuccessMessage(`Planilha "${selectedSheetName}" selecionada com sucesso!`);
+            showSuccessMessage(`Planilha "${data.sheet_name}" selecionada com sucesso!`);
             
             // Recarregar informações da planilha atual
             setTimeout(() => {
