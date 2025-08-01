@@ -210,24 +210,63 @@
             expenseBudgetInput.value = firstDay.toISOString().slice(0,10);
         }
 
-        // Popula categorias dinamicamente (mock a partir da aba 'Categorias')
-        const categoriasMock = [
-            { value: 'Alimentação', label: 'Alimentação' },
-            { value: 'Transporte', label: 'Transporte' },
-            { value: 'Moradia', label: 'Moradia' },
-            { value: 'Saúde', label: 'Saúde' },
-            { value: 'Educação', label: 'Educação' },
-            { value: 'Lazer', label: 'Lazer' },
-            { value: 'Vestuário', label: 'Vestuário' },
-            { value: 'Outras', label: 'Outras' }
-        ];
-        const categorySelect = document.getElementById('expenseCategory');
-        categoriasMock.forEach(cat => {
-            const opt = document.createElement('option');
-            opt.value = cat.value;
-            opt.textContent = cat.label;
-            categorySelect.appendChild(opt);
-        });
+
+        // Carrega categorias diretamente da planilha (aba 'Categorias')
+        async function carregarCategorias() {
+            const categorySelect = document.getElementById('expenseCategory');
+            if (!categorySelect) return;
+            
+            try {
+                // Tenta buscar categorias da planilha
+                const categorias = await googleSheetsService.getCategories();
+                
+                // Limpa opções existentes, mantendo apenas a primeira
+                while (categorySelect.options.length > 1) {
+                    categorySelect.remove(1);
+                }
+                
+                if (categorias && categorias.length > 0) {
+                    // Adiciona as categorias da planilha
+                    categorias.forEach(cat => {
+                        const opt = document.createElement('option');
+                        opt.value = cat;
+                        opt.textContent = cat;
+                        categorySelect.appendChild(opt);
+                    });
+                    console.log('Categorias carregadas da planilha:', categorias);
+                } else {
+                    // Se não encontrou categorias, usa o fallback de categorias padrão
+                    const categoriasPadrao = [
+                        'Alimentação', 'Transporte', 'Moradia', 'Saúde', 
+                        'Educação', 'Lazer', 'Vestuário', 'Outras'
+                    ];
+                    categoriasPadrao.forEach(cat => {
+                        const opt = document.createElement('option');
+                        opt.value = cat;
+                        opt.textContent = cat;
+                        categorySelect.appendChild(opt);
+                    });
+                    console.log('Usando categorias padrão (não foi possível carregar da planilha)');
+                }
+            } catch (error) {
+                console.error('Erro ao carregar categorias:', error);
+                // Em caso de erro, usa as categorias padrão
+                const categoriasPadrao = [
+                    'Alimentação', 'Transporte', 'Moradia', 'Saúde', 
+                    'Educação', 'Lazer', 'Vestuário', 'Outras'
+                ];
+                categoriasPadrao.forEach(cat => {
+                    const opt = document.createElement('option');
+                    opt.value = cat;
+                    opt.textContent = cat;
+                    categorySelect.appendChild(opt);
+                });
+            }
+        }
+        
+        // Carrega as categorias ao iniciar a página
+        carregarCategorias();
+
 
         // --- ENVIO DO FORMULÁRIO PARA APENDAR NA PLANILHA DO GOOGLE ---
         const expenseForm = document.getElementById('expenseForm');

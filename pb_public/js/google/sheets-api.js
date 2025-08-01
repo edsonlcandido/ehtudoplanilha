@@ -257,6 +257,38 @@ class GoogleSheetsService {
             return dateString;
         }
     }
+
+    /**
+     * Obtém a lista de categorias da planilha do usuário
+     * @returns {Promise<Array<string>>} - Lista de categorias
+     */
+    async getCategories() {
+        if (!this.pb) {
+            throw new Error('Serviço Sheets não inicializado');
+        }
+
+        try {
+            const response = await fetch(`${this.pb.baseUrl}/get-sheet-categories`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': this.pb.authStore.token,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Erro ao obter categorias');
+            }
+
+            return data.categories || [];
+        } catch (error) {
+            console.error('Erro ao obter categorias da planilha:', error);
+            // Em caso de erro, retorna array vazio para não quebrar a aplicação
+            return [];
+        }
+    }
 }
 
 // Exportar instância singleton
