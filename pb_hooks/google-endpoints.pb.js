@@ -187,8 +187,9 @@ routerAdd("POST", "/save-sheet-id", (c) => {
       return c.json(404, { "error": "Registro Google não encontrado" })
     }
 
-    // Atualizar sheet_id
+    // Atualizar sheet_id e sheet_name
     googleInfo.set("sheet_id", sheetId)
+    googleInfo.set("sheet_name", sheetName)
     $app.save(googleInfo)
 
     console.log(`Sheet ID atualizado para usuário ${userId}: ${sheetId} (${sheetName})`)
@@ -202,6 +203,162 @@ routerAdd("POST", "/save-sheet-id", (c) => {
 
   } catch (error) {
     console.log("Erro ao salvar sheet_id:", error)
+    return c.json(500, { "error": "Erro interno do servidor" })
+  }
+}, $apis.requireAuth())
+
+// Endpoint para obter informações da planilha atual do usuário
+routerAdd("GET", "/get-current-sheet", (c) => {
+  const auth = c.auth
+  const userId = auth.id
+
+  if (!userId) {
+    return c.json(401, { "error": "Usuário não autenticado" })
+  }
+
+  try {
+    // Buscar registro do usuário
+    let googleInfo
+    try {
+      googleInfo = $app.findFirstRecordByFilter(
+        "google_infos",
+        "user_id = {:userId}",
+        { userId: userId }
+      )
+    } catch (e) {
+      return c.json(200, {
+        "success": true,
+        "hasSheet": false,
+        "message": "Nenhuma planilha configurada"
+      })
+    }
+
+    const sheetId = googleInfo.get("sheet_id")
+    const sheetName = googleInfo.get("sheet_name") || ""
+
+    if (!sheetId) {
+      return c.json(200, {
+        "success": true,
+        "hasSheet": false,
+        "message": "Nenhuma planilha configurada"
+      })
+    }
+
+    return c.json(200, {
+      "success": true,
+      "hasSheet": true,
+      "sheet_id": sheetId,
+      "sheet_name": sheetName
+    })
+
+  } catch (error) {
+    console.log("Erro ao obter informações da planilha atual:", error)
+    return c.json(500, { "error": "Erro interno do servidor" })
+  }
+}, $apis.requireAuth())
+
+// Endpoint para limpar conteúdo da planilha
+routerAdd("POST", "/clear-sheet-content", (c) => {
+  const auth = c.auth
+  const userId = auth.id
+
+  if (!userId) {
+    return c.json(401, { "error": "Usuário não autenticado" })
+  }
+
+  try {
+    // Buscar registro do usuário
+    let googleInfo
+    try {
+      googleInfo = $app.findFirstRecordByFilter(
+        "google_infos",
+        "user_id = {:userId}",
+        { userId: userId }
+      )
+    } catch (e) {
+      return c.json(404, { "error": "Registro Google não encontrado" })
+    }
+
+    const sheetId = googleInfo.get("sheet_id")
+    const accessToken = googleInfo.get("access_token")
+    const refreshToken = googleInfo.get("refresh_token")
+
+    if (!sheetId) {
+      return c.json(400, { "error": "Nenhuma planilha configurada" })
+    }
+
+    if (!accessToken) {
+      return c.json(400, { "error": "Token de acesso não encontrado" })
+    }
+
+    // Tentar limpar o conteúdo da planilha (a partir da linha 2 para preservar o cabeçalho)
+    let currentAccessToken = accessToken
+
+    // Função para tentar a requisição com renovação de token se necessário
+    const clearWithTokenRefresh = (token) => {
+      const clearUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1!A2:Z1000:clear`
+      
+      const clearResponse = $http.send({
+        url: clearUrl,
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      })
+
+      return clearResponse
+    }
+
+    let clearResponse
+    try {
+      clearResponse = clearWithTokenRefresh(currentAccessToken)
+    } catch (error) {
+      // Se falhou, pode ser token expirado - tentar renovar
+      if (error.toString().includes("401") && refreshToken) {
+        console.log("Token expirado, tentando renovar...")
+        
+        const refreshResponse = $http.send({
+          url: "https://oauth2.googleapis.com/token",
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: `grant_type=refresh_token&refresh_token=${refreshToken}&client_id=${$os.getenv("GOOGLE_CLIENT_ID")}&client_secret=${$os.getenv("GOOGLE_CLIENT_SECRET")}`
+        })
+
+        if (refreshResponse.statusCode === 200) {
+          const tokenData = refreshResponse.json
+          currentAccessToken = tokenData.access_token
+          
+          // Atualizar access_token no banco
+          googleInfo.set("access_token", currentAccessToken)
+          $app.save(googleInfo)
+          
+          // Tentar novamente com o novo token
+          clearResponse = clearWithTokenRefresh(currentAccessToken)
+        } else {
+          throw new Error("Erro ao renovar token de acesso")
+        }
+      } else {
+        throw error
+      }
+    }
+
+    if (clearResponse.statusCode >= 200 && clearResponse.statusCode < 300) {
+      console.log(`Conteúdo da planilha ${sheetId} limpo com sucesso para usuário ${userId}`)
+      
+      return c.json(200, {
+        "success": true,
+        "message": "Conteúdo da planilha limpo com sucesso"
+      })
+    } else {
+      console.log("Erro ao limpar planilha:", clearResponse.raw)
+      return c.json(500, { "error": "Erro ao limpar conteúdo da planilha" })
+    }
+
+  } catch (error) {
+    console.log("Erro ao limpar conteúdo da planilha:", error)
     return c.json(500, { "error": "Erro interno do servidor" })
   }
 }, $apis.requireAuth())

@@ -149,6 +149,68 @@ class GoogleSheetsService {
     }
 
     /**
+     * Obtém informações da planilha atual do usuário
+     * @returns {Promise<Object>}
+     */
+    async getCurrentSheetInfo() {
+        if (!this.pb) {
+            throw new Error('Serviço Sheets não inicializado');
+        }
+
+        try {
+            const response = await fetch(`${this.pb.baseUrl}/get-current-sheet`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': this.pb.authStore.token,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Erro ao obter informações da planilha');
+            }
+
+            return data;
+        } catch (error) {
+            console.error('Erro ao obter informações da planilha atual:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Limpa o conteúdo da planilha atual
+     * @returns {Promise<Object>}
+     */
+    async clearSheetContent() {
+        if (!this.pb) {
+            throw new Error('Serviço Sheets não inicializado');
+        }
+
+        try {
+            const response = await fetch(`${this.pb.baseUrl}/clear-sheet-content`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': this.pb.authStore.token,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Erro ao limpar conteúdo da planilha');
+            }
+
+            return data;
+        } catch (error) {
+            console.error('Erro ao limpar conteúdo da planilha:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Formata dados para exibição em listas
      * @param {Array} sheets - Array de planilhas
      * @returns {Array}
