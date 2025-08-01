@@ -45,9 +45,9 @@
             <div class="row">
                 <div class="col-md-8 col-lg-6 mx-auto">
                     <div class="solution-card">
-                        <h3 style="margin-bottom: 1.5rem;">Lançamento de Despesa</h3>
-                        <form id="expenseForm" disabled>
-                            <fieldset disabled>
+                        <h3 style="margin-bottom: 1.5rem;">Lançamento de Despesa/Receita</h3>
+                        <form id="expenseForm">
+                            <fieldset>
                                 <!-- Data e Hora -->
                                 <div class="form-group" style="margin-bottom: 1rem;">
                                     <label for="expenseDate">Data:</label>
@@ -62,11 +62,16 @@
                                         placeholder="Ex: Conta Corrente, Cartão de Crédito" required>
                                 </div>
 
-                                <!-- Valor -->
+                                <!-- Valor com toggle de sinal -->
                                 <div class="form-group" style="margin-bottom: 1rem;">
                                     <label for="expenseValue">Valor:</label>
-                                    <input type="number" id="expenseValue" name="valor" class="form-control" step="0.01"
-                                        min="0" placeholder="0,00" required>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <button type="button" id="expenseSignBtn" class="button outline" aria-label="Alternar sinal"
+                                            style="background-color: white; color: inherit; border: 1px solid #ccc; width: 2.5rem; text-align: center;">-</button>
+                                        <input type="number" id="expenseValue" name="valor" class="form-control" step="0.01"
+                                            min="0" placeholder="0,00" required>
+                                        <input type="hidden" id="expenseSignValue" name="sinal" value="-">
+                                    </div>
                                 </div>
 
                                 <!-- Descrição -->
@@ -80,15 +85,7 @@
                                 <div class="form-group" style="margin-bottom: 1rem;">
                                     <label for="expenseCategory">Categoria:</label>
                                     <select id="expenseCategory" name="categoria" class="form-control" required>
-                                        <option value="">Selecione uma categoria</option>
-                                        <option value="alimentacao">Alimentação</option>
-                                        <option value="transporte">Transporte</option>
-                                        <option value="moradia">Moradia</option>
-                                        <option value="saude">Saúde</option>
-                                        <option value="educacao">Educação</option>
-                                        <option value="lazer">Lazer</option>
-                                        <option value="vestuario">Vestuário</option>
-                                        <option value="outros">Outros</option>
+                                        <option value="">Outras</option>
                                     </select>
                                 </div>
 
@@ -170,6 +167,52 @@
                 configBtn.style.display = '';
             }
         })();
+        // Controle de sinal de valor
+        const expenseSignBtn = document.getElementById('expenseSignBtn');
+        const expenseSignValue = document.getElementById('expenseSignValue');
+        let currentSign = '-';
+        function updateSign() {
+            expenseSignBtn.textContent = currentSign;
+            expenseSignBtn.style.color = currentSign === '+' ? 'green' : 'red';
+            expenseSignValue.value = currentSign;
+        }
+        expenseSignBtn.addEventListener('click', () => {
+            currentSign = currentSign === '+' ? '-' : '+';
+            updateSign();
+        });
+        updateSign();
+        // Define valores iniciais dos inputs de data e orçamento
+        const expenseDateInput = document.getElementById('expenseDate');
+        // Define data e hora atuais no horário local
+        {
+            const now = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            const localDate = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+            const localTime = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+            expenseDateInput.value = `${localDate}T${localTime}`;
+        }
+        const expenseBudgetInput = document.getElementById('expenseBudget');
+        {
+            const now = new Date();
+            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+            expenseBudgetInput.value = firstDay.toISOString().slice(0,10);
+        }
+        // Popula categorias dinamicamente (mock a partir da aba 'Categorias')
+        const categoriasMock = [
+            { value: 'Alimentação', label: 'Alimentação' },
+            { value: 'Transporte', label: 'Transporte' },
+            { value: 'Moradia', label: 'Moradia' },
+            { value: 'Saúde', label: 'Saúde' },
+            { value: 'Educação', label: 'Educação' },
+            { value: 'Lazer', label: 'Lazer' },
+            { value: 'Vestuário', label: 'Vestuário' }        ];
+        const categorySelect = document.getElementById('expenseCategory');
+        categoriasMock.forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat.value;
+            opt.textContent = cat.label;
+            categorySelect.appendChild(opt);
+        });
     </script>
 </body>
 
