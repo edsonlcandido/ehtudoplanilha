@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registrar - Seu App Financeiro</title>
-    <link rel="stylesheet" href="../css/picnic.css">
-    <link rel="stylesheet" href="../css/style.css">
-    <script src="js/config/api-config.js"></script>
+    <link rel="stylesheet" href="css/picnic.css">
+    <link rel="stylesheet" href="css/style.css">
     <script src="js/pocketbase/dist/pocketbase.umd.js"></script>
 </head>
 <body>
@@ -52,13 +51,19 @@
                 <a href="https://www.ehtudo.app">Eh!Tudo.app</a></small>
         </p>
     </footer>
-    <script>
+    <script type="module">
+        import apiConfig from './js/config/api-config.js';
+        
+        // Inicializa o PocketBase globalmente
+        window.pb = new PocketBase(apiConfig.getBaseURL());
+        
         document.getElementById('registerForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             var email = document.getElementById('email').value;
             var password = document.getElementById('password').value;
             var confirmPassword = document.getElementById('confirmPassword').value;
             var errorMsg = document.getElementById('errorMsg');
+            
             if (password !== confirmPassword) {
                 errorMsg.textContent = 'As senhas não coincidem.';
                 errorMsg.style.display = 'block';
@@ -66,7 +71,7 @@
             } else {
                 errorMsg.style.display = 'none';
             }
-            const pb = new PocketBase(apiConfig.getBaseURL()); // ajuste a URL se necessário
+            
             try {
                 await pb.collection('users').create({
                     email: email,
