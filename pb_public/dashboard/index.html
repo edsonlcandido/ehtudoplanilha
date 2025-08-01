@@ -210,6 +210,7 @@
             expenseBudgetInput.value = firstDay.toISOString().slice(0,10);
         }
 
+
         // Carrega categorias diretamente da planilha (aba 'Categorias')
         async function carregarCategorias() {
             const categorySelect = document.getElementById('expenseCategory');
@@ -265,6 +266,7 @@
         
         // Carrega as categorias ao iniciar a página
         carregarCategorias();
+
 
         // --- ENVIO DO FORMULÁRIO PARA APENDAR NA PLANILHA DO GOOGLE ---
         const expenseForm = document.getElementById('expenseForm');
