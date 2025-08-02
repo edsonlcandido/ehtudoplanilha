@@ -33,16 +33,12 @@
             
             <!-- Cards Financeiros -->
             <div id="financialCards" class="dashboard-cards" style="display: none;">
-                <div class="financial-card receitas loading">
+                <div class="financial-card saldo loading">
                     <div class="card-header">
-                        <div class="card-icon">💰</div>
-                        <h3 class="card-title">Receitas</h3>
+                        <div class="card-icon">💵</div>
+                        <h3 class="card-title">Saldo</h3>
                     </div>
-                    <div class="card-value" id="receitasValue">R$ 0,00</div>
-                    <div class="card-variation" id="receitasVariation">
-                        <span class="variation-icon">📈</span>
-                        <span>+0,0% em relação ao mês anterior</span>
-                    </div>
+                    <div class="card-value" id="saldoValue">R$ 0,00</div>
                 </div>
                 
                 <div class="financial-card despesas loading">
@@ -57,16 +53,12 @@
                     </div>
                 </div>
                 
-                <div class="financial-card saldo loading">
+                <div class="financial-card receitas loading">
                     <div class="card-header">
-                        <div class="card-icon">💵</div>
-                        <h3 class="card-title">Saldo</h3>
+                        <div class="card-icon">💰</div>
+                        <h3 class="card-title">Receitas</h3>
                     </div>
-                    <div class="card-value" id="saldoValue">R$ 0,00</div>
-                    <div class="card-variation" id="saldoVariation">
-                        <span class="variation-icon">📊</span>
-                        <span>+0,0% em relação ao mês anterior</span>
-                    </div>
+                    <div class="card-value" id="receitasValue">R$ 0,00</div>
                 </div>
             </div>
 
@@ -261,17 +253,10 @@
                 };
             };
 
-            // Atualizar Receitas
-            document.getElementById('receitasValue').textContent = formatarMoeda(data.receitas);
-            const receitasVar = formatarVariacao(data.variacaoReceitas, 'receitas');
-            const receitasVariationEl = document.getElementById('receitasVariation');
-            receitasVariationEl.className = `card-variation ${receitasVar.classe}`;
-            receitasVariationEl.innerHTML = `
-                <span class="variation-icon">${receitasVar.icone}</span>
-                <span>${receitasVar.texto}</span>
-            `;
+            // Atualizar Saldo
+            document.getElementById('saldoValue').textContent = formatarMoeda(data.saldo);
 
-            // Atualizar Despesas
+            // Atualizar Despesas (com variação)
             document.getElementById('despesasValue').textContent = formatarMoeda(data.despesas);
             const despesasVar = formatarVariacao(data.variacaoDespesas, 'despesas');
             const despesasVariationEl = document.getElementById('despesasVariation');
@@ -281,15 +266,8 @@
                 <span>${despesasVar.texto}</span>
             `;
 
-            // Atualizar Saldo
-            document.getElementById('saldoValue').textContent = formatarMoeda(data.saldo);
-            const saldoVar = formatarVariacao(data.variacaoSaldo, 'saldo');
-            const saldoVariationEl = document.getElementById('saldoVariation');
-            saldoVariationEl.className = `card-variation ${saldoVar.classe}`;
-            saldoVariationEl.innerHTML = `
-                <span class="variation-icon">${saldoVar.icone}</span>
-                <span>${saldoVar.texto}</span>
-            `;
+            // Atualizar Receitas
+            document.getElementById('receitasValue').textContent = formatarMoeda(data.receitas);
 
             // Remover estado de loading
             removerLoadingCards();

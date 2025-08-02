@@ -281,18 +281,19 @@ body {
     margin: 2rem 0;
 }
 
+/* Aumenta espaçamento em telas mobile */
+@media (max-width: 768px) {
+    .dashboard-cards {
+        gap: 2rem;
+    }
+}
+
 .financial-card {
     background-color: var(--white-color);
     padding: 1.5rem;
     border-radius: var(--border-radius);
     box-shadow: var(--shadow);
     border-left: 4px solid;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.financial-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
 }
 
 .financial-card.receitas {
