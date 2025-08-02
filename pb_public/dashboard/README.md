@@ -17,6 +17,26 @@ Todas as páginas neste diretório estão protegidas por autenticação usando P
    <div class="menu" id="menu-user"></div>
    ```
 
+## Funcionalidades do Dashboard
+
+### Cards Financeiros
+O dashboard principal (`index.html`) exibe cards financeiros quando a configuração do Google Sheets está completa:
+
+- **Receitas**: Valor total de receitas do mês atual e variação percentual
+- **Despesas**: Valor total de despesas do mês atual e variação percentual  
+- **Saldo**: Saldo líquido (receitas - despesas) e variação percentual
+
+Os cards são carregados automaticamente via endpoint `/get-financial-summary` e incluem:
+- Ícones específicos para cada tipo (💰 💸 💵)
+- Bordas coloridas (verde, vermelho, azul)
+- Animação de loading durante carregamento
+- Cálculo automático de variações em relação ao mês anterior
+
+### Integração Condicional
+- Cards só são exibidos quando configuração Google Sheets está OK
+- Se configuração incompleta, exibe botão "Configurar Integração"
+- Tratamento de erros gracioso com fallback para valores zerados
+
 ## Como Funciona
 
 - O script `dashboard-auth.js` verifica automaticamente se o usuário está autenticado ao carregar a página
