@@ -30,6 +30,46 @@
         <div class="container text-center">
             <h2>Bem-vindo ao seu Dashboard!</h2>
             <p>Aqui você pode visualizar e gerenciar suas finanças de forma simples e rápida.</p>
+            
+            <!-- Cards Financeiros -->
+            <div id="financialCards" class="dashboard-cards" style="display: none;">
+                <div class="financial-card receitas loading">
+                    <div class="card-header">
+                        <div class="card-icon">💰</div>
+                        <h3 class="card-title">Receitas</h3>
+                    </div>
+                    <div class="card-value" id="receitasValue">R$ 0,00</div>
+                    <div class="card-variation" id="receitasVariation">
+                        <span class="variation-icon">📈</span>
+                        <span>+0,0% em relação ao mês anterior</span>
+                    </div>
+                </div>
+                
+                <div class="financial-card despesas loading">
+                    <div class="card-header">
+                        <div class="card-icon">💸</div>
+                        <h3 class="card-title">Despesas</h3>
+                    </div>
+                    <div class="card-value" id="despesasValue">R$ 0,00</div>
+                    <div class="card-variation" id="despesasVariation">
+                        <span class="variation-icon">📉</span>
+                        <span>+0,0% em relação ao mês anterior</span>
+                    </div>
+                </div>
+                
+                <div class="financial-card saldo loading">
+                    <div class="card-header">
+                        <div class="card-icon">💵</div>
+                        <h3 class="card-title">Saldo</h3>
+                    </div>
+                    <div class="card-value" id="saldoValue">R$ 0,00</div>
+                    <div class="card-variation" id="saldoVariation">
+                        <span class="variation-icon">📊</span>
+                        <span>+0,0% em relação ao mês anterior</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Adicione aqui os componentes do dashboard -->
             <div style="margin-top: 2rem;">
                 <a href="configuracao.html" id="configBtn" class="button primary" style="display: none;">⚙️ Configurar
@@ -149,7 +189,10 @@
         // Substitui verificação frontend por rota de configuração no servidor
         (async () => {
             const configBtn = document.getElementById('configBtn');
+            const financialCards = document.getElementById('financialCards');
+            
             if (!configBtn) return;
+            
             try {
                 const response = await fetch(`${apiConfig.getBaseURL()}/config-status`, {
                     method: 'GET',
@@ -160,16 +203,106 @@
                 });
                 if (!response.ok) throw new Error('Erro na requisição de configuração');
                 const data = await response.json();
+                
                 // Exibe botão se configuração inválida ou campos faltando
                 if (!data.validConfig) {
                     console.log('Configuração incompleta, campos faltando:', data.missing);
                     configBtn.style.display = '';
+                } else {
+                    // Se configuração OK, carrega dados financeiros
+                    await carregarDadosFinanceiros();
+                    financialCards.style.display = 'block';
                 }
             } catch (error) {
                 console.error('Erro ao verificar configuração do Google:', error);
                 configBtn.style.display = '';
             }
         })();
+
+        // Função para carregar dados financeiros
+        async function carregarDadosFinanceiros() {
+            try {
+                console.log('Carregando dados financeiros...');
+                const summary = await googleSheetsService.getFinancialSummary();
+                
+                if (summary.success) {
+                    atualizarCardsFinanceiros(summary);
+                } else {
+                    console.error('Erro ao carregar dados financeiros:', summary.error);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar dados financeiros:', error);
+                // Em caso de erro, mantém os cards com valores zerados
+                removerLoadingCards();
+            }
+        }
+
+        // Função para atualizar os cards com os dados
+        function atualizarCardsFinanceiros(data) {
+            // Formatador de moeda brasileira
+            const formatarMoeda = (valor) => {
+                return new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                }).format(valor);
+            };
+
+            // Formatador de variação percentual
+            const formatarVariacao = (variacao, tipo) => {
+                const sinal = variacao >= 0 ? '+' : '';
+                const icone = variacao > 0 ? '📈' : variacao < 0 ? '📉' : '📊';
+                const classe = variacao > 0 ? 'variation-positive' : 
+                             variacao < 0 ? 'variation-negative' : 'variation-neutral';
+                
+                return {
+                    texto: `${sinal}${variacao.toFixed(1)}% em relação ao mês anterior`,
+                    classe: classe,
+                    icone: icone
+                };
+            };
+
+            // Atualizar Receitas
+            document.getElementById('receitasValue').textContent = formatarMoeda(data.receitas);
+            const receitasVar = formatarVariacao(data.variacaoReceitas, 'receitas');
+            const receitasVariationEl = document.getElementById('receitasVariation');
+            receitasVariationEl.className = `card-variation ${receitasVar.classe}`;
+            receitasVariationEl.innerHTML = `
+                <span class="variation-icon">${receitasVar.icone}</span>
+                <span>${receitasVar.texto}</span>
+            `;
+
+            // Atualizar Despesas
+            document.getElementById('despesasValue').textContent = formatarMoeda(data.despesas);
+            const despesasVar = formatarVariacao(data.variacaoDespesas, 'despesas');
+            const despesasVariationEl = document.getElementById('despesasVariation');
+            despesasVariationEl.className = `card-variation ${despesasVar.classe}`;
+            despesasVariationEl.innerHTML = `
+                <span class="variation-icon">${despesasVar.icone}</span>
+                <span>${despesasVar.texto}</span>
+            `;
+
+            // Atualizar Saldo
+            document.getElementById('saldoValue').textContent = formatarMoeda(data.saldo);
+            const saldoVar = formatarVariacao(data.variacaoSaldo, 'saldo');
+            const saldoVariationEl = document.getElementById('saldoVariation');
+            saldoVariationEl.className = `card-variation ${saldoVar.classe}`;
+            saldoVariationEl.innerHTML = `
+                <span class="variation-icon">${saldoVar.icone}</span>
+                <span>${saldoVar.texto}</span>
+            `;
+
+            // Remover estado de loading
+            removerLoadingCards();
+            
+            console.log('Cards financeiros atualizados com sucesso:', data);
+        }
+
+        // Função para remover estado de loading dos cards
+        function removerLoadingCards() {
+            document.querySelectorAll('.financial-card.loading').forEach(card => {
+                card.classList.remove('loading');
+            });
+        }
 
         // Controle de sinal de valor
         const expenseSignBtn = document.getElementById('expenseSignBtn');
