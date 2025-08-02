@@ -64,15 +64,15 @@
 
         const email = document.getElementById('email').value;
         const senha = document.getElementById('password').value;
+        const errorMsg = document.getElementById('errorMsg');
 
         // Esconde mensagem de erro anterior
         errorMsg.style.display = 'none';
 
         try {
             await realizarLogin(email, senha);
-            window.location.href = '/dashboard';
+            window.location.href = '/dashboard/index.html';
         } catch (err) {
-            const errorMsg = document.getElementById('errorMsg');
             errorMsg.textContent = 'Erro ao realizar login. Verifique suas credenciais.';
             errorMsg.style.display = 'block';
         }
