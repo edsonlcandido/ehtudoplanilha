@@ -289,6 +289,37 @@ class GoogleSheetsService {
             return [];
         }
     }
+
+    /**
+     * Obtém resumo financeiro da planilha do usuário
+     * @returns {Promise<Object>} - Dados de receitas, despesas, saldo e variações
+     */
+    async getFinancialSummary() {
+        if (!this.pb) {
+            throw new Error('Serviço Sheets não inicializado');
+        }
+
+        try {
+            const response = await fetch(`${this.pb.baseUrl}/get-financial-summary`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': this.pb.authStore.token,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Erro ao obter resumo financeiro');
+            }
+
+            return data;
+        } catch (error) {
+            console.error('Erro ao obter resumo financeiro da planilha:', error);
+            throw error;
+        }
+    }
 }
 
 // Exportar instância singleton

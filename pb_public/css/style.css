@@ -272,3 +272,121 @@ body {
     text-align: center;
     font-size: 1.25rem;
 }
+
+/* Dashboard Cards */
+.dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+/* Aumenta espaçamento em telas mobile */
+@media (max-width: 768px) {
+    .dashboard-cards {
+        gap: 2rem;
+    }
+}
+
+.financial-card {
+    background-color: var(--white-color);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    border-left: 4px solid;
+}
+
+.financial-card.receitas {
+    border-left-color: #28a745;
+}
+
+.financial-card.despesas {
+    border-left-color: #dc3545;
+}
+
+.financial-card.saldo {
+    border-left-color: #007bff;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.card-icon {
+    font-size: 2rem;
+    margin-right: 0.75rem;
+}
+
+.receitas .card-icon {
+    color: #28a745;
+}
+
+.despesas .card-icon {
+    color: #dc3545;
+}
+
+.saldo .card-icon {
+    color: #007bff;
+}
+
+.card-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--secondary-color);
+    margin: 0;
+}
+
+.card-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--secondary-color);
+    margin: 0.5rem 0;
+}
+
+.card-variation {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.variation-positive {
+    color: #28a745;
+}
+
+.variation-negative {
+    color: #dc3545;
+}
+
+.variation-neutral {
+    color: #6c757d;
+}
+
+.variation-icon {
+    margin-right: 0.25rem;
+    font-size: 0.8rem;
+}
+
+/* Loading state for cards */
+.financial-card.loading {
+    opacity: 0.7;
+}
+
+.financial-card.loading .card-value {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 4px;
+    color: transparent;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
