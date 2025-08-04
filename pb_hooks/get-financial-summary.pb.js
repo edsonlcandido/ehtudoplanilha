@@ -40,9 +40,9 @@ routerAdd("GET", "/get-financial-summary", (c) => {
 
         // Função para buscar dados da planilha
         const getSheetDataWithTokenRefresh = (token) => {
-            // Busca todos os lançamentos (colunas A:G) da aba "Lançamentos"
+            // Busca todos os lançamentos (colunas A:G) da aba "Lançamentos" com valores não formatados
             return $http.send({
-                url: `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Lançamentos!A2:G?majorDimension=ROWS`,
+                url: `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Lançamentos!A2:G?majorDimension=ROWS&valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=FORMATTED_STRING`,
                 method: "GET",
                 headers: {
                     "Authorization": `Bearer ${token}`,
@@ -93,6 +93,7 @@ routerAdd("GET", "/get-financial-summary", (c) => {
             
             // Se não tiver dados
             if (!data.values || data.values.length === 0) {
+                console.log("Nenhum dado encontrado na planilha");
                 return c.json(200, { 
                     "success": true, 
                     "receitas": 0,
@@ -108,41 +109,68 @@ routerAdd("GET", "/get-financial-summary", (c) => {
                 });
             }
             
+            console.log(`Total de linhas encontradas: ${data.values.length}`);
+            
             // Processar dados financeiros
             const agora = new Date();
-            const mesAtual = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}`;
             
-            // Mês anterior
-            const dataAnterior = new Date(agora.getFullYear(), agora.getMonth() - 1, 1);
-            const mesAnterior = `${dataAnterior.getFullYear()}-${String(dataAnterior.getMonth() + 1).padStart(2, '0')}`;
+            // Obtém o primeiro dia do mês atual em formato Excel (dias desde 1/1/1900)
+            // Data base é 1/1/1900, mas Excel considera 1900 como ano bissexto (erro histórico)
+            const primeiroDiaMesAtual = new Date(agora.getFullYear(), agora.getMonth(), 1);
+            const primeiroDiaMesAnterior = new Date(agora.getFullYear(), agora.getMonth() - 1, 1);
+            
+            // Calcula o número de dias desde 1/1/1900 (formato Excel)
+            const dataBaseExcel = new Date(1900, 0, 0);
+            const calcularDiasExcel = (data) => {
+                return Math.floor((data - dataBaseExcel) / (24 * 60 * 60 * 1000));
+            };
+            
+            // Mês atual e anterior em formato Excel
+            const mesAtualExcel = calcularDiasExcel(primeiroDiaMesAtual);
+            const mesAnteriorExcel = calcularDiasExcel(primeiroDiaMesAnterior);
+            
+            // Para logs e formatação amigável
+            const mesAtualFormatado = `${primeiroDiaMesAtual.getFullYear()}-${String(primeiroDiaMesAtual.getMonth() + 1).padStart(2, '0')}`;
+            const mesAnteriorFormatado = `${primeiroDiaMesAnterior.getFullYear()}-${String(primeiroDiaMesAnterior.getMonth() + 1).padStart(2, '0')}`;
+            
+            console.log(`Mês atual Excel: ${mesAtualExcel}, Mês anterior Excel: ${mesAnteriorExcel}`);
+            console.log(`Mês atual formatado: ${mesAtualFormatado}, Mês anterior formatado: ${mesAnteriorFormatado}`);
             
             let receitasAtual = 0;
             let despesasAtual = 0;
             let receitasAnterior = 0;
             let despesasAnterior = 0;
             
+            // Para categorização de despesas no dashboard
+            const categoriasDespesas = {};
+            const categoriasReceitas = {};
+            
             // Processar cada linha de dados
             data.values.forEach(row => {
                 if (row.length >= 6) {
-                    const dataLancamento = row[0]; // Formato DD/MM/YYYY
-                    const valorString = row[2]; // Valor
-                    const orcamento = row[5]; // Orçamento no formato YYYY-MM
-                    
-                    // Converter valor - pode vir com vírgula como decimal
-                    let valor = 0;
-                    if (valorString && valorString.toString().trim() !== '') {
-                        const valorFormatado = valorString.toString().replace(',', '.');
-                        valor = parseFloat(valorFormatado) || 0;
-                    }
+                    // Com valueRenderOption=UNFORMATTED_VALUE, valores vêm como números
+                    const valor = typeof row[2] === 'number' ? row[2] : parseFloat(String(row[2]).replace(',', '.')) || 0;
+                    const categoria = row[4] || 'Sem categoria';
+                    const orcamentoExcel = row[5]; // Valor numérico no formato Excel
                     
                     // Verificar se o lançamento é do mês atual ou anterior baseado no orçamento
-                    if (orcamento === mesAtual) {
+                    if (orcamentoExcel === mesAtualExcel) {
                         if (valor > 0) {
                             receitasAtual += valor;
-                        } else {
+                            // Agrupa por categoria para análise
+                            if (!categoriasReceitas[categoria]) {
+                                categoriasReceitas[categoria] = 0;
+                            }
+                            categoriasReceitas[categoria] += valor;
+                        } else if (valor < 0) {
                             despesasAtual += Math.abs(valor);
+                            // Agrupa por categoria para análise
+                            if (!categoriasDespesas[categoria]) {
+                                categoriasDespesas[categoria] = 0;
+                            }
+                            categoriasDespesas[categoria] += Math.abs(valor);
                         }
-                    } else if (orcamento === mesAnterior) {
+                    } else if (orcamentoExcel === mesAnteriorExcel) {
                         if (valor > 0) {
                             receitasAnterior += valor;
                         } else {
@@ -168,20 +196,40 @@ routerAdd("GET", "/get-financial-summary", (c) => {
             const variacaoDespesas = calcularVariacao(despesasAtual, despesasAnterior);
             const variacaoSaldo = calcularVariacao(saldoAtual, saldoAnterior);
             
-            return c.json(200, {
+            // Preparar arrays de categorias para o dashboard
+            const prepararCategorias = (obj) => {
+                return Object.entries(obj)
+                    .map(([categoria, valor]) => ({ categoria, valor }))
+                    .sort((a, b) => b.valor - a.valor)
+                    .slice(0, 5); // Top 5 categorias
+            };
+            
+            const topDespesas = prepararCategorias(categoriasDespesas);
+            const topReceitas = prepararCategorias(categoriasReceitas);
+            
+            const resultado = {
                 "success": true,
                 "receitas": receitasAtual,
                 "despesas": despesasAtual,
-                "saldo": saldoAtual,
+                "saldo": receitasAtual - despesasAtual,
                 "receitasAnterior": receitasAnterior,
                 "despesasAnterior": despesasAnterior,
-                "saldoAnterior": saldoAnterior,
+                "saldoAnterior": receitasAnterior - despesasAnterior,
                 "variacaoReceitas": parseFloat(variacaoReceitas.toFixed(1)),
                 "variacaoDespesas": parseFloat(variacaoDespesas.toFixed(1)),
                 "variacaoSaldo": parseFloat(variacaoSaldo.toFixed(1)),
-                "mesAtual": mesAtual,
-                "mesAnterior": mesAnterior
-            });
+                "mesAtual": mesAtualFormatado,
+                "mesAnterior": mesAnteriorFormatado,
+                "categoriasDespesas": topDespesas,
+                "categoriasReceitas": topReceitas,
+                "totalLancamentos": data.values.filter(row => 
+                    row.length >= 6 && row[5] === mesAtualExcel
+                ).length
+            };
+            
+            console.log("Resultado do resumo financeiro:", JSON.stringify(resultado, null, 2));
+            
+            return c.json(200, resultado);
         } else {
             console.log("Erro ao buscar dados da planilha:", dataResponse.raw);
             return c.json(500, { "error": "Erro ao buscar dados da planilha" });

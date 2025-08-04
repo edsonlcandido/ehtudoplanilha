@@ -300,15 +300,18 @@ class GoogleSheetsService {
         }
 
         try {
+            console.log('Fazendo requisição para get-financial-summary...');
             const response = await fetch(`${this.pb.baseUrl}/get-financial-summary`, {
                 method: 'GET',
                 headers: {
-                    'Authorization': this.pb.authStore.token,
+                    'Authorization': `Bearer ${this.pb.authStore.token}`,
                     'Content-Type': 'application/json'
                 }
             });
 
+            console.log('Status da resposta:', response.status);
             const data = await response.json();
+            console.log('Dados retornados da API:', data);
 
             if (!response.ok) {
                 throw new Error(data.error || 'Erro ao obter resumo financeiro');
