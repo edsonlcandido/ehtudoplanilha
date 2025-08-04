@@ -276,7 +276,7 @@ body {
 /* Dashboard Cards */
 .dashboard-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: 1fr; /* Padrão para mobile: uma coluna */
     gap: 1.5rem;
     margin: 2rem 0;
 }
@@ -288,12 +288,21 @@ body {
     }
 }
 
+/* Layout para desktop: três colunas */
+@media (min-width: 768px) {
+    .dashboard-cards {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+    }
+}
+
 .financial-card {
     background-color: var(--white-color);
     padding: 1.5rem;
     border-radius: var(--border-radius);
     box-shadow: var(--shadow);
-    border-left: 4px solid;
+    border-left: 4px solid;    
+    margin: 1rem 0 1rem 0;
 }
 
 .financial-card.receitas {
