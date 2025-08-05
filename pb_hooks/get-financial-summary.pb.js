@@ -107,7 +107,7 @@ routerAdd("GET", "/get-financial-summary", (c) => {
                 });
             }
             
-            console.log(`Total de linhas encontradas: ${data.values.length}`);
+            //console.log(`Total de linhas encontradas: ${data.values.length}`);
             
             // Códigos de orçamento para os meses (conforme indicado nos dados)
             const mesAtualOrcamento = 45870;  // Agosto/2025
@@ -117,8 +117,8 @@ routerAdd("GET", "/get-financial-summary", (c) => {
             const mesAtualFormatado = '2025-08';
             const mesAnteriorFormatado = '2025-07';
             
-            console.log(`Mês atual orçamento: ${mesAtualOrcamento}, Mês anterior orçamento: ${mesAnteriorOrcamento}`);
-            console.log(`Mês atual formatado: ${mesAtualFormatado}, Mês anterior formatado: ${mesAnteriorFormatado}`);
+            //console.log(`Mês atual orçamento: ${mesAtualOrcamento}, Mês anterior orçamento: ${mesAnteriorOrcamento}`);
+            //console.log(`Mês atual formatado: ${mesAtualFormatado}, Mês anterior formatado: ${mesAnteriorFormatado}`);
             
             // Resumos financeiros
             let receitasAtual = 0;
