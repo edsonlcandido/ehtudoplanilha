@@ -372,7 +372,31 @@ async function loadCurrentSheetInfo() {
         
         if (data.success && data.hasSheet) {
             // Usuário tem uma planilha configurada
-            currentSheetName.textContent = data.sheet_name || 'Planilha sem nome';
+            const sheetName = data.sheet_name || 'Planilha sem nome';
+            const sheetId = data.sheet_id;
+            
+            if (sheetId) {
+                // Criar link para a planilha com ícone de acesso externo
+                const sheetUrl = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(sheetId)}/edit`;
+                const externalIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 0.25rem; vertical-align: middle;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15,3 21,3 21,9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>`;
+                
+                // Escapar HTML para prevenir XSS
+                const escapedSheetName = sheetName.replace(/[&<>"']/g, function(match) {
+                    const escapeMap = {
+                        '&': '&amp;',
+                        '<': '&lt;',
+                        '>': '&gt;',
+                        '"': '&quot;',
+                        "'": '&#x27;'
+                    };
+                    return escapeMap[match];
+                });
+                
+                currentSheetName.innerHTML = `<a href="${sheetUrl}" target="_blank" rel="noopener noreferrer" style="color: #2196f3; text-decoration: underline; display: inline-flex; align-items: center;">${escapedSheetName}${externalIcon}</a>`;
+            } else {
+                currentSheetName.textContent = sheetName;
+            }
+            
             currentSheetDescription.textContent = 'Sua planilha de controle financeiro está configurada e pronta para uso.';
             if (clearSheetBtn) clearSheetBtn.style.display = 'block';
             if (provisionSheetBtn) {
