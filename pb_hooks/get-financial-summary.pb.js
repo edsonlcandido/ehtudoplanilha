@@ -42,7 +42,7 @@ routerAdd("GET", "/get-financial-summary", (c) => {
         const getSheetDataWithTokenRefresh = (token) => {
             // Busca todos os lançamentos (colunas A:G) da aba "Lançamentos" com valores não formatados
             return $http.send({
-                url: `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Lançamentos!A2:G?majorDimension=ROWS&valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=FORMATTED_STRING`,
+                url: `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Lançamentos!A1:G?majorDimension=ROWS&valueRenderOption=UNFORMATTED_VALUE`,
                 method: "GET",
                 headers: {
                     "Authorization": `Bearer ${token}`,
@@ -90,7 +90,7 @@ routerAdd("GET", "/get-financial-summary", (c) => {
         if (dataResponse.statusCode >= 200 && dataResponse.statusCode < 300) {
             // Processar resposta
             const data = dataResponse.json;
-            
+            //console.log("Dados da planilha recebidos:", JSON.stringify(data, null, 2));
             // Se não tiver dados
             if (!data.values || data.values.length === 0) {
                 console.log("Nenhum dado encontrado na planilha");
@@ -102,78 +102,50 @@ routerAdd("GET", "/get-financial-summary", (c) => {
                     "receitasAnterior": 0,
                     "despesasAnterior": 0,
                     "saldoAnterior": 0,
-                    "variacaoReceitas": 0,
                     "variacaoDespesas": 0,
-                    "variacaoSaldo": 0,
                     "message": "Nenhum lançamento encontrado na planilha"
                 });
             }
             
             console.log(`Total de linhas encontradas: ${data.values.length}`);
             
-            // Processar dados financeiros
-            const agora = new Date();
+            // Códigos de orçamento para os meses (conforme indicado nos dados)
+            const mesAtualOrcamento = 45870;  // Agosto/2025
+            const mesAnteriorOrcamento = 45839;  // Julho/2025
             
-            // Obtém o primeiro dia do mês atual em formato Excel (dias desde 1/1/1900)
-            // Data base é 1/1/1900, mas Excel considera 1900 como ano bissexto (erro histórico)
-            const primeiroDiaMesAtual = new Date(agora.getFullYear(), agora.getMonth(), 1);
-            const primeiroDiaMesAnterior = new Date(agora.getFullYear(), agora.getMonth() - 1, 1);
+            // Formatação para exibição
+            const mesAtualFormatado = '2025-08';
+            const mesAnteriorFormatado = '2025-07';
             
-            // Calcula o número de dias desde 1/1/1900 (formato Excel)
-            const dataBaseExcel = new Date(1900, 0, 0);
-            const calcularDiasExcel = (data) => {
-                return Math.floor((data - dataBaseExcel) / (24 * 60 * 60 * 1000));
-            };
-            
-            // Mês atual e anterior em formato Excel
-            const mesAtualExcel = calcularDiasExcel(primeiroDiaMesAtual);
-            const mesAnteriorExcel = calcularDiasExcel(primeiroDiaMesAnterior);
-            
-            // Para logs e formatação amigável
-            const mesAtualFormatado = `${primeiroDiaMesAtual.getFullYear()}-${String(primeiroDiaMesAtual.getMonth() + 1).padStart(2, '0')}`;
-            const mesAnteriorFormatado = `${primeiroDiaMesAnterior.getFullYear()}-${String(primeiroDiaMesAnterior.getMonth() + 1).padStart(2, '0')}`;
-            
-            console.log(`Mês atual Excel: ${mesAtualExcel}, Mês anterior Excel: ${mesAnteriorExcel}`);
+            console.log(`Mês atual orçamento: ${mesAtualOrcamento}, Mês anterior orçamento: ${mesAnteriorOrcamento}`);
             console.log(`Mês atual formatado: ${mesAtualFormatado}, Mês anterior formatado: ${mesAnteriorFormatado}`);
             
+            // Resumos financeiros
             let receitasAtual = 0;
             let despesasAtual = 0;
             let receitasAnterior = 0;
             let despesasAnterior = 0;
-            
-            // Para categorização de despesas no dashboard
-            const categoriasDespesas = {};
-            const categoriasReceitas = {};
             
             // Processar cada linha de dados
             data.values.forEach(row => {
                 if (row.length >= 6) {
                     // Com valueRenderOption=UNFORMATTED_VALUE, valores vêm como números
                     const valor = typeof row[2] === 'number' ? row[2] : parseFloat(String(row[2]).replace(',', '.')) || 0;
-                    const categoria = row[4] || 'Sem categoria';
-                    const orcamentoExcel = row[5]; // Valor numérico no formato Excel
+                    const orcamento = row[5]; // Valor numérico no formato Excel
                     
-                    // Verificar se o lançamento é do mês atual ou anterior baseado no orçamento
-                    if (orcamentoExcel === mesAtualExcel) {
+                    // Mês atual
+                    if (orcamento === mesAtualOrcamento) {
                         if (valor > 0) {
                             receitasAtual += valor;
-                            // Agrupa por categoria para análise
-                            if (!categoriasReceitas[categoria]) {
-                                categoriasReceitas[categoria] = 0;
-                            }
-                            categoriasReceitas[categoria] += valor;
                         } else if (valor < 0) {
                             despesasAtual += Math.abs(valor);
-                            // Agrupa por categoria para análise
-                            if (!categoriasDespesas[categoria]) {
-                                categoriasDespesas[categoria] = 0;
-                            }
-                            categoriasDespesas[categoria] += Math.abs(valor);
                         }
-                    } else if (orcamentoExcel === mesAnteriorExcel) {
+                    }
+                    // Mês anterior
+                    else if (orcamento === mesAnteriorOrcamento) {
                         if (valor > 0) {
                             receitasAnterior += valor;
-                        } else {
+                        } else if (valor < 0) {
                             despesasAnterior += Math.abs(valor);
                         }
                     }
@@ -184,46 +156,27 @@ routerAdd("GET", "/get-financial-summary", (c) => {
             const saldoAtual = receitasAtual - despesasAtual;
             const saldoAnterior = receitasAnterior - despesasAnterior;
             
-            // Calcular variações percentuais
-            const calcularVariacao = (atual, anterior) => {
-                if (anterior === 0) {
-                    return atual > 0 ? 100 : 0;
-                }
-                return ((atual - anterior) / anterior) * 100;
-            };
-            
-            const variacaoReceitas = calcularVariacao(receitasAtual, receitasAnterior);
-            const variacaoDespesas = calcularVariacao(despesasAtual, despesasAnterior);
-            const variacaoSaldo = calcularVariacao(saldoAtual, saldoAnterior);
-            
-            // Preparar arrays de categorias para o dashboard
-            const prepararCategorias = (obj) => {
-                return Object.entries(obj)
-                    .map(([categoria, valor]) => ({ categoria, valor }))
-                    .sort((a, b) => b.valor - a.valor)
-                    .slice(0, 5); // Top 5 categorias
-            };
-            
-            const topDespesas = prepararCategorias(categoriasDespesas);
-            const topReceitas = prepararCategorias(categoriasReceitas);
+            // Calcular variação percentual das despesas
+            const variacaoDespesas = despesasAnterior === 0 
+                ? (despesasAtual > 0 ? 100 : 0) 
+                : ((despesasAtual - despesasAnterior) / despesasAnterior) * 100;
             
             const resultado = {
                 "success": true,
                 "receitas": receitasAtual,
                 "despesas": despesasAtual,
-                "saldo": receitasAtual - despesasAtual,
+                "saldo": saldoAtual,
                 "receitasAnterior": receitasAnterior,
                 "despesasAnterior": despesasAnterior,
-                "saldoAnterior": receitasAnterior - despesasAnterior,
-                "variacaoReceitas": parseFloat(variacaoReceitas.toFixed(1)),
+                "saldoAnterior": saldoAnterior,
                 "variacaoDespesas": parseFloat(variacaoDespesas.toFixed(1)),
-                "variacaoSaldo": parseFloat(variacaoSaldo.toFixed(1)),
                 "mesAtual": mesAtualFormatado,
                 "mesAnterior": mesAnteriorFormatado,
-                "categoriasDespesas": topDespesas,
-                "categoriasReceitas": topReceitas,
-                "totalLancamentos": data.values.filter(row => 
-                    row.length >= 6 && row[5] === mesAtualExcel
+                "totalLancamentosAtual": data.values.filter(row => 
+                    row.length >= 6 && row[5] === mesAtualOrcamento
+                ).length,
+                "totalLancamentosAnterior": data.values.filter(row => 
+                    row.length >= 6 && row[5] === mesAnteriorOrcamento
                 ).length
             };
             

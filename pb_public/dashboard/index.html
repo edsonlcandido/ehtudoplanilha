@@ -293,9 +293,10 @@
             const formatarVariacaoDespesas = (variacao) => {
                 console.log('Formatando variação de despesas:', variacao);
                 const sinal = variacao >= 0 ? '+' : '';
+                // Para despesas: variação negativa é boa (menos gastos = 📉 verde), positiva é ruim (mais gastos = 📈 vermelho)
                 const icone = variacao > 0 ? '📈' : variacao < 0 ? '📉' : '📊';
-                const classe = variacao > 0 ? 'variation-positive' : 
-                             variacao < 0 ? 'variation-negative' : 'variation-neutral';
+                const classe = variacao > 0 ? 'variation-negative' : 
+                             variacao < 0 ? 'variation-positive' : 'variation-neutral';
                 
                 return {
                     texto: `${sinal}${variacao.toFixed(1)}% em relação ao mês anterior`,
@@ -408,11 +409,11 @@
         }
 
         // Disponibilizar função de teste globalmente para debug
-        window.testarCards = testarAtualizacaoCards;
-        window.testeDomsimples = testeDomsimples;
+        //window.testarCards = testarAtualizacaoCards;
+        //window.testeDomsimples = testeDomsimples;
         
         // Executar teste automático
-        setTimeout(testeDomsimples, 3000);
+        //setTimeout(testeDomsimples, 3000);
 
         // Controle de sinal de valor
         const expenseSignBtn = document.getElementById('expenseSignBtn');
