@@ -123,21 +123,17 @@
                                 <!-- Orçamento -->
                                 <div class="form-group" style="margin-bottom: 1.5rem;">
                                     <label for="expenseBudget">Orçamento:</label>
-                                    <input type="date" id="expenseBudget" name="orcamento" class="form-control"
-                                        required>
+                                    <select id="expenseBudget" name="orcamento" class="form-control" required></select>
                                 </div>
                                 
                                 <!-- Botões -->
                                 <div class="form-group"
                                     style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem;">
-                                    <button type="reset" class="button secondary">Limpar</button>
-                                    <button type="submit" class="button primary">Salvar Despesa</button>
+                                    <button type="reset" class="button warning">Limpar</button>
+                                    <button type="submit" class="button success">Salvar Despesa</button>
                                 </div>
                             </fieldset>
                         </form>
-                        <p style="margin-top: 1rem; color: #666; font-style: italic; text-align: center;">
-                            Formulário temporariamente desabilitado
-                        </p>
                     </div>
                 </div>
             </div>
@@ -440,11 +436,23 @@
             const localTime = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
             expenseDateInput.value = `${localDate}T${localTime}`;
         }
-        const expenseBudgetInput = document.getElementById('expenseBudget');
-        {
+        const expenseBudgetSelect = document.getElementById('expenseBudget');
+        if (expenseBudgetSelect) {
+            // Meses em português
+            const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
             const now = new Date();
-            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-            expenseBudgetInput.value = firstDay.toISOString().slice(0,10);
+            const atual = new Date(now.getFullYear(), now.getMonth(), 1);
+            for (let i = -6; i <= 6; i++) {
+                const d = new Date(atual.getFullYear(), atual.getMonth() + i, 1);
+                const mesNome = meses[d.getMonth()];
+                const anoCurto = String(d.getFullYear()).slice(-2);
+                const valor = `${mesNome}/${anoCurto}`;
+                const opt = document.createElement('option');
+                opt.value = valor;
+                opt.textContent = valor.charAt(0).toUpperCase() + valor.slice(1);
+                if (i === 0) opt.selected = true;
+                expenseBudgetSelect.appendChild(opt);
+            }
         }
 
 
@@ -540,6 +548,8 @@
                     if (resultado.success) {
                         mostrarMensagem('success', 'Lançamento enviado com sucesso!');
                         limparCamposFormulario();
+                        // Atualiza os cards do resumo após novo lançamento
+                        await carregarDadosFinanceiros();
                     } else {
                         throw new Error(resultado.error || 'Erro ao enviar lançamento');
                     }
@@ -555,13 +565,25 @@
 
         // Funções auxiliares
         function formatarData(dataHora) {
-            // Converte 2025-08-01T14:30 para 01/08/2025
+            // Converte 2025-08-01T14:30 para 01/08/2025 14:30
             const dt = new Date(dataHora);
-            return `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}/${dt.getFullYear()}`;
+            const dia = String(dt.getDate()).padStart(2, '0');
+            const mes = String(dt.getMonth() + 1).padStart(2, '0');
+            const ano = dt.getFullYear();
+            const hora = String(dt.getHours()).padStart(2, '0');
+            const minuto = String(dt.getMinutes()).padStart(2, '0');
+            return `${dia}/${mes}/${ano} ${hora}:${minuto}`;
         }
         function formatarDataOrcamento(data) {
-            // Converte 2025-08-01 para 2025-08
-            return data.substring(0, 7);
+            // Converte "setembro/25" para "01/09/2025"
+            if (!data) return '';
+            const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+            const [mesNome, anoCurto] = data.split('/');
+            const mesIndex = meses.indexOf(mesNome.toLowerCase());
+            if (mesIndex === -1) return '';
+            const ano = '20' + anoCurto;
+            const mes = String(mesIndex + 1).padStart(2, '0');
+            return `01/${mes}/${ano}`;
         }
         function limparCamposFormulario() {
             document.getElementById('expenseAccount').value = '';
