@@ -25,8 +25,7 @@
         </div>
     </nav>
     <!-- SECTION MAIN: conteúdo principal ocupando toda tela -->
-    <section class="section section-light"
-        style="position: relative; min-height: 70vh; display: flex; align-items: center; justify-content: center;">
+    <section class="section section-light dashboard-main">
         <div class="container text-center">
             <h2>Bem-vindo ao seu Dashboard!</h2>
             <p>Aqui você pode visualizar e inserir lançamentos de forma simples e rápida.</p>
@@ -78,8 +77,8 @@
                     Integração</a>
             </div>
         </div>
-        <!-- Botão de adicionar lançamento (limitado à seção) -->
-        <button id="openEntryModal" class="button success" style="position: absolute; bottom:20px; right:20px; border-radius:50%; width:3rem; height:3rem; display:flex; align-items:center; justify-content:center; font-size:1.5rem; z-index:1001;" aria-label="Adicionar lançamento">+</button>
+        <!-- Botão de adicionar lançamento (flutuante) -->
+        <button id="openEntryModal" class="button" aria-label="Adicionar lançamento">+</button>
     </section>
 
     <!-- Modal de lançamento de despesas/receitas -->
@@ -635,6 +634,10 @@
                         limparCamposFormulario();
                         // Atualiza os cards do resumo após novo lançamento
                         await carregarDadosFinanceiros();
+                        // Fecha o modal automaticamente após sucesso
+                        setTimeout(() => {
+                            closeModal();
+                        }, 1000); // Aguarda 1 segundo para mostrar a mensagem
                     } else {
                         throw new Error(resultado.error || 'Erro ao enviar lançamento');
                     }
@@ -832,15 +835,49 @@
 
         // Fechar modal ao clicar fora do conteúdo
         const entryModalEl = document.getElementById('entryModal');
+        const openModalBtn = document.getElementById('openEntryModal');
+        const closeModalBtn = document.getElementById('closeEntryModal');
+        
         entryModalEl.addEventListener('click', e => {
-            if (e.target === entryModalEl) entryModalEl.style.display = 'none';
+            if (e.target === entryModalEl) {
+                closeModal();
+            }
         });
+        
+        // Função para abrir modal e alterar botão
+        function openModal() {
+            entryModalEl.style.display = 'flex';
+            openModalBtn.classList.add('modal-open');
+            openModalBtn.textContent = '×';
+            openModalBtn.setAttribute('aria-label', 'Fechar modal');
+        }
+        
+        // Função para fechar modal e alterar botão
+        function closeModal() {
+            entryModalEl.style.display = 'none';
+            openModalBtn.classList.remove('modal-open');
+            openModalBtn.textContent = '+';
+            openModalBtn.setAttribute('aria-label', 'Adicionar lançamento');
+        }
+        
         // Botões de abrir e fechar modal
-        document.getElementById('openEntryModal').addEventListener('click', () => {
-            document.getElementById('entryModal').style.display = 'flex';
+        openModalBtn.addEventListener('click', () => {
+            if (entryModalEl.style.display === 'flex') {
+                closeModal();
+            } else {
+                openModal();
+            }
         });
-        document.getElementById('closeEntryModal').addEventListener('click', () => {
-            document.getElementById('entryModal').style.display = 'none';
+        
+        closeModalBtn.addEventListener('click', () => {
+            closeModal();
+        });
+        
+        // Fechar modal com tecla ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && entryModalEl.style.display === 'flex') {
+                closeModal();
+            }
         });
 
     </script>
