@@ -38,7 +38,7 @@
                         <div class="card-icon">💵</div>
                         <h3 class="card-title">Saldo</h3>
                     </div>
-                    <div class="card-value" id="saldoValue">R$ 0,00</div>
+                <div class="card-value" id="saldoValue" style="display:flex; align-items:center; justify-content:flex-start;">R$ 0,00</div>
                 </div>
                 
                 <div class="financial-card despesas loading">
@@ -46,7 +46,12 @@
                         <div class="card-icon">💸</div>
                         <h3 class="card-title">Despesas</h3>
                     </div>
-                    <div class="card-value" id="despesasValue">R$ 0,00</div>
+                <div class="card-value" id="despesasValue" style="display:flex; align-items:center; justify-content:space-between;">
+                    <span id="despesasValueText">R$ 0,00</span>
+                    <button type="button" id="toggleDespesas" class="toggle-eye" aria-label="Ocultar/Mostrar Despesas" style="background:none;border:none;cursor:pointer;font-size:1.2rem;">
+                        <span id="iconDespesas">👁️</span>
+                    </button>
+                </div>
                     <div class="card-variation" id="despesasVariation">
                         <span class="variation-icon">📉</span>
                         <span>+0,0% em relação ao mês anterior</span>
@@ -58,7 +63,12 @@
                         <div class="card-icon">💰</div>
                         <h3 class="card-title">Receitas</h3>
                     </div>
-                    <div class="card-value" id="receitasValue">R$ 0,00</div>
+                <div class="card-value" id="receitasValue" style="display:flex; align-items:center; justify-content:space-between;">
+                    <span id="receitasValueText">R$ 0,00</span>
+                    <button type="button" id="toggleReceitas" class="toggle-eye" aria-label="Ocultar/Mostrar Receitas" style="background:none;border:none;cursor:pointer;font-size:1.2rem;">
+                        <span id="iconReceitas">👁️</span>
+                    </button>
+                </div>
                 </div>
             </div>
 
@@ -152,6 +162,61 @@
     </footer>
     <!-- Script PocketBase e módulos da aplicação -->
     <script type="module">
+        // Controle de exibição dos valores dos cards de receita e despesa
+        // Carregar preferências de visibilidade do localStorage
+        const storedDespesasVisible = localStorage.getItem('despesasVisivel');
+        let despesasVisivel = storedDespesasVisible !== null ? JSON.parse(storedDespesasVisible) : true;
+        const storedReceitasVisible = localStorage.getItem('receitasVisivel');
+        let receitasVisivel = storedReceitasVisible !== null ? JSON.parse(storedReceitasVisible) : true;
+        const despesasValueText = document.getElementById('despesasValueText');
+        const receitasValueText = document.getElementById('receitasValueText');
+        const iconDespesas = document.getElementById('iconDespesas');
+        const iconReceitas = document.getElementById('iconReceitas');
+        let valorDespesasAtual = despesasValueText ? despesasValueText.textContent.trim() : '';
+        let valorReceitasAtual = receitasValueText ? receitasValueText.textContent.trim() : '';
+
+        // Aplicar estado inicial de visibilidade
+        if (!despesasVisivel && despesasValueText && iconDespesas) {
+            valorDespesasAtual = despesasValueText.textContent;
+            despesasValueText.textContent = '••••••';
+            iconDespesas.textContent = '🙈';
+        }
+        if (!receitasVisivel && receitasValueText && iconReceitas) {
+            valorReceitasAtual = receitasValueText.textContent;
+            receitasValueText.textContent = '••••••';
+            iconReceitas.textContent = '🙈';
+        }
+
+        if (document.getElementById('toggleDespesas')) {
+            document.getElementById('toggleDespesas').addEventListener('click', () => {
+                despesasVisivel = !despesasVisivel;
+                if (despesasVisivel) {
+                    despesasValueText.textContent = valorDespesasAtual;
+                    iconDespesas.textContent = '👁️';
+                } else {
+                    valorDespesasAtual = despesasValueText.textContent;
+                    despesasValueText.textContent = '••••••';
+                    iconDespesas.textContent = '🙈';
+                }
+                // Salvar preferência
+                localStorage.setItem('despesasVisivel', JSON.stringify(despesasVisivel));
+            });
+        }
+        if (document.getElementById('toggleReceitas')) {
+            document.getElementById('toggleReceitas').addEventListener('click', () => {
+                receitasVisivel = !receitasVisivel;
+                if (receitasVisivel) {
+                    receitasValueText.textContent = valorReceitasAtual;
+                    iconReceitas.textContent = '👁️';
+                } else {
+                    valorReceitasAtual = receitasValueText.textContent;
+                    receitasValueText.textContent = '••••••';
+                    iconReceitas.textContent = '🙈';
+                }
+                // Salvar preferência
+                localStorage.setItem('receitasVisivel', JSON.stringify(receitasVisivel));
+            });
+        }
         import apiConfig from '../js/config/api-config.js';
         import { inicializarMenuUsuario } from '../js/menu-usuario.js';
         import googleSheetsService from '../js/google/sheets-api.js';
@@ -258,18 +323,18 @@
             
             // Verificar se os elementos existem
             const saldoEl = document.getElementById('saldoValue');
-            const despesasEl = document.getElementById('despesasValue');
-            const receitasEl = document.getElementById('receitasValue');
+            const despesasValueText = document.getElementById('despesasValueText');
+            const receitasValueText = document.getElementById('receitasValueText');
             const despesasVariationEl = document.getElementById('despesasVariation');
             
             console.log('Elementos encontrados:', {
                 saldo: saldoEl ? 'OK' : 'ERRO',
-                despesas: despesasEl ? 'OK' : 'ERRO',
-                receitas: receitasEl ? 'OK' : 'ERRO',
+                despesas: despesasValueText ? 'OK' : 'ERRO',
+                receitas: receitasValueText ? 'OK' : 'ERRO',
                 despesasVariation: despesasVariationEl ? 'OK' : 'ERRO'
             });
             
-            if (!saldoEl || !despesasEl || !receitasEl) {
+            if (!saldoEl || !despesasValueText || !receitasValueText) {
                 console.error('Alguns elementos não foram encontrados no DOM');
                 return;
             }
@@ -306,11 +371,18 @@
             console.log('Atualizando saldo com:', saldoFormatado);
             saldoEl.textContent = saldoFormatado;
 
-            // Atualizar Despesas (com variação)
+            // Atualizar Despesas (com variação) e preservar visibilidade
             const despesasFormatado = formatarMoeda(data.despesas || 0);
             console.log('Atualizando despesas com:', despesasFormatado);
-            despesasEl.textContent = despesasFormatado;
-            
+            // Atualiza valor armazenado
+            valorDespesasAtual = despesasFormatado;
+            // Aplica visibilidade conforme preferência
+            if (despesasVisivel) {
+                despesasValueText.textContent = valorDespesasAtual;
+            } else {
+                despesasValueText.textContent = '••••••';
+            }
+
             if (despesasVariationEl && typeof data.variacaoDespesas === 'number') {
                 const despesasVar = formatarVariacaoDespesas(data.variacaoDespesas);
                 despesasVariationEl.className = `card-variation ${despesasVar.classe}`;
@@ -321,10 +393,17 @@
                 console.log('Variação de despesas atualizada:', despesasVar);
             }
 
-            // Atualizar Receitas (sem variação)
+            // Atualizar Receitas (sem variação) e preservar visibilidade
             const receitasFormatado = formatarMoeda(data.receitas || 0);
             console.log('Atualizando receitas com:', receitasFormatado);
-            receitasEl.textContent = receitasFormatado;
+            // Atualiza valor armazenado
+            valorReceitasAtual = receitasFormatado;
+            // Aplica visibilidade conforme preferência
+            if (receitasVisivel) {
+                receitasValueText.textContent = valorReceitasAtual;
+            } else {
+                receitasValueText.textContent = '••••••';
+            }
 
             // Remover estado de loading
             removerLoadingCards();
