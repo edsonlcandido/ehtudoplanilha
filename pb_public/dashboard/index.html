@@ -38,7 +38,7 @@
                         <div class="card-icon">💵</div>
                         <h3 class="card-title">Saldo</h3>
                     </div>
-                    <div class="card-value" id="saldoValue">R$ 0,00</div>
+                <div class="card-value" id="saldoValue" style="display:flex; align-items:center; justify-content:flex-start;">R$ 0,00</div>
                 </div>
                 
                 <div class="financial-card despesas loading">
@@ -46,7 +46,12 @@
                         <div class="card-icon">💸</div>
                         <h3 class="card-title">Despesas</h3>
                     </div>
-                    <div class="card-value" id="despesasValue">R$ 0,00</div>
+                <div class="card-value" id="despesasValue" style="display:flex; align-items:center; justify-content:space-between;">
+                    <span id="despesasValueText">R$ 0,00</span>
+                    <button type="button" id="toggleDespesas" class="toggle-eye" aria-label="Ocultar/Mostrar Despesas" style="background:none;border:none;cursor:pointer;font-size:1.2rem;">
+                        <span id="iconDespesas">👁️</span>
+                    </button>
+                </div>
                     <div class="card-variation" id="despesasVariation">
                         <span class="variation-icon">📉</span>
                         <span>+0,0% em relação ao mês anterior</span>
@@ -58,7 +63,12 @@
                         <div class="card-icon">💰</div>
                         <h3 class="card-title">Receitas</h3>
                     </div>
-                    <div class="card-value" id="receitasValue">R$ 0,00</div>
+                <div class="card-value" id="receitasValue" style="display:flex; align-items:center; justify-content:space-between;">
+                    <span id="receitasValueText">R$ 0,00</span>
+                    <button type="button" id="toggleReceitas" class="toggle-eye" aria-label="Ocultar/Mostrar Receitas" style="background:none;border:none;cursor:pointer;font-size:1.2rem;">
+                        <span id="iconReceitas">👁️</span>
+                    </button>
+                </div>
                 </div>
             </div>
 
@@ -123,21 +133,17 @@
                                 <!-- Orçamento -->
                                 <div class="form-group" style="margin-bottom: 1.5rem;">
                                     <label for="expenseBudget">Orçamento:</label>
-                                    <input type="date" id="expenseBudget" name="orcamento" class="form-control"
-                                        required>
+                                    <select id="expenseBudget" name="orcamento" class="form-control" required></select>
                                 </div>
                                 
                                 <!-- Botões -->
                                 <div class="form-group"
                                     style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem;">
-                                    <button type="reset" class="button secondary">Limpar</button>
-                                    <button type="submit" class="button primary">Salvar Despesa</button>
+                                    <button type="reset" class="button warning">Limpar</button>
+                                    <button type="submit" class="button success">Salvar Despesa</button>
                                 </div>
                             </fieldset>
                         </form>
-                        <p style="margin-top: 1rem; color: #666; font-style: italic; text-align: center;">
-                            Formulário temporariamente desabilitado
-                        </p>
                     </div>
                 </div>
             </div>
@@ -156,6 +162,63 @@
     </footer>
     <!-- Script PocketBase e módulos da aplicação -->
     <script type="module">
+        // Histórico para autocomplete de descrições
+        let historicoLancamentos = [];
+        // Controle de exibição dos valores dos cards de receita e despesa
+        // Carregar preferências de visibilidade do localStorage
+        const storedDespesasVisible = localStorage.getItem('despesasVisivel');
+        let despesasVisivel = storedDespesasVisible !== null ? JSON.parse(storedDespesasVisible) : true;
+        const storedReceitasVisible = localStorage.getItem('receitasVisivel');
+        let receitasVisivel = storedReceitasVisible !== null ? JSON.parse(storedReceitasVisible) : true;
+        const despesasValueText = document.getElementById('despesasValueText');
+        const receitasValueText = document.getElementById('receitasValueText');
+        const iconDespesas = document.getElementById('iconDespesas');
+        const iconReceitas = document.getElementById('iconReceitas');
+        let valorDespesasAtual = despesasValueText ? despesasValueText.textContent.trim() : '';
+        let valorReceitasAtual = receitasValueText ? receitasValueText.textContent.trim() : '';
+
+        // Aplicar estado inicial de visibilidade
+        if (!despesasVisivel && despesasValueText && iconDespesas) {
+            valorDespesasAtual = despesasValueText.textContent;
+            despesasValueText.textContent = '••••••';
+            iconDespesas.textContent = '🙈';
+        }
+        if (!receitasVisivel && receitasValueText && iconReceitas) {
+            valorReceitasAtual = receitasValueText.textContent;
+            receitasValueText.textContent = '••••••';
+            iconReceitas.textContent = '🙈';
+        }
+
+        if (document.getElementById('toggleDespesas')) {
+            document.getElementById('toggleDespesas').addEventListener('click', () => {
+                despesasVisivel = !despesasVisivel;
+                if (despesasVisivel) {
+                    despesasValueText.textContent = valorDespesasAtual;
+                    iconDespesas.textContent = '👁️';
+                } else {
+                    valorDespesasAtual = despesasValueText.textContent;
+                    despesasValueText.textContent = '••••••';
+                    iconDespesas.textContent = '🙈';
+                }
+                // Salvar preferência
+                localStorage.setItem('despesasVisivel', JSON.stringify(despesasVisivel));
+            });
+        }
+        if (document.getElementById('toggleReceitas')) {
+            document.getElementById('toggleReceitas').addEventListener('click', () => {
+                receitasVisivel = !receitasVisivel;
+                if (receitasVisivel) {
+                    receitasValueText.textContent = valorReceitasAtual;
+                    iconReceitas.textContent = '👁️';
+                } else {
+                    valorReceitasAtual = receitasValueText.textContent;
+                    receitasValueText.textContent = '••••••';
+                    iconReceitas.textContent = '🙈';
+                }
+                // Salvar preferência
+                localStorage.setItem('receitasVisivel', JSON.stringify(receitasVisivel));
+            });
+        }
         import apiConfig from '../js/config/api-config.js';
         import { inicializarMenuUsuario } from '../js/menu-usuario.js';
         import googleSheetsService from '../js/google/sheets-api.js';
@@ -224,9 +287,12 @@
             }
         })();
 
+        // Variável global para armazenar contas sugeridas
+        let contasSugeridas = [];
+
         // Função para carregar dados financeiros
         async function carregarDadosFinanceiros() {
-            try {
+             try {
                 console.log('Carregando dados financeiros...');
                 
                 // Garantir que os cards estão visíveis primeiro
@@ -240,6 +306,11 @@
                 await new Promise(resolve => setTimeout(resolve, 100));
                 
                 const summary = await googleSheetsService.getFinancialSummary();
+                // Armazena histórico e contas sugeridas
+                historicoLancamentos = summary.historicoLancamentos || [];
+                contasSugeridas = summary.contasSugeridas || [];
+                initDescricaoAutocomplete();
+                initContaAutocomplete();
                 console.log('Resposta da API financeira:', summary);
                 
                 if (summary && summary.success) {
@@ -262,18 +333,18 @@
             
             // Verificar se os elementos existem
             const saldoEl = document.getElementById('saldoValue');
-            const despesasEl = document.getElementById('despesasValue');
-            const receitasEl = document.getElementById('receitasValue');
+            const despesasValueText = document.getElementById('despesasValueText');
+            const receitasValueText = document.getElementById('receitasValueText');
             const despesasVariationEl = document.getElementById('despesasVariation');
             
             console.log('Elementos encontrados:', {
                 saldo: saldoEl ? 'OK' : 'ERRO',
-                despesas: despesasEl ? 'OK' : 'ERRO',
-                receitas: receitasEl ? 'OK' : 'ERRO',
+                despesas: despesasValueText ? 'OK' : 'ERRO',
+                receitas: receitasValueText ? 'OK' : 'ERRO',
                 despesasVariation: despesasVariationEl ? 'OK' : 'ERRO'
             });
             
-            if (!saldoEl || !despesasEl || !receitasEl) {
+            if (!saldoEl || !despesasValueText || !receitasValueText) {
                 console.error('Alguns elementos não foram encontrados no DOM');
                 return;
             }
@@ -310,11 +381,18 @@
             console.log('Atualizando saldo com:', saldoFormatado);
             saldoEl.textContent = saldoFormatado;
 
-            // Atualizar Despesas (com variação)
+            // Atualizar Despesas (com variação) e preservar visibilidade
             const despesasFormatado = formatarMoeda(data.despesas || 0);
             console.log('Atualizando despesas com:', despesasFormatado);
-            despesasEl.textContent = despesasFormatado;
-            
+            // Atualiza valor armazenado
+            valorDespesasAtual = despesasFormatado;
+            // Aplica visibilidade conforme preferência
+            if (despesasVisivel) {
+                despesasValueText.textContent = valorDespesasAtual;
+            } else {
+                despesasValueText.textContent = '••••••';
+            }
+
             if (despesasVariationEl && typeof data.variacaoDespesas === 'number') {
                 const despesasVar = formatarVariacaoDespesas(data.variacaoDespesas);
                 despesasVariationEl.className = `card-variation ${despesasVar.classe}`;
@@ -325,10 +403,17 @@
                 console.log('Variação de despesas atualizada:', despesasVar);
             }
 
-            // Atualizar Receitas (sem variação)
+            // Atualizar Receitas (sem variação) e preservar visibilidade
             const receitasFormatado = formatarMoeda(data.receitas || 0);
             console.log('Atualizando receitas com:', receitasFormatado);
-            receitasEl.textContent = receitasFormatado;
+            // Atualiza valor armazenado
+            valorReceitasAtual = receitasFormatado;
+            // Aplica visibilidade conforme preferência
+            if (receitasVisivel) {
+                receitasValueText.textContent = valorReceitasAtual;
+            } else {
+                receitasValueText.textContent = '••••••';
+            }
 
             // Remover estado de loading
             removerLoadingCards();
@@ -440,11 +525,23 @@
             const localTime = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
             expenseDateInput.value = `${localDate}T${localTime}`;
         }
-        const expenseBudgetInput = document.getElementById('expenseBudget');
-        {
+        const expenseBudgetSelect = document.getElementById('expenseBudget');
+        if (expenseBudgetSelect) {
+            // Meses em português
+            const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
             const now = new Date();
-            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-            expenseBudgetInput.value = firstDay.toISOString().slice(0,10);
+            const atual = new Date(now.getFullYear(), now.getMonth(), 1);
+            for (let i = -6; i <= 6; i++) {
+                const d = new Date(atual.getFullYear(), atual.getMonth() + i, 1);
+                const mesNome = meses[d.getMonth()];
+                const anoCurto = String(d.getFullYear()).slice(-2);
+                const valor = `${mesNome}/${anoCurto}`;
+                const opt = document.createElement('option');
+                opt.value = valor;
+                opt.textContent = valor.charAt(0).toUpperCase() + valor.slice(1);
+                if (i === 0) opt.selected = true;
+                expenseBudgetSelect.appendChild(opt);
+            }
         }
 
 
@@ -540,6 +637,8 @@
                     if (resultado.success) {
                         mostrarMensagem('success', 'Lançamento enviado com sucesso!');
                         limparCamposFormulario();
+                        // Atualiza os cards do resumo após novo lançamento
+                        await carregarDadosFinanceiros();
                     } else {
                         throw new Error(resultado.error || 'Erro ao enviar lançamento');
                     }
@@ -555,13 +654,25 @@
 
         // Funções auxiliares
         function formatarData(dataHora) {
-            // Converte 2025-08-01T14:30 para 01/08/2025
+            // Converte 2025-08-01T14:30 para 01/08/2025 14:30
             const dt = new Date(dataHora);
-            return `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}/${dt.getFullYear()}`;
+            const dia = String(dt.getDate()).padStart(2, '0');
+            const mes = String(dt.getMonth() + 1).padStart(2, '0');
+            const ano = dt.getFullYear();
+            const hora = String(dt.getHours()).padStart(2, '0');
+            const minuto = String(dt.getMinutes()).padStart(2, '0');
+            return `${dia}/${mes}/${ano} ${hora}:${minuto}`;
         }
         function formatarDataOrcamento(data) {
-            // Converte 2025-08-01 para 2025-08
-            return data.substring(0, 7);
+            // Converte "setembro/25" para "01/09/2025"
+            if (!data) return '';
+            const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+            const [mesNome, anoCurto] = data.split('/');
+            const mesIndex = meses.indexOf(mesNome.toLowerCase());
+            if (mesIndex === -1) return '';
+            const ano = '20' + anoCurto;
+            const mes = String(mesIndex + 1).padStart(2, '0');
+            return `01/${mes}/${ano}`;
         }
         function limparCamposFormulario() {
             document.getElementById('expenseAccount').value = '';
@@ -603,6 +714,125 @@
         // Remove aviso de formulário desabilitado
         const aviso = document.querySelector('.solution-card > p');
         if (aviso) aviso.style.display = 'none';
+
+        // Inicializa autocomplete para o campo de descrição
+        function initDescricaoAutocomplete() {
+            const input = document.getElementById('expenseDescription');
+            if (!input) return;
+            // Ajusta container pai para posicionamento
+            input.parentNode.style.position = 'relative';
+            let suggestions = document.getElementById('descricaoSuggestions');
+            if (!suggestions) {
+                suggestions = document.createElement('div');
+                suggestions.id = 'descricaoSuggestions';
+                Object.assign(suggestions.style, {
+                    position: 'absolute',
+                    // Posiciona abaixo do input considerando distância do topo
+                    top: `${input.offsetTop + input.offsetHeight + 2}px`,
+                    left: '0',
+                    right: '0',
+                    background: 'white',
+                    border: '1px solid #ccc',
+                    maxHeight: '150px',
+                    overflowY: 'auto',
+                    zIndex: '1000'
+                });
+                input.parentNode.appendChild(suggestions);
+                // Oculta sugestões inicialmente
+                suggestions.style.display = 'none';
+            }
+            input.addEventListener('input', onDescricaoInput);
+            // Fecha sugestões ao clicar fora
+            document.addEventListener('click', (e) => {
+                if (e.target !== input) suggestions.innerHTML = '';
+            });
+        }
+
+        // Gera sugestões conforme digitação
+        function onDescricaoInput(e) {
+            const val = e.target.value.trim().toLowerCase();
+            const container = document.getElementById('descricaoSuggestions');
+            // Limpa e esconde container antes de processar
+            container.innerHTML = '';
+            if (val.length < 3) {
+                container.style.display = 'none';
+                return;
+            }
+            const matches = historicoLancamentos.filter(item => item.descricao.toLowerCase().includes(val));
+            if (matches.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            // Exibe container de sugestões
+            container.style.display = 'block';
+            matches.slice(0, 5).forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                div.textContent = item.descricao;
+                div.style.padding = '0.5rem';
+                div.style.cursor = 'pointer';
+                div.addEventListener('click', () => {
+                    // Preenche descrição e categoria
+                    document.getElementById('expenseDescription').value = item.descricao;
+                    const catSelect = document.getElementById('expenseCategory');
+                    let opt = Array.from(catSelect.options).find(o => o.value === item.categoria);
+                    if (!opt) {
+                        opt = document.createElement('option');
+                        opt.value = item.categoria;
+                        opt.textContent = item.categoria;
+                        catSelect.appendChild(opt);
+                    }
+                    catSelect.value = item.categoria;
+                    container.innerHTML = '';
+                    container.style.display = 'none';
+                });
+                container.appendChild(div);
+            });
+        }
+
+        // Autocomplete para contas
+        function initContaAutocomplete() {
+            const input = document.getElementById('expenseAccount');
+            if (!input) return;
+            input.parentNode.style.position = 'relative';
+            let suggestions = document.getElementById('contaSuggestions');
+            if (!suggestions) {
+                suggestions = document.createElement('div');
+                suggestions.id = 'contaSuggestions';
+                Object.assign(suggestions.style, {
+                    position: 'absolute',
+                    top: `${input.offsetTop + input.offsetHeight + 2}px`,
+                    left: '0', right: '0',
+                    background: 'white', border: '1px solid #ccc',
+                    maxHeight: '150px', overflowY: 'auto', zIndex: '1000', display: 'none'
+                });
+                input.parentNode.appendChild(suggestions);
+            }
+            input.addEventListener('input', () => {
+                const val = input.value.trim().toLowerCase();
+                const container = document.getElementById('contaSuggestions');
+                container.innerHTML = '';
+                if (!val) {
+                  contasSugeridas.slice(0,5).forEach(c => {
+                    const div = document.createElement('div'); div.textContent = c; div.style.padding = '0.5rem'; div.style.cursor='pointer';
+                    div.addEventListener('click', ()=>{ input.value = c; container.innerHTML = ''; });
+                    container.appendChild(div);
+                  });
+                  container.style.display = 'block';
+                  return;
+                }
+                const matches = contasSugeridas.filter(c=> c.toLowerCase().includes(val));
+                if (matches.length) {
+                  matches.slice(0,5).forEach(c => {
+                    const div = document.createElement('div'); div.textContent = c; div.style.padding = '0.5rem'; div.style.cursor='pointer';
+                    div.addEventListener('click', ()=>{ input.value = c; container.innerHTML = ''; container.style.display = 'none'; });
+                    container.appendChild(div);
+                  });
+                  container.style.display = 'block';
+                } else container.style.display = 'none';
+            });
+            document.addEventListener('click', e => { if (e.target !== input) document.getElementById('contaSuggestions').innerHTML=''; });
+        }
     </script>
 </body>
 
