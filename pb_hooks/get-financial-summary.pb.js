@@ -180,8 +180,26 @@ routerAdd("GET", "/get-financial-summary", (c) => {
                 ).length
             };
             
-            console.log("Resultado do resumo financeiro:", JSON.stringify(resultado, null, 2));
-            
+            // Montar histórico único de descrição e categoria (colunas D e E)
+            const historicoMap = {};
+            data.values.forEach(row => {
+                if (row.length >= 5) {
+                    const descricao = String(row[3]).trim();
+                    const categoria = String(row[4]).trim();
+                    if (descricao) historicoMap[descricao] = categoria;
+                }
+            });
+            const historicoLancamentos = Object.entries(historicoMap).map(([descricao, categoria]) => ({ descricao, categoria }));
+            resultado.historicoLancamentos = historicoLancamentos;
+            // Montar lista única de contas (coluna C, índice 2)
+            const contasSet = new Set();
+            data.values.forEach(row => {
+                if (row.length > 2 && row[1] != null) {
+                    contasSet.add(String(row[1]));
+                }
+            });
+            resultado.contasSugeridas = Array.from(contasSet);
+            //console.log("Resultado do resumo financeiro com histórico e contas:", JSON.stringify(resultado, null, 2));
             return c.json(200, resultado);
         } else {
             console.log("Erro ao buscar dados da planilha:", dataResponse.raw);

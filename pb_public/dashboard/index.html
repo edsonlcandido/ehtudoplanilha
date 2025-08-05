@@ -162,6 +162,8 @@
     </footer>
     <!-- Script PocketBase e módulos da aplicação -->
     <script type="module">
+        // Histórico para autocomplete de descrições
+        let historicoLancamentos = [];
         // Controle de exibição dos valores dos cards de receita e despesa
         // Carregar preferências de visibilidade do localStorage
         const storedDespesasVisible = localStorage.getItem('despesasVisivel');
@@ -285,9 +287,12 @@
             }
         })();
 
+        // Variável global para armazenar contas sugeridas
+        let contasSugeridas = [];
+
         // Função para carregar dados financeiros
         async function carregarDadosFinanceiros() {
-            try {
+             try {
                 console.log('Carregando dados financeiros...');
                 
                 // Garantir que os cards estão visíveis primeiro
@@ -301,6 +306,11 @@
                 await new Promise(resolve => setTimeout(resolve, 100));
                 
                 const summary = await googleSheetsService.getFinancialSummary();
+                // Armazena histórico e contas sugeridas
+                historicoLancamentos = summary.historicoLancamentos || [];
+                contasSugeridas = summary.contasSugeridas || [];
+                initDescricaoAutocomplete();
+                initContaAutocomplete();
                 console.log('Resposta da API financeira:', summary);
                 
                 if (summary && summary.success) {
@@ -704,6 +714,125 @@
         // Remove aviso de formulário desabilitado
         const aviso = document.querySelector('.solution-card > p');
         if (aviso) aviso.style.display = 'none';
+
+        // Inicializa autocomplete para o campo de descrição
+        function initDescricaoAutocomplete() {
+            const input = document.getElementById('expenseDescription');
+            if (!input) return;
+            // Ajusta container pai para posicionamento
+            input.parentNode.style.position = 'relative';
+            let suggestions = document.getElementById('descricaoSuggestions');
+            if (!suggestions) {
+                suggestions = document.createElement('div');
+                suggestions.id = 'descricaoSuggestions';
+                Object.assign(suggestions.style, {
+                    position: 'absolute',
+                    // Posiciona abaixo do input considerando distância do topo
+                    top: `${input.offsetTop + input.offsetHeight + 2}px`,
+                    left: '0',
+                    right: '0',
+                    background: 'white',
+                    border: '1px solid #ccc',
+                    maxHeight: '150px',
+                    overflowY: 'auto',
+                    zIndex: '1000'
+                });
+                input.parentNode.appendChild(suggestions);
+                // Oculta sugestões inicialmente
+                suggestions.style.display = 'none';
+            }
+            input.addEventListener('input', onDescricaoInput);
+            // Fecha sugestões ao clicar fora
+            document.addEventListener('click', (e) => {
+                if (e.target !== input) suggestions.innerHTML = '';
+            });
+        }
+
+        // Gera sugestões conforme digitação
+        function onDescricaoInput(e) {
+            const val = e.target.value.trim().toLowerCase();
+            const container = document.getElementById('descricaoSuggestions');
+            // Limpa e esconde container antes de processar
+            container.innerHTML = '';
+            if (val.length < 3) {
+                container.style.display = 'none';
+                return;
+            }
+            const matches = historicoLancamentos.filter(item => item.descricao.toLowerCase().includes(val));
+            if (matches.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            // Exibe container de sugestões
+            container.style.display = 'block';
+            matches.slice(0, 5).forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                div.textContent = item.descricao;
+                div.style.padding = '0.5rem';
+                div.style.cursor = 'pointer';
+                div.addEventListener('click', () => {
+                    // Preenche descrição e categoria
+                    document.getElementById('expenseDescription').value = item.descricao;
+                    const catSelect = document.getElementById('expenseCategory');
+                    let opt = Array.from(catSelect.options).find(o => o.value === item.categoria);
+                    if (!opt) {
+                        opt = document.createElement('option');
+                        opt.value = item.categoria;
+                        opt.textContent = item.categoria;
+                        catSelect.appendChild(opt);
+                    }
+                    catSelect.value = item.categoria;
+                    container.innerHTML = '';
+                    container.style.display = 'none';
+                });
+                container.appendChild(div);
+            });
+        }
+
+        // Autocomplete para contas
+        function initContaAutocomplete() {
+            const input = document.getElementById('expenseAccount');
+            if (!input) return;
+            input.parentNode.style.position = 'relative';
+            let suggestions = document.getElementById('contaSuggestions');
+            if (!suggestions) {
+                suggestions = document.createElement('div');
+                suggestions.id = 'contaSuggestions';
+                Object.assign(suggestions.style, {
+                    position: 'absolute',
+                    top: `${input.offsetTop + input.offsetHeight + 2}px`,
+                    left: '0', right: '0',
+                    background: 'white', border: '1px solid #ccc',
+                    maxHeight: '150px', overflowY: 'auto', zIndex: '1000', display: 'none'
+                });
+                input.parentNode.appendChild(suggestions);
+            }
+            input.addEventListener('input', () => {
+                const val = input.value.trim().toLowerCase();
+                const container = document.getElementById('contaSuggestions');
+                container.innerHTML = '';
+                if (!val) {
+                  contasSugeridas.slice(0,5).forEach(c => {
+                    const div = document.createElement('div'); div.textContent = c; div.style.padding = '0.5rem'; div.style.cursor='pointer';
+                    div.addEventListener('click', ()=>{ input.value = c; container.innerHTML = ''; });
+                    container.appendChild(div);
+                  });
+                  container.style.display = 'block';
+                  return;
+                }
+                const matches = contasSugeridas.filter(c=> c.toLowerCase().includes(val));
+                if (matches.length) {
+                  matches.slice(0,5).forEach(c => {
+                    const div = document.createElement('div'); div.textContent = c; div.style.padding = '0.5rem'; div.style.cursor='pointer';
+                    div.addEventListener('click', ()=>{ input.value = c; container.innerHTML = ''; container.style.display = 'none'; });
+                    container.appendChild(div);
+                  });
+                  container.style.display = 'block';
+                } else container.style.display = 'none';
+            });
+            document.addEventListener('click', e => { if (e.target !== input) document.getElementById('contaSuggestions').innerHTML=''; });
+        }
     </script>
 </body>
 
