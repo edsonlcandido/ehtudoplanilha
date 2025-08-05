@@ -183,9 +183,13 @@
             const configBtn = document.getElementById('configBtn');
             const financialCards = document.getElementById('financialCards');
             
-            if (!configBtn) return;
+            if (!configBtn) {
+                console.log('Botão de configuração não encontrado');
+                return;
+            }
             
             try {
+                console.log('Verificando status de configuração...');
                 const response = await fetch(`${apiConfig.getBaseURL()}/config-status`, {
                     method: 'GET',
                     headers: {
@@ -193,17 +197,26 @@
                         'Authorization': `Bearer ${pb.authStore.token}`
                     }
                 });
-                if (!response.ok) throw new Error('Erro na requisição de configuração');
+                
+                console.log('Status da resposta de configuração:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error('Erro na requisição de configuração');
+                }
+                
                 const data = await response.json();
+                console.log('Dados de configuração:', data);
                 
                 // Exibe botão se configuração inválida ou campos faltando
                 if (!data.validConfig) {
                     console.log('Configuração incompleta, campos faltando:', data.missing);
                     configBtn.style.display = '';
                 } else {
+                    console.log('Configuração OK, carregando dados financeiros...');
                     // Se configuração OK, carrega dados financeiros
                     await carregarDadosFinanceiros();
                     financialCards.style.display = 'grid';
+                    console.log('Cards financeiros devem estar visíveis agora');
                 }
             } catch (error) {
                 console.error('Erro ao verificar configuração do Google:', error);
@@ -215,12 +228,26 @@
         async function carregarDadosFinanceiros() {
             try {
                 console.log('Carregando dados financeiros...');
-                const summary = await googleSheetsService.getFinancialSummary();
                 
-                if (summary.success) {
+                // Garantir que os cards estão visíveis primeiro
+                const financialCards = document.getElementById('financialCards');
+                if (financialCards) {
+                    financialCards.style.display = 'grid';
+                    console.log('Cards forçados a ficar visíveis');
+                }
+                
+                // Aguardar um tempo para garantir que o DOM está pronto
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                const summary = await googleSheetsService.getFinancialSummary();
+                console.log('Resposta da API financeira:', summary);
+                
+                if (summary && summary.success) {
+                    console.log('Dados válidos recebidos, chamando atualizarCardsFinanceiros...');
                     atualizarCardsFinanceiros(summary);
                 } else {
-                    console.error('Erro ao carregar dados financeiros:', summary.error);
+                    console.error('Erro ao carregar dados financeiros:', summary ? summary.error : 'Resposta inválida');
+                    removerLoadingCards();
                 }
             } catch (error) {
                 console.error('Erro ao carregar dados financeiros:', error);
@@ -231,20 +258,45 @@
 
         // Função para atualizar os cards com os dados
         function atualizarCardsFinanceiros(data) {
+            console.log('Dados recebidos para atualizar cards:', data);
+            
+            // Verificar se os elementos existem
+            const saldoEl = document.getElementById('saldoValue');
+            const despesasEl = document.getElementById('despesasValue');
+            const receitasEl = document.getElementById('receitasValue');
+            const despesasVariationEl = document.getElementById('despesasVariation');
+            
+            console.log('Elementos encontrados:', {
+                saldo: saldoEl ? 'OK' : 'ERRO',
+                despesas: despesasEl ? 'OK' : 'ERRO',
+                receitas: receitasEl ? 'OK' : 'ERRO',
+                despesasVariation: despesasVariationEl ? 'OK' : 'ERRO'
+            });
+            
+            if (!saldoEl || !despesasEl || !receitasEl) {
+                console.error('Alguns elementos não foram encontrados no DOM');
+                return;
+            }
+            
             // Formatador de moeda brasileira
             const formatarMoeda = (valor) => {
-                return new Intl.NumberFormat('pt-BR', {
+                console.log('Formatando valor:', valor, 'tipo:', typeof valor);
+                const resultado = new Intl.NumberFormat('pt-BR', {
                     style: 'currency',
                     currency: 'BRL'
                 }).format(valor);
+                console.log('Valor formatado:', resultado);
+                return resultado;
             };
 
-            // Formatador de variação percentual
-            const formatarVariacao = (variacao, tipo) => {
+            // Formatador de variação percentual (apenas para despesas)
+            const formatarVariacaoDespesas = (variacao) => {
+                console.log('Formatando variação de despesas:', variacao);
                 const sinal = variacao >= 0 ? '+' : '';
+                // Para despesas: variação negativa é boa (menos gastos = 📉 verde), positiva é ruim (mais gastos = 📈 vermelho)
                 const icone = variacao > 0 ? '📈' : variacao < 0 ? '📉' : '📊';
-                const classe = variacao > 0 ? 'variation-positive' : 
-                             variacao < 0 ? 'variation-negative' : 'variation-neutral';
+                const classe = variacao > 0 ? 'variation-negative' : 
+                             variacao < 0 ? 'variation-positive' : 'variation-neutral';
                 
                 return {
                     texto: `${sinal}${variacao.toFixed(1)}% em relação ao mês anterior`,
@@ -253,34 +305,115 @@
                 };
             };
 
-            // Atualizar Saldo
-            document.getElementById('saldoValue').textContent = formatarMoeda(data.saldo);
+            // Atualizar Saldo (sem variação)
+            const saldoFormatado = formatarMoeda(data.saldo || 0);
+            console.log('Atualizando saldo com:', saldoFormatado);
+            saldoEl.textContent = saldoFormatado;
 
             // Atualizar Despesas (com variação)
-            document.getElementById('despesasValue').textContent = formatarMoeda(data.despesas);
-            const despesasVar = formatarVariacao(data.variacaoDespesas, 'despesas');
-            const despesasVariationEl = document.getElementById('despesasVariation');
-            despesasVariationEl.className = `card-variation ${despesasVar.classe}`;
-            despesasVariationEl.innerHTML = `
-                <span class="variation-icon">${despesasVar.icone}</span>
-                <span>${despesasVar.texto}</span>
-            `;
+            const despesasFormatado = formatarMoeda(data.despesas || 0);
+            console.log('Atualizando despesas com:', despesasFormatado);
+            despesasEl.textContent = despesasFormatado;
+            
+            if (despesasVariationEl && typeof data.variacaoDespesas === 'number') {
+                const despesasVar = formatarVariacaoDespesas(data.variacaoDespesas);
+                despesasVariationEl.className = `card-variation ${despesasVar.classe}`;
+                despesasVariationEl.innerHTML = `
+                    <span class="variation-icon">${despesasVar.icone}</span>
+                    <span>${despesasVar.texto}</span>
+                `;
+                console.log('Variação de despesas atualizada:', despesasVar);
+            }
 
-            // Atualizar Receitas
-            document.getElementById('receitasValue').textContent = formatarMoeda(data.receitas);
+            // Atualizar Receitas (sem variação)
+            const receitasFormatado = formatarMoeda(data.receitas || 0);
+            console.log('Atualizando receitas com:', receitasFormatado);
+            receitasEl.textContent = receitasFormatado;
 
             // Remover estado de loading
             removerLoadingCards();
             
-            console.log('Cards financeiros atualizados com sucesso:', data);
+            console.log('Cards financeiros atualizados com sucesso');
+            
+            // Verificar se os valores foram realmente aplicados
+            setTimeout(() => {
+                console.log('Verificação após atualização:');
+                console.log('Saldo DOM:', saldoEl.textContent);
+                console.log('Despesas DOM:', despesasEl.textContent);
+                console.log('Receitas DOM:', receitasEl.textContent);
+            }, 100);
         }
 
         // Função para remover estado de loading dos cards
         function removerLoadingCards() {
+            console.log('Removendo estado de loading dos cards...');
             document.querySelectorAll('.financial-card.loading').forEach(card => {
+                console.log('Removendo loading do card:', card.className);
                 card.classList.remove('loading');
             });
         }
+
+        // Função de teste para verificar se conseguimos atualizar os cards
+        function testarAtualizacaoCards() {
+            console.log('Testando atualização manual dos cards...');
+            const dadosTeste = {
+                saldo: 1000,
+                despesas: 500,
+                receitas: 1500,
+                variacaoDespesas: 10
+            };
+            atualizarCardsFinanceiros(dadosTeste);
+        }
+
+        // Função para testar DOM diretamente
+        function testeDomsimples() {
+            console.log('=== TESTE DOM SIMPLES ===');
+            
+            setTimeout(() => {
+                const saldoEl = document.getElementById('saldoValue');
+                const despesasEl = document.getElementById('despesasValue');
+                const receitasEl = document.getElementById('receitasValue');
+                
+                console.log('Saldo elemento:', saldoEl);
+                console.log('Despesas elemento:', despesasEl);
+                console.log('Receitas elemento:', receitasEl);
+                
+                if (saldoEl) {
+                    saldoEl.textContent = 'R$ 1.000,00';
+                    console.log('Saldo atualizado para R$ 1.000,00');
+                } else {
+                    console.error('Elemento saldoValue não encontrado!');
+                }
+                if (despesasEl) {
+                    despesasEl.textContent = 'R$ 500,00';
+                    console.log('Despesas atualizadas para R$ 500,00');
+                } else {
+                    console.error('Elemento despesasValue não encontrado!');
+                }
+                if (receitasEl) {
+                    receitasEl.textContent = 'R$ 1.500,00';
+                    console.log('Receitas atualizadas para R$ 1.500,00');
+                } else {
+                    console.error('Elemento receitasValue não encontrado!');
+                }
+                
+                // Verificar se mudou
+                setTimeout(() => {
+                    console.log('Verificação final:');
+                    console.log('Saldo atual:', saldoEl ? saldoEl.textContent : 'elemento não encontrado');
+                    console.log('Despesas atual:', despesasEl ? despesasEl.textContent : 'elemento não encontrado');
+                    console.log('Receitas atual:', receitasEl ? receitasEl.textContent : 'elemento não encontrado');
+                }, 1000);
+                
+            }, 2000);
+        }
+
+        // Disponibilizar função de teste globalmente para debug
+        //window.testarCards = testarAtualizacaoCards;
+        //window.testeDomsimples = testeDomsimples;
+        
+        // Executar teste automático
+        //setTimeout(testeDomsimples, 3000);
 
         // Controle de sinal de valor
         const expenseSignBtn = document.getElementById('expenseSignBtn');

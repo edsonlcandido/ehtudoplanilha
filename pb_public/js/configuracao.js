@@ -61,7 +61,7 @@ function updateAuthorizationButton() {
         // Update card description
         const cardDescription = authCard.querySelector('p');
         if (cardDescription) {
-            cardDescription.textContent = 'Sua conta está conectada ao Google Drive e pronta para usar.';
+            cardDescription.textContent = 'Sua conta está conectada ao Google Drive. Agora você pode selecionar ou criar uma planilha para uso.';
         }
         
         console.log('User already authorized, showing connected status');
@@ -75,7 +75,7 @@ function updateAuthorizationButton() {
         // Ensure card description is correct
         const cardDescription = authCard.querySelector('p');
         if (cardDescription) {
-            cardDescription.textContent = 'Autorize o acesso ao Google Drive. Após a autorização, uma planilha template será automaticamente copiada para o seu Drive, pronta para uso.';
+            cardDescription.textContent = 'Autorize o acesso ao Google Drive. Após a autorização, você poderá selecionar ou criar uma planilha para uso.';
         }
         
         console.log('User needs to authorize, showing authorization button');
@@ -83,28 +83,15 @@ function updateAuthorizationButton() {
 }
 
 /**
- * Handle OAuth callback success or error, including template provision status
+ * Handle OAuth callback success or error
  */
 function handleOAuthCallback() {
     const urlParams = new URLSearchParams(window.location.search);
     const success = urlParams.get('success');
     const error = urlParams.get('error');
-    const provision = urlParams.get('provision');
-    const sheetName = urlParams.get('sheet_name');
-    const message = urlParams.get('message');
 
     if (success) {
-        if (provision === 'true') {
-            // OAuth e provisionamento de template bem-sucedidos
-            const successMessage = message || `Autorização Google concluída e planilha "${sheetName || 'Controle Financeiro'}" copiada com sucesso!`;
-            showSuccessMessage(successMessage);
-        } else if (provision === 'false') {
-            // OAuth bem-sucedido, mas falha no provisionamento automático
-            showWarningMessage('Autorização Google concluída, mas houve um problema ao copiar a planilha template automaticamente. Você pode usar o botão "Selecionar Planilha" para escolher uma planilha existente ou tentar provisionar manualmente.');
-        } else {
-            // OAuth bem-sucedido, status de provisionamento desconhecido
-            showSuccessMessage('Autorização Google concluída com sucesso!');
-        }
+        showSuccessMessage('Autorização Google concluída com sucesso! Agora você pode selecionar uma planilha existente ou criar uma nova.');
         
         // Limpar URL e atualizar a página
         setTimeout(() => {
