@@ -131,6 +131,7 @@
                                     <select id="expenseBudget" name="orcamento" class="form-control" required></select>
                                 </div>
                                 <!-- Botões -->
+
                                 <div class="form-group" style="display:flex; justify-content:space-around; align-items:center; margin-top:2rem;">
                                     <button type="reset" class="button warning">Limpar</button>
                                     <button type="submit" class="button success">Salvar</button>
@@ -407,7 +408,6 @@
             if (receitasVisivel) {
                 receitasValueText.textContent = valorReceitasAtual;
             } else {
-                receitasValueText.textContent = '••••••';
                 receitasValueText.textContent = '••••••';
             }
 
@@ -842,6 +842,7 @@
         document.getElementById('closeEntryModal').addEventListener('click', () => {
             document.getElementById('entryModal').style.display = 'none';
         });
+
     </script>
 </body>
 
