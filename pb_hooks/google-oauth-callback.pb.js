@@ -117,79 +117,8 @@ routerAdd("GET", "/google-oauth-callback", (c) => {
       console.log("Novos tokens salvos para usuário:", userId)
     }
 
-    // Após salvar os tokens, automaticamente provisionar a planilha template
-    console.log("Tentando provisionar planilha template automaticamente...")
-    
-    try {
-      // Verificar se já existe uma planilha configurada
-      const existingSheetId = googleInfo ? googleInfo.get("sheet_id") : null;
-      
-      if (!existingSheetId || existingSheetId.trim() === "") {
-        // Obter o ID do template das variáveis de ambiente
-        const templateId = $os.getenv("SHEET_TEMPLATE_ID");
-        
-        if (templateId) {
-          // Preparar o corpo da requisição para copiar a planilha
-          const copyRequestBody = JSON.stringify({
-            "name": `Controle Financeiro - ${new Date().toLocaleDateString('pt-BR')}`
-          });
-
-          // Fazer requisição para copiar a planilha template
-          const copyResponse = $http.send({
-            url: `https://www.googleapis.com/drive/v3/files/${templateId}/copy`,
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${accessToken}`,
-              "Content-Type": "application/json"
-            },
-            body: copyRequestBody
-          });
-
-          if (copyResponse.statusCode === 200) {
-            const copyData = copyResponse.json;
-            const newSheetId = copyData.id;
-            
-            // Atualizar o registro com o ID da nova planilha
-            if (googleInfo) {
-              googleInfo.set("sheet_id", newSheetId);
-              $app.save(googleInfo);
-            } else {
-              // Criar novo registro com sheet_id
-              const newGoogleInfo = new Record(googleInfosCollection);
-              newGoogleInfo.set("user_id", userId);
-              newGoogleInfo.set("access_token", accessToken);
-              if (refreshToken) {
-                newGoogleInfo.set("refresh_token", refreshToken);
-              }
-              newGoogleInfo.set("sheet_id", newSheetId);
-              $app.save(newGoogleInfo);
-            }
-
-            console.log(`Planilha template copiada automaticamente: ${newSheetId}`);
-            
-            const params = new URLSearchParams({
-              success: "true",
-              provision: "true", 
-              sheet_name: copyData.name || `Controle Financeiro - ${new Date().toLocaleDateString('pt-BR')}`,
-              message: "Autorização concluída e planilha template copiada com sucesso!"
-            });
-            return c.redirect(302, `/dashboard/configuracao.html?${params.toString()}`);
-          } else {
-            console.log("Erro ao copiar planilha template:", copyResponse.json);
-          }
-        } else {
-          console.log("SHEET_TEMPLATE_ID não configurado");
-        }
-      }
-      
-      // Se chegou aqui, não foi possível copiar automaticamente ou já existe planilha
-      return c.redirect(302, "/dashboard/configuracao.html?success=true&provision=false");
-      
-    } catch (provisionError) {
-      console.log("Erro interno ao provisionar planilha:", provisionError);
-      // Ainda redireciona com sucesso OAuth, mas sem provisionamento
-      return c.redirect(302, "/dashboard/configuracao.html?success=true&provision=false");
-    }
+    // Redirecionar para a página de configuração com sucesso
+    return c.redirect(302, "/dashboard/configuracao.html?success=true");
 
   } catch (error) {
     console.log("Erro interno no processamento OAuth:", error)
