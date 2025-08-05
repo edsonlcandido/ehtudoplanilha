@@ -399,3 +399,10 @@ body {
         background-position: -200% 0;
     }
 }
+
+/* Remove hover effect para cards de modal */
+.modal-content.solution-card:hover,
+.modal-content .solution-card:hover {
+    transform: none !important;
+    box-shadow: var(--shadow) !important;
+}
