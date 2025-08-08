@@ -117,12 +117,11 @@
                                     <label for="expenseDescription">Descrição:</label>
                                     <input type="text" id="expenseDescription" name="descricao" class="form-control" placeholder="Descrição da despesa" required>
                                 </div>
-                                <!-- Categoria -->
-                                <div class="form-group" style="margin-bottom: 1rem;">
+                                <!-- Categoria: combobox com filtro -->
+                                <div class="form-group" style="margin-bottom: 1rem; position:relative;">
                                     <label for="expenseCategory">Categoria:</label>
-                                    <select id="expenseCategory" name="categoria" class="form-control" required>
-                                        <option value="">Selecione uma categoria</option>
-                                    </select>
+                                    <input type="text" id="expenseCategory" name="categoria" class="form-control" placeholder="Selecione ou digite uma categoria" list="categoriaList" autocomplete="off" required>
+                                    <datalist id="categoriaList"></datalist>
                                 </div>
                                 <!-- Orçamento -->
                                 <div class="form-group" style="margin-bottom: 1.5rem;">
@@ -542,53 +541,36 @@
 
         // Carrega categorias diretamente da planilha (aba 'Categorias')
         async function carregarCategorias() {
-            const categorySelect = document.getElementById('expenseCategory');
-            if (!categorySelect) return;
+            const categoryInput = document.getElementById('expenseCategory');
+            const dataList = document.getElementById('categoriaList');
+            if (!categoryInput || !dataList) return;
             
             try {
                 // Tenta buscar categorias da planilha
                 const categorias = await googleSheetsService.getCategories();
                 
-                // Limpa opções existentes, mantendo apenas a primeira
-                while (categorySelect.options.length > 1) {
-                    categorySelect.remove(1);
-                }
-                
-                if (categorias && categorias.length > 0) {
-                    // Adiciona as categorias da planilha
-                    categorias.forEach(cat => {
-                        const opt = document.createElement('option');
-                        opt.value = cat;
-                        opt.textContent = cat;
-                        categorySelect.appendChild(opt);
-                    });
-                    console.log('Categorias carregadas da planilha:', categorias);
-                } else {
-                    // Se não encontrou categorias, usa o fallback de categorias padrão
-                    const categoriasPadrao = [
-                        'Alimentação', 'Transporte', 'Moradia', 'Saúde', 
-                        'Educação', 'Lazer', 'Vestuário', 'Outras'
-                    ];
-                    categoriasPadrao.forEach(cat => {
-                        const opt = document.createElement('option');
-                        opt.value = cat;
-                        opt.textContent = cat;
-                        categorySelect.appendChild(opt);
-                    });
-                    console.log('Usando categorias padrão (não foi possível carregar da planilha)');
-                }
-            } catch (error) {
-                console.error('Erro ao carregar categorias:', error);
-                // Em caso de erro, usa as categorias padrão
-                const categoriasPadrao = [
-                    'Alimentação', 'Transporte', 'Moradia', 'Saúde', 
+                // Limpa opções existentes do datalist
+                dataList.innerHTML = '';
+                const lista = (categorias && categorias.length) ? categorias : [
+                    'Alimentação', 'Transporte', 'Moradia', 'Saúde',
                     'Educação', 'Lazer', 'Vestuário', 'Outras'
                 ];
-                categoriasPadrao.forEach(cat => {
+                lista.forEach(cat => {
                     const opt = document.createElement('option');
                     opt.value = cat;
-                    opt.textContent = cat;
-                    categorySelect.appendChild(opt);
+                    dataList.appendChild(opt);
+                });
+                console.log('Categorias disponíveis:', lista);
+            } catch (error) {
+                console.error('Erro ao carregar categorias:', error);
+                // Em caso de erro, usa categorias padrão no datalist
+                dataList.innerHTML = '';
+                ['Alimentação', 'Transporte', 'Moradia', 'Saúde',
+                 'Educação', 'Lazer', 'Vestuário', 'Outras']
+                 .forEach(cat => {
+                    const opt = document.createElement('option');
+                    opt.value = cat;
+                    dataList.appendChild(opt);
                 });
             }
         }
@@ -726,12 +708,11 @@
                 suggestions.id = 'descricaoSuggestions';
                 Object.assign(suggestions.style, {
                     position: 'absolute',
-                    // Posiciona abaixo do input considerando distância do topo
-                    top: `${input.offsetTop + input.offsetHeight + 2}px`,
+                    top: '100%', // posiciona logo abaixo do input
                     left: '0',
                     right: '0',
                     background: 'white',
-                    border: '1px solid #ccc',
+                    border: 'none', // sem borda após seleção
                     maxHeight: '150px',
                     overflowY: 'auto',
                     zIndex: '1000'
@@ -743,7 +724,11 @@
             input.addEventListener('input', onDescricaoInput);
             // Fecha sugestões ao clicar fora
             document.addEventListener('click', (e) => {
-                if (e.target !== input) suggestions.innerHTML = '';
+                if (!input.contains(e.target) && !suggestions.contains(e.target)) {
+                    suggestions.innerHTML = '';
+                    suggestions.style.display = 'none';
+                    suggestions.style.border = 'none';
+                }
             });
         }
 
@@ -764,6 +749,7 @@
             }
             // Exibe container de sugestões
             container.style.display = 'block';
+            container.style.border = '1px solid #ccc';
             matches.slice(0, 5).forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'suggestion-item';
@@ -800,9 +786,9 @@
                 suggestions.id = 'contaSuggestions';
                 Object.assign(suggestions.style, {
                     position: 'absolute',
-                    top: `${input.offsetTop + input.offsetHeight + 2}px`,
+                    top: '100%', // posiciona abaixo do input
                     left: '0', right: '0',
-                    background: 'white', border: '1px solid #ccc',
+                    background: 'white', border: 'none', // sem borda após seleção
                     maxHeight: '150px', overflowY: 'auto', zIndex: '1000', display: 'none'
                 });
                 input.parentNode.appendChild(suggestions);
@@ -818,6 +804,7 @@
                     container.appendChild(div);
                   });
                   container.style.display = 'block';
+                  container.style.border = '1px solid #ccc';
                   return;
                 }
                 const matches = contasSugeridas.filter(c=> c.toLowerCase().includes(val));
@@ -828,9 +815,16 @@
                     container.appendChild(div);
                   });
                   container.style.display = 'block';
+                  container.style.border = '1px solid #ccc';
                 } else container.style.display = 'none';
             });
-            document.addEventListener('click', e => { if (e.target !== input) document.getElementById('contaSuggestions').innerHTML=''; });
+            document.addEventListener('click', e => {
+                if (!input.contains(e.target) && !suggestions.contains(e.target)) {
+                    suggestions.innerHTML = '';
+                    suggestions.style.display = 'none';
+                    suggestions.style.border = 'none';
+                }
+            });
         }
 
         // Fechar modal ao clicar fora do conteúdo
