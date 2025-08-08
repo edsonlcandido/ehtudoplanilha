@@ -14,7 +14,7 @@
     <!-- NAV: menu dinâmico igual ao index.html -->
     <nav>
         <a href="/" class="brand">
-            <span>Planilha</span>
+            <span>Planilha Eh Tudo</span>
         </a>
         <input id="bmenub" type="checkbox" class="show">
         <label for="bmenub" class="burger pseudo button">menu</label>
@@ -118,7 +118,7 @@
                                     <input type="text" id="expenseDescription" name="descricao" class="form-control" placeholder="Descrição da despesa" required>
                                 </div>
                                 <!-- Categoria: combobox com filtro -->
-                                <div class="form-group" style="margin-bottom: 1rem; position:relative;">
+                                <div class="form-group" style="margin-bottom: 1rem;">
                                     <label for="expenseCategory">Categoria:</label>
                                     <input type="text" id="expenseCategory" name="categoria" class="form-control" placeholder="Selecione ou digite uma categoria" list="categoriaList" autocomplete="off" required>
                                     <datalist id="categoriaList"></datalist>
@@ -147,7 +147,7 @@
     <!-- FOOTER -->
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2025 Seu App Financeiro. Todos os direitos reservados.</p>
+            <p>&copy; 2025 Planilha Eh Tudo. Simplificando suas finanças.</p>
         </div>
         <p>
             <small>Produzido por
@@ -659,7 +659,7 @@
             document.getElementById('expenseAccount').value = '';
             document.getElementById('expenseValue').value = '';
             document.getElementById('expenseDescription').value = '';
-            document.getElementById('expenseCategory').selectedIndex = 0;
+            document.getElementById('expenseCategory').value = '';
             currentSign = '-';
             updateSign();
         }
@@ -724,7 +724,7 @@
             input.addEventListener('input', onDescricaoInput);
             // Fecha sugestões ao clicar fora
             document.addEventListener('click', (e) => {
-                if (!input.contains(e.target) && !suggestions.contains(e.target)) {
+                if (e.target !== input && !suggestions.contains(e.target)) {
                     suggestions.innerHTML = '';
                     suggestions.style.display = 'none';
                     suggestions.style.border = 'none';
@@ -759,15 +759,10 @@
                 div.addEventListener('click', () => {
                     // Preenche descrição e categoria
                     document.getElementById('expenseDescription').value = item.descricao;
-                    const catSelect = document.getElementById('expenseCategory');
-                    let opt = Array.from(catSelect.options).find(o => o.value === item.categoria);
-                    if (!opt) {
-                        opt = document.createElement('option');
-                        opt.value = item.categoria;
-                        opt.textContent = item.categoria;
-                        catSelect.appendChild(opt);
-                    }
-                    catSelect.value = item.categoria;
+                    const categoryInput = document.getElementById('expenseCategory');
+                    // Define o valor da categoria no input diretamente
+                    categoryInput.value = item.categoria;
+                    // Limpa e esconde o container de sugestões
                     container.innerHTML = '';
                     container.style.display = 'none';
                 });
@@ -819,7 +814,7 @@
                 } else container.style.display = 'none';
             });
             document.addEventListener('click', e => {
-                if (!input.contains(e.target) && !suggestions.contains(e.target)) {
+                if (e.target !== input && !suggestions.contains(e.target)) {
                     suggestions.innerHTML = '';
                     suggestions.style.display = 'none';
                     suggestions.style.border = 'none';
