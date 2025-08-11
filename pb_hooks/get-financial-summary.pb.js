@@ -199,6 +199,20 @@ routerAdd("GET", "/get-financial-summary", (c) => {
                 }
             });
             resultado.contasSugeridas = Array.from(contasSet);
+            // Calcula categorias mais gastas do mês atual
+            const categoriasPorMes = {};
+            data.values.forEach(row => {
+                if (row.length >= 6) {
+                    const valor = typeof row[2] === 'number' ? row[2] : parseFloat(String(row[2]).replace(',', '.')) || 0;
+                    const categoria = String(row[4]).trim();
+                    const orcamento = row[5];
+                    if (valor < 0 && orcamento === mesAtualOrcamento && categoria) {
+                        categoriasPorMes[categoria] = (categoriasPorMes[categoria] || 0) + Math.abs(valor);
+                    }
+                }
+            });
+            // Converte em array de objetos
+            resultado.categorias = Object.entries(categoriasPorMes).map(([categoria, valor]) => ({ categoria, valor }));
             //console.log("Resultado do resumo financeiro com histórico e contas:", JSON.stringify(resultado, null, 2));
             return c.json(200, resultado);
         } else {
