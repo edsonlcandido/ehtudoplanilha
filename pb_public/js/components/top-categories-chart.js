@@ -41,19 +41,21 @@ class TopCategoriesChart {
         this.container.innerHTML = `
             <div class="top-categories-container">
                 <h4>Top ${limit} Categorias - Gastos</h4>
-                <table class="primary">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Categoria</th>
-                            <th>Valor</th>
-                            <th>% do Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${skeletonRows}
-                    </tbody>
-                </table>
+                <div class="tabela-rolavel" style="width: 100%; overflow-x: auto; white-space: nowrap; border: 1px solid #ddd; padding: 5px; border-radius: 4px; -webkit-overflow-scrolling: touch;">
+                    <table class="primary" style="min-width: 600px; width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Categoria</th>
+                                <th>Valor</th>
+                                <th>% do Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${skeletonRows}
+                        </tbody>
+                    </table>
+                </div>
             </div>
             <style>
                 @keyframes pulse {
@@ -91,16 +93,17 @@ class TopCategoriesChart {
         let tableHTML = `
             <div class="top-categories-container">
                 <h4>Top ${this.options.limit} Categorias - Gastos</h4>
-                <table class="primary">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Categoria</th>
-                            <th>Valor</th>
-                            <th>% do Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div class="tabela-rolavel" style="width: 100%; overflow-x: auto; white-space: nowrap; border: 1px solid #ddd; padding: 5px; border-radius: 4px; -webkit-overflow-scrolling: touch;">
+                    <table class="primary" style="min-width: 600px; width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Categoria</th>
+                                <th>Valor</th>
+                                <th>% do Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
         `;
 
         const total = this.data.reduce((sum, item) => sum + item.valor, 0);
@@ -125,10 +128,33 @@ class TopCategoriesChart {
         tableHTML += `
                     </tbody>
                 </table>
+                </div>
             </div>
         `;
 
         this.container.innerHTML = tableHTML;
+        
+        // Verificar se a tabela precisa de rolagem e mostrar indicador visual se necessário
+        setTimeout(() => {
+            const tableContainer = this.container.querySelector('.tabela-rolavel');
+            if (tableContainer && tableContainer.scrollWidth > tableContainer.clientWidth) {
+                // Adicionar indicador visual de rolagem se a tabela for maior que o contêiner
+                const indicator = document.createElement('div');
+                indicator.style.position = 'absolute';
+                indicator.style.right = '10px';
+                indicator.style.top = '50%';
+                indicator.style.transform = 'translateY(-50%)';
+                indicator.style.color = '#999';
+                indicator.style.backgroundColor = 'rgba(255,255,255,0.7)';
+                indicator.style.padding = '5px';
+                indicator.style.borderRadius = '3px';
+                indicator.style.pointerEvents = 'none';
+                indicator.textContent = '→';
+                indicator.style.animation = 'fadeInOut 1.5s infinite';
+                tableContainer.style.position = 'relative';
+                tableContainer.appendChild(indicator);
+            }
+        }, 300);
     }
 
     async fetchData() {
@@ -159,6 +185,28 @@ class TopCategoriesChart {
         }
         this.fetchData();
         document.addEventListener('reload-top-categories', () => { this.fetchData(); });
+        
+        // Adiciona estilo para animação do indicador de rolagem
+        if (!document.getElementById('tabela-rolavel-style')) {
+            const style = document.createElement('style');
+            style.id = 'tabela-rolavel-style';
+            style.textContent = `
+                @keyframes fadeInOut {
+                    0%, 100% { opacity: 0.3; }
+                    50% { opacity: 1; }
+                }
+                .tabela-rolavel::-webkit-scrollbar {
+                    height: 8px;
+                    background-color: #f5f5f5;
+                }
+                .tabela-rolavel::-webkit-scrollbar-thumb {
+                    background-color: #ccc;
+                    border-radius: 4px;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
         return this;
     }
 }

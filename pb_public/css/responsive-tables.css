@@ -1,0 +1,92 @@
+/* Versão robusta para tabelas responsivas com rolagem horizontal */
+.table-responsive {
+    width: 100%;
+    overflow-x: scroll !important; /* Força rolagem em vez de auto */
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 0 15px 0;
+    padding: 8px 0;
+    position: relative;
+    display: block;
+    border-radius: 4px;
+    background: #fff;
+    
+    /* Safari e iOS */
+    -webkit-overflow-scrolling: touch;
+    /* Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: #999 #eee;
+}
+
+/* Estilo específico da barra de rolagem para navegadores Webkit */
+.table-responsive::-webkit-scrollbar {
+    height: 8px;
+    background-color: #f5f5f5;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background-color: #999;
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background-color: #f5f5f5;
+    border-radius: 4px;
+}
+
+/* Estilo da tabela interna */
+.table-responsive table {
+    margin: 0;
+    border-collapse: collapse;
+    border-spacing: 0;
+    width: auto;
+}
+
+/* Telas pequenas (mobile) */
+@media (max-width: 768px) {
+    .table-responsive {
+        border: 1px solid #ddd;
+        box-shadow: 0 0 5px rgba(0,0,0,0.05);
+    }
+    
+    /* Garante largura mínima para forçar rolagem */
+    .table-responsive table {
+        min-width: 600px;
+    }
+    
+    /* Indicadores visuais de rolagem */
+    .table-responsive::after,
+    .table-responsive::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 15px;
+        z-index: 1;
+        pointer-events: none;
+    }
+    
+    .table-responsive::after {
+        right: 0;
+        background: linear-gradient(to left, rgba(255,255,255,0.9), rgba(255,255,255,0));
+    }
+    
+    .table-responsive::before {
+        left: 0;
+        background: linear-gradient(to right, rgba(255,255,255,0.9), rgba(255,255,255,0));
+    }
+    
+    /* Célula com tamanho otimizado */
+    .table-responsive th,
+    .table-responsive td {
+        white-space: nowrap;
+        padding: 8px 10px;
+    }
+    
+    /* Garante que contêineres não extravasem */
+    body, html, .container, .section, .dashboard-main, 
+    #topCategoriesContainer, .top-categories-container {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+}
