@@ -14,6 +14,8 @@ class TopCategoriesChart {
         };
         this.data = null;
         this.isLoading = false;
+        this.currentBudget = null;
+        this.currentMonth = null;
     }
 
     formatarMoeda(value) {
@@ -157,11 +159,30 @@ class TopCategoriesChart {
         }, 300);
     }
 
-    async fetchData() {
+    async fetchData(budgetCode = null, monthCode = null) {
         try {
             this.isLoading = true;
             this.renderLoading();
-            const financialData = await googleSheetsService.getFinancialSummary();
+            
+            // Construir URL com parâmetros opcionais
+            let url = '/get-financial-summary';
+            const params = new URLSearchParams();
+            if (budgetCode) params.append('budget', budgetCode);
+            if (monthCode) params.append('month', monthCode);
+            if (params.toString()) {
+                url += '?' + params.toString();
+            }
+            
+            const response = await fetch(`${window.pb.baseUrl}${url}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${window.pb.authStore.token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const financialData = await response.json();
+            
             if (!financialData || !financialData.categorias) {
                 throw new Error('Dados de categorias não disponíveis');
             }
@@ -176,6 +197,28 @@ class TopCategoriesChart {
         } finally {
             this.isLoading = false;
         }
+    }
+
+    // Método para atualizar período
+    updatePeriod(budgetCode, monthCode) {
+        this.currentBudget = budgetCode;
+        this.currentMonth = monthCode;
+        this.fetchData(budgetCode, monthCode);
+    }
+    
+    // Método para atualizar dados diretamente (usado quando já temos os dados)
+    updateData(categoriesData) {
+        if (!categoriesData || !Array.isArray(categoriesData)) {
+            this.data = [];
+            this.renderTable();
+            return;
+        }
+        
+        const sortedData = categoriesData
+            .sort((a, b) => b.valor - a.valor)
+            .slice(0, this.options.limit);
+        this.data = sortedData;
+        this.renderTable();
     }
 
     init() {

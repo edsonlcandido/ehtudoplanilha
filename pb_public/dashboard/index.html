@@ -28,6 +28,65 @@
             scrollbar-color: #ccc transparent; /* Firefox */
         }
         
+        /* Estilos para os seletores de período */
+        .period-selectors {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .selector-container {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .selector-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .selector-group label {
+            font-weight: 600;
+            color: #495057;
+            white-space: nowrap;
+        }
+        
+        .selector-group select {
+            min-width: 150px;
+            padding: 0.5rem;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            background-color: white;
+        }
+        
+        .selector-group select:focus {
+            outline: none;
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        
+        @media (max-width: 768px) {
+            .selector-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .selector-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .selector-group select {
+                min-width: auto;
+                width: 100%;
+            }
+        }
+        
         /* Garantir min-width nas tabelas dentro de contêineres roláveis */
         .tabela-rolavel table {
             min-width: 600px;
@@ -70,6 +129,27 @@
         <div class="container text-center">
             <h2>Bem-vindo ao seu Dashboard!</h2>
             <p>Aqui você pode visualizar e inserir lançamentos de forma simples e rápida.</p>
+            
+            <!-- Seletores de Período -->
+            <div id="periodSelectors" class="period-selectors" style="display: none; margin-bottom: 2rem;">
+                <div class="selector-container" style="display: flex; gap: 1rem; align-items: center; justify-content: center; flex-wrap: wrap;">
+                    <div class="selector-group">
+                        <label for="budgetSelector" style="margin-right: 0.5rem; font-weight: bold;">Orçamento:</label>
+                        <select id="budgetSelector" class="form-control" style="min-width: 180px;">
+                            <option value="">Carregando...</option>
+                        </select>
+                    </div>
+                    <div class="selector-group">
+                        <label for="monthSelector" style="margin-right: 0.5rem; font-weight: bold;">Mês:</label>
+                        <select id="monthSelector" class="form-control" style="min-width: 150px;">
+                            <option value="">Carregando...</option>
+                        </select>
+                    </div>
+                    <button id="updatePeriodBtn" class="button primary" style="padding: 0.5rem 1rem;">
+                        Atualizar
+                    </button>
+                </div>
+            </div>
             
             <!-- Cards Financeiros -->
             <div id="financialCards" class="dashboard-cards" style="display: none;">
@@ -450,8 +530,19 @@
                     // Se configuração OK, carrega dados financeiros
                     await carregarDadosFinanceiros();
                     financialCards.style.display = 'grid';
+                    
+                    // Carregar períodos disponíveis
+                    await carregarPeriodosDisponiveis();
+                    
                     // Inicializa componente de categorias
-                    new TopCategoriesChart('topCategoriesContainer', { limit: 10, periodo: 'atual' }).init();
+                    const topCategoriesChart = new TopCategoriesChart('topCategoriesContainer', { limit: 10, periodo: 'atual' });
+                    topCategoriesChart.init();
+                    
+                    // Armazenar referência do componente no container para acesso posterior
+                    const container = document.getElementById('topCategoriesContainer');
+                    if (container) {
+                        container._topCategoriesChart = topCategoriesChart;
+                    }
                 }
             } catch (error) {
                 console.error('Erro ao verificar configuração do Google:', error);
@@ -461,9 +552,13 @@
 
         // Variável global para armazenar contas sugeridas
         let contasSugeridas = [];
+        
+        // Variáveis globais para controle de período
+        let periodosDisponiveis = [];
+        let periodoAtualSelecionado = null;
 
         // Função para carregar dados financeiros
-        async function carregarDadosFinanceiros() {
+        async function carregarDadosFinanceiros(budgetCode = null, monthCode = null) {
              try {
                 console.log('Carregando dados financeiros...');
                 
@@ -477,7 +572,25 @@
                 // Aguardar um tempo para garantir que o DOM está pronto
                 await new Promise(resolve => setTimeout(resolve, 100));
                 
-                const summary = await googleSheetsService.getFinancialSummary();
+                // Construir URL com parâmetros opcionais
+                let url = '/get-financial-summary';
+                const params = new URLSearchParams();
+                if (budgetCode) params.append('budget', budgetCode);
+                if (monthCode) params.append('month', monthCode);
+                if (params.toString()) {
+                    url += '?' + params.toString();
+                }
+                
+                const response = await fetch(`${apiConfig.getBaseURL()}${url}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${pb.authStore.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const summary = await response.json();
+                
                 // Armazena histórico e contas sugeridas
                 historicoLancamentos = summary.historicoLancamentos || [];
                 contasSugeridas = summary.contasSugeridas || [];
@@ -488,6 +601,12 @@
                 if (summary && summary.success) {
                     console.log('Dados válidos recebidos, chamando atualizarCardsFinanceiros...');
                     atualizarCardsFinanceiros(summary);
+                    
+                    // Atualizar também o componente de categorias
+                    const topCategoriesContainer = document.getElementById('topCategoriesContainer');
+                    if (topCategoriesContainer && topCategoriesContainer._topCategoriesChart) {
+                        topCategoriesContainer._topCategoriesChart.updateData(summary.categorias || []);
+                    }
                 } else {
                     console.error('Erro ao carregar dados financeiros:', summary ? summary.error : 'Resposta inválida');
                     removerLoadingCards();
@@ -496,6 +615,125 @@
                 console.error('Erro ao carregar dados financeiros:', error);
                 // Em caso de erro, mantém os cards com valores zerados
                 removerLoadingCards();
+            }
+        }
+
+        // Função para carregar períodos disponíveis
+        async function carregarPeriodosDisponiveis() {
+            try {
+                const response = await fetch(`${apiConfig.getBaseURL()}/get-available-periods`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${pb.authStore.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    periodosDisponiveis = data.periods || [];
+                    populateSelectors();
+                } else {
+                    console.warn('Não foi possível carregar períodos disponíveis, usando padrão');
+                    // Se não conseguir carregar, cria períodos padrão
+                    criarPeriodosPadrao();
+                }
+            } catch (error) {
+                console.error('Erro ao carregar períodos:', error);
+                // Em caso de erro, cria períodos padrão
+                criarPeriodosPadrao();
+            }
+        }
+
+        // Função para criar períodos padrão quando não conseguir carregar da API
+        function criarPeriodosPadrao() {
+            const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+            const now = new Date();
+            const atual = new Date(now.getFullYear(), now.getMonth(), 1);
+            
+            periodosDisponiveis = [];
+            for (let i = -6; i <= 6; i++) {
+                const d = new Date(atual.getFullYear(), atual.getMonth() + i, 1);
+                const mesNome = meses[d.getMonth()];
+                const anoCurto = String(d.getFullYear()).slice(-2);
+                const nomeDisplay = `${mesNome.charAt(0).toUpperCase() + mesNome.slice(1)}/${anoCurto}`;
+                
+                // Calcular código do orçamento (Excel serial date)
+                const excelDate = Math.floor((d - new Date(1900, 0, 1)) / (1000 * 60 * 60 * 24)) + 2;
+                
+                periodosDisponiveis.push({
+                    budgetCode: excelDate,
+                    monthCode: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+                    displayName: nomeDisplay,
+                    isCurrent: i === 0
+                });
+            }
+            populateSelectors();
+        }
+
+        // Função para popular os seletores
+        function populateSelectors() {
+            const budgetSelector = document.getElementById('budgetSelector');
+            const monthSelector = document.getElementById('monthSelector');
+            
+            if (!budgetSelector || !monthSelector) return;
+            
+            // Limpar opções existentes
+            budgetSelector.innerHTML = '';
+            monthSelector.innerHTML = '';
+            
+            // Popular seletores
+            periodosDisponiveis.forEach(period => {
+                const budgetOption = document.createElement('option');
+                budgetOption.value = period.budgetCode;
+                budgetOption.textContent = period.displayName;
+                if (period.isCurrent) {
+                    budgetOption.selected = true;
+                    periodoAtualSelecionado = period;
+                }
+                budgetSelector.appendChild(budgetOption);
+                
+                const monthOption = document.createElement('option');
+                monthOption.value = period.monthCode;
+                monthOption.textContent = period.displayName;
+                if (period.isCurrent) {
+                    monthOption.selected = true;
+                }
+                monthSelector.appendChild(monthOption);
+            });
+            
+            // Mostrar seletores
+            const periodSelectors = document.getElementById('periodSelectors');
+            if (periodSelectors) {
+                periodSelectors.style.display = 'block';
+            }
+        }
+
+        // Função para atualizar período selecionado
+        function atualizarPeriodoSelecionado() {
+            const budgetSelector = document.getElementById('budgetSelector');
+            const monthSelector = document.getElementById('monthSelector');
+            
+            if (!budgetSelector || !monthSelector) return;
+            
+            const budgetCode = budgetSelector.value;
+            const monthCode = monthSelector.value;
+            
+            // Encontrar período correspondente
+            const periodoEncontrado = periodosDisponiveis.find(p => 
+                p.budgetCode == budgetCode && p.monthCode === monthCode
+            );
+            
+            if (periodoEncontrado) {
+                periodoAtualSelecionado = periodoEncontrado;
+                // Recarregar dados financeiros para o novo período
+                carregarDadosFinanceiros(budgetCode, monthCode);
+                
+                // Atualizar componente de categorias
+                const topCategoriesContainer = document.getElementById('topCategoriesContainer');
+                if (topCategoriesContainer && topCategoriesContainer._topCategoriesChart) {
+                    topCategoriesContainer._topCategoriesChart.updatePeriod(budgetCode, monthCode);
+                }
             }
         }
 
@@ -1124,6 +1362,37 @@
                     }
                 `;
                 document.head.appendChild(style);
+            }
+        });
+        
+        // Event listeners para os seletores de período
+        document.addEventListener('DOMContentLoaded', function() {
+            // Botão de atualizar período
+            const updateBtn = document.getElementById('updatePeriodBtn');
+            if (updateBtn) {
+                updateBtn.addEventListener('click', atualizarPeriodoSelecionado);
+            }
+            
+            // Sincronizar seletores (quando um muda, o outro também muda para manter consistência)
+            const budgetSelector = document.getElementById('budgetSelector');
+            const monthSelector = document.getElementById('monthSelector');
+            
+            if (budgetSelector && monthSelector) {
+                budgetSelector.addEventListener('change', function() {
+                    const selectedBudget = this.value;
+                    const period = periodosDisponiveis.find(p => p.budgetCode == selectedBudget);
+                    if (period) {
+                        monthSelector.value = period.monthCode;
+                    }
+                });
+                
+                monthSelector.addEventListener('change', function() {
+                    const selectedMonth = this.value;
+                    const period = periodosDisponiveis.find(p => p.monthCode === selectedMonth);
+                    if (period) {
+                        budgetSelector.value = period.budgetCode;
+                    }
+                });
             }
         });
     </script>

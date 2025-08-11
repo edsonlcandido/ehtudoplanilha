@@ -13,6 +13,10 @@ routerAdd("GET", "/get-financial-summary", (c) => {
     }
 
     const userId = auth.id;
+    
+    // Obter parâmetros de orçamento/mês da query string
+    const budgetParam = c.request.url.query["budget"];
+    const monthParam = c.request.url.query["month"];
 
     try {
         // Buscar informações do Google para o usuário
@@ -109,13 +113,36 @@ routerAdd("GET", "/get-financial-summary", (c) => {
             
             //console.log(`Total de linhas encontradas: ${data.values.length}`);
             
-            // Códigos de orçamento para os meses (conforme indicado nos dados)
-            const mesAtualOrcamento = 45870;  // Agosto/2025
-            const mesAnteriorOrcamento = 45839;  // Julho/2025
+            // Determinar códigos de orçamento para os meses
+            let mesAtualOrcamento, mesAnteriorOrcamento;
+            let mesAtualFormatado, mesAnteriorFormatado;
             
-            // Formatação para exibição
-            const mesAtualFormatado = '2025-08';
-            const mesAnteriorFormatado = '2025-07';
+            if (budgetParam && monthParam) {
+                // Usar parâmetros fornecidos
+                mesAtualOrcamento = parseInt(budgetParam);
+                mesAtualFormatado = monthParam;
+                
+                // Calcular mês anterior (assumindo formato YYYY-MM)
+                const [ano, mes] = monthParam.split('-').map(Number);
+                const dataAnterior = new Date(ano, mes - 2, 1); // mes - 2 porque Date usa 0-based months
+                mesAnteriorFormatado = `${dataAnterior.getFullYear()}-${String(dataAnterior.getMonth() + 1).padStart(2, '0')}`;
+                
+                // Calcular código Excel para mês anterior
+                const excelDateAnterior = Math.floor((dataAnterior - new Date(1900, 0, 1)) / (1000 * 60 * 60 * 24)) + 2;
+                mesAnteriorOrcamento = excelDateAnterior;
+                
+                console.log(`Usando parâmetros: atual=${mesAtualOrcamento} (${mesAtualFormatado}), anterior=${mesAnteriorOrcamento} (${mesAnteriorFormatado})`);
+            } else {
+                // Códigos de orçamento padrão (mantém compatibilidade)
+                mesAtualOrcamento = 45870;  // Agosto/2025
+                mesAnteriorOrcamento = 45839;  // Julho/2025
+                
+                // Formatação para exibição
+                mesAtualFormatado = '2025-08';
+                mesAnteriorFormatado = '2025-07';
+                
+                console.log('Usando códigos padrão para compatibilidade');
+            }
             
             //console.log(`Mês atual orçamento: ${mesAtualOrcamento}, Mês anterior orçamento: ${mesAnteriorOrcamento}`);
             //console.log(`Mês atual formatado: ${mesAtualFormatado}, Mês anterior formatado: ${mesAnteriorFormatado}`);
