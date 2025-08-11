@@ -369,6 +369,7 @@ async function loadCurrentSheetInfo() {
         
         const clearSheetBtn = document.getElementById('clearSheetBtn');
         const provisionSheetBtn = document.getElementById('provisionSheetBtn');
+        const deleteSheetConfigBtn = document.getElementById('deleteSheetConfigBtn');
         
         if (data.success && data.hasSheet) {
             // Usuário tem uma planilha configurada
@@ -399,6 +400,7 @@ async function loadCurrentSheetInfo() {
             
             currentSheetDescription.textContent = 'Sua planilha de controle financeiro está configurada e pronta para uso.';
             if (clearSheetBtn) clearSheetBtn.style.display = 'block';
+            if (deleteSheetConfigBtn) deleteSheetConfigBtn.style.display = 'block'; // Mostra o botão de desvincular
             if (provisionSheetBtn) {
                 provisionSheetBtn.className = 'button secondary';
                 provisionSheetBtn.style.flex = '1';
@@ -408,6 +410,7 @@ async function loadCurrentSheetInfo() {
             currentSheetName.textContent = 'Nenhuma planilha selecionada';
             currentSheetDescription.textContent = 'Você ainda não possui uma planilha configurada.';
             if (clearSheetBtn) clearSheetBtn.style.display = 'none';
+            if (deleteSheetConfigBtn) deleteSheetConfigBtn.style.display = 'none'; // Esconde o botão de desvincular
             if (provisionSheetBtn) {
                 provisionSheetBtn.className = 'button primary';
                 provisionSheetBtn.style.flex = '1';

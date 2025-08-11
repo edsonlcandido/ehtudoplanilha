@@ -4,6 +4,7 @@
  */
 
 import googleOAuthService from './google/oauth-service.js';
+import googleSheetsService from './google/sheets-api.js';
 
 // Use a instância global do PocketBase
 const pb = window.pb;
@@ -172,6 +173,41 @@ async function initConfigurationPage() {
     // Update button visibility based on token status
     updateAuthorizationButton();
 }
+
+// Adiciona o listener para o botão de desvincular
+document.addEventListener('DOMContentLoaded', () => {
+    const deleteSheetConfigBtn = document.getElementById('deleteSheetConfigBtn');
+
+    if (deleteSheetConfigBtn) {
+        deleteSheetConfigBtn.addEventListener('click', async () => {
+            if (!confirm('Tem certeza de que deseja desvincular sua planilha atual? Esta ação não pode ser desfeita.')) {
+                return;
+            }
+
+            try {
+                deleteSheetConfigBtn.disabled = true;
+                deleteSheetConfigBtn.textContent = 'Desvinculando...';
+
+                // Para este exemplo, vamos usar o serviço importado diretamente
+                googleSheetsService.init(pb);
+
+                await googleSheetsService.deleteSheetConfig();
+
+                showSuccessMessage('Planilha desvinculada com sucesso!');
+                
+                setTimeout(() => {
+                    window.location.reload(); // Recarrega a página para atualizar o estado da UI
+                }, 2000);
+
+            } catch (error) {
+                console.error('Erro ao desvincular planilha:', error);
+                showErrorMessage(`Não foi possível desvincular a planilha: ${error.message}`);
+                deleteSheetConfigBtn.disabled = false;
+                deleteSheetConfigBtn.textContent = 'Desvincular Planilha';
+            }
+        });
+    }
+});
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', initConfigurationPage);
