@@ -607,9 +607,19 @@
                     if (topCategoriesContainer && topCategoriesContainer._topCategoriesChart) {
                         topCategoriesContainer._topCategoriesChart.updateData(summary.categorias || []);
                     }
+                    
+                    // Verificar se não há dados para o período
+                    const temDados = summary.receitas > 0 || summary.despesas > 0 || (summary.categorias && summary.categorias.length > 0);
+                    if (!temDados && (budgetCode || monthCode)) {
+                        const periodo = periodoAtualSelecionado ? periodoAtualSelecionado.displayName : 'período selecionado';
+                        mostrarMensagem('warning', `Nenhum lançamento encontrado para ${periodo}.`);
+                    }
                 } else {
                     console.error('Erro ao carregar dados financeiros:', summary ? summary.error : 'Resposta inválida');
                     removerLoadingCards();
+                    if (budgetCode || monthCode) {
+                        mostrarMensagem('error', summary ? summary.error : 'Erro ao carregar dados do período.');
+                    }
                 }
             } catch (error) {
                 console.error('Erro ao carregar dados financeiros:', error);
@@ -682,6 +692,14 @@
             budgetSelector.innerHTML = '';
             monthSelector.innerHTML = '';
             
+            // Verificar se temos períodos disponíveis
+            if (!periodosDisponiveis || periodosDisponiveis.length === 0) {
+                // Adicionar opção de erro
+                budgetSelector.innerHTML = '<option value="">Nenhum período disponível</option>';
+                monthSelector.innerHTML = '<option value="">Nenhum período disponível</option>';
+                return;
+            }
+            
             // Popular seletores
             periodosDisponiveis.forEach(period => {
                 const budgetOption = document.createElement('option');
@@ -713,11 +731,24 @@
         function atualizarPeriodoSelecionado() {
             const budgetSelector = document.getElementById('budgetSelector');
             const monthSelector = document.getElementById('monthSelector');
+            const updateBtn = document.getElementById('updatePeriodBtn');
             
             if (!budgetSelector || !monthSelector) return;
             
             const budgetCode = budgetSelector.value;
             const monthCode = monthSelector.value;
+            
+            // Verificar se os valores são válidos
+            if (!budgetCode || !monthCode) {
+                mostrarMensagem('error', 'Por favor, selecione um período válido.');
+                return;
+            }
+            
+            // Desabilitar botão durante carregamento
+            if (updateBtn) {
+                updateBtn.disabled = true;
+                updateBtn.textContent = 'Carregando...';
+            }
             
             // Encontrar período correspondente
             const periodoEncontrado = periodosDisponiveis.find(p => 
@@ -726,13 +757,32 @@
             
             if (periodoEncontrado) {
                 periodoAtualSelecionado = periodoEncontrado;
-                // Recarregar dados financeiros para o novo período
-                carregarDadosFinanceiros(budgetCode, monthCode);
+                console.log('Atualizando para período:', periodoEncontrado);
                 
-                // Atualizar componente de categorias
-                const topCategoriesContainer = document.getElementById('topCategoriesContainer');
-                if (topCategoriesContainer && topCategoriesContainer._topCategoriesChart) {
-                    topCategoriesContainer._topCategoriesChart.updatePeriod(budgetCode, monthCode);
+                // Recarregar dados financeiros para o novo período
+                carregarDadosFinanceiros(budgetCode, monthCode).then(() => {
+                    // Atualizar componente de categorias
+                    const topCategoriesContainer = document.getElementById('topCategoriesContainer');
+                    if (topCategoriesContainer && topCategoriesContainer._topCategoriesChart) {
+                        topCategoriesContainer._topCategoriesChart.updatePeriod(budgetCode, monthCode);
+                    }
+                    
+                    mostrarMensagem('success', `Dados atualizados para ${periodoEncontrado.displayName}`);
+                }).catch(error => {
+                    console.error('Erro ao carregar dados do período:', error);
+                    mostrarMensagem('error', 'Erro ao carregar dados do período selecionado.');
+                }).finally(() => {
+                    // Reabilitar botão
+                    if (updateBtn) {
+                        updateBtn.disabled = false;
+                        updateBtn.textContent = 'Atualizar';
+                    }
+                });
+            } else {
+                mostrarMensagem('error', 'Período selecionado não encontrado.');
+                if (updateBtn) {
+                    updateBtn.disabled = false;
+                    updateBtn.textContent = 'Atualizar';
                 }
             }
         }
@@ -1117,10 +1167,15 @@
                 msgEl.style.fontSize = '16px';
                 msgEl.style.fontWeight = 'bold';
                 msgEl.style.zIndex = '10000';
+                msgEl.style.maxWidth = '300px';
+                msgEl.style.wordWrap = 'break-word';
                 document.body.appendChild(msgEl);
             }
             if (tipo === 'success') {
                 msgEl.style.backgroundColor = '#4CAF50';
+                msgEl.style.color = 'white';
+            } else if (tipo === 'warning') {
+                msgEl.style.backgroundColor = '#ff9800';
                 msgEl.style.color = 'white';
             } else {
                 msgEl.style.backgroundColor = '#F44336';
@@ -1128,9 +1183,12 @@
             }
             msgEl.textContent = texto;
             msgEl.style.display = 'block';
+            
+            // Auto-hide após tempo baseado no tipo
+            const hideTime = tipo === 'warning' ? 7000 : 5000;
             setTimeout(() => {
                 msgEl.style.display = 'none';
-            }, 5000);
+            }, hideTime);
         }
 
         // Remove aviso de formulário desabilitado
