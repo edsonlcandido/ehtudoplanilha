@@ -72,45 +72,7 @@
             <p>Aqui você pode visualizar e inserir lançamentos de forma simples e rápida.</p>
             
             <!-- Cards Financeiros -->
-            <div id="financialCards" class="dashboard-cards" style="display: none;">
-                <div class="financial-card saldo loading">
-                    <div class="card-header">
-                        <div class="card-icon">💵</div>
-                        <h3 class="card-title">Saldo</h3>
-                    </div>
-                <div class="card-value" id="saldoValue" style="display:flex; align-items:center; justify-content:flex-start;">R$ 0,00</div>
-                </div>
-                
-                <div class="financial-card despesas loading">
-                    <div class="card-header">
-                        <div class="card-icon">💸</div>
-                        <h3 class="card-title">Despesas</h3>
-                    </div>
-                <div class="card-value" id="despesasValue" style="display:flex; align-items:center; justify-content:space-between;">
-                    <span id="despesasValueText">R$ 0,00</span>
-                    <button type="button" id="toggleDespesas" class="toggle-eye" aria-label="Ocultar/Mostrar Despesas" style="background:none;border:none;cursor:pointer;font-size:1.2rem;">
-                        <span id="iconDespesas">👁️</span>
-                    </button>
-                </div>
-                    <div class="card-variation" id="despesasVariation">
-                        <span class="variation-icon">📉</span>
-                        <span>+0,0% em relação ao mês anterior</span>
-                    </div>
-                </div>
-                
-                <div class="financial-card receitas loading">
-                    <div class="card-header">
-                        <div class="card-icon">💰</div>
-                        <h3 class="card-title">Receitas</h3>
-                    </div>
-                <div class="card-value" id="receitasValue" style="display:flex; align-items:center; justify-content:space-between;">
-                    <span id="receitasValueText">R$ 0,00</span>
-                    <button type="button" id="toggleReceitas" class="toggle-eye" aria-label="Ocultar/Mostrar Receitas" style="background:none;border:none;cursor:pointer;font-size:1.2rem;">
-                        <span id="iconReceitas">👁️</span>
-                    </button>
-                </div>
-                </div>
-            </div>
+            <div id="financialCards" style="display: none;"></div>
 
             <!-- Adicione aqui os componentes do dashboard -->
             <!-- Container de Categorias Top 10 -->
@@ -334,65 +296,14 @@
     <script type="module">
         // Histórico para autocomplete de descrições
         let historicoLancamentos = [];
-        // Controle de exibição dos valores dos cards de receita e despesa
-        // Carregar preferências de visibilidade do localStorage
-        const storedDespesasVisible = localStorage.getItem('despesasVisivel');
-        let despesasVisivel = storedDespesasVisible !== null ? JSON.parse(storedDespesasVisible) : true;
-        const storedReceitasVisible = localStorage.getItem('receitasVisivel');
-        let receitasVisivel = storedReceitasVisible !== null ? JSON.parse(storedReceitasVisible) : true;
-        const despesasValueText = document.getElementById('despesasValueText');
-        const receitasValueText = document.getElementById('receitasValueText');
-        const iconDespesas = document.getElementById('iconDespesas');
-        const iconReceitas = document.getElementById('iconReceitas');
-        let valorDespesasAtual = despesasValueText ? despesasValueText.textContent.trim() : '';
-        let valorReceitasAtual = receitasValueText ? receitasValueText.textContent.trim() : '';
-
-        // Aplicar estado inicial de visibilidade
-        if (!despesasVisivel && despesasValueText && iconDespesas) {
-            valorDespesasAtual = despesasValueText.textContent;
-            despesasValueText.textContent = '••••••';
-            iconDespesas.textContent = '🙈';
-        }
-        if (!receitasVisivel && receitasValueText && iconReceitas) {
-            valorReceitasAtual = receitasValueText.textContent;
-            receitasValueText.textContent = '••••••';
-            iconReceitas.textContent = '🙈';
-        }
-
-        if (document.getElementById('toggleDespesas')) {
-            document.getElementById('toggleDespesas').addEventListener('click', () => {
-                despesasVisivel = !despesasVisivel;
-                if (despesasVisivel) {
-                    despesasValueText.textContent = valorDespesasAtual;
-                    iconDespesas.textContent = '👁️';
-                } else {
-                    valorDespesasAtual = despesasValueText.textContent;
-                    despesasValueText.textContent = '••••••';
-                    iconDespesas.textContent = '🙈';
-                }
-                // Salvar preferência
-                localStorage.setItem('despesasVisivel', JSON.stringify(despesasVisivel));
-            });
-        }
-        if (document.getElementById('toggleReceitas')) {
-            document.getElementById('toggleReceitas').addEventListener('click', () => {
-                receitasVisivel = !receitasVisivel;
-                if (receitasVisivel) {
-                    receitasValueText.textContent = valorReceitasAtual;
-                    iconReceitas.textContent = '👁️';
-                } else {
-                    valorReceitasAtual = receitasValueText.textContent;
-                    receitasValueText.textContent = '••••••';
-                    iconReceitas.textContent = '🙈';
-                }
-                // Salvar preferência
-                localStorage.setItem('receitasVisivel', JSON.stringify(receitasVisivel));
-            });
-        }
+        
+        // Inicializar componente de cards financeiros
+        let financialCardsComponent = null;
         import apiConfig from '../js/config/api-config.js';
         import { inicializarMenuUsuario } from '../js/menu-usuario.js';
         import googleSheetsService from '../js/google/sheets-api.js';
         import TopCategoriesChart from '../js/components/top-categories-chart.js';
+        import FinancialCards from '../js/components/financial-cards.js';
 
         // Inicializa o PocketBase globalmente antes dos módulos
         window.pb = new PocketBase(apiConfig.getBaseURL());
@@ -415,12 +326,16 @@
         // Substitui verificação frontend por rota de configuração no servidor
         (async () => {
             const configBtn = document.getElementById('configBtn');
-            const financialCards = document.getElementById('financialCards');
             
             if (!configBtn) {
                 console.log('Botão de configuração não encontrado');
                 return;
             }
+            
+            // Inicializar componente de cards financeiros
+            financialCardsComponent = new FinancialCards('financialCards', { 
+                showToggleButtons: true 
+            }).init();
             
             try {
                 console.log('Verificando status de configuração...');
@@ -449,7 +364,6 @@
                     console.log('Configuração OK, carregando dados financeiros...');
                     // Se configuração OK, carrega dados financeiros
                     await carregarDadosFinanceiros();
-                    financialCards.style.display = 'grid';
                     // Inicializa componente de categorias
                     new TopCategoriesChart('topCategoriesContainer', { limit: 10, periodo: 'atual' }).init();
                 }
@@ -468,9 +382,8 @@
                 console.log('Carregando dados financeiros...');
                 
                 // Garantir que os cards estão visíveis primeiro
-                const financialCards = document.getElementById('financialCards');
-                if (financialCards) {
-                    financialCards.style.display = 'grid';
+                if (financialCardsComponent) {
+                    financialCardsComponent.show();
                     console.log('Cards forçados a ficar visíveis');
                 }
                 
@@ -486,16 +399,22 @@
                 console.log('Resposta da API financeira:', summary);
                 
                 if (summary && summary.success) {
-                    console.log('Dados válidos recebidos, chamando atualizarCardsFinanceiros...');
-                    atualizarCardsFinanceiros(summary);
+                    console.log('Dados válidos recebidos, atualizando cards...');
+                    if (financialCardsComponent) {
+                        financialCardsComponent.updateData(summary);
+                    }
                 } else {
                     console.error('Erro ao carregar dados financeiros:', summary ? summary.error : 'Resposta inválida');
-                    removerLoadingCards();
+                    if (financialCardsComponent) {
+                        financialCardsComponent.removeLoadingState();
+                    }
                 }
             } catch (error) {
                 console.error('Erro ao carregar dados financeiros:', error);
                 // Em caso de erro, mantém os cards com valores zerados
-                removerLoadingCards();
+                if (financialCardsComponent) {
+                    financialCardsComponent.removeLoadingState();
+                }
             }
         }
 
