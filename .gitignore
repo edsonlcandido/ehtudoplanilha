@@ -5,3 +5,4 @@ pocketbase.exe
 /.vs
 .env
 pb_hooks/config.json
+pocketbase.zip
