@@ -117,15 +117,15 @@ routerAdd("GET", "/get-financial-summary", (c) => {
             let mesAtualFormatado, mesAnteriorFormatado;
             
             if (budgetParam) {
-                // Usar parâmetro fornecido
+                // Usar diretamente o código Excel recebido
                 mesAtualOrcamento = parseInt(budgetParam);
-                console.log(`Recebido parâmetro budget: ${budgetParam}, convertido para: ${mesAtualOrcamento}`);
+                console.log(`Usando código de orçamento: ${mesAtualOrcamento}`);
                 
-                // Converter código Excel para data corretamente
+                // Converter código Excel para data para calcular o mês anterior
                 // Excel serial date: número de dias desde 1/1/1900
                 const baseExcelDate = new Date(1900, 0, 1); // 1º janeiro de 1900
                 const excelDate = new Date(baseExcelDate.getTime() + (mesAtualOrcamento - 2) * 24 * 60 * 60 * 1000);
-                console.log(`Data convertida do código Excel ${mesAtualOrcamento}:`, excelDate);
+                console.log(`Data correspondente ao código ${mesAtualOrcamento}:`, excelDate.toISOString().split('T')[0]);
                 
                 // Primeiro dia do mês da data convertida
                 const primeiroDiaAtual = new Date(excelDate.getFullYear(), excelDate.getMonth(), 1);
@@ -141,9 +141,9 @@ routerAdd("GET", "/get-financial-summary", (c) => {
                 const excelDateAnterior = Math.floor((dataAnterior - baseExcelDate) / (1000 * 60 * 60 * 24)) + 2;
                 mesAnteriorOrcamento = excelDateAnterior;
                 
-                console.log(`CONVERSÃO CORRIGIDA:`);
-                console.log(`- Budget atual: ${mesAtualOrcamento} -> ${mesAtualFormatado} (data: ${primeiroDiaAtual.toISOString().split('T')[0]})`);
-                console.log(`- Budget anterior: ${mesAnteriorOrcamento} -> ${mesAnteriorFormatado} (data: ${dataAnterior.toISOString().split('T')[0]})`);
+                console.log(`CÓDIGOS DE ORÇAMENTO:`);
+                console.log(`- Mês atual: ${mesAtualOrcamento} (${mesAtualFormatado})`);
+                console.log(`- Mês anterior: ${mesAnteriorOrcamento} (${mesAnteriorFormatado})`);
             } else {
                 // Códigos de orçamento padrão (mantém compatibilidade)
                 mesAtualOrcamento = 45870;  // Agosto/2025
@@ -178,12 +178,12 @@ routerAdd("GET", "/get-financial-summary", (c) => {
                     const valor = typeof row[2] === 'number' ? row[2] : parseFloat(String(row[2]).replace(',', '.')) || 0;
                     const orcamento = row[5]; // Valor numérico no formato Excel
                     
-                    // Log para debug das primeiras 10 linhas
+                    // Log detalhado para debug (primeiras 10 linhas)
                     if (index < 10) {
-                        console.log(`Linha ${index}: valor=${valor}, orcamento=${orcamento}, mesAtual=${mesAtualOrcamento}, mesAnterior=${mesAnteriorOrcamento}, match: ${orcamento === mesAtualOrcamento ? 'ATUAL' : orcamento === mesAnteriorOrcamento ? 'ANTERIOR' : 'NENHUM'}`);
+                        console.log(`Linha ${index}: valor=${valor}, orcamento=${orcamento} (tipo: ${typeof orcamento}), buscando=${mesAtualOrcamento}, match=${orcamento === mesAtualOrcamento ? 'SIM' : 'NÃO'}`);
                     }
                     
-                    // Mês atual
+                    // Verificar correspondência exata dos códigos
                     if (orcamento === mesAtualOrcamento) {
                         lancamentosAtual++;
                         if (valor > 0) {
@@ -191,6 +191,7 @@ routerAdd("GET", "/get-financial-summary", (c) => {
                         } else if (valor < 0) {
                             despesasAtual += Math.abs(valor);
                         }
+                        console.log(`[ATUAL] Lançamento #${lancamentosAtual}: valor=${valor}, receitas=${receitasAtual}, despesas=${despesasAtual}`);
                     }
                     // Mês anterior
                     else if (orcamento === mesAnteriorOrcamento) {
@@ -200,16 +201,24 @@ routerAdd("GET", "/get-financial-summary", (c) => {
                         } else if (valor < 0) {
                             despesasAnterior += Math.abs(valor);
                         }
+                        console.log(`[ANTERIOR] Lançamento #${lancamentosAnterior}: valor=${valor}, receitas=${receitasAnterior}, despesas=${despesasAnterior}`);
                     }
                 }
             });
             
             console.log(`RESUMO DO PROCESSAMENTO:`);
             console.log(`- Total de linhas processadas: ${totalLinhasProcessadas}`);
-            console.log(`- Lançamentos do mês atual (${mesAtualOrcamento}): ${lancamentosAtual}`);
-            console.log(`- Lançamentos do mês anterior (${mesAnteriorOrcamento}): ${lancamentosAnterior}`);
+            console.log(`- Código buscado (atual): ${mesAtualOrcamento} (tipo: ${typeof mesAtualOrcamento})`);
+            console.log(`- Código buscado (anterior): ${mesAnteriorOrcamento} (tipo: ${typeof mesAnteriorOrcamento})`);
+            console.log(`- Lançamentos do mês atual: ${lancamentosAtual}`);
+            console.log(`- Lançamentos do mês anterior: ${lancamentosAnterior}`);
             console.log(`- Receitas atual: ${receitasAtual}, Despesas atual: ${despesasAtual}`);
             console.log(`- Receitas anterior: ${receitasAnterior}, Despesas anterior: ${despesasAnterior}`);
+            
+            // Debug adicional: verificar todos os códigos de orçamento únicos
+            const codigosOrcamento = [...new Set(data.values.slice(1).map(row => row[5]).filter(val => val !== undefined))];
+            console.log(`- Códigos de orçamento únicos encontrados na planilha:`, codigosOrcamento);
+            console.log(`- Tipos dos códigos:`, codigosOrcamento.map(c => `${c} (${typeof c})`));
             
             // Calcular saldos
             const saldoAtual = receitasAtual - despesasAtual;
