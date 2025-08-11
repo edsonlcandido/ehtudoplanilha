@@ -119,6 +119,7 @@ routerAdd("GET", "/get-financial-summary", (c) => {
             if (budgetParam) {
                 // Usar parâmetro fornecido
                 mesAtualOrcamento = parseInt(budgetParam);
+                console.log(`Recebido parâmetro budget: ${budgetParam}, convertido para: ${mesAtualOrcamento}`);
                 
                 // Converter código Excel para data para determinar o mês anterior
                 const excelDate = new Date(1900, 0, mesAtualOrcamento - 1);
@@ -155,11 +156,16 @@ routerAdd("GET", "/get-financial-summary", (c) => {
             let despesasAnterior = 0;
             
             // Processar cada linha de dados
-            data.values.forEach(row => {
+            data.values.forEach((row, index) => {
                 if (row.length >= 6) {
                     // Com valueRenderOption=UNFORMATTED_VALUE, valores vêm como números
                     const valor = typeof row[2] === 'number' ? row[2] : parseFloat(String(row[2]).replace(',', '.')) || 0;
                     const orcamento = row[5]; // Valor numérico no formato Excel
+                    
+                    // Log para debug apenas das primeiras 5 linhas
+                    if (index < 5) {
+                        console.log(`Linha ${index}: valor=${valor}, orcamento=${orcamento}, mesAtual=${mesAtualOrcamento}, mesAnterior=${mesAnteriorOrcamento}`);
+                    }
                     
                     // Mês atual
                     if (orcamento === mesAtualOrcamento) {
@@ -207,6 +213,8 @@ routerAdd("GET", "/get-financial-summary", (c) => {
                     row.length >= 6 && row[5] === mesAnteriorOrcamento
                 ).length
             };
+            
+            console.log(`Resultado financeiro: receitas=${receitasAtual}, despesas=${despesasAtual}, saldo=${saldoAtual}, periodo=${mesAtualFormatado}`);
             
             // Montar histórico único de descrição e categoria (colunas D e E)
             const historicoMap = {};

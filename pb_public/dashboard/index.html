@@ -131,7 +131,7 @@
             <p>Aqui você pode visualizar e inserir lançamentos de forma simples e rápida.</p>
             
             <!-- Seletor de Período -->
-            <div id="periodSelectors" class="period-selectors" style="display: none; margin-bottom: 2rem;">
+            <div id="periodSelectors" class="period-selectors" style="margin-bottom: 2rem;">
                 <div class="selector-container" style="display: flex; gap: 1rem; align-items: center; justify-content: center; flex-wrap: wrap;">
                     <div class="selector-group">
                         <label for="budgetSelector" style="margin-right: 0.5rem; font-weight: bold;">Orçamento:</label>
@@ -567,6 +567,7 @@
                 let url = '/get-financial-summary';
                 if (budgetCode) {
                     url += `?budget=${budgetCode}`;
+                    console.log('Carregando dados para budget:', budgetCode);
                 }
                 
                 const response = await fetch(`${apiConfig.getBaseURL()}${url}`, {
@@ -577,17 +578,28 @@
                     }
                 });
                 
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP: ${response.status}`);
+                }
+                
                 const summary = await response.json();
+                console.log('Resposta completa da API:', summary);
                 
                 // Armazena histórico e contas sugeridas
                 historicoLancamentos = summary.historicoLancamentos || [];
                 contasSugeridas = summary.contasSugeridas || [];
                 initDescricaoAutocomplete();
                 initContaAutocomplete();
-                console.log('Resposta da API financeira:', summary);
                 
                 if (summary && summary.success) {
                     console.log('Dados válidos recebidos, chamando atualizarCardsFinanceiros...');
+                    console.log('Dados financeiros:', {
+                        saldo: summary.saldo,
+                        receitas: summary.receitas,
+                        despesas: summary.despesas,
+                        variacaoDespesas: summary.variacaoDespesas
+                    });
+                    
                     atualizarCardsFinanceiros(summary);
                     
                     // Atualizar também o componente de categorias
@@ -613,6 +625,7 @@
                 console.error('Erro ao carregar dados financeiros:', error);
                 // Em caso de erro, mantém os cards com valores zerados
                 removerLoadingCards();
+                mostrarMensagem('error', 'Erro ao conectar com o servidor: ' + error.message);
             }
         }
 
@@ -697,11 +710,7 @@
                 budgetSelector.appendChild(budgetOption);
             });
             
-            // Mostrar seletor
-            const periodSelectors = document.getElementById('periodSelectors');
-            if (periodSelectors) {
-                periodSelectors.style.display = 'block';
-            }
+            // Mostrar seletor (removido pois agora é sempre visível)
         }
 
         // Função para atualizar período selecionado
@@ -726,6 +735,13 @@
             if (periodoEncontrado) {
                 periodoAtualSelecionado = periodoEncontrado;
                 console.log('Atualizando para período:', periodoEncontrado);
+                
+                // Garantir que os cards estejam visíveis antes de atualizar
+                const financialCards = document.getElementById('financialCards');
+                if (financialCards) {
+                    financialCards.style.display = 'grid';
+                    console.log('Cards forçados a ficar visíveis antes da atualização');
+                }
                 
                 // Recarregar dados financeiros para o novo período
                 carregarDadosFinanceiros(budgetCode).then(() => {
@@ -842,8 +858,8 @@
             setTimeout(() => {
                 console.log('Verificação após atualização:');
                 console.log('Saldo DOM:', saldoEl.textContent);
-                console.log('Despesas DOM:', despesasEl.textContent);
-                console.log('Receitas DOM:', receitasEl.textContent);
+                console.log('Despesas DOM:', despesasValueText.textContent);
+                console.log('Receitas DOM:', receitasValueText.textContent);
             }, 100);
         }
 
