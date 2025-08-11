@@ -121,19 +121,29 @@ routerAdd("GET", "/get-financial-summary", (c) => {
                 mesAtualOrcamento = parseInt(budgetParam);
                 console.log(`Recebido parâmetro budget: ${budgetParam}, convertido para: ${mesAtualOrcamento}`);
                 
-                // Converter código Excel para data para determinar o mês anterior
-                const excelDate = new Date(1900, 0, mesAtualOrcamento - 1);
-                const dataAnterior = new Date(excelDate.getFullYear(), excelDate.getMonth() - 1, 1);
+                // Converter código Excel para data corretamente
+                // Excel serial date: número de dias desde 1/1/1900
+                const baseExcelDate = new Date(1900, 0, 1); // 1º janeiro de 1900
+                const excelDate = new Date(baseExcelDate.getTime() + (mesAtualOrcamento - 2) * 24 * 60 * 60 * 1000);
+                console.log(`Data convertida do código Excel ${mesAtualOrcamento}:`, excelDate);
+                
+                // Primeiro dia do mês da data convertida
+                const primeiroDiaAtual = new Date(excelDate.getFullYear(), excelDate.getMonth(), 1);
+                
+                // Mês anterior (primeiro dia)
+                const dataAnterior = new Date(primeiroDiaAtual.getFullYear(), primeiroDiaAtual.getMonth() - 1, 1);
                 
                 // Formatação para exibição
-                mesAtualFormatado = `${excelDate.getFullYear()}-${String(excelDate.getMonth() + 1).padStart(2, '0')}`;
+                mesAtualFormatado = `${primeiroDiaAtual.getFullYear()}-${String(primeiroDiaAtual.getMonth() + 1).padStart(2, '0')}`;
                 mesAnteriorFormatado = `${dataAnterior.getFullYear()}-${String(dataAnterior.getMonth() + 1).padStart(2, '0')}`;
                 
                 // Calcular código Excel para mês anterior
-                const excelDateAnterior = Math.floor((dataAnterior - new Date(1900, 0, 1)) / (1000 * 60 * 60 * 24)) + 2;
+                const excelDateAnterior = Math.floor((dataAnterior - baseExcelDate) / (1000 * 60 * 60 * 24)) + 2;
                 mesAnteriorOrcamento = excelDateAnterior;
                 
-                console.log(`Usando parâmetro budget: atual=${mesAtualOrcamento} (${mesAtualFormatado}), anterior=${mesAnteriorOrcamento} (${mesAnteriorFormatado})`);
+                console.log(`CONVERSÃO CORRIGIDA:`);
+                console.log(`- Budget atual: ${mesAtualOrcamento} -> ${mesAtualFormatado} (data: ${primeiroDiaAtual.toISOString().split('T')[0]})`);
+                console.log(`- Budget anterior: ${mesAnteriorOrcamento} -> ${mesAnteriorFormatado} (data: ${dataAnterior.toISOString().split('T')[0]})`);
             } else {
                 // Códigos de orçamento padrão (mantém compatibilidade)
                 mesAtualOrcamento = 45870;  // Agosto/2025
@@ -155,20 +165,27 @@ routerAdd("GET", "/get-financial-summary", (c) => {
             let receitasAnterior = 0;
             let despesasAnterior = 0;
             
+            // Contadores para debug
+            let lancamentosAtual = 0;
+            let lancamentosAnterior = 0;
+            let totalLinhasProcessadas = 0;
+            
             // Processar cada linha de dados
             data.values.forEach((row, index) => {
                 if (row.length >= 6) {
+                    totalLinhasProcessadas++;
                     // Com valueRenderOption=UNFORMATTED_VALUE, valores vêm como números
                     const valor = typeof row[2] === 'number' ? row[2] : parseFloat(String(row[2]).replace(',', '.')) || 0;
                     const orcamento = row[5]; // Valor numérico no formato Excel
                     
-                    // Log para debug apenas das primeiras 5 linhas
-                    if (index < 5) {
-                        console.log(`Linha ${index}: valor=${valor}, orcamento=${orcamento}, mesAtual=${mesAtualOrcamento}, mesAnterior=${mesAnteriorOrcamento}`);
+                    // Log para debug das primeiras 10 linhas
+                    if (index < 10) {
+                        console.log(`Linha ${index}: valor=${valor}, orcamento=${orcamento}, mesAtual=${mesAtualOrcamento}, mesAnterior=${mesAnteriorOrcamento}, match: ${orcamento === mesAtualOrcamento ? 'ATUAL' : orcamento === mesAnteriorOrcamento ? 'ANTERIOR' : 'NENHUM'}`);
                     }
                     
                     // Mês atual
                     if (orcamento === mesAtualOrcamento) {
+                        lancamentosAtual++;
                         if (valor > 0) {
                             receitasAtual += valor;
                         } else if (valor < 0) {
@@ -177,6 +194,7 @@ routerAdd("GET", "/get-financial-summary", (c) => {
                     }
                     // Mês anterior
                     else if (orcamento === mesAnteriorOrcamento) {
+                        lancamentosAnterior++;
                         if (valor > 0) {
                             receitasAnterior += valor;
                         } else if (valor < 0) {
@@ -185,6 +203,13 @@ routerAdd("GET", "/get-financial-summary", (c) => {
                     }
                 }
             });
+            
+            console.log(`RESUMO DO PROCESSAMENTO:`);
+            console.log(`- Total de linhas processadas: ${totalLinhasProcessadas}`);
+            console.log(`- Lançamentos do mês atual (${mesAtualOrcamento}): ${lancamentosAtual}`);
+            console.log(`- Lançamentos do mês anterior (${mesAnteriorOrcamento}): ${lancamentosAnterior}`);
+            console.log(`- Receitas atual: ${receitasAtual}, Despesas atual: ${despesasAtual}`);
+            console.log(`- Receitas anterior: ${receitasAnterior}, Despesas anterior: ${despesasAnterior}`);
             
             // Calcular saldos
             const saldoAtual = receitasAtual - despesasAtual;
