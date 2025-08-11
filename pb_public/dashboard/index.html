@@ -525,9 +525,9 @@
                     // Carregar períodos disponíveis
                     await carregarPeriodosDisponiveis();
                     
-                    // Inicializa componente de categorias
+                    // Inicializa componente de categorias (sem fazer fetch próprio)
                     const topCategoriesChart = new TopCategoriesChart('topCategoriesContainer', { limit: 10, periodo: 'atual' });
-                    topCategoriesChart.init();
+                    topCategoriesChart.initWithoutFetch();
                     
                     // Armazenar referência do componente no container para acesso posterior
                     const container = document.getElementById('topCategoriesContainer');
@@ -745,12 +745,6 @@
                 
                 // Recarregar dados financeiros para o novo período
                 carregarDadosFinanceiros(budgetCode).then(() => {
-                    // Atualizar componente de categorias
-                    const topCategoriesContainer = document.getElementById('topCategoriesContainer');
-                    if (topCategoriesContainer && topCategoriesContainer._topCategoriesChart) {
-                        topCategoriesContainer._topCategoriesChart.updatePeriod(budgetCode);
-                    }
-                    
                     mostrarMensagem('success', `Dados atualizados para ${periodoEncontrado.displayName}`);
                 }).catch(error => {
                     console.error('Erro ao carregar dados do período:', error);

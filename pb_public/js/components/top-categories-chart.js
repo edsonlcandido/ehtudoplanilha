@@ -247,6 +247,41 @@ class TopCategoriesChart {
         
         return this;
     }
+
+    // Método para inicializar sem fazer fetch (dados serão fornecidos externamente)
+    initWithoutFetch() {
+        if (!this.container) {
+            console.error(`Container com ID "${this.containerId}" não encontrado.`);
+            return;
+        }
+        
+        // Apenas exibe o loading inicial e configura estilos
+        this.renderLoading();
+        document.addEventListener('reload-top-categories', () => { this.fetchData(); });
+        
+        // Adiciona estilo para animação do indicador de rolagem
+        if (!document.getElementById('tabela-rolavel-style')) {
+            const style = document.createElement('style');
+            style.id = 'tabela-rolavel-style';
+            style.textContent = `
+                @keyframes fadeInOut {
+                    0%, 100% { opacity: 0.3; }
+                    50% { opacity: 1; }
+                }
+                .tabela-rolavel::-webkit-scrollbar {
+                    height: 8px;
+                    background-color: #f5f5f5;
+                }
+                .tabela-rolavel::-webkit-scrollbar-thumb {
+                    background-color: #ccc;
+                    border-radius: 4px;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        return this;
+    }
 }
 
 export default TopCategoriesChart;
