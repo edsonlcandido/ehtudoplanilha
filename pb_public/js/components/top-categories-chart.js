@@ -15,7 +15,6 @@ class TopCategoriesChart {
         this.data = null;
         this.isLoading = false;
         this.currentBudget = null;
-        this.currentMonth = null;
     }
 
     formatarMoeda(value) {
@@ -159,18 +158,15 @@ class TopCategoriesChart {
         }, 300);
     }
 
-    async fetchData(budgetCode = null, monthCode = null) {
+    async fetchData(budgetCode = null) {
         try {
             this.isLoading = true;
             this.renderLoading();
             
-            // Construir URL com parâmetros opcionais
+            // Construir URL com parâmetro opcional
             let url = '/get-financial-summary';
-            const params = new URLSearchParams();
-            if (budgetCode) params.append('budget', budgetCode);
-            if (monthCode) params.append('month', monthCode);
-            if (params.toString()) {
-                url += '?' + params.toString();
+            if (budgetCode) {
+                url += `?budget=${budgetCode}`;
             }
             
             const response = await fetch(`${window.pb.baseUrl}${url}`, {
@@ -200,10 +196,9 @@ class TopCategoriesChart {
     }
 
     // Método para atualizar período
-    updatePeriod(budgetCode, monthCode) {
+    updatePeriod(budgetCode) {
         this.currentBudget = budgetCode;
-        this.currentMonth = monthCode;
-        this.fetchData(budgetCode, monthCode);
+        this.fetchData(budgetCode);
     }
     
     // Método para atualizar dados diretamente (usado quando já temos os dados)

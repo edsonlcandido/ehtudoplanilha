@@ -14,9 +14,8 @@ routerAdd("GET", "/get-financial-summary", (c) => {
 
     const userId = auth.id;
     
-    // Obter parâmetros de orçamento/mês da query string
+    // Obter parâmetro de orçamento da query string
     const budgetParam = c.request.url.query["budget"];
-    const monthParam = c.request.url.query["month"];
 
     try {
         // Buscar informações do Google para o usuário
@@ -117,21 +116,23 @@ routerAdd("GET", "/get-financial-summary", (c) => {
             let mesAtualOrcamento, mesAnteriorOrcamento;
             let mesAtualFormatado, mesAnteriorFormatado;
             
-            if (budgetParam && monthParam) {
-                // Usar parâmetros fornecidos
+            if (budgetParam) {
+                // Usar parâmetro fornecido
                 mesAtualOrcamento = parseInt(budgetParam);
-                mesAtualFormatado = monthParam;
                 
-                // Calcular mês anterior (assumindo formato YYYY-MM)
-                const [ano, mes] = monthParam.split('-').map(Number);
-                const dataAnterior = new Date(ano, mes - 2, 1); // mes - 2 porque Date usa 0-based months
+                // Converter código Excel para data para determinar o mês anterior
+                const excelDate = new Date(1900, 0, mesAtualOrcamento - 1);
+                const dataAnterior = new Date(excelDate.getFullYear(), excelDate.getMonth() - 1, 1);
+                
+                // Formatação para exibição
+                mesAtualFormatado = `${excelDate.getFullYear()}-${String(excelDate.getMonth() + 1).padStart(2, '0')}`;
                 mesAnteriorFormatado = `${dataAnterior.getFullYear()}-${String(dataAnterior.getMonth() + 1).padStart(2, '0')}`;
                 
                 // Calcular código Excel para mês anterior
                 const excelDateAnterior = Math.floor((dataAnterior - new Date(1900, 0, 1)) / (1000 * 60 * 60 * 24)) + 2;
                 mesAnteriorOrcamento = excelDateAnterior;
                 
-                console.log(`Usando parâmetros: atual=${mesAtualOrcamento} (${mesAtualFormatado}), anterior=${mesAnteriorOrcamento} (${mesAnteriorFormatado})`);
+                console.log(`Usando parâmetro budget: atual=${mesAtualOrcamento} (${mesAtualFormatado}), anterior=${mesAnteriorOrcamento} (${mesAnteriorFormatado})`);
             } else {
                 // Códigos de orçamento padrão (mantém compatibilidade)
                 mesAtualOrcamento = 45870;  // Agosto/2025
