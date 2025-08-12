@@ -295,11 +295,22 @@ nav {
     margin: 2rem 0;
 }
 
-/* Aumenta espaçamento em telas mobile */
+/* Ajustes para mobile: reduzir espaçamentos e fontes para caber mais informação */
 @media (max-width: 768px) {
     .dashboard-cards {
-        gap: 2rem;
+        gap: 1rem; /* antes 2rem */
+        margin: 1.25rem 0; /* reduz margem vertical */
     }
+    .financial-card {
+        padding: 1rem; /* antes 1.5rem */
+        margin: 0.5rem 0 0.75rem 0; /* encurta altura total */
+    }
+    .card-header { margin-bottom: 0.5rem; }
+    .card-icon { font-size: 1.6rem; margin-right: 0.5rem; }
+    .card-title { font-size: 0.95rem; }
+    .card-value { font-size: 1.55rem; margin: 0.25rem 0; }
+    .card-variation { font-size: 0.75rem; }
+    .variation-icon { font-size: 0.7rem; }
 }
 
 /* Layout para desktop: três colunas */

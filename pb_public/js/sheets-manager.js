@@ -322,29 +322,57 @@ function showErrorMessage(message) {
 function showMessage(message, backgroundColor, textColor) {
     // Criar elemento de feedback temporário
     const feedback = document.createElement('div');
+    // Calcula deslocamento abaixo da navbar em telas pequenas
+    const nav = document.querySelector('nav');
+    const navHeight = nav ? nav.getBoundingClientRect().height : 60;
+    // Para mobile usamos altura da nav + 12px; para desktop mantemos 20px
+    const topOffset = window.innerWidth <= 768 ? (navHeight + 12) : 20;
     feedback.style.cssText = `
-        position: fixed; 
-        top: 20px; 
-        right: 20px; 
-        background: ${backgroundColor}; 
-        color: ${textColor}; 
-        padding: 1rem 1.5rem; 
-        border-radius: 4px; 
-        z-index: 10001; 
+        position: fixed;
+        top: ${topOffset}px;
+        right: 20px;
+        background: ${backgroundColor};
+        color: ${textColor};
+        padding: 1rem 1.5rem;
+        border-radius: 4px;
+        z-index: 10001;
         box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         max-width: 400px;
         word-wrap: break-word;
         font-size: 14px;
         line-height: 1.4;
+        transition: opacity .3s ease, transform .3s ease; 
+        opacity: 0; 
+        transform: translateY(-5px);
     `;
     feedback.textContent = message;
     document.body.appendChild(feedback);
 
+    // Força reflow e anima aparição
+    requestAnimationFrame(() => {
+        feedback.style.opacity = '1';
+        feedback.style.transform = 'translateY(0)';
+    });
+
+    // Ajusta posição em um resize (curto) somente enquanto visível
+    const resizeHandler = () => {
+        if (!feedback.parentNode) return;
+        const newNavHeight = nav ? nav.getBoundingClientRect().height : 60;
+        const newTop = window.innerWidth <= 768 ? (newNavHeight + 12) : 20;
+        feedback.style.top = newTop + 'px';
+    };
+    window.addEventListener('resize', resizeHandler);
+
     // Remover após 5 segundos
     setTimeout(() => {
-        if (feedback.parentNode) {
-            feedback.parentNode.removeChild(feedback);
-        }
+        feedback.style.opacity = '0';
+        feedback.style.transform = 'translateY(-5px)';
+        setTimeout(() => {
+            if (feedback.parentNode) {
+                feedback.parentNode.removeChild(feedback);
+            }
+            window.removeEventListener('resize', resizeHandler);
+        }, 300);
     }, 5000);
 }
 
