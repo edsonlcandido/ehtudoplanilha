@@ -327,14 +327,19 @@ class GoogleSheetsService {
      * Obtém resumo financeiro da planilha do usuário
      * @returns {Promise<Object>} - Dados de receitas, despesas, saldo e variações
      */
-    async getFinancialSummary() {
+    async getFinancialSummary(mesBase) {
         if (!this.pb) {
             throw new Error('Serviço Sheets não inicializado');
         }
 
         try {
-            console.log('Fazendo requisição para get-financial-summary...');
-            const response = await fetch(`${this.pb.baseUrl}/get-financial-summary`, {
+            // Mês atual em UTC no formato AAAA-MM (compatível com backend)
+            const now = new Date();
+            const mesAtualPadrao = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
+            const mesParam = mesBase || mesAtualPadrao;
+            console.log('Fazendo requisição para get-financial-summary com orcamento =', mesParam);
+            const url = `${this.pb.baseUrl}/get-financial-summary?orcamento=${encodeURIComponent(mesParam)}`;
+            const response = await fetch(url, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${this.pb.authStore.token}`,

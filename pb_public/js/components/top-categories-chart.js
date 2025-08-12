@@ -161,7 +161,7 @@ class TopCategoriesChart {
         try {
             this.isLoading = true;
             this.renderLoading();
-            const financialData = await googleSheetsService.getFinancialSummary();
+            const financialData = await googleSheetsService.getFinancialSummary(this.options.mesBase);
             if (!financialData || !financialData.categorias) {
                 throw new Error('Dados de categorias não disponíveis');
             }

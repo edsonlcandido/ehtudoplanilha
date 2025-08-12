@@ -38,11 +38,11 @@ routerAdd("GET", "/get-financial-summary", (c) => {
             return c.json(400, { "error": "Token de acesso não encontrado" });
         }
 
-        // Função para buscar dados da planilha
+    // Função para buscar dados da planilha
         const getSheetDataWithTokenRefresh = (token) => {
             // Busca todos os lançamentos (colunas A:G) da aba "Lançamentos" com valores não formatados
-            return $http.send({
-                url: `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Lançamentos!A1:G?majorDimension=ROWS&valueRenderOption=UNFORMATTED_VALUE`,
+                return $http.send({
+                    url: `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Lançamentos!A1:G?majorDimension=ROWS&valueRenderOption=UNFORMATTED_VALUE`,
                 method: "GET",
                 headers: {
                     "Authorization": `Bearer ${token}`,
@@ -109,13 +109,67 @@ routerAdd("GET", "/get-financial-summary", (c) => {
             
             //console.log(`Total de linhas encontradas: ${data.values.length}`);
             
-            // Códigos de orçamento para os meses (conforme indicado nos dados)
-            const mesAtualOrcamento = 45870;  // Agosto/2025
-            const mesAnteriorOrcamento = 45839;  // Julho/2025
-            
-            // Formatação para exibição
-            const mesAtualFormatado = '2025-08';
-            const mesAnteriorFormatado = '2025-07';
+            // ==== PARSING DO QUERY PARAM 'orcamento' (mês base) ====
+            // Aceita:
+            //  - Serial Excel (ex: 45870)
+            //  - AAAA-MM (ex: 2025-08) -> assume dia 01
+            //  - AAAA-MM-DD (ex: 2025-08-01)
+            const query = c.requestInfo().query || {};
+            const orcamentoParam = query['orcamento'];
+
+            const excelEpochUTC = Date.UTC(1899, 11, 30); // 1899-12-30
+            const toExcelSerial = (msUTC) => Math.floor((msUTC - excelEpochUTC) / 86400000);
+            const fromYearMonth = (year, monthZeroIdx) => Date.UTC(year, monthZeroIdx, 1);
+
+            const agora = new Date();
+
+            let baseFirstDayUTC; // ms UTC do primeiro dia do mês selecionado
+            let mesAtualFormatado; // AAAA-MM do mês base selecionado
+
+            if (orcamentoParam) {
+                const trimmed = String(orcamentoParam).trim();
+                if (/^\d+$/.test(trimmed)) {
+                    // Número puro -> tratamos como serial Excel diretamente (1º dia do mês)
+                    const serial = parseInt(trimmed, 10);
+                    if (serial < 10000 || serial > 100000) { // faixa simples para validar
+                        return c.json(400, { error: "Parâmetro 'orcamento' serial Excel fora da faixa esperada" });
+                    }
+                    // Converter serial para msUTC
+                    baseFirstDayUTC = excelEpochUTC + serial * 86400000;
+                    const tmp = new Date(baseFirstDayUTC);
+                    mesAtualFormatado = `${tmp.getUTCFullYear()}-${String(tmp.getUTCMonth() + 1).padStart(2, '0')}`;
+                } else if (/^\d{4}-\d{2}$/.test(trimmed)) {
+                    // AAAA-MM
+                    const [anoStr, mesStr] = trimmed.split('-');
+                    const year = parseInt(anoStr, 10);
+                    const month = parseInt(mesStr, 10) - 1; // zero-based
+                    baseFirstDayUTC = fromYearMonth(year, month);
+                    mesAtualFormatado = `${year}-${mesStr}`;
+                } else if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+                    // AAAA-MM-DD -> pegamos ano e mês, ignorando dia
+                    const [anoStr, mesStr] = trimmed.split('-');
+                    const year = parseInt(anoStr, 10);
+                    const month = parseInt(mesStr, 10) - 1;
+                    baseFirstDayUTC = fromYearMonth(year, month);
+                    mesAtualFormatado = `${year}-${mesStr}`;
+                } else {
+                    return c.json(400, { error: "Formato inválido para 'orcamento'. Use serial Excel ou AAAA-MM." });
+                }
+            } else {
+                // Default: mês atual
+                baseFirstDayUTC = fromYearMonth(agora.getUTCFullYear(), agora.getUTCMonth());
+                mesAtualFormatado = `${agora.getUTCFullYear()}-${String(agora.getUTCMonth() + 1).padStart(2, '0')}`;
+            }
+
+            // Mês anterior ao base
+            const baseDateObj = new Date(baseFirstDayUTC);
+            const firstDayAnteriorUTC = fromYearMonth(baseDateObj.getUTCFullYear(), baseDateObj.getUTCMonth() - 1);
+
+            const mesAtualOrcamento = toExcelSerial(baseFirstDayUTC);
+            const mesAnteriorOrcamento = toExcelSerial(firstDayAnteriorUTC);
+
+            const dataAnterior = new Date(firstDayAnteriorUTC);
+            const mesAnteriorFormatado = `${dataAnterior.getUTCFullYear()}-${String(dataAnterior.getUTCMonth() + 1).padStart(2, '0')}`;
             
             //console.log(`Mês atual orçamento: ${mesAtualOrcamento}, Mês anterior orçamento: ${mesAnteriorOrcamento}`);
             //console.log(`Mês atual formatado: ${mesAtualFormatado}, Mês anterior formatado: ${mesAnteriorFormatado}`);
@@ -172,6 +226,9 @@ routerAdd("GET", "/get-financial-summary", (c) => {
                 "variacaoDespesas": parseFloat(variacaoDespesas.toFixed(1)),
                 "mesAtual": mesAtualFormatado,
                 "mesAnterior": mesAnteriorFormatado,
+                "mesAtualSerial": mesAtualOrcamento,
+                "mesAnteriorSerial": mesAnteriorOrcamento,
+                "orcamentoParam": orcamentoParam || null,
                 "totalLancamentosAtual": data.values.filter(row => 
                     row.length >= 6 && row[5] === mesAtualOrcamento
                 ).length,
