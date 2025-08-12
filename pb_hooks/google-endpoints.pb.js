@@ -392,3 +392,43 @@ routerAdd("GET", "/config-status", (c) => {
     return c.json(200, { validConfig: false, missing: ["registro_nao_encontrado"] });
   }
 }, $apis.requireAuth());
+
+// Endpoint para desvincular a planilha atual do usuário
+routerAdd("POST", "/delete-sheet-config", (c) => {
+  const auth = c.auth;
+  const userId = auth.id;
+
+  if (!userId) {
+    return c.json(401, { "error": "Usuário não autenticado" });
+  }
+
+  try {
+    let googleInfo;
+    try {
+      googleInfo = $app.findFirstRecordByFilter(
+        "google_infos",
+        "user_id = {:userId}",
+        { userId: userId }
+      );
+    } catch (e) {
+      return c.json(404, { "error": "Configuração do Google não encontrada para este usuário." });
+    }
+
+    // Limpa os campos da planilha
+    googleInfo.set("sheet_id", "");
+    googleInfo.set("sheet_name", "");
+
+    $app.save(googleInfo);
+
+    console.log(`Configuração de planilha desvinculada para o usuário ${userId}`);
+
+    return c.json(200, {
+      "success": true,
+      "message": "Planilha desvinculada com sucesso."
+    });
+
+  } catch (error) {
+    console.log("Erro ao desvincular planilha:", error);
+    return c.json(500, { "error": "Erro interno do servidor ao tentar desvincular a planilha." });
+  }
+}, $apis.requireAuth());

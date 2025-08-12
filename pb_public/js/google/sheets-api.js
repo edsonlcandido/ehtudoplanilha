@@ -211,6 +211,39 @@ class GoogleSheetsService {
     }
 
     /**
+     * Desvincula a planilha do usuário, limpando o sheet_id no PocketBase.
+     * @returns {Promise<Object>}
+     */
+    async deleteSheetConfig() {
+        if (!this.pb) {
+            throw new Error('Serviço Sheets não inicializado');
+        }
+
+        try {
+            // Este endpoint deve ser criado no backend (PocketBase hook)
+            // para limpar os campos sheet_id e sheet_name do registro do usuário.
+            const response = await fetch(`${this.pb.baseUrl}/delete-sheet-config`, {
+                method: 'POST', // ou 'DELETE'
+                headers: {
+                    'Authorization': this.pb.authStore.token,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Erro ao desvincular a planilha');
+            }
+
+            return data;
+        } catch (error) {
+            console.error('Erro ao desvincular a planilha:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Formata dados para exibição em listas
      * @param {Array} sheets - Array de planilhas
      * @returns {Array}
