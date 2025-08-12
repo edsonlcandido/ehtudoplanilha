@@ -363,9 +363,11 @@
                 } else {
                     console.log('Configuração OK, carregando dados financeiros...');
                     // Se configuração OK, carrega dados financeiros
-                    await carregarDadosFinanceiros();
-                    // Inicializa componente de categorias
-                    new TopCategoriesChart('topCategoriesContainer', { limit: 10, periodo: 'atual' }).init();
+                    const nowCfg = new Date();
+                    const mesAtualCfg = `${nowCfg.getUTCFullYear()}-${String(nowCfg.getUTCMonth()+1).padStart(2, '0')}`;
+                    const summaryInicial = await carregarDadosFinanceiros(mesAtualCfg);
+                    // Inicializa componente de categorias reutilizando summary
+                    new TopCategoriesChart('topCategoriesContainer', { limit: 10, periodo: 'atual', mesBase: mesAtualCfg }).init(summaryInicial);
                 }
             } catch (error) {
                 console.error('Erro ao verificar configuração do Google:', error);
@@ -377,7 +379,7 @@
         let contasSugeridas = [];
 
         // Função para carregar dados financeiros
-        async function carregarDadosFinanceiros() {
+    async function carregarDadosFinanceiros(mesBase) {
              try {
                 console.log('Carregando dados financeiros...');
                 
@@ -390,7 +392,13 @@
                 // Aguardar um tempo para garantir que o DOM está pronto
                 await new Promise(resolve => setTimeout(resolve, 100));
                 
-                const summary = await googleSheetsService.getFinancialSummary();
+                // Determina mês base (AAAA-MM) padrão se não for passado
+                let mesParam = mesBase;
+                if (!mesParam) {
+                    const now = new Date();
+                    mesParam = `${now.getUTCFullYear()}-${String(now.getUTCMonth()+1).padStart(2, '0')}`;
+                }
+                const summary = await googleSheetsService.getFinancialSummary(mesParam);
                 // Armazena histórico e contas sugeridas
                 historicoLancamentos = summary.historicoLancamentos || [];
                 contasSugeridas = summary.contasSugeridas || [];
@@ -409,12 +417,14 @@
                         financialCardsComponent.removeLoadingState();
                     }
                 }
+                return summary;
             } catch (error) {
                 console.error('Erro ao carregar dados financeiros:', error);
                 // Em caso de erro, mantém os cards com valores zerados
                 if (financialCardsComponent) {
                     financialCardsComponent.removeLoadingState();
                 }
+                return null;
             }
         }
 
