@@ -157,11 +157,11 @@ class TopCategoriesChart {
         }, 300);
     }
 
-    async fetchData() {
+    async fetchData(preloadedSummary) {
         try {
             this.isLoading = true;
             this.renderLoading();
-            const financialData = await googleSheetsService.getFinancialSummary(this.options.mesBase);
+            const financialData = preloadedSummary || await googleSheetsService.getFinancialSummary(this.options.mesBase);
             if (!financialData || !financialData.categorias) {
                 throw new Error('Dados de categorias não disponíveis');
             }
@@ -178,12 +178,12 @@ class TopCategoriesChart {
         }
     }
 
-    init() {
+    init(preloadedSummary) {
         if (!this.container) {
             console.error(`Container com ID "${this.containerId}" não encontrado.`);
             return;
         }
-        this.fetchData();
+        this.fetchData(preloadedSummary);
         document.addEventListener('reload-top-categories', () => { this.fetchData(); });
         
         // Adiciona estilo para animação do indicador de rolagem

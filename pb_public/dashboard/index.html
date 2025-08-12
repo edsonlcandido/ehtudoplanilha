@@ -365,9 +365,9 @@
                     // Se configuração OK, carrega dados financeiros
                     const nowCfg = new Date();
                     const mesAtualCfg = `${nowCfg.getUTCFullYear()}-${String(nowCfg.getUTCMonth()+1).padStart(2, '0')}`;
-                    await carregarDadosFinanceiros(mesAtualCfg);
-                    // Inicializa componente de categorias com mesmo mês base
-                    new TopCategoriesChart('topCategoriesContainer', { limit: 10, periodo: 'atual', mesBase: mesAtualCfg }).init();
+                    const summaryInicial = await carregarDadosFinanceiros(mesAtualCfg);
+                    // Inicializa componente de categorias reutilizando summary
+                    new TopCategoriesChart('topCategoriesContainer', { limit: 10, periodo: 'atual', mesBase: mesAtualCfg }).init(summaryInicial);
                 }
             } catch (error) {
                 console.error('Erro ao verificar configuração do Google:', error);
@@ -417,12 +417,14 @@
                         financialCardsComponent.removeLoadingState();
                     }
                 }
+                return summary;
             } catch (error) {
                 console.error('Erro ao carregar dados financeiros:', error);
                 // Em caso de erro, mantém os cards com valores zerados
                 if (financialCardsComponent) {
                     financialCardsComponent.removeLoadingState();
                 }
+                return null;
             }
         }
 

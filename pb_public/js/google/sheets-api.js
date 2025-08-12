@@ -6,6 +6,10 @@
 class GoogleSheetsService {
     constructor() {
         this.pb = null;
+    // Cache em memória por mês (AAAA-MM ou serial) => { data, ts }
+    this._summaryCache = {};
+    // Promessas em andamento para evitar duplicação de fetch simultâneo
+    this._summaryInflight = {};
     }
 
     /**
@@ -139,6 +143,20 @@ class GoogleSheetsService {
 
             if (!response.ok) {
                 throw new Error(data.error || 'Erro ao adicionar entrada');
+            }
+
+            // Limpa cache do mês afetado (entryData.orcamento vem como '01/MM/AAAA')
+            if (entryData && typeof entryData.orcamento === 'string') {
+                const m = entryData.orcamento.match(/^\d{2}\/(\d{2})\/(\d{4})$/); // captura MM e AAAA
+                if (m) {
+                    const mes = m[1];
+                    const ano = m[2];
+                    const mesKey = `${ano}-${mes}`; // AAAA-MM
+                    if (this._summaryCache && this._summaryCache[mesKey]) {
+                        console.log('[SheetsService] limpando cache de resumo financeiro para', mesKey, 'após novo lançamento');
+                    }
+                    this.clearFinancialSummaryCache(mesKey);
+                }
             }
 
             return data;
@@ -327,7 +345,7 @@ class GoogleSheetsService {
      * Obtém resumo financeiro da planilha do usuário
      * @returns {Promise<Object>} - Dados de receitas, despesas, saldo e variações
      */
-    async getFinancialSummary(mesBase) {
+    async getFinancialSummary(mesBase, options = {}) {
         if (!this.pb) {
             throw new Error('Serviço Sheets não inicializado');
         }
@@ -337,28 +355,61 @@ class GoogleSheetsService {
             const now = new Date();
             const mesAtualPadrao = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
             const mesParam = mesBase || mesAtualPadrao;
-            console.log('Fazendo requisição para get-financial-summary com orcamento =', mesParam);
+            const force = options.force === true;
+
+            // Retorna cache se disponível e não for force
+            if (!force && this._summaryCache[mesParam]) {
+                console.log('[SheetsService] cache hit resumo financeiro para', mesParam);
+                return this._summaryCache[mesParam].data;
+            }
+
+            // Se já existe fetch em andamento para este mês, aguarda
+            if (!force && this._summaryInflight[mesParam]) {
+                console.log('[SheetsService] aguardando requisição em andamento para', mesParam);
+                return await this._summaryInflight[mesParam];
+            }
+
             const url = `${this.pb.baseUrl}/get-financial-summary?orcamento=${encodeURIComponent(mesParam)}`;
-            const response = await fetch(url, {
+            console.log('[SheetsService] fetch resumo financeiro ->', url, 'force =', force);
+            const fetchPromise = fetch(url, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${this.pb.authStore.token}`,
                     'Content-Type': 'application/json'
                 }
+            })
+            .then(async (response) => {
+                console.log('[SheetsService] status resposta resumo', response.status);
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || 'Erro ao obter resumo financeiro');
+                }
+                // Armazena em cache
+                this._summaryCache[mesParam] = { data, ts: Date.now() };
+                return data;
+            })
+            .finally(() => {
+                delete this._summaryInflight[mesParam];
             });
 
-            console.log('Status da resposta:', response.status);
-            const data = await response.json();
-            console.log('Dados retornados da API:', data);
-
-            if (!response.ok) {
-                throw new Error(data.error || 'Erro ao obter resumo financeiro');
-            }
-
-            return data;
+            // Guarda promisse em andamento
+            this._summaryInflight[mesParam] = fetchPromise;
+            return await fetchPromise;
         } catch (error) {
             console.error('Erro ao obter resumo financeiro da planilha:', error);
             throw error;
+        }
+    }
+
+    /**
+     * Limpa o cache do resumo financeiro (todo ou mês específico)
+     * @param {string} mesBase opcional (AAAA-MM) para limpar apenas um mês
+     */
+    clearFinancialSummaryCache(mesBase) {
+        if (mesBase) {
+            delete this._summaryCache[mesBase];
+        } else {
+            this._summaryCache = {};
         }
     }
 }
