@@ -178,6 +178,13 @@
     flex-shrink: 0; /* Impede que o footer seja comprimido */
 }
 
+/* Links do footer (nomes simplificados) */
+.footer-nav { margin-bottom: 1rem; }
+.footer-links { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: .75rem 1.25rem; justify-content: center; }
+.footer-links a { color: #ecf0f1; font-size: .9rem; text-decoration: none; }
+.footer-links a:hover, .footer-links a:focus { text-decoration: underline; }
+.footer-disclaimer { margin-top: .75rem; font-size: .7rem; line-height: 1.2; opacity: .8; }
+
 html, body {
     height: 100%;
     margin: 0;
@@ -191,6 +198,10 @@ body {
     font-family: 'Helvetica Neue', Arial, sans-serif;
     color: var(--text-color);
 }
+
+/* Ajuste para páginas internas onde a nav (do picnic) pode ser fixa */
+body.page-interna { padding-top: 70px; }
+@media (max-width: 640px) { body.page-interna { padding-top: 90px; } }
 
 /* Nav flexível */
 nav {
