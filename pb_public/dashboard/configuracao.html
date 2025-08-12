@@ -116,8 +116,11 @@
                 </div>
             </section>
             <footer>
-                <button class="button" id="cancelBtn">Cancelar</button>
-                <button class="button primary" id="confirmBtn" style="display: none;">Confirmar Seleção</button>
+                <!-- Botões alinhados lado a lado: esquerdo azul (primary), direito verde (success) -->
+                <div style="display: flex; gap: 0.75rem; width: 100%;">
+                    <button class="button secondary" style="flex: 1;" id="cancelBtn">Cancelar</button>
+                    <button class="button success" style="flex: 1; display: none;" id="confirmBtn">Confirmar Seleção</button>
+                </div>
             </footer>
         </article>
     </div>
