@@ -164,6 +164,32 @@ class GoogleOAuthService {
     getCurrentUserId() {
         return this.pb?.authStore.model?.id || null;
     }
+
+    /**
+     * Revoga o acesso Google (backend limpa tokens)
+     * @returns {Promise<Object>}
+     */
+    async revokeAccess() {
+        if (!this.pb) {
+            throw new Error('Serviço OAuth não inicializado');
+        }
+
+        const response = await fetch(`${this.pb.baseUrl}/revoke-google-access`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.pb.authStore.token}`
+            },
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Falha ao revogar acesso Google');
+        }
+        this.hasRefreshToken = false;
+        return data;
+    }
 }
 
 // Exportar instância singleton

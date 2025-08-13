@@ -432,3 +432,62 @@ routerAdd("POST", "/delete-sheet-config", (c) => {
     return c.json(500, { "error": "Erro interno do servidor ao tentar desvincular a planilha." });
   }
 }, $apis.requireAuth());
+
+// Endpoint para revogar acesso Google (revoga tokens e limpa configuração)
+routerAdd("POST", "/revoke-google-access", (c) => {
+  const auth = c.auth;
+  const userId = auth?.id;
+
+  if (!userId) {
+    return c.json(401, { error: "Usuário não autenticado" });
+  }
+
+  try {
+    let googleInfo;
+    try {
+      googleInfo = $app.findFirstRecordByFilter(
+        "google_infos",
+        "user_id = {:userId}",
+        { userId }
+      );
+    } catch (e) {
+      return c.json(404, { error: "Não há tokens Google salvos para este usuário" });
+    }
+
+    const accessToken = googleInfo.get("access_token");
+    const refreshToken = googleInfo.get("refresh_token");
+
+    // Escolhe token a revogar (preferir refresh se existir)
+    const tokenParaRevogar = refreshToken && refreshToken.trim() !== "" ? refreshToken : accessToken;
+
+    if (tokenParaRevogar && tokenParaRevogar.trim() !== "") {
+      const revokeResp = $http.send({
+        url: "https://oauth2.googleapis.com/revoke",
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: `token=${encodeURIComponent(tokenParaRevogar)}`
+      });
+
+      // 200 = ok; 400 invalid_token também consideramos sucesso pois já está revogado
+      if (![200,400].includes(revokeResp.statusCode)) {
+        console.log("Falha ao revogar token:", revokeResp.raw);
+        return c.json(500, { error: "Erro ao revogar token junto ao Google" });
+      }
+    }
+
+    // Limpa todos os campos relacionados
+    googleInfo.set("access_token", "");
+    googleInfo.set("refresh_token", "");
+    googleInfo.set("sheet_id", "");
+    googleInfo.set("sheet_name", "");
+    $app.save(googleInfo);
+
+    console.log(`Tokens Google revogados para usuário ${userId}`);
+    return c.json(200, { success: true, message: "Acesso Google revogado com sucesso" });
+  } catch (error) {
+    console.log("Erro ao revogar acesso Google:", error);
+    return c.json(500, { error: "Erro interno ao revogar acesso" });
+  }
+}, $apis.requireAuth());
