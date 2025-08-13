@@ -151,28 +151,31 @@
                 <a href="https://www.ehtudo.app">Eh!Tudo.app</a></small>
         </p>
     </footer>
-    <!-- Script PocketBase e módulos da aplicação -->
+    <!-- Script PocketBase e verificação imediata de autenticação -->
     <script type="module">
         import apiConfig from '../js/config/api-config.js';
+        import { estaAutenticado } from '../js/auth-service.js';
         import { inicializarMenuUsuario } from '../js/menu-usuario.js';
 
-        // Inicializa o PocketBase globalmente antes dos módulos
+        // Inicializa PocketBase
         window.pb = new PocketBase(apiConfig.getBaseURL());
 
-        inicializarMenuUsuario();
+        // Verifica autenticação imediatamente (antes de carregar demais módulos)
+        if (!estaAutenticado()) {
+            // Redireciona rapidamente para evitar piscar conteúdo protegido
+            window.location.href = '../login.html';
+        } else {
+            // Inicializa menu do usuário
+            inicializarMenuUsuario();
 
-        setTimeout(() => {
-            import('../js/protecao-dashboard.js')
-                .then(() => {
-                    console.log('Módulo de proteção do dashboard carregado com sucesso.');
-                })
-                .catch(err => {
-                    console.error('Erro ao carregar o módulo de proteção do dashboard:', err);
-                });
-        }, 100); // Aguarda 100 milissegundos para garantir que a autenticação seja verificada
+            // Carrega módulos adicionais somente se autenticado
+            Promise.all([
+                import('../js/protecao-dashboard.js'),
+                import('../js/configuracao.js'),
+                import('../js/sheets-manager.js')
+            ]).catch(err => console.error('Erro ao carregar módulos do dashboard:', err));
+        }
     </script>
-    <script src="../js/configuracao.js" type="module"></script>
-    <script type="module" src="../js/sheets-manager.js"></script>
 </body>
 
 </html>

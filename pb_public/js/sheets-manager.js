@@ -515,8 +515,12 @@ async function clearSheetContent() {
     }
 }
 
-// Inicialização quando o DOM estiver carregado
-document.addEventListener('DOMContentLoaded', initSheetsManager);
+// Inicialização: se o script for carregado após DOMContentLoaded, executa imediatamente
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSheetsManager);
+} else {
+    initSheetsManager();
+}
 
 // Exportar funções para uso em outros módulos
 export { 

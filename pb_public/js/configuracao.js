@@ -44,6 +44,7 @@ async function startOAuth() {
 function updateAuthorizationButton() {
     const authButton = document.getElementById('google-auth-button');
     const authCard = document.getElementById('google-auth-card');
+    let revokeContainer = document.getElementById('revoke-access-container');
     
     if (!authButton || !authCard) {
         console.error('Authorization button or card not found');
@@ -64,6 +65,21 @@ function updateAuthorizationButton() {
         if (cardDescription) {
             cardDescription.textContent = 'Sua conta está conectada ao Google Drive. Agora você pode selecionar ou criar uma planilha para uso.';
         }
+
+        // Adiciona link de revogação se não existir
+        if (!revokeContainer) {
+            revokeContainer = document.createElement('div');
+            revokeContainer.id = 'revoke-access-container';
+            revokeContainer.style.marginTop = '1rem';
+            revokeContainer.innerHTML = `
+                <small style="display:block; color:#555;">Deseja revogar o acesso? <button id="revokeAccessLink" class="button small error" style="display:inline-block; padding: .25rem .5rem; font-size: .7rem;">Revogar</button></small>
+            `;
+            authCard.appendChild(revokeContainer);
+            const revokeBtn = revokeContainer.querySelector('#revokeAccessLink');
+            if (revokeBtn) {
+                revokeBtn.addEventListener('click', handleRevokeClick);
+            }
+        }
         
         console.log('User already authorized, showing connected status');
     } else {
@@ -78,9 +94,85 @@ function updateAuthorizationButton() {
         if (cardDescription) {
             cardDescription.textContent = 'Autorize o acesso ao Google Drive. Após a autorização, você poderá selecionar ou criar uma planilha para uso.';
         }
+
+        // Remove container de revogação se existir
+        if (revokeContainer) {
+            revokeContainer.remove();
+        }
         
         console.log('User needs to authorize, showing authorization button');
     }
+}
+
+// Handler para clicar em revogar
+async function handleRevokeClick(e) {
+    e.preventDefault();
+    // Cria modal simples inline
+    let existingModal = document.getElementById('revokeModal');
+    if (existingModal) existingModal.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'revokeModal';
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:10000;padding:1rem;';
+    modal.innerHTML = `
+        <div style="background:#fff;max-width:420px;width:100%;padding:1.25rem 1.5rem;border-radius:8px;box-shadow:0 10px 28px rgba(0,0,0,.25);">
+            <h4 style="margin-top:0;margin-bottom:.75rem;">Revogar acesso Google</h4>
+            <p style="font-size:.9rem;line-height:1.4;">Esta ação irá <strong>revogar os tokens</strong>, limpar a planilha vinculada e você precisará autorizar novamente para voltar a usar as integrações.<br><br>Digite <code style="background:#eee;padding:2px 4px;border-radius:3px;">revogar</code> para confirmar.</p>
+            <input id="revokeConfirmInput" type="text" placeholder="Digite revogar" style="width:100%;margin:.5rem 0 1rem 0;" />
+            <div style="display:flex;gap:.5rem;justify-content:flex-end;">
+                <button class="button secondary" id="cancelRevokeBtn">Cancelar</button>
+                <button class="button error" id="confirmRevokeBtn" disabled>Revogar</button>
+            </div>
+        </div>`;
+    document.body.appendChild(modal);
+
+    const input = modal.querySelector('#revokeConfirmInput');
+    const confirmBtn = modal.querySelector('#confirmRevokeBtn');
+    const cancelBtn = modal.querySelector('#cancelRevokeBtn');
+
+    input.addEventListener('input', () => {
+        confirmBtn.disabled = input.value.trim().toLowerCase() !== 'revogar';
+    });
+
+    cancelBtn.addEventListener('click', () => modal.remove());
+
+    confirmBtn.addEventListener('click', async () => {
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = 'Revogando...';
+        try {
+            await googleOAuthService.revokeAccess();
+            modal.remove();
+            showSuccessMessage('Acesso Google revogado. Você pode autorizar novamente quando quiser.');
+            hasRefreshToken = false;
+            updateAuthorizationButton();
+            // Atualiza card da planilha para estado "sem planilha".
+            const currentSheetName = document.getElementById('current-sheet-name');
+            const currentSheetDescription = document.getElementById('current-sheet-description');
+            const clearSheetBtn = document.getElementById('clearSheetBtn');
+            const deleteSheetConfigBtn = document.getElementById('deleteSheetConfigBtn');
+            const provisionSheetBtn = document.getElementById('provisionSheetBtn');
+
+            // Se sheets-manager expôs função global, usa para garantir consistência
+            if (window.loadCurrentSheetInfo) {
+                try { window.loadCurrentSheetInfo(); } catch(e){ console.warn('Falha ao recarregar info da planilha após revogação:', e); }
+            } else {
+                // Fallback manual
+                if (currentSheetName) currentSheetName.textContent = 'Nenhuma planilha selecionada';
+                if (currentSheetDescription) currentSheetDescription.textContent = 'Você ainda não possui uma planilha configurada.';
+                if (clearSheetBtn) clearSheetBtn.style.display = 'none';
+                if (deleteSheetConfigBtn) deleteSheetConfigBtn.style.display = 'none';
+                if (provisionSheetBtn) {
+                    provisionSheetBtn.className = 'button primary';
+                    provisionSheetBtn.style.width = '100%';
+                }
+            }
+        } catch (error) {
+            console.error('Erro ao revogar acesso:', error);
+            showErrorMessage('Falha ao revogar acesso: ' + error.message);
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = 'Revogar';
+        }
+    });
 }
 
 /**
@@ -209,5 +301,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', initConfigurationPage);
+// Inicializa quando DOM estiver pronto; se o listener for registrado após o evento já ter ocorrido (import dinâmico), chama imediatamente
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initConfigurationPage);
+} else {
+    // DOM já carregado
+    initConfigurationPage();
+}

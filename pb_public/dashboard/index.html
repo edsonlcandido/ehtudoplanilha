@@ -71,8 +71,13 @@
             <h2>Bem-vindo ao seu Dashboard!</h2>
             <p>Aqui você pode visualizar e inserir lançamentos de forma simples e rápida.</p>
             
-            <!-- Cards Financeiros -->
-            <div id="financialCards" style="display: none;"></div>
+             <div style="margin-top: 2rem;">
+                <a href="configuracao.html" id="configBtn" class="button primary" style="display: none;">⚙️ Configurar
+                    Integração</a>
+            </div>
+
+            <!-- Cards Financeiros (skeleton exibido imediatamente para melhor UX) -->
+            <div id="financialCards" aria-live="polite"></div>
 
             <!-- Adicione aqui os componentes do dashboard -->
             <!-- Container de Categorias Top 10 -->
@@ -210,10 +215,8 @@
                         }
                     </style>
                 </div>
-            </div>            <div style="margin-top: 2rem;">
-                <a href="configuracao.html" id="configBtn" class="button primary" style="display: none;">⚙️ Configurar
-                    Integração</a>
             </div>
+            
         </div>
         <!-- Botão de adicionar lançamento (flutuante) -->
         <button id="openEntryModal" class="button" aria-label="Adicionar lançamento">+</button>
@@ -313,6 +316,12 @@
         // Inicializa o serviço Google Sheets
         googleSheetsService.init(window.pb);
 
+        // Inicializa imediatamente os cards em estado de loading (placeholder)
+        financialCardsComponent = new FinancialCards('financialCards', { 
+            showToggleButtons: true 
+        }).init();
+        financialCardsComponent.show();
+
         setTimeout(() => {
             import('../js/protecao-dashboard.js')
                 .then(() => {
@@ -332,10 +341,7 @@
                 return;
             }
             
-            // Inicializar componente de cards financeiros
-            financialCardsComponent = new FinancialCards('financialCards', { 
-                showToggleButtons: true 
-            }).init();
+            // Cards já foram inicializados anteriormente (placeholder loading)
             
             try {
                 console.log('Verificando status de configuração...');
@@ -377,6 +383,22 @@
 
         // Variável global para armazenar contas sugeridas
         let contasSugeridas = [];
+
+        // Tenta carregar dados financeiros assim que DOM estiver pronto (caso configuração já esteja válida)
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Evita duplicar se já tiver sido carregado dentro do fluxo de verificação
+                if (!financialCardsComponent) return;
+                const now = new Date();
+                const mesAtual = `${now.getUTCFullYear()}-${String(now.getUTCMonth()+1).padStart(2, '0')}`;
+                const summary = await carregarDadosFinanceiros(mesAtual);
+                if (summary && summary.success) {
+                    financialCardsComponent.updateData(summary);
+                }
+            } catch (e) {
+                console.warn('Falha no carregamento inicial otimista dos dados financeiros:', e);
+            }
+        });
 
         // Função para carregar dados financeiros
     async function carregarDadosFinanceiros(mesBase) {
