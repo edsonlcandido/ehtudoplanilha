@@ -201,6 +201,102 @@ body {
 
 /* Ajuste para páginas internas onde a nav (do picnic) pode ser fixa */
 body.page-interna { padding-top: 70px; }
+
+/* Menu lateral fixo responsivo */
+.app-container {
+    display: flex;
+    flex: 1;
+    min-height: 0; /* Permite que os filhos flex sejam menores que o conteúdo */
+    position: relative;
+}
+
+.sidebar-menu {
+    position: fixed;
+    left: 0;
+    top: 60px; /* Altura aproximada da nav */
+    bottom: 100px; /* Altura aproximada do footer */
+    width: 60px;
+    background: var(--white-color);
+    border-right: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem 0;
+    gap: 1rem;
+    z-index: 100;
+    box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+}
+
+.sidebar-menu a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 1.2rem;
+    transition: background-color 0.3s ease;
+    color: var(--text-color);
+}
+
+.sidebar-menu a:hover {
+    background-color: var(--light-gray);
+}
+
+.sidebar-menu a.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.main-content {
+    flex: 1;
+    margin-left: 60px; /* Espaço para o menu lateral */
+    overflow-y: auto;
+    min-height: calc(100vh - 140px); /* Altura total menos nav e footer */
+    max-height: calc(100vh - 140px);
+}
+
+/* Ajuste da section dentro do main-content */
+.main-content .section {
+    min-height: auto;
+    height: auto;
+    padding: 2rem 1rem; /* Reduzido de 4rem para melhor aproveitamento */
+}
+
+/* Garantir que o dashboard-main não tenha altura fixa */
+.main-content .dashboard-main {
+    min-height: auto;
+    height: auto;
+    align-items: flex-start;
+    padding-top: 1rem; /* Reduzido para melhor aproveitamento */
+}
+
+/* Versão mobile - menu inferior */
+@media (max-width: 768px) {
+    .sidebar-menu {
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: auto;
+        bottom: 100px; /* Acima do footer */
+        width: auto;
+        height: 60px;
+        flex-direction: row;
+        justify-content: center;
+        border-right: none;
+        border-top: 1px solid #e0e0e0;
+        padding: 0 1rem;
+        gap: 2rem;
+    }
+    
+    .main-content {
+        margin-left: 0;
+        margin-bottom: 60px; /* Espaço para o menu inferior */
+        min-height: calc(100vh - 220px); /* Ajustado para nav, footer e menu inferior */
+        max-height: calc(100vh - 220px);
+    }
+}
 @media (max-width: 640px) { body.page-interna { padding-top: 90px; } }
 
 /* Nav flexível */

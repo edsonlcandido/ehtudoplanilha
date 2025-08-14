@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Lançamentos - Seu App Financeiro</title>
+    <link rel="stylesheet" href="../css/picnic.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/responsive-tables.css">
+    <script src="../js/pocketbase/dist/pocketbase.umd.js"></script>
+    <style>
+        body {
+            max-width: 100vw;
+            overflow-x: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- NAV: menu dinâmico igual ao index.html -->
+    <nav>
+        <a href="/" class="brand">
+            <span>Planilha Eh Tudo</span>
+        </a>
+        <input id="bmenub" type="checkbox" class="show">
+        <label for="bmenub" class="burger pseudo button">menu</label>
+        <div class="menu" id="menu-user">
+            <a href="#" class="pseudo button icon-picture">Demo</a>
+            <a href="../login.html" class="button icon-puzzle" id="loginBtn">Login</a>
+            <a href="../registro.html" class="button icon-user" id="registerBtn">Registrar</a>
+        </div>
+    </nav>
+
+    <!-- Container principal com menu lateral -->
+    <div class="app-container">
+        <!-- Menu lateral fixo -->
+        <aside class="sidebar-menu">
+            <a href="index.html" title="Dashboard">🏠</a>
+            <a href="lancamentos.html" class="active" title="Lançamentos">📋</a>
+        </aside>
+
+        <!-- Conteúdo principal rolável -->
+        <main class="main-content">
+            <section class="section section-light dashboard-main">
+                <div class="container text-center">
+                    <h2>Lançamentos</h2>
+                    <p>Visualize e gerencie todos os seus lançamentos financeiros.</p>
+                    
+                    <div style="margin-top: 2rem;">
+                        <p>Página de lançamentos em desenvolvimento...</p>
+                        <a href="index.html" class="button primary">Voltar ao Dashboard</a>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Planilha Eh Tudo. Simplificando suas finanças.</p>
+        </div>
+        <p>
+            <small>Produzido por
+                <a href="https://www.ehtudo.app">Eh!Tudo.app</a></small>
+        </p>
+    </footer>
+
+    <!-- Script PocketBase e verificação imediata de autenticação -->
+    <script type="module">
+        import apiConfig from '../js/config/api-config.js';
+        import { estaAutenticado } from '../js/auth-service.js';
+        import { inicializarMenuUsuario } from '../js/menu-usuario.js';
+
+        // Inicializa PocketBase
+        window.pb = new PocketBase(apiConfig.getBaseURL());
+
+        // Verifica autenticação imediatamente (antes de carregar demais módulos)
+        if (!estaAutenticado()) {
+            // Redireciona rapidamente para evitar piscar conteúdo protegido
+            window.location.href = '../login.html';
+        } else {
+            // Inicializa menu do usuário
+            inicializarMenuUsuario();
+
+            // Carrega módulos adicionais somente se autenticado
+            Promise.all([
+                import('../js/protecao-dashboard.js')
+            ]).catch(err => console.error('Erro ao carregar módulos do dashboard:', err));
+        }
+    </script>
+</body>
+
+</html>

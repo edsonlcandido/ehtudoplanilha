@@ -42,8 +42,19 @@
             <a href="../registro.html" class="button icon-user" id="registerBtn">Registrar</a>
         </div>
     </nav>
-    <!-- SECTION MAIN: conteúdo principal ocupando toda tela -->
-    <section class="section section-light" style="min-height: 70vh; display: flex; align-items: center; justify-content: center;">
+    
+    <!-- Container principal com menu lateral -->
+    <div class="app-container">
+        <!-- Menu lateral fixo -->
+        <aside class="sidebar-menu">
+            <a href="index.html" title="Dashboard">🏠</a>
+            <a href="lancamentos.html" title="Lançamentos">📋</a>
+        </aside>
+
+        <!-- Conteúdo principal rolável -->
+        <main class="main-content">
+            <!-- SECTION MAIN: conteúdo principal ocupando toda tela -->
+            <section class="section section-light" style="min-height: 70vh; display: flex; align-items: center; justify-content: center;">
         <div class="container config-page-wrapper">
             <h2 style="text-align: center; margin-bottom: 3rem;">Configuração do Dashboard</h2>
             <p
@@ -105,7 +116,9 @@
 
             </div>
         </div>
-    </section>
+        </section>
+        </main>
+    </div>
 
     <!-- Modal para seleção de planilha -->
     <div class="modal" id="sheetsModal">
