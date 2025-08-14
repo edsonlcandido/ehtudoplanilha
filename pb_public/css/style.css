@@ -206,7 +206,6 @@ body.page-interna { padding-top: 70px; }
 .app-container {
     display: flex;
     flex: 1;
-    min-height: 0; /* Permite que os filhos flex sejam menores que o conteúdo */
     position: relative;
 }
 
@@ -214,7 +213,7 @@ body.page-interna { padding-top: 70px; }
     position: fixed;
     left: 0;
     top: 60px; /* Altura aproximada da nav */
-    bottom: 100px; /* Altura aproximada do footer */
+    bottom: 0; /* Vai até o final da viewport */
     width: 60px;
     background: var(--white-color);
     border-right: 1px solid #e0e0e0;
@@ -253,15 +252,14 @@ body.page-interna { padding-top: 70px; }
     flex: 1;
     margin-left: 60px; /* Espaço para o menu lateral */
     overflow-y: auto;
-    min-height: calc(100vh - 140px); /* Altura total menos nav e footer */
-    max-height: calc(100vh - 140px);
+    min-height: auto; /* Altura automática para permitir footer normal */
 }
 
 /* Ajuste da section dentro do main-content */
 .main-content .section {
     min-height: auto;
     height: auto;
-    padding: 2rem 1rem; /* Reduzido de 4rem para melhor aproveitamento */
+    padding: 2rem 1rem;
 }
 
 /* Garantir que o dashboard-main não tenha altura fixa */
@@ -269,7 +267,7 @@ body.page-interna { padding-top: 70px; }
     min-height: auto;
     height: auto;
     align-items: flex-start;
-    padding-top: 1rem; /* Reduzido para melhor aproveitamento */
+    padding-top: 1rem;
 }
 
 /* Versão mobile - menu inferior */
@@ -279,7 +277,7 @@ body.page-interna { padding-top: 70px; }
         left: 0;
         right: 0;
         top: auto;
-        bottom: 100px; /* Acima do footer */
+        bottom: 0; /* Na parte inferior da viewport */
         width: auto;
         height: 60px;
         flex-direction: row;
@@ -292,9 +290,8 @@ body.page-interna { padding-top: 70px; }
     
     .main-content {
         margin-left: 0;
-        margin-bottom: 60px; /* Espaço para o menu inferior */
-        min-height: calc(100vh - 220px); /* Ajustado para nav, footer e menu inferior */
-        max-height: calc(100vh - 220px);
+        margin-bottom: 60px; /* Espaço apenas para o menu inferior */
+        min-height: auto; /* Altura automática */
     }
 }
 @media (max-width: 640px) { body.page-interna { padding-top: 90px; } }
