@@ -214,12 +214,12 @@ body.page-interna { padding-top: 70px; }
     left: 0;
     top: 60px; /* Altura aproximada da nav */
     bottom: 0; /* Vai até o final da viewport */
-    width: 60px;
+    width: 140px; /* Aumenta largura para acomodar texto */
     background: var(--white-color);
     border-right: 1px solid #e0e0e0;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch; /* Altera para permitir que links ocupem toda a largura */
     padding: 1rem 0;
     gap: 1rem;
     z-index: 100;
@@ -229,14 +229,28 @@ body.page-interna { padding-top: 70px; }
 .sidebar-menu a {
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: 40px;
+    justify-content: flex-start; /* Alinha à esquerda */
+    width: auto;
     height: 40px;
     border-radius: 8px;
     text-decoration: none;
-    font-size: 1.2rem;
+    font-size: 0.9rem;
     transition: background-color 0.3s ease;
     color: var(--text-color);
+    padding: 0 0.75rem; /* Adiciona padding horizontal */
+    margin: 0 0.5rem; /* Margem nas laterais */
+    gap: 0.5rem; /* Espaço entre ícone e texto */
+}
+
+.sidebar-menu a .menu-icon {
+    font-size: 1.2rem;
+    flex-shrink: 0; /* Impede que o ícone seja comprimido */
+}
+
+.sidebar-menu a .menu-text {
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap; /* Impede quebra de linha */
 }
 
 .sidebar-menu a:hover {
@@ -250,7 +264,7 @@ body.page-interna { padding-top: 70px; }
 
 .main-content {
     flex: 1;
-    margin-left: 60px; /* Espaço para o menu lateral */
+    margin-left: 140px; /* Ajusta para nova largura do menu lateral */
     overflow-y: auto;
     min-height: auto; /* Altura automática para permitir footer normal */
 }
@@ -279,18 +293,40 @@ body.page-interna { padding-top: 70px; }
         top: auto;
         bottom: 0; /* Na parte inferior da viewport */
         width: auto;
-        height: 60px;
+        height: 70px; /* Aumenta altura para acomodar texto */
         flex-direction: row;
         justify-content: center;
         border-right: none;
         border-top: 1px solid #e0e0e0;
-        padding: 0 1rem;
+        padding: 0.5rem 1rem;
         gap: 2rem;
+        align-items: stretch; /* Permite que os links ocupem toda a altura */
+    }
+    
+    .sidebar-menu a {
+        flex-direction: column; /* Coloca ícone acima do texto */
+        justify-content: center;
+        align-items: center;
+        width: auto;
+        height: auto;
+        padding: 0.25rem 0.75rem;
+        margin: 0;
+        gap: 0.25rem; /* Espaço menor entre ícone e texto no mobile */
+        min-width: 60px; /* Largura mínima para manter proporção */
+    }
+    
+    .sidebar-menu a .menu-icon {
+        font-size: 1.1rem;
+    }
+    
+    .sidebar-menu a .menu-text {
+        font-size: 0.7rem;
+        line-height: 1;
     }
     
     .main-content {
         margin-left: 0;
-        margin-bottom: 60px; /* Espaço apenas para o menu inferior */
+        margin-bottom: 70px; /* Ajusta para nova altura do menu inferior */
         min-height: auto; /* Altura automática */
     }
 }
