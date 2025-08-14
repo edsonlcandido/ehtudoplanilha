@@ -65,8 +65,25 @@
             <a href="../registro.html" class="button icon-user" id="registerBtn">Registrar</a>
         </div>
     </nav>
-    <!-- SECTION MAIN: conteúdo principal ocupando toda tela -->
-    <section class="section section-light dashboard-main">
+    
+    <!-- Container principal com menu lateral -->
+    <div class="app-container">
+        <!-- Menu lateral fixo -->
+        <aside class="sidebar-menu">
+            <a href="index.html" class="active" title="Dashboard">
+                <span class="menu-icon">🏠</span>
+                <span class="menu-text">Dashboard</span>
+            </a>
+            <a href="lancamentos.html" title="Lançamentos">
+                <span class="menu-icon">📋</span>
+                <span class="menu-text">Lançamentos</span>
+            </a>
+        </aside>
+
+        <!-- Conteúdo principal rolável -->
+        <main class="main-content">
+            <!-- SECTION MAIN: conteúdo principal ocupando toda tela -->
+            <section class="section section-light dashboard-main">
         <div class="container text-center">
             <h2>Bem-vindo ao seu Dashboard!</h2>
             <p>Aqui você pode visualizar e inserir lançamentos de forma simples e rápida.</p>
@@ -232,7 +249,9 @@
         </div>
         <!-- Botão de adicionar lançamento (flutuante) -->
         <button id="openEntryModal" class="button" aria-label="Adicionar lançamento">+</button>
-    </section>
+        </section>
+        </main>
+    </div>
 
     <!-- Modal de lançamento de despesas/receitas -->
     <div id="entryModal" style="display:none; position:fixed; top:60px; left:0; width:100%; height:calc(100% - 60px); background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:1000;">
