@@ -233,7 +233,7 @@ class LancamentosManager {
         if (!modal) return;
 
         // Preencher campos do modal
-        document.getElementById('editData').value = entry.data;
+        document.getElementById('editData').value = this.formatDateForInput(entry.data);
         document.getElementById('editConta').value = entry.conta;
         document.getElementById('editDescricao').value = entry.descricao;
         document.getElementById('editValor').value = entry.valor;
@@ -242,6 +242,29 @@ class LancamentosManager {
         document.getElementById('editObs').value = entry.obs;
 
         modal.style.display = 'flex';
+    }
+
+    /**
+     * Formata data para input HTML (YYYY-MM-DD)
+     */
+    formatDateForInput(dateValue) {
+        try {
+            let date;
+            if (typeof dateValue === 'number') {
+                // Serial Excel - converte para data
+                const excelEpoch = new Date(1899, 11, 30);
+                date = new Date(excelEpoch.getTime() + dateValue * 24 * 60 * 60 * 1000);
+            } else {
+                date = new Date(dateValue);
+            }
+            
+            if (!isNaN(date.getTime())) {
+                return date.toISOString().split('T')[0]; // YYYY-MM-DD format
+            }
+            return '';
+        } catch (e) {
+            return '';
+        }
     }
 
     /**
@@ -274,7 +297,13 @@ class LancamentosManager {
 
         // Validação básica
         if (!entryData.data || !entryData.conta || !entryData.descricao) {
-            this.showMessage('Preencha todos os campos obrigatórios', 'error');
+            this.showMessage('Preencha todos os campos obrigatórios (Data, Conta, Descrição)', 'error');
+            return;
+        }
+
+        // Validar formato da data
+        if (!this.isValidDate(entryData.data)) {
+            this.showMessage('Data deve estar no formato válido', 'error');
             return;
         }
 
@@ -290,6 +319,18 @@ class LancamentosManager {
             this.showMessage('Erro ao editar lançamento: ' + error.message, 'error');
         } finally {
             this.hideLoading();
+        }
+    }
+
+    /**
+     * Valida se uma data está no formato correto
+     */
+    isValidDate(dateString) {
+        try {
+            const date = new Date(dateString);
+            return date instanceof Date && !isNaN(date.getTime());
+        } catch (e) {
+            return false;
         }
     }
 
@@ -347,10 +388,16 @@ class LancamentosManager {
                 const excelEpoch = new Date(1899, 11, 30);
                 const date = new Date(excelEpoch.getTime() + dateValue * 24 * 60 * 60 * 1000);
                 return date.toLocaleDateString('pt-BR');
-            } else {
-                // String de data
+            } else if (typeof dateValue === 'string') {
+                // Verifica se é uma string de data válida
                 const date = new Date(dateValue);
-                return date.toLocaleDateString('pt-BR');
+                if (!isNaN(date.getTime())) {
+                    return date.toLocaleDateString('pt-BR');
+                }
+                // Se não for uma data válida, retorna o valor original
+                return dateValue;
+            } else {
+                return dateValue;
             }
         } catch (e) {
             return dateValue;
