@@ -455,11 +455,15 @@ class GoogleSheetsService {
         }
 
         try {
-            const url = `${this.pb.baseUrl}/get-sheet-entries?limit=${limit}`;
+            // Usar endpoint otimizado do resumo financeiro com entradas incluídas
+            const now = new Date();
+            const mesAtual = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
+            const url = `${this.pb.baseUrl}/get-financial-summary?orcamento=${encodeURIComponent(mesAtual)}&include_entries=true&entries_limit=${limit}`;
+            
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {
-                    'Authorization': this.pb.authStore.token,
+                    'Authorization': `Bearer ${this.pb.authStore.token}`,
                     'Content-Type': 'application/json'
                 }
             });
@@ -470,7 +474,13 @@ class GoogleSheetsService {
                 throw new Error(data.error || 'Erro ao carregar entradas da planilha');
             }
 
-            return data;
+            // Retornar no formato esperado pelo componente
+            return {
+                success: true,
+                entries: data.entries || [],
+                total: data.totalEntries || 0,
+                limit: data.entriesLimit || limit
+            };
         } catch (error) {
             console.error('Erro ao carregar entradas da planilha:', error);
             throw error;

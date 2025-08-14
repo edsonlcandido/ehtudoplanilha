@@ -230,6 +230,30 @@
     margin: 0 2px;
     padding: 4px 8px;
     font-size: 0.875rem;
+    min-width: 32px;
+    text-align: center;
+}
+
+/* Icon-only buttons styles */
+.entries-table .actions button,
+.entry-card-actions button {
+    font-size: 1rem;
+    line-height: 1;
+    border: 1px solid transparent;
+    transition: all 0.15s ease-in-out;
+}
+
+.entries-table .actions button:hover,
+.entry-card-actions button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.entries-table .actions button.danger:hover,
+.entry-card-actions button.danger:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
 }
 
 /* Mobile cards styles */
