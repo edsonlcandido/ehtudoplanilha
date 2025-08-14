@@ -443,6 +443,111 @@ class GoogleSheetsService {
             this._summaryCache = {};
         }
     }
+
+    /**
+     * Obtém as últimas entradas da planilha
+     * @param {number} limit - Número máximo de entradas a retornar (padrão: 50)
+     * @returns {Promise<Object>} - Lista de entradas da planilha
+     */
+    async getSheetEntries(limit = 50) {
+        if (!this.pb) {
+            throw new Error('Serviço Sheets não inicializado');
+        }
+
+        try {
+            const url = `${this.pb.baseUrl}/get-sheet-entries?limit=${limit}`;
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Authorization': this.pb.authStore.token,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Erro ao carregar entradas da planilha');
+            }
+
+            return data;
+        } catch (error) {
+            console.error('Erro ao carregar entradas da planilha:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Edita uma entrada específica na planilha
+     * @param {Object} entryData - Dados da entrada para edição
+     * @returns {Promise<Object>} - Resultado da operação
+     */
+    async editSheetEntry(entryData) {
+        if (!this.pb) {
+            throw new Error('Serviço Sheets não inicializado');
+        }
+
+        try {
+            const response = await fetch(`${this.pb.baseUrl}/edit-sheet-entry`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': this.pb.authStore.token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(entryData)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Erro ao editar entrada na planilha');
+            }
+
+            // Limpa cache para forçar atualização
+            this.clearFinancialSummaryCache();
+
+            return data;
+        } catch (error) {
+            console.error('Erro ao editar entrada na planilha:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Remove uma entrada específica da planilha
+     * @param {number} rowIndex - Índice da linha a ser removida
+     * @returns {Promise<Object>} - Resultado da operação
+     */
+    async deleteSheetEntry(rowIndex) {
+        if (!this.pb) {
+            throw new Error('Serviço Sheets não inicializado');
+        }
+
+        try {
+            const response = await fetch(`${this.pb.baseUrl}/delete-sheet-entry`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': this.pb.authStore.token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ rowIndex })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Erro ao remover entrada da planilha');
+            }
+
+            // Limpa cache para forçar atualização
+            this.clearFinancialSummaryCache();
+
+            return data;
+        } catch (error) {
+            console.error('Erro ao remover entrada da planilha:', error);
+            throw error;
+        }
+    }
 }
 
 // Exportar instância singleton
