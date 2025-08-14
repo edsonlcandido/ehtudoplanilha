@@ -3,7 +3,7 @@
  * Responsável por exibir, editar e deletar entradas da planilha
  */
 
-import googleSheetsService from '../google/sheets-api.js';
+import googleSheetsService from './google/sheets-api.js';
 
 class LancamentosManager {
     constructor() {
