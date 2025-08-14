@@ -402,6 +402,37 @@ class GoogleSheetsService {
     }
 
     /**
+     * Obtém meses únicos disponíveis na planilha do usuário
+     * @returns {Promise<Object>} - Lista de meses disponíveis para seleção
+     */
+    async getAvailableMonths() {
+        if (!this.pb) {
+            throw new Error('Serviço Sheets não inicializado');
+        }
+
+        try {
+            const response = await fetch(`${this.pb.baseUrl}/get-available-months`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${this.pb.authStore.token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Erro ao obter meses disponíveis');
+            }
+
+            return data;
+        } catch (error) {
+            console.error('Erro ao obter meses disponíveis:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Limpa o cache do resumo financeiro (todo ou mês específico)
      * @param {string} mesBase opcional (AAAA-MM) para limpar apenas um mês
      */

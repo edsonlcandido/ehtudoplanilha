@@ -76,6 +76,18 @@
                     Integração</a>
             </div>
 
+            <!-- Seletor de Mês para Análise -->
+            <div style="margin-top: 2rem; margin-bottom: 1rem;">
+                <div class="form-group" style="max-width: 300px; margin: 0 auto;">
+                    <label for="monthSelector" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">
+                        📅 Mês para Análise:
+                    </label>
+                    <select id="monthSelector" class="form-control" aria-label="Selecionar mês para análise">
+                        <option value="">Carregando meses...</option>
+                    </select>
+                </div>
+            </div>
+
             <!-- Cards Financeiros (skeleton exibido imediatamente para melhor UX) -->
             <div id="financialCards" aria-live="polite"></div>
 
@@ -368,12 +380,24 @@
                     configBtn.style.display = '';
                 } else {
                     console.log('Configuração OK, carregando dados financeiros...');
+                    // Se configuração OK, carrega meses disponíveis primeiro
+                    await carregarMesesDisponiveis();
+                    
                     // Se configuração OK, carrega dados financeiros
                     const nowCfg = new Date();
                     const mesAtualCfg = `${nowCfg.getUTCFullYear()}-${String(nowCfg.getUTCMonth()+1).padStart(2, '0')}`;
-                    const summaryInicial = await carregarDadosFinanceiros(mesAtualCfg);
+                    
+                    // Usa o mês selecionado se disponível, senão usa o atual
+                    const mesParaCarregar = mesAtualSelecionado || mesAtualCfg;
+                    const summaryInicial = await carregarDadosFinanceiros(mesParaCarregar);
+                    
                     // Inicializa componente de categorias reutilizando summary
-                    new TopCategoriesChart('topCategoriesContainer', { limit: 10, periodo: 'atual', mesBase: mesAtualCfg }).init(summaryInicial);
+                    topCategoriesComponent = new TopCategoriesChart('topCategoriesContainer', { 
+                        limit: 10, 
+                        periodo: 'atual', 
+                        mesBase: mesParaCarregar 
+                    });
+                    topCategoriesComponent.init(summaryInicial);
                 }
             } catch (error) {
                 console.error('Erro ao verificar configuração do Google:', error);
@@ -386,14 +410,44 @@
 
         // Tenta carregar dados financeiros assim que DOM estiver pronto (caso configuração já esteja válida)
         document.addEventListener('DOMContentLoaded', async () => {
+            // Configura event listener para mudança de mês
+            const monthSelector = document.getElementById('monthSelector');
+            if (monthSelector) {
+                monthSelector.addEventListener('change', async (e) => {
+                    const novoMes = e.target.value;
+                    if (novoMes) {
+                        await onMonthChange(novoMes);
+                    }
+                });
+            }
+            
             try {
                 // Evita duplicar se já tiver sido carregado dentro do fluxo de verificação
                 if (!financialCardsComponent) return;
+                
+                // Tenta carregar meses disponíveis se configuração estiver OK
+                try {
+                    await carregarMesesDisponiveis();
+                } catch (e) {
+                    console.warn('Erro ao carregar meses disponíveis na inicialização:', e);
+                }
+                
                 const now = new Date();
                 const mesAtual = `${now.getUTCFullYear()}-${String(now.getUTCMonth()+1).padStart(2, '0')}`;
-                const summary = await carregarDadosFinanceiros(mesAtual);
+                const mesParaCarregar = mesAtualSelecionado || mesAtual;
+                const summary = await carregarDadosFinanceiros(mesParaCarregar);
                 if (summary && summary.success) {
                     financialCardsComponent.updateData(summary);
+                    
+                    // Inicializa componente de categorias se não foi inicializado ainda
+                    if (!topCategoriesComponent) {
+                        topCategoriesComponent = new TopCategoriesChart('topCategoriesContainer', { 
+                            limit: 10, 
+                            periodo: 'atual', 
+                            mesBase: mesParaCarregar 
+                        });
+                        topCategoriesComponent.init(summary);
+                    }
                 }
             } catch (e) {
                 console.warn('Falha no carregamento inicial otimista dos dados financeiros:', e);
@@ -401,9 +455,9 @@
         });
 
         // Função para carregar dados financeiros
-    async function carregarDadosFinanceiros(mesBase) {
+    async function carregarDadosFinanceiros(mesBase, forceRefresh = false) {
              try {
-                console.log('Carregando dados financeiros...');
+                console.log('Carregando dados financeiros...', 'mesBase:', mesBase, 'forceRefresh:', forceRefresh);
                 
                 // Garantir que os cards estão visíveis primeiro
                 if (financialCardsComponent) {
@@ -420,7 +474,8 @@
                     const now = new Date();
                     mesParam = `${now.getUTCFullYear()}-${String(now.getUTCMonth()+1).padStart(2, '0')}`;
                 }
-                const summary = await googleSheetsService.getFinancialSummary(mesParam);
+                
+                const summary = await googleSheetsService.getFinancialSummary(mesParam, { force: forceRefresh });
                 // Armazena histórico e contas sugeridas
                 historicoLancamentos = summary.historicoLancamentos || [];
                 contasSugeridas = summary.contasSugeridas || [];
@@ -436,17 +491,135 @@
                 } else {
                     console.error('Erro ao carregar dados financeiros:', summary ? summary.error : 'Resposta inválida');
                     if (financialCardsComponent) {
-                        financialCardsComponent.removeLoadingState();
+                        financialCardsComponent.renderError(summary ? summary.error : 'Erro ao carregar dados');
                     }
                 }
                 return summary;
             } catch (error) {
                 console.error('Erro ao carregar dados financeiros:', error);
-                // Em caso de erro, mantém os cards com valores zerados
+                // Em caso de erro, mostra erro nos cards
                 if (financialCardsComponent) {
-                    financialCardsComponent.removeLoadingState();
+                    financialCardsComponent.renderError(error.message || 'Erro ao carregar dados');
                 }
                 return null;
+            }
+        }
+
+        // === SELETOR DE MÊS PARA ANÁLISE ===
+        
+        // Variável global para armazenar componente de categorias e mês atual
+        let topCategoriesComponent = null;
+        let mesAtualSelecionado = null;
+
+        // Função para carregar meses disponíveis no seletor
+        async function carregarMesesDisponiveis() {
+            const monthSelector = document.getElementById('monthSelector');
+            if (!monthSelector) return;
+
+            try {
+                console.log('Carregando meses disponíveis...');
+                monthSelector.innerHTML = '<option value="">Carregando meses...</option>';
+                
+                const response = await googleSheetsService.getAvailableMonths();
+                
+                if (response.success && response.meses && response.meses.length > 0) {
+                    // Limpa as opções
+                    monthSelector.innerHTML = '';
+                    
+                    // Adiciona opções com os meses disponíveis
+                    response.meses.forEach(mes => {
+                        const option = document.createElement('option');
+                        option.value = mes.valor; // AAAA-MM
+                        option.textContent = mes.texto; // Janeiro/25
+                        monthSelector.appendChild(option);
+                    });
+                    
+                    // Define o mês atual como selecionado por padrão
+                    const now = new Date();
+                    const mesAtual = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
+                    
+                    // Se o mês atual estiver na lista, seleciona ele
+                    const mesAtualOption = monthSelector.querySelector(`option[value="${mesAtual}"]`);
+                    if (mesAtualOption) {
+                        mesAtualOption.selected = true;
+                        mesAtualSelecionado = mesAtual;
+                    } else if (response.meses.length > 0) {
+                        // Se não encontrar o mês atual, seleciona o primeiro (mais recente)
+                        monthSelector.selectedIndex = 0;
+                        mesAtualSelecionado = response.meses[0].valor;
+                    }
+                    
+                    console.log(`Carregados ${response.meses.length} meses. Mês selecionado: ${mesAtualSelecionado}`);
+                } else {
+                    monthSelector.innerHTML = '<option value="">Nenhum mês encontrado</option>';
+                    console.log('Nenhum mês disponível encontrado');
+                }
+            } catch (error) {
+                console.error('Erro ao carregar meses disponíveis:', error);
+                monthSelector.innerHTML = '<option value="">Erro ao carregar meses</option>';
+            }
+        }
+
+        // Função para atualizar dados quando o mês muda
+        async function onMonthChange(novoMes) {
+            if (!novoMes || novoMes === mesAtualSelecionado) return;
+            
+            console.log(`Mudando análise do mês ${mesAtualSelecionado} para ${novoMes}`);
+            mesAtualSelecionado = novoMes;
+            
+            try {
+                // Mostra estado de loading nos cards financeiros
+                if (financialCardsComponent) {
+                    financialCardsComponent.renderLoading();
+                }
+                
+                // Força limpeza do cache e busca dados com force=true
+                googleSheetsService.clearFinancialSummaryCache(novoMes);
+                const summary = await carregarDadosFinanceiros(novoMes, true);
+                
+                // Verifica se os dados foram carregados com sucesso
+                if (!summary || !summary.success) {
+                    throw new Error('Erro ao carregar dados financeiros para o mês selecionado');
+                }
+                
+                console.log('Dados carregados para o mês', novoMes, ':', summary);
+                
+                // Atualiza cards financeiros explicitamente
+                if (financialCardsComponent) {
+                    financialCardsComponent.updateData(summary);
+                    console.log('Cards financeiros atualizados');
+                }
+                
+                // Atualiza componente de categorias
+                if (topCategoriesComponent) {
+                    topCategoriesComponent.options.mesBase = novoMes;
+                    await topCategoriesComponent.fetchData(summary);
+                    console.log('Tabela de categorias atualizada');
+                } else {
+                    // Cria o componente se não existir
+                    console.log('Criando novo componente de categorias para mês', novoMes);
+                    topCategoriesComponent = new TopCategoriesChart('topCategoriesContainer', { 
+                        limit: 10, 
+                        periodo: 'atual', 
+                        mesBase: novoMes 
+                    });
+                    topCategoriesComponent.init(summary);
+                }
+                
+                // Dispara evento personalizado para outros componentes que possam estar ouvindo
+                document.dispatchEvent(new CustomEvent('monthChanged', { 
+                    detail: { novoMes, summary } 
+                }));
+                
+                console.log('Atualização concluída para o mês', novoMes);
+                
+            } catch (error) {
+                console.error('Erro ao atualizar dados para o novo mês:', error);
+                if (financialCardsComponent) {
+                    financialCardsComponent.renderError('Erro ao carregar dados do mês selecionado');
+                }
+                // Mostra mensagem de erro para o usuário
+                mostrarMensagem('error', 'Erro ao carregar dados do mês selecionado');
             }
         }
 

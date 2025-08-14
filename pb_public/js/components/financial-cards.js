@@ -296,6 +296,13 @@ class FinancialCards {
     }
 
     /**
+     * Mostra estado de loading
+     */
+    showLoadingState() {
+        this.renderLoading();
+    }
+
+    /**
      * Remove estado de loading dos cards
      */
     removeLoadingState() {
