@@ -150,8 +150,7 @@
     <script type="module">
         import apiConfig from '../js/config/api-config.js';
         import { estaAutenticado } from '../js/auth-service.js';
-        import { inicializarMenuUsuario } from '../js/menu-usuario.js';
-        import googleSheetsService from '../js/google/sheets-api.js';
+        import { exibirMenuUsuario } from '../js/menu-usuario.js';
         import lancamentosManager from '../js/lancamentos-manager.js';
 
         // Inicializa PocketBase
@@ -163,10 +162,7 @@
             window.location.href = '../login.html';
         } else {
             // Inicializa menu do usuário
-            inicializarMenuUsuario();
-
-            // Inicializa o serviço Google Sheets
-            googleSheetsService.init(window.pb);
+            exibirMenuUsuario();
 
             // Carrega módulos adicionais somente se autenticado
             Promise.all([

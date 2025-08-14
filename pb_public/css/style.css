@@ -726,3 +726,68 @@ nav {
         right: 20px !important;
     }
 }
+
+/* Estilos para skeleton loading nos lançamentos */
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+}
+
+.skeleton-text {
+    height: 16px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+}
+
+.skeleton-button {
+    height: 30px;
+    width: 30px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    display: inline-block;
+    margin: 0 2px;
+}
+
+.skeleton-date {
+    width: 80px;
+}
+
+.skeleton-value {
+    width: 90px;
+}
+
+.skeleton-description {
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+.skeleton-details {
+    width: 70%;
+}
+
+.skeleton-row td {
+    padding: 12px 8px;
+}
+
+.skeleton-row .skeleton-text {
+    width: 100%;
+}
+
+.skeleton-row .actions {
+    display: flex;
+    gap: 8px;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}

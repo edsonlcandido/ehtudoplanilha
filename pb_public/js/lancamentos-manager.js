@@ -54,7 +54,8 @@ class LancamentosManager {
         this.showLoading();
 
         try {
-            const response = await googleSheetsService.getSheetEntries(50);
+            // Usar endpoint dedicado para lançamentos
+            const response = await this.fetchSheetEntries(50);
             this.entries = response.entries || [];
             this.renderEntries();
             this.showMessage('Lançamentos carregados com sucesso', 'success');
@@ -70,13 +71,43 @@ class LancamentosManager {
     }
 
     /**
+     * Busca entradas diretamente do endpoint dedicado
+     */
+    async fetchSheetEntries(limit = 50) {
+        if (!window.pb) {
+            throw new Error('PocketBase não inicializado');
+        }
+
+        try {
+            const response = await fetch(`${window.pb.baseUrl}/get-sheet-entries?limit=${limit}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${window.pb.authStore.token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Erro ao carregar entradas da planilha');
+            }
+
+            return data;
+        } catch (error) {
+            console.error('Erro ao buscar entradas da planilha:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Renderiza as entradas na interface
      */
     renderEntries() {
         const container = document.getElementById('entriesContainer');
         if (!container) return;
 
-        if (this.entries.length === 0) {
+        if (this.entries.length === 0 && !this.isLoading) {
             container.innerHTML = `
                 <div class="text-center" style="padding: 2rem;">
                     <p style="color: #666;">Nenhum lançamento encontrado na planilha.</p>
@@ -88,6 +119,7 @@ class LancamentosManager {
             return;
         }
 
+        // Sempre mostrar a estrutura da tabela/cards mesmo durante loading
         if (this.isMobile) {
             this.renderMobileCards(container);
         } else {
@@ -99,6 +131,33 @@ class LancamentosManager {
      * Renderiza cards para mobile
      */
     renderMobileCards(container) {
+        // Se está carregando e não tem entradas, mostra skeleton
+        if (this.isLoading && this.entries.length === 0) {
+            const skeletonHtml = Array(3).fill(0).map(() => `
+                <div class="entry-card skeleton">
+                    <div class="entry-card-header">
+                        <div class="skeleton-text skeleton-date"></div>
+                        <div class="skeleton-text skeleton-value"></div>
+                    </div>
+                    <div class="entry-card-body">
+                        <div class="skeleton-text skeleton-description"></div>
+                        <div class="skeleton-text skeleton-details"></div>
+                    </div>
+                    <div class="entry-card-actions">
+                        <div class="skeleton-button"></div>
+                        <div class="skeleton-button"></div>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = `
+                <div class="entries-mobile">
+                    ${skeletonHtml}
+                </div>
+            `;
+            return;
+        }
+
         const cardsHtml = this.entries.map(entry => `
             <div class="entry-card" data-row="${entry.rowIndex}">
                 <div class="entry-card-header">
@@ -137,6 +196,46 @@ class LancamentosManager {
      * Renderiza tabela para desktop
      */
     renderDesktopTable(container) {
+        // Se está carregando e não tem entradas, mostra skeleton
+        if (this.isLoading && this.entries.length === 0) {
+            const skeletonRows = Array(5).fill(0).map(() => `
+                <tr class="skeleton-row">
+                    <td><div class="skeleton-text"></div></td>
+                    <td><div class="skeleton-text"></div></td>
+                    <td><div class="skeleton-text"></div></td>
+                    <td><div class="skeleton-text"></div></td>
+                    <td><div class="skeleton-text"></div></td>
+                    <td><div class="skeleton-text"></div></td>
+                    <td class="actions">
+                        <div class="skeleton-button"></div>
+                        <div class="skeleton-button"></div>
+                    </td>
+                </tr>
+            `).join('');
+
+            container.innerHTML = `
+                <div class="table-responsive">
+                    <table class="entries-table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Conta</th>
+                                <th>Descrição</th>
+                                <th>Valor</th>
+                                <th>Categoria</th>
+                                <th>Observações</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${skeletonRows}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            return;
+        }
+
         const rowsHtml = this.entries.map(entry => `
             <tr data-row="${entry.rowIndex}">
                 <td>${this.formatDate(entry.data)}</td>
