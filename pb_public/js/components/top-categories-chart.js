@@ -10,7 +10,8 @@ class TopCategoriesChart {
         this.container = document.getElementById(containerId);
         this.options = {
             limit: options.limit || 10,
-            periodo: options.periodo || 'atual'
+            periodo: options.periodo || 'atual',
+            mesBase: options.mesBase || null
         };
         this.data = null;
         this.isLoading = false;
