@@ -1,76 +1,120 @@
-# Arquitetura do SaaS Multi-Tenant com PocketBase e Google Sheets
+# Arquitetura do SaaS Multi-Tenant com PocketBase e Google Sheets (Revisado)
 
 ## 1. Visão Geral
-Este projeto é um SaaS multi-tenant que permite a cada cliente gerenciar entradas financeiras em sua própria planilha do Google Sheets.  
-O backend é 100% PocketBase (SQLite), com hooks para integrar Google OAuth e interações com a API do Sheets.
+SaaS multi-tenant onde cada usuário gerencia lançamentos financeiros em sua própria planilha derivada de um template Google Sheets.  
+Backend: PocketBase (SQLite) com hooks customizados para OAuth Google e escrita em Sheets.
 
-## 2. Multi-Tenancy e Isolamento de Dados
-- Modelo: Banco de Dados Único, Esquema Compartilhado no PocketBase.  
+## 2. Multi-Tenancy e Isolamento
+- Estratégia: Banco único, coleções compartilhadas com regras de acesso restritivas.
 - Coleções:
-  - `users`: cadastro e autenticação (email/senha).  
-  - `google_infos`: credenciais e metadados do Sheets.  
-    - `user_id` (Relacionamento com users)  
-    - `access_token` (Texto)  
-    - `refresh_token` (Texto)  
-    - `sheet_id` (Texto)  
-- Regras de API:
-  - Usuários só acessam seu próprio registro em `users`.  
-  - Endpoints e hooks validam `@request.auth.id` antes de operar em `google_infos`.  
+  - users (nativa: email + senha)
+  - google_infos
+    - user_id (rel 1:1 → users)
+    - access_token
+    - refresh_token (criptografado opcional)
+    - token_type
+    - scope
+    - expires_at (DateTime UTC)
+    - sheet_id
+    - last_success_append_at (DateTime opcional)
+- Regras (versão PocketBase ≥ 0.28):
+  - users:  
+    read/write: `@request.auth.id = @record.id`
+  - google_infos:  
+    read/write: `@request.auth.id = @record.user_id`
 
-## 3. Componentes Principais
-- PocketBase  
-  - Autenticação de usuários.  
-  - Hooks em `pb_hooks/`:
-    - **GET /google-oauth-callback**: troca `code` → tokens → cria/atualiza em `google_infos`.  
-    - **POST /google-refresh-token**: renova `access_token` usando `refresh_token`.  
-    - **POST /provision-sheet**: copia planilha modelo e grava `sheet_id` em `google_infos`.  
-    - **POST /append-entry**: insere lançamentos direto na planilha via Sheets API.  
-- Google Sheets API  
-  - `drive/v3/files/{templateId}/copy`  
-  - `sheets/v4/spreadsheets/{id}/values:append`  
-- Frontend (`/pb_public`)
-  - HTML + Picnic CSS + PocketBase UMD.  
-  - Página inicial (dashboard) e página de configuração OAuth/Provisionamento.
+## 3. Estrutura da Planilha Modelo
+A planilha modelo deve conter duas abas:
 
-## 4. Fluxos de Trabalho Essenciais
+### 3.1 Aba de Lançamentos (ex.: LANCAMENTOS)
+| Coluna | Campo       | Tipo    | Formato / Observação |
+|--------|-------------|---------|----------------------|
+| A      | data        | Data    | YYYY-MM-DD           |
+| B      | conta       | Texto   | ex.: Carteira, Banco |
+| C      | valor       | Número  | Decimal (.)          |
+| D      | descricao   | Texto   | máx 255 chars        |
+| E      | categoria   | Texto   | Deve existir na aba CATEGORIAS |
+| F      | orcamento   | Texto   | opcional             |
 
-### A. Onboarding e Configuração
-1. Usuário registra-se no PocketBase.  
-2. Após login, acessa página inicial do dashboard.  
-3. Do dashboard, navega para a página de configuração.  
-4. Clica em “Conectar Google Sheets” → `startGoogleAuth(userId)` → redireciona para consentimento Google.  
-5. Google retorna em `/google-oauth-callback?code=&state={userId}`.  
-6. Hook processa o callback, troca `code` por tokens e atualiza/cria registro em `google_infos`.
+Range de append: `LANCAMENTOS!A:F`
 
-### B. Provisionamento da Planilha Modelo
-1. Na página de configuração, usuário aciona POST `/provision-sheet`.  
-2. Hook usa `google_infos.access_token` para:
-   - Copiar planilha modelo (`drive/v3/files/{templateId}/copy`).
-   - **Obs:** não é preciso limpar a planilha modelo neste momento.
-3. Atualiza `google_infos.sheet_id` com o novo ID.
+### 3.2 Aba de Categorias (ex.: CATEGORIAS)
+| Coluna | Campo     | Tipo  | Observação |
+|--------|-----------|-------|-----------|
+| A      | categoria | Texto | Nome único da categoria (chave) |
+| B      | tipo      | Texto | Livre ou controlado (ex.: "despesa", "receita") |
 
-### C. Inserção de Lançamentos Financeiros
-1. Frontend envia POST para `/append-entry?userId={userId}` com JSON:
-   ```json
-   { "title": "...", "amount": 123.45, "timestamp": "2025-07-29T12:00:00Z" }
-   ```
-2. Hook busca registro em `google_infos` por `user_id`.  
-3. Valida `access_token`; se expirado, chama `/google-refresh-token`.  
-4. Chama `sheets/v4/spreadsheets/{sheet_id}/values:append` com o payload.  
-5. Retorna status (sucesso/erro) ao frontend.
+Regras recomendadas:
+- A coluna `categoria` da aba LANCAMENTOS deve referenciar (por validação de dados no Google Sheets, se possível) uma entrada existente na coluna `categoria` da aba CATEGORIAS.
+- O campo `tipo` pode ser usado futuramente para relatórios agregados (ex.: separar fluxo de caixa por tipo).
+- Opcional: Configurar validação de dados no Google Sheets para a coluna E (categoria) apontando para o intervalo `CATEGORIAS!A:A`.
 
-## 5. Implantação, Segurança e Escalabilidade
-- Hospedagem PocketBase: Linux (Systemd) ou Docker.  
-- Variáveis de ambiente:
-  ```env
-  GOOGLE_CLIENT_ID=
-  GOOGLE_CLIENT_SECRET=
-  GOOGLE_REDIRECT_URI=https://seu-dominio.com/google-oauth-callback
-  ```
-- Segurança:
-  - HTTPS obrigatório.  
-  - CORS e regras de API no PocketBase.  
-  - Rate limiting e logs em hooks.  
-- Escalabilidade:
-  - Backup diário do SQLite.  
-  - Monitorar cotas da API Google e implementar backoff.
+## 4. Fluxos Principais
+
+### 4.1 Onboarding OAuth
+1. Usuário cria conta e autentica no PocketBase.
+2. Frontend gera PKCE (code_verifier + code_challenge) e state assinado.
+3. Redireciona para endpoint de autorização Google.
+4. Google redireciona para `/google-oauth-callback?code=...&state=...`
+5. Hook valida state, troca code por tokens, salva tokens + `expires_at`.
+
+### 4.2 Provisionamento da Planilha
+1. Usuário aciona `POST /provision-sheet`.
+2. Hook verifica se já existe `sheet_id`; se existir pode retornar 409 ou reutilizar.
+3. Copia template (Drive API).
+4. Atualiza `sheet_id` no registro.
+
+### 4.3 Inserção de Lançamentos
+1. Frontend envia `POST /append-entry` (sem userId explícito).
+2. Hook resolve userId via `request.auth`, obtém `google_infos`.
+3. Valida `expires_at`; se expirado → refresh.
+4. Chama Sheets `values:append` em `LANCAMENTOS!A:F`.
+5. Atualiza `last_success_append_at`.
+
+(Validação futura: antes do append, opcionalmente ler `CATEGORIAS!A:A` para garantir que a categoria informada existe; em caso de ausência, retornar erro padronizado.)
+
+## 5. Endpoints Custom (Resumo)
+- `GET /google-oauth-callback`
+- `POST /google-refresh-token`
+- `POST /provision-sheet`
+- `POST /append-entry`
+
+Respostas padrão:  
+Sucesso:
+```
+{ "success": true, "data": { ... } }
+```
+Erro:
+```
+{ "success": false, "error": { "code": "TOKEN_EXPIRED", "message": "Token expirado." } }
+```
+
+## 6. Segurança
+- HTTPS obrigatório.
+- State + PKCE no OAuth.
+- Armazenar `refresh_token` com criptografia (opcional).
+- Limitar origens CORS.
+- Rate limiting (ex.: token bucket simples).
+- Sanitização e validação de payloads (valores numéricos positivos, strings limitadas).
+- (Opcional) Verificação de categoria válida antes de inserir linha.
+
+## 7. Escalabilidade & Operações
+- Backups SQLite: a cada 6h + retenção 7 dias + teste de restauração semanal.
+- Monitorar limites (Drive/Sheets) → retry exponencial em 429/5xx.
+- Logging estruturado JSON (campos: timestamp, userId, action, success, latencyMs).
+
+## 8. Variáveis de Ambiente
+```
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=https://seu-dominio.com/google-oauth-callback
+SHEET_TEMPLATE_ID=
+ENCRYPTION_KEY=        # opcional para tokens
+APP_BASE_URL=https://seu-dominio.com
+```
+
+## 9. Roadmap Futuro
+- Leitura agregada (dashboards analíticos)
+- Exportação CSV
+- Validação automática de categorias (cache local + fallback leitura Sheets)
+- Relatórios por tipo (despesa/receita) usando aba CATEGORIAS

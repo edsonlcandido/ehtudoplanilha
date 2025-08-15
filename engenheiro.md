@@ -1,140 +1,269 @@
-# Instruções ao Engenheiro de Software
+# Instruções ao Engenheiro de Software (Revisado)
 
-Este documento orienta a implementação completa do SaaS multi-tenant usando PocketBase e Google Sheets, conforme definido em [arquitetura.md](arquitetura.md) e integrado na página de dashboard (`pb_public/dashboard/index.html`).
-
----
-
-## 1. Configuração do PocketBase
-
-1. Crie as coleções no Admin UI:
-   - **users** (padrão: email, password)
-   - **google_infos**  
-     • `user_id` (relação 1:1 → users)  
-     • `access_token` (Texto)  
-     • `refresh_token` (Texto)  
-     • `sheet_id` (Texto)
-
-2. Regras de acesso (Collection Rules):
-   - **users**:  
-     ```pb_rule
-     read:  @request.auth.id == @record.id
-     write: @request.auth.id == @record.id
-     ```
-   - **google_infos**:  
-     ```pb_rule
-     read:  @request.auth.id == record.user_id.id
-     write: @request.auth.id == record.user_id.id
-     ```
-
-3. Variáveis de ambiente (`.env` ou no container):
-   ```
-   GOOGLE_CLIENT_ID=...
-   GOOGLE_CLIENT_SECRET=...
-   GOOGLE_REDIRECT_URI=https://seu-dominio.com/google-oauth-callback
-   SHEET_TEMPLATE_ID=...
-   ```
+Baseado em arquitetura revisada em [arquitetura.md](arquitetura.md).
 
 ---
 
-## 2. Hooks do PocketBase (`pb_hooks/`)
+## 1. Coleções PocketBase
 
-Implemente os seguintes endpoints em JavaScript:
+1. users (padrão)
+2. google_infos
+   - user_id (relation 1:1)
+   - access_token (text)
+   - refresh_token (text)
+   - token_type (text)
+   - scope (text)
+   - expires_at (date)
+   - sheet_id (text)
+   - last_success_append_at (date, opcional)
 
-### 2.1. GET `/google-oauth-callback`
+### Regras
+users:
+read:  @request.auth.id = @record.id
+write: @request.auth.id = @record.id
+
+google_infos:
+read:  @request.auth.id = @record.user_id
+write: @request.auth.id = @record.user_id
+
+---
+
+## 2. Variáveis de Ambiente
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+GOOGLE_REDIRECT_URI=https://seu-dominio.com/google-oauth-callback
+SHEET_TEMPLATE_ID=...
+APP_BASE_URL=https://seu-dominio.com
+ENCRYPTION_KEY=...(opcional)
+
+---
+
+## 3. Utilitários (pb_hooks/_lib/)
+_criar arquivos de apoio_
+
+- oauth.js
+  - exchangeCodeForTokens(code, codeVerifier)
+  - refreshToken(refreshToken)
+- tokens.js
+  - isExpired(expires_at)
+  - computeExpiresAt(expires_in)
+- googleFetch.js
+  - googleFetch(url, opts, { userId, autoRefresh: true })
+
+---
+
+## 4. Hooks
+
+### 4.1 GET /google-oauth-callback (after)
+Valida state + executa troca de código:
 ```js
-// pb_hooks/google-redirect.pb.js (after hook)
-const { code, state: userId } = request.query;
-const tokens = await exchangeCodeForTokens(code);
-await pb.collection('google_infos').updateOrCreate(
-  { filter: { user_id: userId } },
-  { user_id: userId, access_token: tokens.access_token, refresh_token: tokens.refresh_token }
-);
-reply.redirect('/dashboard');
-```
+/// pb_hooks/google-oauth-callback.pb.js
+onAfterRequest(async ({ request, reply, pb }) => {
+  if (request.path !== '/google-oauth-callback') return;
 
-### 2.2. POST `/google-refresh-token`
-```js
-// pb_hooks/google-refresh.pb.js (before hook)
-const { userId } = await request.json();
-const record = await pb.collection('google_infos').getFirstListItem(`user_id="${userId}"`);
-const newTokens = await refreshToken(record.refresh_token);
-await pb.collection('google_infos').update(record.id, { access_token: newTokens.access_token });
-reply.send({ access_token: newTokens.access_token });
-```
+  try {
+    const { code, state } = request.query;
+    validateState(state); // lança erro se inválido
 
-### 2.3. POST `/provision-sheet`
-```js
-// pb_hooks/provision-sheet.pb.js (after hook)
-const userId = request.auth.record.id;
-const info = await pb.collection('google_infos').getFirstListItem(`user_id="${userId}"`);
-const copyRes = await fetch(`https://www.googleapis.com/drive/v3/files/${process.env.SHEET_TEMPLATE_ID}/copy`, {
-  method: 'POST',
-  headers: { Authorization: `Bearer ${info.access_token}` }
+    const userId = extractUserIdFromState(state);
+    const { access_token, refresh_token, expires_in, token_type, scope } =
+      await exchangeCodeForTokens(code, getCodeVerifier(state));
+
+    const expires_at = computeExpiresAt(expires_in);
+
+    // Tenta localizar registro existente
+    let rec;
+    try {
+      rec = await pb.collection('google_infos').getFirstListItem(`user_id="${userId}"`);
+      await pb.collection('google_infos').update(rec.id, {
+        access_token,
+        refresh_token,
+        token_type,
+        scope,
+        expires_at
+      });
+    } catch {
+      await pb.collection('google_infos').create({
+        user_id: userId,
+        access_token,
+        refresh_token,
+        token_type,
+        scope,
+        expires_at
+      });
+    }
+
+    reply.redirect('/dashboard');
+  } catch (err) {
+    console.error('[oauth-callback]', err);
+    reply.code(400).send({ success: false, error: { code: 'OAUTH_CALLBACK_ERROR', message: 'Falha no callback OAuth.' } });
+  }
 });
-const { id: sheetId } = await copyRes.json();
-await pb.collection('google_infos').update(info.id, { sheet_id: sheetId });
-reply.send({ sheet_id: sheetId });
 ```
 
-### 2.4. POST `/append-entry`
+### 4.2 POST /google-refresh-token (after)
 ```js
-// pb_hooks/append-entry.pb.js (after hook)
-const { userId, data, conta, valor, descricao, categoria, orcamento } = await request.json();
-let info = await pb.collection('google_infos').getFirstListItem(`user_id="${userId}"`);
-if (tokenExpired(info.access_token)) {
-  // renova token e atualiza info.access_token...
-}
-await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${info.sheet_id}/values/Sheet1!A:F:append?valueInputOption=USER_ENTERED`, {
-  method: 'POST',
-  headers: { Authorization: `Bearer ${info.access_token}`, 'Content-Type': 'application/json' },
-  body: JSON.stringify({ values: [[data, conta, valor, descricao, categoria, orcamento]] })
+/// pb_hooks/google-refresh-token.pb.js
+onAfterRequest(async ({ request, reply, pb }) => {
+  if (request.path !== '/google-refresh-token' || request.method !== 'POST') return;
+
+  try {
+    const authUser = request.auth?.record;
+    if (!authUser) return reply.code(401).send({ success: false, error: { code: 'UNAUTH', message: 'Não autenticado.' } });
+
+    const info = await pb.collection('google_infos').getFirstListItem(`user_id="${authUser.id}"`);
+    const { access_token, expires_in, token_type, scope } = await refreshToken(info.refresh_token);
+    const expires_at = computeExpiresAt(expires_in);
+
+    await pb.collection('google_infos').update(info.id, { access_token, expires_at, token_type, scope });
+
+    reply.send({ success: true, data: { access_token, expires_at } });
+  } catch (err) {
+    console.error('[refresh-token]', err);
+    reply.code(400).send({ success: false, error: { code: 'REFRESH_ERROR', message: 'Falha ao renovar token.' } });
+  }
 });
-reply.send({ success: true, message: 'Lançamento inserido na planilha!' });
+```
+
+### 4.3 POST /provision-sheet (after)
+```js
+/// pb_hooks/provision-sheet.pb.js
+onAfterRequest(async ({ request, reply, pb }) => {
+  if (request.path !== '/provision-sheet' || request.method !== 'POST') return;
+
+  try {
+    const user = request.auth?.record;
+    if (!user) return reply.code(401).send({ success: false, error: { code: 'UNAUTH', message: 'Não autenticado.' } });
+
+    const info = await pb.collection('google_infos').getFirstListItem(`user_id="${user.id}"`);
+
+    if (info.sheet_id) {
+      return reply.code(409).send({ success: false, error: { code: 'ALREADY_PROVISIONED', message: 'Planilha já provisionada.' } });
+    }
+
+    // Refresh se expirada
+    if (isExpired(info.expires_at)) {
+      await refreshAndPersist(pb, info);
+    }
+
+    const copyRes = await fetch(
+      `https://www.googleapis.com/drive/v3/files/${process.env.SHEET_TEMPLATE_ID}/copy`,
+      { method: 'POST', headers: { Authorization: `Bearer ${info.access_token}` } }
+    );
+
+    if (!copyRes.ok) {
+      const txt = await copyRes.text();
+      throw new Error(`Erro ao copiar template: ${txt}`);
+    }
+
+    const { id: sheetId } = await copyRes.json();
+    await pb.collection('google_infos').update(info.id, { sheet_id: sheetId });
+
+    reply.send({ success: true, data: { sheet_id: sheetId } });
+  } catch (err) {
+    console.error('[provision-sheet]', err);
+    reply.code(400).send({ success: false, error: { code: 'PROVISION_ERROR', message: 'Falha ao provisionar planilha.' } });
+  }
+});
+```
+
+### 4.4 POST /append-entry (after)
+```js
+/// pb_hooks/append-entry.pb.js
+onAfterRequest(async ({ request, reply, pb }) => {
+  if (request.path !== '/append-entry' || request.method !== 'POST') return;
+
+  try {
+    const user = request.auth?.record;
+    if (!user) return reply.code(401).send({ success: false, error: { code: 'UNAUTH', message: 'Não autenticado.' } });
+
+    const body = await request.json();
+    const { data, conta, valor, descricao, categoria, orcamento } = body;
+
+    // Validações básicas
+    if (!data || !/^\d{4}-\d{2}-\d{2}$/.test(data)) {
+      return reply.code(422).send({ success: false, error: { code: 'INVALID_DATE', message: 'Data inválida.' } });
+    }
+    if (typeof valor !== 'number' || Number.isNaN(valor)) {
+      return reply.code(422).send({ success: false, error: { code: 'INVALID_VALUE', message: 'Valor deve ser numérico.' } });
+    }
+
+    const info = await pb.collection('google_infos').getFirstListItem(`user_id="${user.id}"`);
+    if (!info.sheet_id) {
+      return reply.code(409).send({ success: false, error: { code: 'NO_SHEET', message: 'Planilha não provisionada.' } });
+    }
+
+    if (isExpired(info.expires_at)) {
+      await refreshAndPersist(pb, info);
+    }
+
+    const range = 'LANCAMENTOS!A:F';
+    const appendRes = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${info.sheet_id}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${info.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          values: [[data, conta || '', valor, descricao || '', categoria || '', orcamento || '']]
+        })
+      }
+    );
+
+    if (!appendRes.ok) {
+      const txt = await appendRes.text();
+      throw new Error(`Sheets append error: ${txt}`);
+    }
+
+    await pb.collection('google_infos').update(info.id, { last_success_append_at: new Date().toISOString() });
+
+    reply.send({ success: true, data: { message: 'Lançamento inserido com sucesso.' } });
+  } catch (err) {
+    console.error('[append-entry]', err);
+    reply.code(400).send({ success: false, error: { code: 'APPEND_ERROR', message: 'Falha ao inserir lançamento.' } });
+  }
+});
 ```
 
 ---
 
-## 3. Frontend (`pb_public/dashboard/index.html`)
-
-1. Garanta que `picnic.css` e `pocketbase.umd.js` estejam importados.
-2. Ative o formulário de despesa (remova `disabled` do `<form>` e `<fieldset>`).
-3. Adicione este script **após** `dashboard-auth.js`:
-   ```html
-   <script type="module">
-   import { authHeaders, ensureAuth } from '../js/dashboard-auth.js';
-   await ensureAuth();
-   const form = document.getElementById('expenseForm');
-   form.addEventListener('submit', async e => {
-     e.preventDefault();
-     const payload = {
-       userId: pb.authStore.model.id,
-       data: document.getElementById('expenseDate').value,
-       conta: document.getElementById('expenseAccount').value,
-       valor: parseFloat(document.getElementById('expenseValue').value),
-       descricao: document.getElementById('expenseDescription').value,
-       categoria: document.getElementById('expenseCategory').value,
-       orcamento: document.getElementById('expenseBudget').value
-     };
-     const resp = await fetch('/append-entry', {
-       method: 'POST',
-       headers: { 'Content-Type': 'application/json', ...authHeaders() },
-       body: JSON.stringify(payload)
-     });
-     const result = await resp.json();
-     alert(result.message);
-     form.reset();
-   });
-   </script>
-   ```
-4. No botão “⚙️ Configurar Integração” redirecione para `configuracao.html`.
+## 5. Frontend Ajustes (dashboard)
+- Não enviar userId no payload.
+- Mostrar estado:
+  - Se não provisionado → botão “Provisionar Planilha”.
+  - Se provisionado → formulário habilitado.
+- Tratar erros uniformemente:
+  ```js
+  if (!resp.ok) {
+    const err = await resp.json();
+    alert(err.error?.message || 'Erro inesperado.');
+    return;
+  }
+  ```
 
 ---
 
-## 4. Segurança e Manutenção
+## 6. Logs
+Formato sugerido (stdout):
+{"ts":"2025-08-14T19:00:00Z","userId":"abc123","action":"append-entry","success":true,"latencyMs":42}
 
-- Force HTTPS em produção.  
-- Habilite CORS apenas para seu domínio.  
-- Implemente rate-limit nos hooks.  
-- Registre logs de erro e sucesso.  
-- Automatize backup diário do SQLite.  
-- Monitore cotas da API Google e implemente backoff em caso de erros 429.
+---
+
+## 7. Testes (Lista mínima)
+- OAuth inicial (state válido / inválido)
+- Refresh automático no append
+- Append com planilha não provisionada
+- Provisionar duas vezes (deve bloquear)
+- Token expirado (manipular expires_at passado)
+- Erro 429 (simulação → retry/backoff futuro)
+- Campos inválidos (data e valor)
+
+---
+
+## 8. Roadmap Técnico
+- Adicionar /list-entries com leitura paginada (usando Sheets batchGet)
+- Implementar caching de categorias
+- Exportar CSV direto do Sheets
+- Mecanismo de soft delete (inserir coluna extra futuramente)
