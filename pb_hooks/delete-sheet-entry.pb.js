@@ -17,8 +17,11 @@ routerAdd("DELETE", "/delete-sheet-entry", (c) => {
     const requestData = c.requestInfo().body;
     
     // Validação básica dos dados
-    if (!requestData.rowIndex) {
+    if (requestData.rowIndex === undefined || requestData.rowIndex === null) {
         return c.json(400, { "error": "rowIndex é obrigatório" });
+    }
+    if (!Number.isInteger(requestData.rowIndex) || requestData.rowIndex < 2) {
+        return c.json(400, { "error": "rowIndex deve ser inteiro >= 2" });
     }
 
     try {

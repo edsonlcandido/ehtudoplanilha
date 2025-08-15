@@ -11,6 +11,8 @@ class LancamentosManager {
         this.isLoading = false;
         this.currentEditingEntry = null;
         this.isMobile = window.innerWidth <= 768;
+    this.pendingDeleteRowIndex = null;
+    this._initialLoadDone = false; // controla primeira carga para mensagens
         
         // Detectar mudanças de tamanho da tela
         window.addEventListener('resize', () => {
@@ -23,6 +25,14 @@ class LancamentosManager {
      * Inicializa o gerenciador de lançamentos
      */
     async init() {
+        // Garante inicialização do serviço Google Sheets com a instância global do PocketBase
+        if (window.pb && !googleSheetsService.pb) {
+            try {
+                googleSheetsService.init(window.pb);
+            } catch (e) {
+                console.error('Falha ao inicializar serviço Google Sheets:', e);
+            }
+        }
         this.setupEventListeners();
         await this.loadEntries();
     }
@@ -61,7 +71,9 @@ class LancamentosManager {
             const response = await this.fetchSheetEntries(50);
             this.entries = response.entries || [];
             this.renderEntries();
-            this.showMessage('Lançamentos carregados com sucesso', 'success');
+            if (this._initialLoadDone) {
+                this.showMessage('Lançamentos carregados com sucesso', 'success');
+            }
         } catch (error) {
             console.error('Erro ao carregar lançamentos:', error);
             this.showMessage('Erro ao carregar lançamentos: ' + error.message, 'error');
@@ -70,6 +82,7 @@ class LancamentosManager {
         } finally {
             this.isLoading = false;
             this.hideLoading();
+            if (!this._initialLoadDone) this._initialLoadDone = true;
         }
     }
 
@@ -307,22 +320,75 @@ class LancamentosManager {
             this.showMessage('Entrada não encontrada', 'error');
             return;
         }
+        this.openDeleteModal(entry);
+    }
 
-        if (!confirm(`Tem certeza que deseja excluir o lançamento "${entry.descricao}"?`)) {
+    /**
+     * Abre modal de confirmação de exclusão
+     */
+    openDeleteModal(entry) {
+        const modal = document.getElementById('deleteModal');
+        if (!modal) return;
+        this.pendingDeleteRowIndex = entry.rowIndex;
+        const rowSpan = document.getElementById('deleteRowNumber');
+        const descSpan = document.getElementById('deleteDescription');
+    const dateSpan = document.getElementById('deleteDate');
+    const valueSpan = document.getElementById('deleteValue');
+        if (rowSpan) rowSpan.textContent = entry.rowIndex;
+        if (descSpan) descSpan.textContent = entry.descricao || '(sem descrição)';
+    if (dateSpan) dateSpan.textContent = this.formatDate(entry.data) || '-';
+    if (valueSpan) valueSpan.textContent = this.formatCurrency(entry.valor || 0);
+        const confirmBtn = document.getElementById('deleteConfirmBtn');
+        if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = 'Excluir';
+        }
+        modal.style.display = 'flex';
+    }
+
+    /**
+     * Fecha modal de exclusão
+     */
+    closeDeleteModal() {
+        const modal = document.getElementById('deleteModal');
+        if (modal) modal.style.display = 'none';
+        this.pendingDeleteRowIndex = null;
+    }
+
+    /**
+     * Confirma exclusão (acionado pelo botão no modal)
+     */
+    async confirmDelete() {
+        if (!this.pendingDeleteRowIndex) {
+            this.closeDeleteModal();
             return;
         }
+        const rowIndex = this.pendingDeleteRowIndex;
+        const confirmBtn = document.getElementById('deleteConfirmBtn');
+        if (confirmBtn) {
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = 'Excluindo...';
+        }
 
-        this.showLoading();
+        // Remoção otimista
+        const originalEntries = [...this.entries];
+        this.entries = this.entries.filter(e => e.rowIndex !== rowIndex);
+        this.renderEntries();
 
         try {
             await googleSheetsService.deleteSheetEntry(rowIndex);
             this.showMessage('Lançamento excluído com sucesso', 'success');
-            await this.loadEntries(); // Recarregar lista
+            this.closeDeleteModal();
+            await this.loadEntries();
         } catch (error) {
             console.error('Erro ao excluir lançamento:', error);
+            this.entries = originalEntries;
+            this.renderEntries();
             this.showMessage('Erro ao excluir lançamento: ' + error.message, 'error');
-        } finally {
-            this.hideLoading();
+            if (confirmBtn) {
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = 'Excluir';
+            }
         }
     }
 
@@ -554,13 +620,25 @@ class LancamentosManager {
 
         this.showLoading();
 
+        // Atualização otimista: guarda original e aplica mudanças localmente
+        const originalSnapshot = { ...this.currentEditingEntry };
+        Object.assign(this.currentEditingEntry, entryData);
+        this.renderEntries();
+
         try {
-            await googleSheetsService.editSheetEntry(entryData);
+            const resp = await googleSheetsService.editSheetEntry(entryData);
+            // Caso backend retorne payload atualizado, sincroniza
+            if (resp && resp.updated) {
+                Object.assign(this.currentEditingEntry, resp.updated);
+            }
             this.showMessage('Lançamento editado com sucesso', 'success');
             this.closeEditModal();
-            await this.loadEntries(); // Recarregar lista
+            this.renderEntries();
         } catch (error) {
             console.error('Erro ao editar lançamento:', error);
+            // Reverte otimista
+            Object.assign(this.currentEditingEntry, originalSnapshot);
+            this.renderEntries();
             this.showMessage('Erro ao editar lançamento: ' + error.message, 'error');
         } finally {
             this.hideLoading();
@@ -597,12 +675,22 @@ class LancamentosManager {
      * Valida se uma data está no formato correto
      */
     isValidDate(dateString) {
-        try {
-            const date = new Date(dateString);
-            return date instanceof Date && !isNaN(date.getTime());
-        } catch (e) {
-            return false;
-        }
+    // Aceita formatos: dd/MM/yyyy ou dd/MM/yyyy HH:mm
+    if (!dateString || typeof dateString !== 'string') return false;
+    const trimmed = dateString.trim();
+    const re = /^(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{2}):(\d{2}))?$/;
+    const m = re.exec(trimmed);
+    if (!m) return false;
+    const dia = parseInt(m[1], 10);
+    const mes = parseInt(m[2], 10);
+    const ano = parseInt(m[3], 10);
+    const hora = m[4] !== undefined ? parseInt(m[4], 10) : 0;
+    const minuto = m[5] !== undefined ? parseInt(m[5], 10) : 0;
+    if (mes < 1 || mes > 12 || dia < 1 || dia > 31 || hora < 0 || hora > 23 || minuto < 0 || minuto > 59) return false;
+    const dt = new Date(ano, mes - 1, dia, hora, minuto);
+    // Verifica se bate (ex: 31/02 deve falhar)
+    if (dt.getFullYear() !== ano || dt.getMonth() !== mes - 1 || dt.getDate() !== dia) return false;
+    return true;
     }
 
     /**
