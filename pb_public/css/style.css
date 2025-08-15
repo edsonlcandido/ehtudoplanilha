@@ -281,7 +281,7 @@ body.page-interna { padding-top: 70px; }
     min-height: auto;
     height: auto;
     align-items: flex-start;
-    padding-top: 1rem;
+    padding-top: 2rem 1rem 1rem 1rem;
 }
 
 /* Versão mobile - menu inferior */
