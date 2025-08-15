@@ -74,12 +74,18 @@ class LancamentosManager {
         // Controles de ordenação
         const sortSelect = document.getElementById('sortSelect');
         if (sortSelect) {
+            console.log('LancamentosManager: sortSelect encontrado, adicionando listener');
             sortSelect.addEventListener('change', (e) => this.handleSortChange(e.target.value));
+        } else {
+            console.warn('LancamentosManager: sortSelect NÃO encontrado!');
         }
 
         const hideBlankDatesCheck = document.getElementById('hideBlankDatesCheck');
         if (hideBlankDatesCheck) {
+            console.log('LancamentosManager: hideBlankDatesCheck encontrado, adicionando listener');
             hideBlankDatesCheck.addEventListener('change', (e) => this.handleHideBlankDatesChange(e.target.checked));
+        } else {
+            console.warn('LancamentosManager: hideBlankDatesCheck NÃO encontrado!');
         }
     }
 
@@ -150,6 +156,7 @@ class LancamentosManager {
      * Manipula a mudança de tipo de ordenação
      */
     handleSortChange(sortType) {
+        console.log('LancamentosManager: Mudando ordenação para:', sortType);
         this.sortBy = sortType;
         this.applySortingAndFilters();
     }
@@ -158,6 +165,7 @@ class LancamentosManager {
      * Manipula a mudança do checkbox de ocultar datas em branco
      */
     handleHideBlankDatesChange(hideBlank) {
+        console.log('LancamentosManager: Ocultar datas em branco:', hideBlank);
         this.hideBlankDates = hideBlank;
         this.applySortingAndFilters();
     }
@@ -166,6 +174,8 @@ class LancamentosManager {
      * Aplica ordenação e filtros aos lançamentos
      */
     applySortingAndFilters() {
+        console.log('LancamentosManager: Aplicando ordenação e filtros - sortBy:', this.sortBy, 'hideBlankDates:', this.hideBlankDates);
+        
         // Começa com todas as entradas
         let processedEntries = [...this.entries];
 
@@ -200,8 +210,7 @@ class LancamentosManager {
                     entry.descricao || '',
                     entry.categoria || '',
                     entry.conta || '',
-                    entry.obs || '',
-                    this.formatBudget(entry.orcamento) || ''
+                    entry.obs || ''
                 ];
                 
                 return searchFields.some(field => 
@@ -456,7 +465,6 @@ class LancamentosManager {
                     <div class="entry-details">
                         <span class="entry-account">${this.escapeHtml(entry.conta)}</span>
                         ${entry.categoria ? `<span class="entry-category">${this.escapeHtml(entry.categoria)}</span>` : ''}
-                        ${entry.orcamento ? `<span class="entry-budget">${this.formatBudget(entry.orcamento)}</span>` : ''}
                     </div>
                     ${entry.obs ? `<div class="entry-obs">${this.escapeHtml(entry.obs)}</div>` : ''}
                 </div>
@@ -494,7 +502,6 @@ class LancamentosManager {
                     <td><div class="skeleton-text"></div></td>
                     <td><div class="skeleton-text"></div></td>
                     <td><div class="skeleton-text"></div></td>
-                    <td><div class="skeleton-text"></div></td>
                     <td class="actions">
                         <div class="skeleton-button"></div>
                         <div class="skeleton-button"></div>
@@ -512,7 +519,6 @@ class LancamentosManager {
                                 <th>Descrição</th>
                                 <th>Valor</th>
                                 <th>Categoria</th>
-                                <th>Orçamento</th>
                                 <th>Observações</th>
                                 <th>Ações</th>
                             </tr>
@@ -535,7 +541,6 @@ class LancamentosManager {
                     ${this.formatCurrency(entry.valor)}
                 </td>
                 <td>${this.escapeHtml(entry.categoria)}</td>
-                <td>${this.formatBudget(entry.orcamento)}</td>
                 <td title="${this.escapeHtml(entry.obs)}">
                     ${entry.obs ? this.escapeHtml(entry.obs.substring(0, 30)) + (entry.obs.length > 30 ? '...' : '') : ''}
                 </td>
@@ -560,7 +565,6 @@ class LancamentosManager {
                             <th>Descrição</th>
                             <th>Valor</th>
                             <th>Categoria</th>
-                            <th>Orçamento</th>
                             <th>Observações</th>
                             <th>Ações</th>
                         </tr>
