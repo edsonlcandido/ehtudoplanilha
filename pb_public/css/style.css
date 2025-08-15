@@ -212,9 +212,9 @@ body.page-interna { padding-top: 70px; }
 .sidebar-menu {
     position: fixed;
     left: 0;
-    top: 60px; /* Altura aproximada da nav */
+    top: 53px; /* Altura aproximada da nav */
     bottom: 0; /* Vai até o final da viewport */
-    width: 140px; /* Aumenta largura para acomodar texto */
+    width: 160px; /* Aumenta largura para acomodar texto */
     background: var(--white-color);
     border-right: 1px solid #e0e0e0;
     display: flex;
@@ -264,7 +264,7 @@ body.page-interna { padding-top: 70px; }
 
 .main-content {
     flex: 1;
-    margin-left: 140px; /* Ajusta para nova largura do menu lateral */
+    margin-left: 160px; /* Ajusta para nova largura do menu lateral */
     overflow-y: auto;
     min-height: auto; /* Altura automática para permitir footer normal */
 }
@@ -281,7 +281,7 @@ body.page-interna { padding-top: 70px; }
     min-height: auto;
     height: auto;
     align-items: flex-start;
-    padding-top: 1rem;
+    padding-top: 2rem 1rem 1rem 1rem;
 }
 
 /* Versão mobile - menu inferior */
@@ -724,5 +724,70 @@ nav {
     #openEntryModal {
         bottom: 80px !important;
         right: 20px !important;
+    }
+}
+
+/* Estilos para skeleton loading nos lançamentos */
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+}
+
+.skeleton-text {
+    height: 16px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+}
+
+.skeleton-button {
+    height: 30px;
+    width: 30px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    display: inline-block;
+    margin: 0 2px;
+}
+
+.skeleton-date {
+    width: 80px;
+}
+
+.skeleton-value {
+    width: 90px;
+}
+
+.skeleton-description {
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+.skeleton-details {
+    width: 70%;
+}
+
+.skeleton-row td {
+    padding: 12px 8px;
+}
+
+.skeleton-row .skeleton-text {
+    width: 100%;
+}
+
+.skeleton-row .actions {
+    display: flex;
+    gap: 8px;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
     }
 }

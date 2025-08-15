@@ -49,17 +49,100 @@
         <!-- Conteúdo principal rolável -->
         <main class="main-content">
             <section class="section section-light dashboard-main">
-                <div class="container text-center">
-                    <h2>Lançamentos</h2>
-                    <p>Visualize e gerencie todos os seus lançamentos financeiros.</p>
-                    
-                    <div style="margin-top: 2rem;">
-                        <p>Página de lançamentos em desenvolvimento...</p>
-                        <a href="index.html" class="button primary">Voltar ao Dashboard</a>
+                <div class="container">
+                    <div class="lancamentos-header">
+                        <h2>Lançamentos</h2>
+                        <p>Visualize e gerencie todos os seus lançamentos financeiros.</p>
+                        
+                        <div class="lancamentos-actions">
+                            <button id="refreshEntriesBtn" class="button">
+                                🔄 Atualizar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Indicador de loading -->
+                    <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+                        <div class="loading-spinner"></div>
+                        <p>Carregando lançamentos...</p>
+                    </div>
+
+                    <!-- Container de mensagens -->
+                    <div id="messageContainer" class="message-container"></div>
+
+                    <!-- Container principal dos lançamentos -->
+                    <div id="entriesContainer" class="entries-container">
+                        <!-- Conteúdo será carregado via JavaScript -->
                     </div>
                 </div>
             </section>
         </main>
+    </div>
+
+    <!-- Modal de edição de lançamento -->
+    <div id="editModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Editar Lançamento</h3>
+                <button class="modal-close" onclick="lancamentosManager.closeEditModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm" onsubmit="return false;">
+                    <fieldset style="border: none; padding: 0; margin: 0;">
+                        <div class="form-row">
+                            <div class="form-group" style="flex:1;">
+                                <label for="editData">Data & Hora *</label>
+                                <input type="datetime-local" id="editData" required>
+                            </div>
+                            <div class="form-group" style="flex:1;">
+                                <label for="editConta">Conta *</label>
+                                <input type="text" id="editConta" autocomplete="off" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group" style="flex:2;">
+                                <label for="editDescricao">Descrição *</label>
+                                <input type="text" id="editDescricao" autocomplete="off" required>
+                            </div>
+                            <div class="form-group" style="flex:1;">
+                                <label>Valor *</label>
+                                <div style="display:flex; gap:.5rem; align-items:center;">
+                                    <button type="button" id="editSignBtn" style="min-width:48px; background:transparent; border:1px solid #ccc; border-radius:4px; cursor:pointer; font-weight:bold;">-</button>
+                                    <input type="hidden" id="editSignValue" value="-">
+                                    <input type="number" id="editValor" step="0.01" min="0" required style="flex:1;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group" style="flex:1;">
+                                <label for="editCategoria">Categoria</label>
+                                <input type="text" id="editCategoria" list="editCategoriaList" autocomplete="off">
+                                <datalist id="editCategoriaList"></datalist>
+                            </div>
+                            <div class="form-group" style="flex:1;">
+                                <label for="editOrcamento">Orçamento (mês)</label>
+                                <select id="editOrcamento"></select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="editObs">Observações</label>
+                            <textarea id="editObs" rows="3" placeholder="Notas adicionais..."></textarea>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="button" onclick="lancamentosManager.closeEditModal()">
+                    Cancelar
+                </button>
+                <button class="button primary" onclick="lancamentosManager.saveEdit()">
+                    Salvar
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- FOOTER -->
@@ -77,7 +160,8 @@
     <script type="module">
         import apiConfig from '../js/config/api-config.js';
         import { estaAutenticado } from '../js/auth-service.js';
-        import { inicializarMenuUsuario } from '../js/menu-usuario.js';
+        import { exibirMenuUsuario } from '../js/menu-usuario.js';
+        import lancamentosManager from '../js/lancamentos-manager.js';
 
         // Inicializa PocketBase
         window.pb = new PocketBase(apiConfig.getBaseURL());
@@ -88,12 +172,15 @@
             window.location.href = '../login.html';
         } else {
             // Inicializa menu do usuário
-            inicializarMenuUsuario();
+            exibirMenuUsuario();
 
             // Carrega módulos adicionais somente se autenticado
             Promise.all([
                 import('../js/protecao-dashboard.js')
-            ]).catch(err => console.error('Erro ao carregar módulos do dashboard:', err));
+            ]).then(() => {
+                // Inicializa o gerenciador de lançamentos após todos os módulos carregarem
+                lancamentosManager.init();
+            }).catch(err => console.error('Erro ao carregar módulos do dashboard:', err));
         }
     </script>
 </body>

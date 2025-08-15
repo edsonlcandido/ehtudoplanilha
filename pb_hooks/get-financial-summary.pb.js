@@ -116,6 +116,8 @@ routerAdd("GET", "/get-financial-summary", (c) => {
             //  - AAAA-MM-DD (ex: 2025-08-01)
             const query = c.requestInfo().query || {};
             const orcamentoParam = query['orcamento'];
+            const includeEntries = query['include_entries'] === 'true';
+            const entriesLimit = parseInt(query['entries_limit']) || 50;
 
             const excelEpochUTC = Date.UTC(1899, 11, 30); // 1899-12-30
             const toExcelSerial = (msUTC) => Math.floor((msUTC - excelEpochUTC) / 86400000);
@@ -270,6 +272,34 @@ routerAdd("GET", "/get-financial-summary", (c) => {
             });
             // Converte em array de objetos
             resultado.categorias = Object.entries(categoriasPorMes).map(([categoria, valor]) => ({ categoria, valor }));
+            
+            // Incluir entradas recentes se solicitado
+            if (includeEntries) {
+                // Pular a primeira linha (cabeçalho) se existir
+                const rows = data.values.slice(1);
+                
+                // Formatar entradas para exibição
+                const entries = rows.map((row, index) => {
+                    // Estrutura: [data, conta, valor, descrição, categoria, orçamento, obs]
+                    return {
+                        rowIndex: index + 2, // +2 porque skipamos cabeçalho e arrays são 0-based
+                        data: row[0] || "",
+                        conta: row[1] || "",
+                        valor: row[2] || 0,
+                        descricao: row[3] || "",
+                        categoria: row[4] || "",
+                        orcamento: row[5] || "",
+                        obs: row[6] || ""
+                    };
+                });
+
+                // Reverter para mostrar as mais recentes primeiro e limitar
+                const recentEntries = entries.reverse().slice(0, entriesLimit);
+                resultado.entries = recentEntries;
+                resultado.totalEntries = rows.length;
+                resultado.entriesLimit = entriesLimit;
+            }
+            
             //console.log("Resultado do resumo financeiro com histórico e contas:", JSON.stringify(resultado, null, 2));
             return c.json(200, resultado);
         } else {
