@@ -172,7 +172,19 @@ class LancamentosManager {
         // Aplica filtro de datas em branco se necessário
         if (this.hideBlankDates) {
             processedEntries = processedEntries.filter(entry => {
-                return entry.data && entry.data.trim() !== '';
+                // Se não há data, considera como em branco
+                if (!entry.data) return false;
+                
+                // Se é número (data serial Excel), considera como data válida
+                if (typeof entry.data === 'number') return true;
+                
+                // Se é string, verifica se não está vazia após trim
+                if (typeof entry.data === 'string') {
+                    return entry.data.trim() !== '';
+                }
+                
+                // Para outros tipos, considera como data válida
+                return true;
             });
         }
 
