@@ -9,12 +9,17 @@ class LancamentosManager {
     constructor() {
         this.entries = [];
         this.filteredEntries = [];
+    this.originalEntries = []; // preserva ordem original da planilha (rowIndex)
         this.searchTerm = '';
         this.isLoading = false;
         this.currentEditingEntry = null;
         this.isMobile = window.innerWidth <= 768;
         this.pendingDeleteRowIndex = null;
         this._initialLoadDone = false; // controla primeira carga para mensagens
+        
+    // Configurações de ordenação
+    this.sortBy = 'original'; // default agora é a ordem natural da planilha
+    this.hideBlankDates = true; // padrão: ocultar linhas sem data
         
         // Detectar mudanças de tamanho da tela
         window.addEventListener('resize', () => {
@@ -34,6 +39,15 @@ class LancamentosManager {
             } catch (e) {
                 console.error('Falha ao inicializar serviço Google Sheets:', e);
             }
+        }
+        // Ajusta select visual para refletir default 'original'
+        const sortSelect = document.getElementById('sortSelect');
+        if (sortSelect) {
+            sortSelect.value = this.sortBy;
+        }
+        const hideBlankDatesCheck = document.getElementById('hideBlankDatesCheck');
+        if (hideBlankDatesCheck) {
+            hideBlankDatesCheck.checked = this.hideBlankDates;
         }
         this.setupEventListeners();
         await this.loadEntries();
@@ -66,6 +80,23 @@ class LancamentosManager {
         if (clearSearchBtn) {
             clearSearchBtn.addEventListener('click', () => this.clearSearch());
         }
+
+        // Controles de ordenação
+        const sortSelect = document.getElementById('sortSelect');
+        if (sortSelect) {
+            console.log('LancamentosManager: sortSelect encontrado, adicionando listener');
+            sortSelect.addEventListener('change', (e) => this.handleSortChange(e.target.value));
+        } else {
+            console.warn('LancamentosManager: sortSelect NÃO encontrado!');
+        }
+
+        const hideBlankDatesCheck = document.getElementById('hideBlankDatesCheck');
+        if (hideBlankDatesCheck) {
+            console.log('LancamentosManager: hideBlankDatesCheck encontrado, adicionando listener');
+            hideBlankDatesCheck.addEventListener('change', (e) => this.handleHideBlankDatesChange(e.target.checked));
+        } else {
+            console.warn('LancamentosManager: hideBlankDatesCheck NÃO encontrado!');
+        }
     }
 
     /**
@@ -84,8 +115,9 @@ class LancamentosManager {
             // Usar endpoint dedicado para lançamentos
             const response = await this.fetchSheetEntries(50);
             this.entries = response.entries || [];
-            this.filteredEntries = [...this.entries]; // Inicialmente, entradas filtradas são todas as entradas
-            this.renderEntries();
+            // guarda cópia profunda para manter ordem original
+            this.originalEntries = (response.entries || []).map(e => ({ ...e }));
+            this.applySortingAndFilters(); // Aplica ordenação e filtros
             if (this._initialLoadDone) {
                 this.showMessage('Lançamentos carregados com sucesso', 'success');
             }
@@ -133,22 +165,61 @@ class LancamentosManager {
     }
 
     /**
-     * Manipula a pesquisa/filtro de lançamentos
+     * Manipula a mudança de tipo de ordenação
      */
-    handleSearch(searchTerm) {
-        this.searchTerm = searchTerm.trim().toLowerCase();
-        this.filterEntries();
-        this.updateSearchUI();
+    handleSortChange(sortType) {
+        console.log('LancamentosManager: Mudando ordenação para:', sortType);
+        this.sortBy = sortType;
+        this.applySortingAndFilters();
     }
 
     /**
-     * Filtra as entradas baseado no termo de pesquisa
+     * Manipula a mudança do checkbox de ocultar datas em branco
      */
-    filterEntries() {
-        if (!this.searchTerm) {
-            this.filteredEntries = [...this.entries];
+    handleHideBlankDatesChange(hideBlank) {
+        console.log('LancamentosManager: Ocultar datas em branco:', hideBlank);
+        this.hideBlankDates = hideBlank;
+        this.applySortingAndFilters();
+    }
+
+    /**
+     * Aplica ordenação e filtros aos lançamentos
+     */
+    applySortingAndFilters() {
+        console.log('LancamentosManager: Aplicando ordenação e filtros - sortBy:', this.sortBy, 'hideBlankDates:', this.hideBlankDates);
+        
+    // Base depende do modo: se 'original', usa cópia preservada
+    const baseEntries = this.sortBy === 'original' ? [...this.originalEntries] : [...this.entries];
+
+        // Conjunto que será exibido (pode aplicar filtro de datas em branco)
+        let viewEntries = [...baseEntries];
+
+        if (this.hideBlankDates) {
+            viewEntries = viewEntries.filter(entry => {
+                // Considera "data em branco" quando null, undefined, string vazia ou só espaços
+                if (entry.data === null || entry.data === undefined) return false;
+                if (typeof entry.data === 'string') {
+                    const trimmed = entry.data.trim();
+                    if (trimmed === '') return false;
+                }
+                // Se número (serial Excel) mantém
+                return true;
+            });
+        }
+
+        // Ordena conjunto de exibição conforme modo; se original, mantém ordem natural de rowIndex
+        viewEntries = this.sortEntries(viewEntries);
+
+        // Mantém this.entries sincronizado (ordenado exceto no modo original)
+        if (this.sortBy === 'original') {
+            this.entries = [...this.originalEntries];
         } else {
-            this.filteredEntries = this.entries.filter(entry => {
+            this.entries = this.sortEntries([...this.originalEntries]);
+        }
+
+        // Aplica filtro de pesquisa sobre o conjunto de exibição já ordenado
+        if (this.searchTerm) {
+            this.filteredEntries = viewEntries.filter(entry => {
                 const searchFields = [
                     this.formatDate(entry.data),
                     this.formatCurrency(entry.valor),
@@ -157,14 +228,117 @@ class LancamentosManager {
                     entry.conta || '',
                     entry.obs || ''
                 ];
-                
-                return searchFields.some(field => 
-                    field.toString().toLowerCase().includes(this.searchTerm)
-                );
+                return searchFields.some(field => field.toString().toLowerCase().includes(this.searchTerm));
             });
+        } else {
+            this.filteredEntries = viewEntries;
         }
-        
+
+        // Render sempre baseado em filteredEntries (já contém o estado final de exibição)
         this.renderEntries();
+        this.updateSearchUI();
+    }
+
+    /**
+     * Ordena as entradas baseado no tipo de ordenação selecionado
+     */
+    sortEntries(entries) {
+        return entries.sort((a, b) => {
+            if (this.sortBy === 'original') {
+                // Inverte: mostra linhas mais recentes (maior rowIndex) primeiro
+                return (b.rowIndex || 0) - (a.rowIndex || 0);
+            }
+            // Coloca sem data no topo quando ordenando por critérios derivados
+            const hasDateA = !!a.data;
+            const hasDateB = !!b.data;
+            if (hasDateA !== hasDateB) {
+                return hasDateA ? 1 : -1; // sem data (false) vem antes
+            }
+            if (this.sortBy === 'budget_date') {
+                // Primeiro ordena por orçamento, depois por data (mais recente primeiro)
+                const budgetA = this.getBudgetSortValue(a.orcamento);
+                const budgetB = this.getBudgetSortValue(b.orcamento);
+                
+                if (budgetA !== budgetB) {
+                    return budgetB - budgetA; // Orçamento mais recente primeiro
+                }
+                
+                // Se orçamentos são iguais, ordena por data (mais recente primeiro)
+                const dateA = this.getDateSortValue(a.data);
+                const dateB = this.getDateSortValue(b.data);
+                return dateB - dateA;
+            } else if (this.sortBy === 'date') {
+                // Apenas ordena por data (mais recente primeiro)
+                const dateA = this.getDateSortValue(a.data);
+                const dateB = this.getDateSortValue(b.data);
+                return dateB - dateA;
+            }
+            
+            return 0;
+        });
+    }
+
+    /**
+     * Converte orçamento para valor numérico para ordenação
+     */
+    getBudgetSortValue(orcamento) {
+        if (!orcamento) return 0;
+        
+        try {
+            // Converte "setembro/25" para número (ano*12 + mês)
+            const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+            const [mesNome, anoCurto] = orcamento.split('/');
+            const mesIndex = meses.indexOf(mesNome.toLowerCase());
+            
+            if (mesIndex === -1) return 0;
+            
+            const ano = parseInt('20' + anoCurto);
+            return ano * 12 + mesIndex;
+        } catch (e) {
+            return 0;
+        }
+    }
+
+    /**
+     * Converte data para valor numérico para ordenação
+     */
+    getDateSortValue(data) {
+        if (!data) return 0;
+        
+        try {
+            // Tenta converter a data para timestamp
+            let date;
+            if (typeof data === 'number') {
+                // Serial Excel
+                const excelEpoch = new Date(1899, 11, 30);
+                date = new Date(excelEpoch.getTime() + data * 24 * 60 * 60 * 1000);
+            } else if (typeof data === 'string') {
+                // Formato dd/MM/yyyy HH:mm ou similar
+                if (/\d{2}\/\d{2}\/\d{4}/.test(data)) {
+                    const [parteData, parteHora='00:00'] = data.split(' ');
+                    const [dia, mes, ano] = parteData.split('/').map(Number);
+                    const [hora, minuto='00'] = (parteHora || '00:00').split(':').map(Number);
+                    date = new Date(ano, mes - 1, dia, hora, minuto);
+                } else {
+                    date = new Date(data);
+                }
+            } else {
+                date = new Date(data);
+            }
+            
+            return isNaN(date.getTime()) ? 0 : date.getTime();
+        } catch (e) {
+            return 0;
+        }
+    }
+
+    /**
+     * Manipula a pesquisa/filtro de lançamentos
+     */
+    handleSearch(searchTerm) {
+        this.searchTerm = searchTerm.trim().toLowerCase();
+        this.applySortingAndFilters();
+        this.updateSearchUI();
     }
 
     /**
@@ -224,8 +398,7 @@ class LancamentosManager {
         }
         
         this.searchTerm = '';
-        this.filteredEntries = [...this.entries];
-        this.renderEntries();
+        this.applySortingAndFilters();
         this.updateSearchUI();
         
         // Foca novamente no campo de pesquisa
@@ -240,9 +413,8 @@ class LancamentosManager {
     renderEntries() {
         const container = document.getElementById('entriesContainer');
         if (!container) return;
-
-        // Usa entradas filtradas se houver termo de pesquisa, caso contrário usa todas
-        const entriesToRender = this.searchTerm ? this.filteredEntries : this.entries;
+    // Sempre usa filteredEntries (já inclui ordenação e filtros de datas em branco)
+    const entriesToRender = this.filteredEntries;
 
         if (entriesToRender.length === 0 && !this.isLoading) {
             const message = this.searchTerm 
@@ -930,6 +1102,27 @@ class LancamentosManager {
             style: 'currency',
             currency: 'BRL'
         }).format(value);
+    }
+
+    /**
+     * Formata valor de orçamento para exibição
+     */
+    formatBudget(orcamento) {
+        if (!orcamento) return '';
+        
+        // Se já está no formato "setembro/25", converte para "Set/25"
+        if (typeof orcamento === 'string' && orcamento.includes('/')) {
+            const [mesNome, anoCurto] = orcamento.split('/');
+            const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+            const mesesAbrev = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+            const mesIndex = meses.indexOf(mesNome.toLowerCase());
+            
+            if (mesIndex !== -1) {
+                return `${mesesAbrev[mesIndex]}/${anoCurto}`;
+            }
+        }
+        
+        return orcamento;
     }
 
     /**
