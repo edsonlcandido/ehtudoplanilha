@@ -8,11 +8,13 @@ import googleSheetsService from './google/sheets-api.js';
 class LancamentosManager {
     constructor() {
         this.entries = [];
+        this.filteredEntries = [];
+        this.searchTerm = '';
         this.isLoading = false;
         this.currentEditingEntry = null;
         this.isMobile = window.innerWidth <= 768;
-    this.pendingDeleteRowIndex = null;
-    this._initialLoadDone = false; // controla primeira carga para mensagens
+        this.pendingDeleteRowIndex = null;
+        this._initialLoadDone = false; // controla primeira carga para mensagens
         
         // Detectar mudanças de tamanho da tela
         window.addEventListener('resize', () => {
@@ -52,6 +54,18 @@ class LancamentosManager {
         if (addBtn) {
             addBtn.addEventListener('click', () => this.openAddModal());
         }
+
+        // Campo de pesquisa
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => this.handleSearch(e.target.value));
+        }
+
+        // Botão de limpar pesquisa
+        const clearSearchBtn = document.getElementById('clearSearchBtn');
+        if (clearSearchBtn) {
+            clearSearchBtn.addEventListener('click', () => this.clearSearch());
+        }
     }
 
     /**
@@ -70,6 +84,7 @@ class LancamentosManager {
             // Usar endpoint dedicado para lançamentos
             const response = await this.fetchSheetEntries(50);
             this.entries = response.entries || [];
+            this.filteredEntries = [...this.entries]; // Inicialmente, entradas filtradas são todas as entradas
             this.renderEntries();
             if (this._initialLoadDone) {
                 this.showMessage('Lançamentos carregados com sucesso', 'success');
@@ -78,6 +93,7 @@ class LancamentosManager {
             console.error('Erro ao carregar lançamentos:', error);
             this.showMessage('Erro ao carregar lançamentos: ' + error.message, 'error');
             this.entries = [];
+            this.filteredEntries = [];
             this.renderEntries();
         } finally {
             this.isLoading = false;
@@ -117,19 +133,130 @@ class LancamentosManager {
     }
 
     /**
+     * Manipula a pesquisa/filtro de lançamentos
+     */
+    handleSearch(searchTerm) {
+        this.searchTerm = searchTerm.trim().toLowerCase();
+        this.filterEntries();
+        this.updateSearchUI();
+    }
+
+    /**
+     * Filtra as entradas baseado no termo de pesquisa
+     */
+    filterEntries() {
+        if (!this.searchTerm) {
+            this.filteredEntries = [...this.entries];
+        } else {
+            this.filteredEntries = this.entries.filter(entry => {
+                const searchFields = [
+                    this.formatDate(entry.data),
+                    this.formatCurrency(entry.valor),
+                    entry.descricao || '',
+                    entry.categoria || '',
+                    entry.conta || '',
+                    entry.obs || ''
+                ];
+                
+                return searchFields.some(field => 
+                    field.toString().toLowerCase().includes(this.searchTerm)
+                );
+            });
+        }
+        
+        this.renderEntries();
+    }
+
+    /**
+     * Atualiza a interface da pesquisa
+     */
+    updateSearchUI() {
+        const searchContainer = document.querySelector('.search-container');
+        const clearBtn = document.getElementById('clearSearchBtn');
+        const searchResults = document.getElementById('searchResults');
+        const searchCount = document.getElementById('searchCount');
+
+        // Mostra/esconde botão de limpar
+        if (clearBtn) {
+            clearBtn.style.display = this.searchTerm ? 'flex' : 'none';
+        }
+
+        // Atualiza classe do container de pesquisa
+        if (searchContainer) {
+            if (this.searchTerm) {
+                searchContainer.classList.add('searching');
+            } else {
+                searchContainer.classList.remove('searching');
+            }
+        }
+
+        // Atualiza contagem de resultados
+        if (searchResults && searchCount) {
+            if (this.searchTerm) {
+                const count = this.filteredEntries.length;
+                const total = this.entries.length;
+                
+                if (count === 0) {
+                    searchCount.textContent = 'Nenhum lançamento encontrado';
+                    searchResults.className = 'search-results no-results';
+                } else if (count === total) {
+                    searchCount.textContent = `Exibindo todos os ${total} lançamentos`;
+                    searchResults.className = 'search-results has-results';
+                } else {
+                    searchCount.textContent = `${count} de ${total} lançamentos encontrados`;
+                    searchResults.className = 'search-results has-results';
+                }
+                
+                searchResults.style.display = 'block';
+            } else {
+                searchResults.style.display = 'none';
+            }
+        }
+    }
+
+    /**
+     * Limpa a pesquisa
+     */
+    clearSearch() {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.value = '';
+        }
+        
+        this.searchTerm = '';
+        this.filteredEntries = [...this.entries];
+        this.renderEntries();
+        this.updateSearchUI();
+        
+        // Foca novamente no campo de pesquisa
+        if (searchInput) {
+            searchInput.focus();
+        }
+    }
+
+    /**
      * Renderiza as entradas na interface
      */
     renderEntries() {
         const container = document.getElementById('entriesContainer');
         if (!container) return;
 
-        if (this.entries.length === 0 && !this.isLoading) {
+        // Usa entradas filtradas se houver termo de pesquisa, caso contrário usa todas
+        const entriesToRender = this.searchTerm ? this.filteredEntries : this.entries;
+
+        if (entriesToRender.length === 0 && !this.isLoading) {
+            const message = this.searchTerm 
+                ? `Nenhum lançamento encontrado para "${this.searchTerm}"`
+                : 'Nenhum lançamento encontrado na planilha.';
+            
+            const actionButton = this.searchTerm 
+                ? `<button class="button" onclick="lancamentosManager.clearSearch()">Limpar pesquisa</button>`
+                : `<button class="button primary" onclick="window.location.href='index.html'">Ir para Dashboard</button>`;
+
             container.innerHTML = `
                 <div class="text-center" style="padding: 2rem;">
-                    <p style="color: #666;">Nenhum lançamento encontrado na planilha.</p>
-                    <button class="button primary" onclick="window.location.href='index.html'">
-                        Ir para Dashboard
-                    </button>
+                    <p style="color: #666;">${message}</p>
+                    ${actionButton}
                 </div>
             `;
             return;
@@ -137,18 +264,20 @@ class LancamentosManager {
 
         // Sempre mostrar a estrutura da tabela/cards mesmo durante loading
         if (this.isMobile) {
-            this.renderMobileCards(container);
+            this.renderMobileCards(container, entriesToRender);
         } else {
-            this.renderDesktopTable(container);
+            this.renderDesktopTable(container, entriesToRender);
         }
     }
 
     /**
      * Renderiza cards para mobile
      */
-    renderMobileCards(container) {
+    renderMobileCards(container, entries = null) {
+        const entriesToRender = entries || this.entries;
+        
         // Se está carregando e não tem entradas, mostra skeleton
-        if (this.isLoading && this.entries.length === 0) {
+        if (this.isLoading && entriesToRender.length === 0) {
             const skeletonHtml = Array(3).fill(0).map(() => `
                 <div class="entry-card skeleton">
                     <div class="entry-card-header">
@@ -174,7 +303,7 @@ class LancamentosManager {
             return;
         }
 
-        const cardsHtml = this.entries.map(entry => `
+        const cardsHtml = entriesToRender.map(entry => `
             <div class="entry-card" data-row="${entry.rowIndex}">
                 <div class="entry-card-header">
                     <span class="entry-date">${this.formatDate(entry.data)}</span>
@@ -211,9 +340,11 @@ class LancamentosManager {
     /**
      * Renderiza tabela para desktop
      */
-    renderDesktopTable(container) {
+    renderDesktopTable(container, entries = null) {
+        const entriesToRender = entries || this.entries;
+        
         // Se está carregando e não tem entradas, mostra skeleton
-        if (this.isLoading && this.entries.length === 0) {
+        if (this.isLoading && entriesToRender.length === 0) {
             const skeletonRows = Array(5).fill(0).map(() => `
                 <tr class="skeleton-row">
                     <td><div class="skeleton-text"></div></td>
@@ -252,7 +383,7 @@ class LancamentosManager {
             return;
         }
 
-        const rowsHtml = this.entries.map(entry => `
+        const rowsHtml = entriesToRender.map(entry => `
             <tr data-row="${entry.rowIndex}">
                 <td>${this.formatDate(entry.data)}</td>
                 <td>${this.escapeHtml(entry.conta)}</td>
@@ -301,6 +432,7 @@ class LancamentosManager {
      * Abre modal para editar entrada
      */
     async editEntry(rowIndex) {
+        // Procura nas entradas originais, não filtradas
         const entry = this.entries.find(e => e.rowIndex === rowIndex);
         if (!entry) {
             this.showMessage('Entrada não encontrada', 'error');
@@ -315,6 +447,7 @@ class LancamentosManager {
      * Deleta uma entrada
      */
     async deleteEntry(rowIndex) {
+        // Procura nas entradas originais, não filtradas
         const entry = this.entries.find(e => e.rowIndex === rowIndex);
         if (!entry) {
             this.showMessage('Entrada não encontrada', 'error');
@@ -372,8 +505,11 @@ class LancamentosManager {
 
         // Remoção otimista
         const originalEntries = [...this.entries];
+        const originalFiltered = [...this.filteredEntries];
         this.entries = this.entries.filter(e => e.rowIndex !== rowIndex);
+        this.filteredEntries = this.filteredEntries.filter(e => e.rowIndex !== rowIndex);
         this.renderEntries();
+        this.updateSearchUI();
 
         try {
             await googleSheetsService.deleteSheetEntry(rowIndex);
@@ -383,7 +519,9 @@ class LancamentosManager {
         } catch (error) {
             console.error('Erro ao excluir lançamento:', error);
             this.entries = originalEntries;
+            this.filteredEntries = originalFiltered;
             this.renderEntries();
+            this.updateSearchUI();
             this.showMessage('Erro ao excluir lançamento: ' + error.message, 'error');
             if (confirmBtn) {
                 confirmBtn.disabled = false;
