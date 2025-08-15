@@ -195,6 +195,44 @@
     table-layout: fixed; /* evita expansão inesperada e rolagem horizontal */
 }
 
+/* Larguras específicas para melhorar leitura:
+   1: Data, 2: Conta, 3: Descrição, 4: Valor, 5: Categoria, 6: Observações, 7: Ações */
+.entries-table th:nth-child(1),
+.entries-table td:nth-child(1) { /* Data */
+    width: 110px;
+    min-width: 100px;
+    white-space: nowrap;
+}
+
+.entries-table th:nth-child(2),
+.entries-table td:nth-child(2) { /* Conta */
+    width: 140px;
+    min-width: 120px;
+    white-space: nowrap;
+}
+
+.entries-table th:nth-child(3),
+.entries-table td:nth-child(3) { /* Descrição */
+    width: 32%;
+    max-width: 380px; /* limita largura para não comprimir Data/Conta */
+    white-space: normal; /* permite quebra */
+    overflow-wrap: anywhere;
+}
+
+.entries-table th:nth-child(4),
+.entries-table td:nth-child(4) { /* Valor */
+    width: 110px;
+    min-width: 100px;
+    white-space: nowrap;
+}
+
+.entries-table th:nth-child(7),
+.entries-table td:nth-child(7) { /* Ações */
+    width: 90px;
+    min-width: 80px;
+    white-space: nowrap;
+}
+
 .entries-table th,
 .entries-table td {
     padding: 12px;
