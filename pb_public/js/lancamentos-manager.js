@@ -23,6 +23,14 @@ class LancamentosManager {
      * Inicializa o gerenciador de lançamentos
      */
     async init() {
+        // Garante inicialização do serviço Google Sheets com a instância global do PocketBase
+        if (window.pb && !googleSheetsService.pb) {
+            try {
+                googleSheetsService.init(window.pb);
+            } catch (e) {
+                console.error('Falha ao inicializar serviço Google Sheets:', e);
+            }
+        }
         this.setupEventListeners();
         await this.loadEntries();
     }
@@ -312,14 +320,22 @@ class LancamentosManager {
             return;
         }
 
+        // Remoção otimista: atualiza UI antes da chamada remota
+        const originalEntries = [...this.entries];
+        this.entries = this.entries.filter(e => e.rowIndex !== rowIndex);
+        this.renderEntries();
         this.showLoading();
 
         try {
             await googleSheetsService.deleteSheetEntry(rowIndex);
             this.showMessage('Lançamento excluído com sucesso', 'success');
-            await this.loadEntries(); // Recarregar lista
+            // Opcional: recarrega para garantir consistência (ex: reindexações futuras)
+            await this.loadEntries();
         } catch (error) {
             console.error('Erro ao excluir lançamento:', error);
+            // Reverte estado local
+            this.entries = originalEntries;
+            this.renderEntries();
             this.showMessage('Erro ao excluir lançamento: ' + error.message, 'error');
         } finally {
             this.hideLoading();

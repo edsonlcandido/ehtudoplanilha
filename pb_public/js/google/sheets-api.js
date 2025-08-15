@@ -533,6 +533,11 @@ class GoogleSheetsService {
             throw new Error('Serviço Sheets não inicializado');
         }
 
+        // Validação de índice de linha (não permitir cabeçalho ou valores inválidos)
+        if (!Number.isInteger(rowIndex) || rowIndex < 2) {
+            throw new Error('Índice de linha inválido para exclusão');
+        }
+
         try {
             const response = await fetch(`${this.pb.baseUrl}/delete-sheet-entry`, {
                 method: 'DELETE',
