@@ -16,6 +16,10 @@ class LancamentosManager {
         this.pendingDeleteRowIndex = null;
         this._initialLoadDone = false; // controla primeira carga para mensagens
         
+        // Configurações de ordenação
+        this.sortBy = 'budget_date'; // 'budget_date' ou 'date'
+        this.hideBlankDates = false;
+        
         // Detectar mudanças de tamanho da tela
         window.addEventListener('resize', () => {
             this.isMobile = window.innerWidth <= 768;
@@ -66,6 +70,17 @@ class LancamentosManager {
         if (clearSearchBtn) {
             clearSearchBtn.addEventListener('click', () => this.clearSearch());
         }
+
+        // Controles de ordenação
+        const sortSelect = document.getElementById('sortSelect');
+        if (sortSelect) {
+            sortSelect.addEventListener('change', (e) => this.handleSortChange(e.target.value));
+        }
+
+        const hideBlankDatesCheck = document.getElementById('hideBlankDatesCheck');
+        if (hideBlankDatesCheck) {
+            hideBlankDatesCheck.addEventListener('change', (e) => this.handleHideBlankDatesChange(e.target.checked));
+        }
     }
 
     /**
@@ -84,8 +99,7 @@ class LancamentosManager {
             // Usar endpoint dedicado para lançamentos
             const response = await this.fetchSheetEntries(50);
             this.entries = response.entries || [];
-            this.filteredEntries = [...this.entries]; // Inicialmente, entradas filtradas são todas as entradas
-            this.renderEntries();
+            this.applySortingAndFilters(); // Aplica ordenação e filtros
             if (this._initialLoadDone) {
                 this.showMessage('Lançamentos carregados com sucesso', 'success');
             }
@@ -133,38 +147,153 @@ class LancamentosManager {
     }
 
     /**
-     * Manipula a pesquisa/filtro de lançamentos
+     * Manipula a mudança de tipo de ordenação
      */
-    handleSearch(searchTerm) {
-        this.searchTerm = searchTerm.trim().toLowerCase();
-        this.filterEntries();
-        this.updateSearchUI();
+    handleSortChange(sortType) {
+        this.sortBy = sortType;
+        this.applySortingAndFilters();
     }
 
     /**
-     * Filtra as entradas baseado no termo de pesquisa
+     * Manipula a mudança do checkbox de ocultar datas em branco
      */
-    filterEntries() {
-        if (!this.searchTerm) {
-            this.filteredEntries = [...this.entries];
-        } else {
-            this.filteredEntries = this.entries.filter(entry => {
+    handleHideBlankDatesChange(hideBlank) {
+        this.hideBlankDates = hideBlank;
+        this.applySortingAndFilters();
+    }
+
+    /**
+     * Aplica ordenação e filtros aos lançamentos
+     */
+    applySortingAndFilters() {
+        // Começa com todas as entradas
+        let processedEntries = [...this.entries];
+
+        // Aplica filtro de datas em branco se necessário
+        if (this.hideBlankDates) {
+            processedEntries = processedEntries.filter(entry => {
+                return entry.data && entry.data.trim() !== '';
+            });
+        }
+
+        // Aplica ordenação
+        processedEntries = this.sortEntries(processedEntries);
+
+        // Aplica filtro de pesquisa se houver
+        if (this.searchTerm) {
+            this.filteredEntries = processedEntries.filter(entry => {
                 const searchFields = [
                     this.formatDate(entry.data),
                     this.formatCurrency(entry.valor),
                     entry.descricao || '',
                     entry.categoria || '',
                     entry.conta || '',
-                    entry.obs || ''
+                    entry.obs || '',
+                    this.formatBudget(entry.orcamento) || ''
                 ];
                 
                 return searchFields.some(field => 
                     field.toString().toLowerCase().includes(this.searchTerm)
                 );
             });
+        } else {
+            this.filteredEntries = processedEntries;
         }
-        
+
         this.renderEntries();
+        this.updateSearchUI();
+    }
+
+    /**
+     * Ordena as entradas baseado no tipo de ordenação selecionado
+     */
+    sortEntries(entries) {
+        return entries.sort((a, b) => {
+            if (this.sortBy === 'budget_date') {
+                // Primeiro ordena por orçamento, depois por data (mais recente primeiro)
+                const budgetA = this.getBudgetSortValue(a.orcamento);
+                const budgetB = this.getBudgetSortValue(b.orcamento);
+                
+                if (budgetA !== budgetB) {
+                    return budgetB - budgetA; // Orçamento mais recente primeiro
+                }
+                
+                // Se orçamentos são iguais, ordena por data (mais recente primeiro)
+                const dateA = this.getDateSortValue(a.data);
+                const dateB = this.getDateSortValue(b.data);
+                return dateB - dateA;
+            } else if (this.sortBy === 'date') {
+                // Apenas ordena por data (mais recente primeiro)
+                const dateA = this.getDateSortValue(a.data);
+                const dateB = this.getDateSortValue(b.data);
+                return dateB - dateA;
+            }
+            
+            return 0;
+        });
+    }
+
+    /**
+     * Converte orçamento para valor numérico para ordenação
+     */
+    getBudgetSortValue(orcamento) {
+        if (!orcamento) return 0;
+        
+        try {
+            // Converte "setembro/25" para número (ano*12 + mês)
+            const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+            const [mesNome, anoCurto] = orcamento.split('/');
+            const mesIndex = meses.indexOf(mesNome.toLowerCase());
+            
+            if (mesIndex === -1) return 0;
+            
+            const ano = parseInt('20' + anoCurto);
+            return ano * 12 + mesIndex;
+        } catch (e) {
+            return 0;
+        }
+    }
+
+    /**
+     * Converte data para valor numérico para ordenação
+     */
+    getDateSortValue(data) {
+        if (!data) return 0;
+        
+        try {
+            // Tenta converter a data para timestamp
+            let date;
+            if (typeof data === 'number') {
+                // Serial Excel
+                const excelEpoch = new Date(1899, 11, 30);
+                date = new Date(excelEpoch.getTime() + data * 24 * 60 * 60 * 1000);
+            } else if (typeof data === 'string') {
+                // Formato dd/MM/yyyy HH:mm ou similar
+                if (/\d{2}\/\d{2}\/\d{4}/.test(data)) {
+                    const [parteData, parteHora='00:00'] = data.split(' ');
+                    const [dia, mes, ano] = parteData.split('/').map(Number);
+                    const [hora, minuto='00'] = (parteHora || '00:00').split(':').map(Number);
+                    date = new Date(ano, mes - 1, dia, hora, minuto);
+                } else {
+                    date = new Date(data);
+                }
+            } else {
+                date = new Date(data);
+            }
+            
+            return isNaN(date.getTime()) ? 0 : date.getTime();
+        } catch (e) {
+            return 0;
+        }
+    }
+
+    /**
+     * Manipula a pesquisa/filtro de lançamentos
+     */
+    handleSearch(searchTerm) {
+        this.searchTerm = searchTerm.trim().toLowerCase();
+        this.applySortingAndFilters();
+        this.updateSearchUI();
     }
 
     /**
@@ -224,8 +353,7 @@ class LancamentosManager {
         }
         
         this.searchTerm = '';
-        this.filteredEntries = [...this.entries];
-        this.renderEntries();
+        this.applySortingAndFilters();
         this.updateSearchUI();
         
         // Foca novamente no campo de pesquisa
@@ -316,6 +444,7 @@ class LancamentosManager {
                     <div class="entry-details">
                         <span class="entry-account">${this.escapeHtml(entry.conta)}</span>
                         ${entry.categoria ? `<span class="entry-category">${this.escapeHtml(entry.categoria)}</span>` : ''}
+                        ${entry.orcamento ? `<span class="entry-budget">${this.formatBudget(entry.orcamento)}</span>` : ''}
                     </div>
                     ${entry.obs ? `<div class="entry-obs">${this.escapeHtml(entry.obs)}</div>` : ''}
                 </div>
@@ -353,6 +482,7 @@ class LancamentosManager {
                     <td><div class="skeleton-text"></div></td>
                     <td><div class="skeleton-text"></div></td>
                     <td><div class="skeleton-text"></div></td>
+                    <td><div class="skeleton-text"></div></td>
                     <td class="actions">
                         <div class="skeleton-button"></div>
                         <div class="skeleton-button"></div>
@@ -370,6 +500,7 @@ class LancamentosManager {
                                 <th>Descrição</th>
                                 <th>Valor</th>
                                 <th>Categoria</th>
+                                <th>Orçamento</th>
                                 <th>Observações</th>
                                 <th>Ações</th>
                             </tr>
@@ -392,6 +523,7 @@ class LancamentosManager {
                     ${this.formatCurrency(entry.valor)}
                 </td>
                 <td>${this.escapeHtml(entry.categoria)}</td>
+                <td>${this.formatBudget(entry.orcamento)}</td>
                 <td title="${this.escapeHtml(entry.obs)}">
                     ${entry.obs ? this.escapeHtml(entry.obs.substring(0, 30)) + (entry.obs.length > 30 ? '...' : '') : ''}
                 </td>
@@ -416,6 +548,7 @@ class LancamentosManager {
                             <th>Descrição</th>
                             <th>Valor</th>
                             <th>Categoria</th>
+                            <th>Orçamento</th>
                             <th>Observações</th>
                             <th>Ações</th>
                         </tr>
@@ -930,6 +1063,27 @@ class LancamentosManager {
             style: 'currency',
             currency: 'BRL'
         }).format(value);
+    }
+
+    /**
+     * Formata valor de orçamento para exibição
+     */
+    formatBudget(orcamento) {
+        if (!orcamento) return '';
+        
+        // Se já está no formato "setembro/25", converte para "Set/25"
+        if (typeof orcamento === 'string' && orcamento.includes('/')) {
+            const [mesNome, anoCurto] = orcamento.split('/');
+            const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+            const mesesAbrev = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+            const mesIndex = meses.indexOf(mesNome.toLowerCase());
+            
+            if (mesIndex !== -1) {
+                return `${mesesAbrev[mesIndex]}/${anoCurto}`;
+            }
+        }
+        
+        return orcamento;
     }
 
     /**

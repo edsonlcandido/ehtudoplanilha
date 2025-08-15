@@ -89,6 +89,25 @@
                         </div>
                     </div>
 
+                    <!-- Controles de ordenação -->
+                    <div class="sorting-controls" style="margin-bottom: 1.5rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                        <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;">
+                            <div class="form-group" style="margin: 0;">
+                                <label for="sortSelect" style="margin-right: 0.5rem; font-weight: 600;">Ordenar por:</label>
+                                <select id="sortSelect" style="min-width: 180px;">
+                                    <option value="budget_date">Orçamento + Data</option>
+                                    <option value="date">Data</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin: 0;">
+                                <label class="checkable" style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <input type="checkbox" id="hideBlankDatesCheck">
+                                    <span class="checkable">Ocultar datas em branco</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Container principal dos lançamentos -->
                     <div id="entriesContainer" class="entries-container">
                         <!-- Conteúdo será carregado via JavaScript -->

@@ -325,6 +325,14 @@
     font-size: 0.75rem;
 }
 
+.entry-budget {
+    background: #28a745;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+}
+
 .entry-obs {
     color: #6c757d;
     font-size: 0.875rem;
