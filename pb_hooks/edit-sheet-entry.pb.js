@@ -17,8 +17,14 @@ routerAdd("PUT", "/edit-sheet-entry", (c) => {
     const requestData = c.requestInfo().body;
     
     // Validação básica dos dados
-    if (!requestData.rowIndex || !requestData.data || !requestData.conta || requestData.valor === undefined || !requestData.descricao) {
-        return c.json(400, { "error": "Campos obrigatórios faltando (rowIndex, data, conta, valor, descricao)" });
+    if (requestData.rowIndex === undefined || requestData.rowIndex === null) {
+        return c.json(400, { "error": "rowIndex é obrigatório" });
+    }
+    if (!Number.isInteger(requestData.rowIndex) || requestData.rowIndex < 2) {
+        return c.json(400, { "error": "rowIndex deve ser inteiro >= 2" });
+    }
+    if (!requestData.data || !requestData.conta || requestData.valor === undefined || !requestData.descricao) {
+        return c.json(400, { "error": "Campos obrigatórios faltando (data, conta, valor, descricao)" });
     }
 
     try {
@@ -111,8 +117,18 @@ routerAdd("PUT", "/edit-sheet-entry", (c) => {
 
         if (updateResponse.statusCode >= 200 && updateResponse.statusCode < 300) {
             return c.json(200, {
-                "success": true,
-                "message": "Lançamento editado com sucesso na planilha"
+                success: true,
+                message: "Lançamento editado com sucesso na planilha",
+                rowIndex: requestData.rowIndex,
+                updated: {
+                    data: requestData.data,
+                    conta: requestData.conta,
+                    valor: requestData.valor,
+                    descricao: requestData.descricao,
+                    categoria: requestData.categoria || "",
+                    orcamento: requestData.orcamento || "",
+                    obs: requestData.obs || ""
+                }
             });
         } else {
             console.log("Erro ao editar entrada na planilha:", updateResponse.raw);

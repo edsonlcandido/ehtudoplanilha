@@ -496,6 +496,17 @@ class GoogleSheetsService {
         if (!this.pb) {
             throw new Error('Serviço Sheets não inicializado');
         }
+        const {
+            rowIndex, data: dataValue, conta, valor, descricao,
+            categoria, orcamento, obs
+        } = entryData || {};
+
+        if (!Number.isInteger(rowIndex) || rowIndex < 2) {
+            throw new Error('rowIndex inválido');
+        }
+        if (!dataValue || !conta || valor === undefined || valor === null || !descricao) {
+            throw new Error('Campos obrigatórios ausentes');
+        }
 
         try {
             const response = await fetch(`${this.pb.baseUrl}/edit-sheet-entry`, {
@@ -504,22 +515,26 @@ class GoogleSheetsService {
                     'Authorization': this.pb.authStore.token,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(entryData)
+                body: JSON.stringify({
+                    rowIndex,
+                    data: dataValue,
+                    conta,
+                    valor,
+                    descricao,
+                    categoria,
+                    orcamento,
+                    obs
+                })
             });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || 'Erro ao editar entrada na planilha');
+            const json = await response.json();
+            if (!response.ok || !json.success) {
+                throw new Error(json.error || 'Erro ao editar entrada na planilha');
             }
-
-            // Limpa cache para forçar atualização
             this.clearFinancialSummaryCache();
-
-            return data;
-        } catch (error) {
-            console.error('Erro ao editar entrada na planilha:', error);
-            throw error;
+            return json;
+        } catch (err) {
+            console.error('Erro ao editar entrada na planilha:', err);
+            throw err;
         }
     }
 

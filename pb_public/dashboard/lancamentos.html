@@ -80,68 +80,49 @@
     </div>
 
     <!-- Modal de edição de lançamento -->
-    <div id="editModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Editar Lançamento</h3>
-                <button class="modal-close" onclick="lancamentosManager.closeEditModal()">×</button>
-            </div>
-            <div class="modal-body">
-                <form id="editForm" onsubmit="return false;">
-                    <fieldset style="border: none; padding: 0; margin: 0;">
-                        <div class="form-row">
-                            <div class="form-group" style="flex:1;">
-                                <label for="editData">Data & Hora *</label>
-                                <input type="datetime-local" id="editData" required>
-                            </div>
-                            <div class="form-group" style="flex:1;">
-                                <label for="editConta">Conta *</label>
-                                <input type="text" id="editConta" autocomplete="off" required>
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group" style="flex:2;">
-                                <label for="editDescricao">Descrição *</label>
-                                <input type="text" id="editDescricao" autocomplete="off" required>
-                            </div>
-                            <div class="form-group" style="flex:1;">
-                                <label>Valor *</label>
-                                <div style="display:flex; gap:.5rem; align-items:center;">
-                                    <button type="button" id="editSignBtn" style="min-width:48px; background:transparent; border:1px solid #ccc; border-radius:4px; cursor:pointer; font-weight:bold;">-</button>
-                                    <input type="hidden" id="editSignValue" value="-">
-                                    <input type="number" id="editValor" step="0.01" min="0" required style="flex:1;">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group" style="flex:1;">
-                                <label for="editCategoria">Categoria</label>
-                                <input type="text" id="editCategoria" list="editCategoriaList" autocomplete="off">
-                                <datalist id="editCategoriaList"></datalist>
-                            </div>
-                            <div class="form-group" style="flex:1;">
-                                <label for="editOrcamento">Orçamento (mês)</label>
-                                <select id="editOrcamento"></select>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="editObs">Observações</label>
-                            <textarea id="editObs" rows="3" placeholder="Notas adicionais..."></textarea>
-                        </div>
-                    </fieldset>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="button" onclick="lancamentosManager.closeEditModal()">
-                    Cancelar
-                </button>
-                <button class="button primary" onclick="lancamentosManager.saveEdit()">
-                    Salvar
-                </button>
-            </div>
+    <div id="editModal" class="modal" style="display:none; align-items:center; justify-content:center;">
+        <div class="modal-content solution-card" style="max-width:600px; width:95%; position:relative; text-align:left;">
+            <button class="modal-close" onclick="lancamentosManager.closeEditModal()" style="position:absolute; top:10px; right:10px; background:transparent; border:none; font-size:1.5rem; cursor:pointer;">×</button>
+            <h3 style="margin-top:0; text-align:center;">Editar Lançamento</h3>
+            <form id="editForm" onsubmit="return false;" style="margin-top:1rem;">
+                <div class="form-group">
+                    <label for="editData">Data & Hora *</label>
+                    <input type="datetime-local" id="editData" required>
+                </div>
+                <div class="form-group">
+                    <label for="editConta">Conta *</label>
+                    <input type="text" id="editConta" autocomplete="off" required>
+                </div>
+                <div class="form-group">
+                    <label for="editDescricao">Descrição *</label>
+                    <input type="text" id="editDescricao" autocomplete="off" required>
+                </div>
+                <div class="form-group valor-toggle-group">
+                    <label>Valor *</label>
+                    <div class="valor-toggle-container">
+                        <button type="button" id="editSignBtn" class="toggle-sign" style="min-width:2.5rem;">-</button>
+                        <input type="hidden" id="editSignValue" value="-">
+                        <input type="number" id="editValor" step="0.01" min="0" required style="flex:1;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="editCategoria">Categoria</label>
+                    <input type="text" id="editCategoria" list="editCategoriaList" autocomplete="off">
+                    <datalist id="editCategoriaList"></datalist>
+                </div>
+                <div class="form-group">
+                    <label for="editOrcamento">Orçamento (mês)</label>
+                    <select id="editOrcamento"></select>
+                </div>
+                <div class="form-group">
+                    <label for="editObs">Observações</label>
+                    <textarea id="editObs" rows="3" placeholder="Notas adicionais..."></textarea>
+                </div>
+                <div class="form-actions" style="margin-top:1.5rem; gap:1rem;">
+                    <button type="button" class="button" onclick="lancamentosManager.closeEditModal()">Cancelar</button>
+                    <button type="button" class="button primary" onclick="lancamentosManager.saveEdit()">Salvar</button>
+                </div>
+            </form>
         </div>
     </div>
 
