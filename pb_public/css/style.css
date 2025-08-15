@@ -197,6 +197,7 @@ body {
     flex-direction: column;
     font-family: 'Helvetica Neue', Arial, sans-serif;
     color: var(--text-color);
+    overflow-x: hidden; /* evita barra horizontal global */
 }
 
 /* Ajuste para páginas internas onde a nav (do picnic) pode ser fixa */
@@ -266,6 +267,7 @@ body.page-interna { padding-top: 70px; }
     flex: 1;
     margin-left: 160px; /* Ajusta para nova largura do menu lateral */
     overflow-y: auto;
+    overflow-x: hidden; /* previne barra horizontal em re-renderizações */
     min-height: auto; /* Altura automática para permitir footer normal */
 }
 

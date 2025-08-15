@@ -9,6 +9,7 @@ class LancamentosManager {
     constructor() {
         this.entries = [];
         this.filteredEntries = [];
+    this.originalEntries = []; // preserva ordem original da planilha (rowIndex)
         this.searchTerm = '';
         this.isLoading = false;
         this.currentEditingEntry = null;
@@ -16,8 +17,8 @@ class LancamentosManager {
         this.pendingDeleteRowIndex = null;
         this._initialLoadDone = false; // controla primeira carga para mensagens
         
-        // Configurações de ordenação
-        this.sortBy = 'budget_date'; // 'budget_date' ou 'date'
+    // Configurações de ordenação
+    this.sortBy = 'original'; // default agora é a ordem natural da planilha
         this.hideBlankDates = false;
         
         // Detectar mudanças de tamanho da tela
@@ -38,6 +39,11 @@ class LancamentosManager {
             } catch (e) {
                 console.error('Falha ao inicializar serviço Google Sheets:', e);
             }
+        }
+        // Ajusta select visual para refletir default 'original'
+        const sortSelect = document.getElementById('sortSelect');
+        if (sortSelect) {
+            sortSelect.value = this.sortBy;
         }
         this.setupEventListeners();
         await this.loadEntries();
@@ -105,6 +111,8 @@ class LancamentosManager {
             // Usar endpoint dedicado para lançamentos
             const response = await this.fetchSheetEntries(50);
             this.entries = response.entries || [];
+            // guarda cópia profunda para manter ordem original
+            this.originalEntries = (response.entries || []).map(e => ({ ...e }));
             this.applySortingAndFilters(); // Aplica ordenação e filtros
             if (this._initialLoadDone) {
                 this.showMessage('Lançamentos carregados com sucesso', 'success');
@@ -176,34 +184,34 @@ class LancamentosManager {
     applySortingAndFilters() {
         console.log('LancamentosManager: Aplicando ordenação e filtros - sortBy:', this.sortBy, 'hideBlankDates:', this.hideBlankDates);
         
-        // Começa com todas as entradas
-        let processedEntries = [...this.entries];
+    // Base depende do modo: se 'original', usa cópia preservada
+    const baseEntries = this.sortBy === 'original' ? [...this.originalEntries] : [...this.entries];
 
-        // Aplica filtro de datas em branco se necessário
+        // Conjunto que será exibido (pode aplicar filtro de datas em branco)
+        let viewEntries = [...baseEntries];
+
         if (this.hideBlankDates) {
-            processedEntries = processedEntries.filter(entry => {
-                // Se não há data, considera como em branco
-                if (!entry.data) return false;
-                
-                // Se é número (data serial Excel), considera como data válida
-                if (typeof entry.data === 'number') return true;
-                
-                // Se é string, verifica se não está vazia após trim
-                if (typeof entry.data === 'string') {
-                    return entry.data.trim() !== '';
-                }
-                
-                // Para outros tipos, considera como data válida
-                return true;
+            viewEntries = viewEntries.filter(entry => {
+                if (!entry.data) return false; // vazio
+                if (typeof entry.data === 'number') return true; // serial excel
+                if (typeof entry.data === 'string') return entry.data.trim() !== '';
+                return true; // outros tipos mantém
             });
         }
 
-        // Aplica ordenação
-        processedEntries = this.sortEntries(processedEntries);
+        // Ordena conjunto de exibição conforme modo; se original, mantém ordem natural de rowIndex
+        viewEntries = this.sortEntries(viewEntries);
 
-        // Aplica filtro de pesquisa se houver
+        // Mantém this.entries sincronizado (ordenado exceto no modo original)
+        if (this.sortBy === 'original') {
+            this.entries = [...this.originalEntries];
+        } else {
+            this.entries = this.sortEntries([...this.originalEntries]);
+        }
+
+        // Aplica filtro de pesquisa sobre o conjunto de exibição já ordenado
         if (this.searchTerm) {
-            this.filteredEntries = processedEntries.filter(entry => {
+            this.filteredEntries = viewEntries.filter(entry => {
                 const searchFields = [
                     this.formatDate(entry.data),
                     this.formatCurrency(entry.valor),
@@ -212,15 +220,13 @@ class LancamentosManager {
                     entry.conta || '',
                     entry.obs || ''
                 ];
-                
-                return searchFields.some(field => 
-                    field.toString().toLowerCase().includes(this.searchTerm)
-                );
+                return searchFields.some(field => field.toString().toLowerCase().includes(this.searchTerm));
             });
         } else {
-            this.filteredEntries = processedEntries;
+            this.filteredEntries = viewEntries;
         }
 
+        // Render sempre baseado em filteredEntries (já contém o estado final de exibição)
         this.renderEntries();
         this.updateSearchUI();
     }
@@ -230,6 +236,15 @@ class LancamentosManager {
      */
     sortEntries(entries) {
         return entries.sort((a, b) => {
+            if (this.sortBy === 'original') {
+                return (a.rowIndex || 0) - (b.rowIndex || 0); // linha menor primeiro
+            }
+            // Coloca sem data no topo quando ordenando por critérios derivados
+            const hasDateA = !!a.data;
+            const hasDateB = !!b.data;
+            if (hasDateA !== hasDateB) {
+                return hasDateA ? 1 : -1; // sem data (false) vem antes
+            }
             if (this.sortBy === 'budget_date') {
                 // Primeiro ordena por orçamento, depois por data (mais recente primeiro)
                 const budgetA = this.getBudgetSortValue(a.orcamento);

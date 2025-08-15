@@ -192,6 +192,7 @@
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    table-layout: fixed; /* evita expansão inesperada e rolagem horizontal */
 }
 
 .entries-table th,
@@ -199,6 +200,8 @@
     padding: 12px;
     text-align: left;
     border-bottom: 1px solid #dee2e6;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
 }
 
 .entries-table th {
