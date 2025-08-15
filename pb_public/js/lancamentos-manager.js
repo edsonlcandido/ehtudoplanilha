@@ -19,7 +19,7 @@ class LancamentosManager {
         
     // Configurações de ordenação
     this.sortBy = 'original'; // default agora é a ordem natural da planilha
-        this.hideBlankDates = false;
+    this.hideBlankDates = true; // padrão: ocultar linhas sem data
         
         // Detectar mudanças de tamanho da tela
         window.addEventListener('resize', () => {
@@ -44,6 +44,10 @@ class LancamentosManager {
         const sortSelect = document.getElementById('sortSelect');
         if (sortSelect) {
             sortSelect.value = this.sortBy;
+        }
+        const hideBlankDatesCheck = document.getElementById('hideBlankDatesCheck');
+        if (hideBlankDatesCheck) {
+            hideBlankDatesCheck.checked = this.hideBlankDates;
         }
         this.setupEventListeners();
         await this.loadEntries();
@@ -192,10 +196,14 @@ class LancamentosManager {
 
         if (this.hideBlankDates) {
             viewEntries = viewEntries.filter(entry => {
-                if (!entry.data) return false; // vazio
-                if (typeof entry.data === 'number') return true; // serial excel
-                if (typeof entry.data === 'string') return entry.data.trim() !== '';
-                return true; // outros tipos mantém
+                // Considera "data em branco" quando null, undefined, string vazia ou só espaços
+                if (entry.data === null || entry.data === undefined) return false;
+                if (typeof entry.data === 'string') {
+                    const trimmed = entry.data.trim();
+                    if (trimmed === '') return false;
+                }
+                // Se número (serial Excel) mantém
+                return true;
             });
         }
 
@@ -237,7 +245,8 @@ class LancamentosManager {
     sortEntries(entries) {
         return entries.sort((a, b) => {
             if (this.sortBy === 'original') {
-                return (a.rowIndex || 0) - (b.rowIndex || 0); // linha menor primeiro
+                // Inverte: mostra linhas mais recentes (maior rowIndex) primeiro
+                return (b.rowIndex || 0) - (a.rowIndex || 0);
             }
             // Coloca sem data no topo quando ordenando por critérios derivados
             const hasDateA = !!a.data;
@@ -404,9 +413,8 @@ class LancamentosManager {
     renderEntries() {
         const container = document.getElementById('entriesContainer');
         if (!container) return;
-
-        // Usa entradas filtradas se houver termo de pesquisa, caso contrário usa todas
-        const entriesToRender = this.searchTerm ? this.filteredEntries : this.entries;
+    // Sempre usa filteredEntries (já inclui ordenação e filtros de datas em branco)
+    const entriesToRender = this.filteredEntries;
 
         if (entriesToRender.length === 0 && !this.isLoading) {
             const message = this.searchTerm 
