@@ -145,6 +145,30 @@
         </div>
     </div>
 
+    <!-- Modal de confirmação de exclusão -->
+    <div id="deleteModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Confirmar Exclusão</h3>
+                <button class="modal-close" onclick="lancamentosManager.closeDeleteModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-top:0;">Tem certeza que deseja excluir o lançamento abaixo?</p>
+                <ul style="list-style:none; padding:0; margin:.5rem 0 0;">
+                    <li><strong>#</strong> <span id="deleteRowNumber"></span></li>
+                    <li><strong>Data:</strong> <span id="deleteDate"></span></li>
+                    <li><strong>Valor:</strong> <span id="deleteValue"></span></li>
+                    <li><strong>Descrição:</strong> <span id="deleteDescription"></span></li>
+                </ul>
+                <p style="font-size:.8rem; color:#666; margin-top:.75rem;">A operação limpa a linha correspondente na planilha Google Sheets. Não há como desfazer.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="button" onclick="lancamentosManager.closeDeleteModal()">Cancelar</button>
+                <button id="deleteConfirmBtn" class="button danger" onclick="lancamentosManager.confirmDelete()">Excluir</button>
+            </div>
+        </div>
+    </div>
+
     <!-- FOOTER -->
     <footer class="footer">
         <div class="container">

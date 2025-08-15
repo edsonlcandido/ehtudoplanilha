@@ -11,6 +11,7 @@ class LancamentosManager {
         this.isLoading = false;
         this.currentEditingEntry = null;
         this.isMobile = window.innerWidth <= 768;
+    this.pendingDeleteRowIndex = null;
         
         // Detectar mudanças de tamanho da tela
         window.addEventListener('resize', () => {
@@ -315,30 +316,75 @@ class LancamentosManager {
             this.showMessage('Entrada não encontrada', 'error');
             return;
         }
+        this.openDeleteModal(entry);
+    }
 
-        if (!confirm(`Tem certeza que deseja excluir o lançamento "${entry.descricao}"?`)) {
+    /**
+     * Abre modal de confirmação de exclusão
+     */
+    openDeleteModal(entry) {
+        const modal = document.getElementById('deleteModal');
+        if (!modal) return;
+        this.pendingDeleteRowIndex = entry.rowIndex;
+        const rowSpan = document.getElementById('deleteRowNumber');
+        const descSpan = document.getElementById('deleteDescription');
+    const dateSpan = document.getElementById('deleteDate');
+    const valueSpan = document.getElementById('deleteValue');
+        if (rowSpan) rowSpan.textContent = entry.rowIndex;
+        if (descSpan) descSpan.textContent = entry.descricao || '(sem descrição)';
+    if (dateSpan) dateSpan.textContent = this.formatDate(entry.data) || '-';
+    if (valueSpan) valueSpan.textContent = this.formatCurrency(entry.valor || 0);
+        const confirmBtn = document.getElementById('deleteConfirmBtn');
+        if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = 'Excluir';
+        }
+        modal.style.display = 'flex';
+    }
+
+    /**
+     * Fecha modal de exclusão
+     */
+    closeDeleteModal() {
+        const modal = document.getElementById('deleteModal');
+        if (modal) modal.style.display = 'none';
+        this.pendingDeleteRowIndex = null;
+    }
+
+    /**
+     * Confirma exclusão (acionado pelo botão no modal)
+     */
+    async confirmDelete() {
+        if (!this.pendingDeleteRowIndex) {
+            this.closeDeleteModal();
             return;
         }
+        const rowIndex = this.pendingDeleteRowIndex;
+        const confirmBtn = document.getElementById('deleteConfirmBtn');
+        if (confirmBtn) {
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = 'Excluindo...';
+        }
 
-        // Remoção otimista: atualiza UI antes da chamada remota
+        // Remoção otimista
         const originalEntries = [...this.entries];
         this.entries = this.entries.filter(e => e.rowIndex !== rowIndex);
         this.renderEntries();
-        this.showLoading();
 
         try {
             await googleSheetsService.deleteSheetEntry(rowIndex);
             this.showMessage('Lançamento excluído com sucesso', 'success');
-            // Opcional: recarrega para garantir consistência (ex: reindexações futuras)
+            this.closeDeleteModal();
             await this.loadEntries();
         } catch (error) {
             console.error('Erro ao excluir lançamento:', error);
-            // Reverte estado local
             this.entries = originalEntries;
             this.renderEntries();
             this.showMessage('Erro ao excluir lançamento: ' + error.message, 'error');
-        } finally {
-            this.hideLoading();
+            if (confirmBtn) {
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = 'Excluir';
+            }
         }
     }
 
