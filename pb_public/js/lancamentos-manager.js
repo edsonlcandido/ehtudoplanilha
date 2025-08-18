@@ -131,11 +131,13 @@ class LancamentosManager {
         try {
             // Usar endpoint dedicado para lançamentos
             const response = await this.fetchSheetEntries(50);
+
             const rawEntries = response.entries || [];
             // Filtra fora linhas totalmente em branco (todas as colunas vazias)
             const cleaned = rawEntries.filter(e => !this.isBlankEntry(e));
             this.originalEntries = cleaned.map(e => ({ ...e }));
             this.entries = [...this.originalEntries];
+
             this.applySortingAndFilters(); // Aplica ordenação e filtros
             if (this._initialLoadDone) {
                 this.showMessage('Lançamentos carregados com sucesso', 'success');
@@ -190,6 +192,7 @@ class LancamentosManager {
         console.log('LancamentosManager: Mudando ordenação para:', sortType);
         this.sortBy = sortType;
         this.applySortingAndFilters();
+
     }
 
     /**
@@ -204,6 +207,7 @@ class LancamentosManager {
     /**
      * Aplica ordenação e filtros aos lançamentos
      */
+
     applySortingAndFilters() {
         console.log('LancamentosManager: Aplicando ordenação e filtros - sortBy:', this.sortBy, 'hideBlankDates:', this.hideBlankDates);
         
