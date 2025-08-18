@@ -29,6 +29,23 @@ class LancamentosManager {
     }
 
     /**
+     * Verifica se a linha está totalmente em branco (todas as colunas vazias)
+     */
+    isBlankEntry(entry) {
+        if (!entry) return true;
+        const campos = ['data','conta','valor','descricao','categoria','orcamento','obs'];
+        return campos.every(c => {
+            const v = entry[c];
+            if (v === null || v === undefined) return true;
+            if (typeof v === 'number') {
+                // Se tem número (valor ou serial de data) não é em branco
+                return false;
+            }
+            return String(v).trim() === '';
+        });
+    }
+
+    /**
      * Inicializa o gerenciador de lançamentos
      */
     async init() {
@@ -114,9 +131,11 @@ class LancamentosManager {
         try {
             // Usar endpoint dedicado para lançamentos
             const response = await this.fetchSheetEntries(50);
-            this.entries = response.entries || [];
-            // guarda cópia profunda para manter ordem original
-            this.originalEntries = (response.entries || []).map(e => ({ ...e }));
+            const rawEntries = response.entries || [];
+            // Filtra fora linhas totalmente em branco (todas as colunas vazias)
+            const cleaned = rawEntries.filter(e => !this.isBlankEntry(e));
+            this.originalEntries = cleaned.map(e => ({ ...e }));
+            this.entries = [...this.originalEntries];
             this.applySortingAndFilters(); // Aplica ordenação e filtros
             if (this._initialLoadDone) {
                 this.showMessage('Lançamentos carregados com sucesso', 'success');
@@ -676,10 +695,12 @@ class LancamentosManager {
         }
 
         // Remoção otimista
-        const originalEntries = [...this.entries];
-        const originalFiltered = [...this.filteredEntries];
-        this.entries = this.entries.filter(e => e.rowIndex !== rowIndex);
-        this.filteredEntries = this.filteredEntries.filter(e => e.rowIndex !== rowIndex);
+    const originalEntries = [...this.entries];
+    const originalFiltered = [...this.filteredEntries];
+    const originalOriginal = [...this.originalEntries];
+    this.entries = this.entries.filter(e => e.rowIndex !== rowIndex);
+    this.filteredEntries = this.filteredEntries.filter(e => e.rowIndex !== rowIndex);
+    this.originalEntries = this.originalEntries.filter(e => e.rowIndex !== rowIndex);
         this.renderEntries();
         this.updateSearchUI();
 
@@ -692,6 +713,7 @@ class LancamentosManager {
             console.error('Erro ao excluir lançamento:', error);
             this.entries = originalEntries;
             this.filteredEntries = originalFiltered;
+            this.originalEntries = originalOriginal;
             this.renderEntries();
             this.updateSearchUI();
             this.showMessage('Erro ao excluir lançamento: ' + error.message, 'error');

@@ -108,23 +108,35 @@ routerAdd("GET", "/get-sheet-entries", (c) => {
             // Pular a primeira linha (cabeçalho) se existir
             const rows = data.values.slice(1);
             
-            // Formatar entradas para exibição
-            const entries = rows.map((row, index) => {
-                // Estrutura: [data, conta, valor, descrição, categoria, orçamento, obs]
-                return {
-                    rowIndex: index + 2, // +2 porque skipamos cabeçalho e arrays são 0-based
+            // Formatar entradas para exibição e filtrar linhas totalmente em branco
+            const entries = rows
+                .map((row, index) => ({
+                    rowIndex: index + 2,
                     data: row[0] || "",
                     conta: row[1] || "",
-                    valor: row[2] || 0,
+                    valor: (row[2] !== undefined && row[2] !== null && row[2] !== '') ? row[2] : 0,
                     descricao: row[3] || "",
                     categoria: row[4] || "",
                     orcamento: row[5] || "",
                     obs: row[6] || ""
-                };
-            });
+                }))
+                .filter(e => {
+                    // Todas as colunas vazias? remove
+                    const campos = [e.data, e.conta, e.valor, e.descricao, e.categoria, e.orcamento, e.obs];
+                    // Se valor é numérico diferente de 0, já não é branco
+                    const temValorNumerico = typeof e.valor === 'number' && e.valor !== 0;
+                    if (temValorNumerico) return true;
+                    return !campos.every(v => {
+                        if (v === null || v === undefined) return true;
+                        if (typeof v === 'number') return v === 0; // considera 0 como vazio nesse contexto
+                        return String(v).trim() === '';
+                    });
+                });
 
-            // Reverter para mostrar as mais recentes primeiro e limitar
-            const recentEntries = entries.reverse().slice(0, limit);
+            // Mais recentes primeiro (linhas maiores) sem precisar reverse depois de limitar: ordenar por rowIndex desc
+            const recentEntries = entries
+                .sort((a,b) => b.rowIndex - a.rowIndex)
+                .slice(0, limit);
 
             return c.json(200, {
                 "success": true,
