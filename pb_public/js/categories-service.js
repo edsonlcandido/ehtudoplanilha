@@ -1,6 +1,14 @@
 /**
  * Serviço centralizado para gerenciamento de categorias
- * Responsável por buscar categorias da planilha e fornecer fallbacks consistentes
+ * 
+ * FONTE PRIMÁRIA: Aba "Categorias" da planilha Google Sheets do usuário
+ * FALLBACK: Categorias padrão (apenas quando planilha indisponível/vazia/erro)
+ * 
+ * Responsabilidades:
+ * - Buscar categorias da aba "Categorias" da planilha
+ * - Fornecer fallbacks consistentes quando necessário
+ * - Gerenciar cache para otimizar performance
+ * - Padronizar comportamento entre formulários
  */
 
 class CategoriesService {
@@ -15,7 +23,8 @@ class CategoriesService {
     }
 
     /**
-     * Obtém categorias da planilha ou retorna categorias padrão
+     * Obtém categorias da aba "Categorias" da planilha do usuário
+     * Usa categorias padrão apenas como fallback em caso de erro ou planilha vazia
      * @param {boolean} forceRefresh - Força busca da planilha ignorando cache
      * @returns {Promise<Array<string>>} Lista de categorias
      */
@@ -28,27 +37,41 @@ class CategoriesService {
         }
 
         try {
-            // Tenta buscar categorias da planilha
+            // PRIORIDADE 1: Buscar categorias da aba "Categorias" da planilha
             if (window.googleSheetsService && typeof window.googleSheetsService.getCategories === 'function') {
-                console.log('[CategoriesService] Buscando categorias da planilha...');
-                const categorias = await window.googleSheetsService.getCategories();
+                console.log('[CategoriesService] Buscando categorias da aba "Categorias" da planilha...');
+                const categoriasFromSheet = await window.googleSheetsService.getCategories();
                 
-                // Usa categorias da planilha se disponíveis, senão usa padrão
-                const lista = (categorias && categorias.length > 0) ? categorias : this.defaultCategories;
-                
-                // Atualiza cache
-                this.cache = lista;
-                this.cacheTimestamp = Date.now();
-                
-                console.log('[CategoriesService] Categorias carregadas:', lista);
-                return lista;
-            } else {
-                console.log('[CategoriesService] Google Sheets Service não disponível, usando categorias padrão');
-                return this.defaultCategories;
+                // Se a planilha retornou categorias, usa elas (mesmo que seja um array vazio)
+                if (Array.isArray(categoriasFromSheet)) {
+                    let lista;
+                    
+                    if (categoriasFromSheet.length > 0) {
+                        // Planilha tem categorias - usa elas
+                        lista = categoriasFromSheet;
+                        console.log('[CategoriesService] Usando categorias da planilha:', lista);
+                    } else {
+                        // Planilha existe mas não tem categorias - usa padrão como fallback
+                        lista = this.defaultCategories;
+                        console.log('[CategoriesService] Planilha sem categorias, usando categorias padrão como fallback:', lista);
+                    }
+                    
+                    // Atualiza cache
+                    this.cache = lista;
+                    this.cacheTimestamp = Date.now();
+                    
+                    return lista;
+                }
             }
+            
+            // PRIORIDADE 2: Google Sheets Service não disponível - usar categorias padrão
+            console.log('[CategoriesService] Google Sheets Service não disponível, usando categorias padrão');
+            return this.defaultCategories;
+            
         } catch (error) {
             console.error('[CategoriesService] Erro ao carregar categorias da planilha:', error);
-            // Em caso de erro, retorna categorias padrão
+            // PRIORIDADE 3: Erro - usar categorias padrão como fallback
+            console.log('[CategoriesService] Usando categorias padrão devido ao erro');
             return this.defaultCategories;
         }
     }
