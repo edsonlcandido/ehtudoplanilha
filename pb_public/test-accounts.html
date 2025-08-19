@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Accounts Service</title>
+    <link rel="stylesheet" href="css/picnic.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container" style="margin-top: 2rem;">
+        <h1>Teste do Accounts Service</h1>
+        
+        <div class="form-group">
+            <label for="testConta">Conta (com datalist)</label>
+            <input type="text" id="testConta" list="testContaList" autocomplete="off">
+            <datalist id="testContaList"></datalist>
+        </div>
+
+        <div class="form-group">
+            <label for="testContaAutocomplete">Conta (com autocomplete customizado)</label>
+            <input type="text" id="testContaAutocomplete" autocomplete="off">
+            <div id="testContaSuggestions"></div>
+        </div>
+
+        <button onclick="testService()" class="button primary">Testar Serviço</button>
+        <button onclick="clearCache()" class="button">Limpar Cache</button>
+        
+        <div id="results" style="margin-top: 2rem; padding: 1rem; background: #f5f5f5; border-radius: 4px;"></div>
+    </div>
+
+    <script type="module">
+        import accountsService from './js/accounts-service.js';
+        
+        // Disponibilizar globalmente para teste
+        window.accountsService = accountsService;
+        
+        // Mock do googleSheetsService para teste
+        window.googleSheetsService = {
+            getFinancialSummary: async () => {
+                // Simula dados de teste
+                return {
+                    contasSugeridas: ['Teste Conta 1', 'Teste Conta 2', 'Banco do Brasil', 'Itaú', 'Nubank']
+                };
+            }
+        };
+
+        // Funções de teste
+        window.testService = async () => {
+            const results = document.getElementById('results');
+            results.innerHTML = '<p>Testando...</p>';
+            
+            try {
+                console.log('=== Teste AccountsService ===');
+                
+                // Teste 1: getAccounts
+                const contas = await accountsService.getAccounts();
+                console.log('Contas obtidas:', contas);
+                
+                // Teste 2: populateDatalist
+                await accountsService.populateDatalist('testContaList');
+                
+                // Teste 3: setupAutocomplete
+                await accountsService.setupAutocomplete('testContaAutocomplete', 'testContaSuggestions');
+                
+                results.innerHTML = `
+                    <h3>Teste Concluído!</h3>
+                    <p><strong>Contas obtidas:</strong> ${contas.join(', ')}</p>
+                    <p><strong>Datalist populado:</strong> ${document.getElementById('testContaList').children.length} opções</p>
+                    <p><strong>Autocomplete configurado:</strong> Input com ID testContaAutocomplete</p>
+                    <p style="color: green;">✅ Todos os testes passaram!</p>
+                `;
+            } catch (error) {
+                console.error('Erro no teste:', error);
+                results.innerHTML = `
+                    <h3>Erro no Teste</h3>
+                    <p style="color: red;">❌ ${error.message}</p>
+                `;
+            }
+        };
+
+        window.clearCache = () => {
+            accountsService.clearCache();
+            document.getElementById('results').innerHTML = '<p style="color: blue;">Cache limpo!</p>';
+        };
+
+        // Inicializa teste automaticamente
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(testService, 1000);
+        });
+    </script>
+</body>
+</html>
