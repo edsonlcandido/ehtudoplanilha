@@ -206,9 +206,13 @@
         import { estaAutenticado } from '../js/auth-service.js';
         import { exibirMenuUsuario } from '../js/menu-usuario.js';
         import lancamentosManager from '../js/lancamentos-manager.js';
+        import categoriesService from '../js/categories-service.js';
 
         // Inicializa PocketBase
         window.pb = new PocketBase(apiConfig.getBaseURL());
+
+        // Disponibiliza categoriesService globalmente
+        window.categoriesService = categoriesService;
 
         // Verifica autenticação imediatamente (antes de carregar demais módulos)
         if (!estaAutenticado()) {

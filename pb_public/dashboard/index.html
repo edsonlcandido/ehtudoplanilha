@@ -338,6 +338,7 @@
         import googleSheetsService from '../js/google/sheets-api.js';
         import TopCategoriesChart from '../js/components/top-categories-chart.js';
         import FinancialCards from '../js/components/financial-cards.js';
+        import categoriesService from '../js/categories-service.js';
 
         // Inicializa o PocketBase globalmente antes dos módulos
         window.pb = new PocketBase(apiConfig.getBaseURL());
@@ -346,6 +347,9 @@
 
         // Inicializa o serviço Google Sheets
         googleSheetsService.init(window.pb);
+
+        // Disponibiliza categoriesService globalmente
+        window.categoriesService = categoriesService;
 
         // Inicializa imediatamente os cards em estado de loading (placeholder)
         financialCardsComponent = new FinancialCards('financialCards', { 
@@ -892,23 +896,32 @@
             if (!categoryInput || !dataList) return;
             
             try {
-                // Tenta buscar categorias da planilha
-                const categorias = await googleSheetsService.getCategories();
-                
-                // Limpa opções existentes do datalist
-                dataList.innerHTML = '';
-                const lista = (categorias && categorias.length) ? categorias : [
-                    'Alimentação', 'Transporte', 'Moradia', 'Saúde',
-                    'Educação', 'Lazer', 'Vestuário', 'Outras'
-                ];
-                lista.forEach(cat => {
-                    const opt = document.createElement('option');
-                    opt.value = cat;
-                    dataList.appendChild(opt);
-                });
-                console.log('Categorias disponíveis:', lista);
+                // Usa serviço centralizado de categorias se disponível
+                if (window.categoriesService && typeof window.categoriesService.populateDatalist === 'function') {
+                    await window.categoriesService.populateDatalist('categoriaList');
+                    console.log('[Dashboard] Categorias carregadas via serviço centralizado');
+                } else {
+                    // Fallback para implementação direta se serviço não estiver disponível
+                    console.warn('[Dashboard] Serviço de categorias não disponível, usando implementação direta');
+                    
+                    // Tenta buscar categorias da planilha
+                    const categorias = await googleSheetsService.getCategories();
+                    
+                    // Limpa opções existentes do datalist
+                    dataList.innerHTML = '';
+                    const lista = (categorias && categorias.length) ? categorias : [
+                        'Alimentação', 'Transporte', 'Moradia', 'Saúde',
+                        'Educação', 'Lazer', 'Vestuário', 'Outras'
+                    ];
+                    lista.forEach(cat => {
+                        const opt = document.createElement('option');
+                        opt.value = cat;
+                        dataList.appendChild(opt);
+                    });
+                    console.log('[Dashboard] Categorias disponíveis:', lista);
+                }
             } catch (error) {
-                console.error('Erro ao carregar categorias:', error);
+                console.error('[Dashboard] Erro ao carregar categorias:', error);
                 // Em caso de erro, usa categorias padrão no datalist
                 dataList.innerHTML = '';
                 ['Alimentação', 'Transporte', 'Moradia', 'Saúde',

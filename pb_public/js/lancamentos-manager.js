@@ -877,35 +877,70 @@ class LancamentosManager {
     }
 
     /**
-     * Popula datalist de categorias no modal de edição se ainda vazio
+     * Popula datalist de categorias no modal de edição
      */
     async populateEditCategories() {
         const datalist = document.getElementById('editCategoriaList');
-        if (!datalist || datalist.dataset.populated) return;
+        if (!datalist) return;
+        
         try {
-            if (window.googleSheetsService && typeof window.googleSheetsService.getCategories === 'function') {
-                const categorias = await window.googleSheetsService.getCategories();
-                (categorias || []).forEach(cat => {
-                    const opt = document.createElement('option');
-                    opt.value = cat;
-                    datalist.appendChild(opt);
-                });
+            // Usa serviço centralizado de categorias se disponível
+            if (window.categoriesService && typeof window.categoriesService.populateDatalist === 'function') {
+                await window.categoriesService.populateDatalist('editCategoriaList');
             } else {
-                ['Alimentação','Transporte','Moradia','Saúde','Educação','Lazer','Vestuário','Outras'].forEach(cat => {
+                // Fallback para implementação direta se serviço não estiver disponível
+                console.warn('[LancamentosManager] Serviço de categorias não disponível, usando implementação direta');
+                const categorias = await this.getCategoriesFallback();
+                
+                // Limpa opções existentes
+                datalist.innerHTML = '';
+                
+                // Popula datalist
+                categorias.forEach(cat => {
                     const opt = document.createElement('option');
                     opt.value = cat;
                     datalist.appendChild(opt);
                 });
             }
-            datalist.dataset.populated = 'true';
-        } catch (e) {
-            ['Alimentação','Transporte','Moradia','Saúde','Educação','Lazer','Vestuário','Outras'].forEach(cat => {
-                const opt = document.createElement('option');
-                opt.value = cat;
-                datalist.appendChild(opt);
-            });
-            datalist.dataset.populated = 'true';
+        } catch (error) {
+            console.error('[LancamentosManager] Erro ao popular categorias de edição:', error);
+            // Em caso de erro, usa categorias padrão
+            this.populateDefaultCategories(datalist);
         }
+    }
+
+    /**
+     * Busca categorias com fallback (método auxiliar)
+     */
+    async getCategoriesFallback() {
+        try {
+            if (window.googleSheetsService && typeof window.googleSheetsService.getCategories === 'function') {
+                const categorias = await window.googleSheetsService.getCategories();
+                return (categorias && categorias.length > 0) ? categorias : this.getDefaultCategories();
+            }
+        } catch (error) {
+            console.error('[LancamentosManager] Erro ao buscar categorias:', error);
+        }
+        return this.getDefaultCategories();
+    }
+
+    /**
+     * Retorna categorias padrão
+     */
+    getDefaultCategories() {
+        return ['Alimentação', 'Transporte', 'Moradia', 'Saúde', 'Educação', 'Lazer', 'Vestuário', 'Outras'];
+    }
+
+    /**
+     * Popula datalist com categorias padrão
+     */
+    populateDefaultCategories(datalist) {
+        datalist.innerHTML = '';
+        this.getDefaultCategories().forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat;
+            datalist.appendChild(opt);
+        });
     }
 
     /**
