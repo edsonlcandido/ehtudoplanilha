@@ -207,12 +207,15 @@
         import { exibirMenuUsuario } from '../js/menu-usuario.js';
         import lancamentosManager from '../js/lancamentos-manager.js';
         import categoriesService from '../js/categories-service.js';
+        import googleSheetsService from '../js/google/sheets-api.js';
 
         // Inicializa PocketBase
         window.pb = new PocketBase(apiConfig.getBaseURL());
 
-        // Disponibiliza categoriesService globalmente
+        // Disponibiliza serviços globalmente
         window.categoriesService = categoriesService;
+        window.googleSheetsService = googleSheetsService;
+        googleSheetsService.init(window.pb);
 
         // Verifica autenticação imediatamente (antes de carregar demais módulos)
         if (!estaAutenticado()) {

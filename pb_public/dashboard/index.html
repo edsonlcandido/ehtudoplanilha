@@ -348,8 +348,9 @@
         // Inicializa o serviço Google Sheets
         googleSheetsService.init(window.pb);
 
-        // Disponibiliza categoriesService globalmente
+        // Disponibiliza serviços globalmente
         window.categoriesService = categoriesService;
+        window.googleSheetsService = googleSheetsService;
 
         // Inicializa imediatamente os cards em estado de loading (placeholder)
         financialCardsComponent = new FinancialCards('financialCards', { 
