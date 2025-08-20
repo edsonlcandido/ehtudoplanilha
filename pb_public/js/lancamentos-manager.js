@@ -796,6 +796,9 @@ class LancamentosManager {
         // Carregar categorias no datalist se houver serviço global (reaproveita se window.googleSheetsService existir)
         this.populateEditCategories();
 
+        // Carregar contas no datalist usando o accounts-service
+        this.populateEditAccounts();
+
         modal.style.display = 'flex';
     }
 
@@ -877,35 +880,126 @@ class LancamentosManager {
     }
 
     /**
-     * Popula datalist de categorias no modal de edição se ainda vazio
+     * Popula datalist de categorias no modal de edição
      */
     async populateEditCategories() {
         const datalist = document.getElementById('editCategoriaList');
-        if (!datalist || datalist.dataset.populated) return;
+        if (!datalist) return;
+        
         try {
-            if (window.googleSheetsService && typeof window.googleSheetsService.getCategories === 'function') {
-                const categorias = await window.googleSheetsService.getCategories();
-                (categorias || []).forEach(cat => {
-                    const opt = document.createElement('option');
-                    opt.value = cat;
-                    datalist.appendChild(opt);
-                });
+            // Usa serviço centralizado de categorias se disponível
+            if (window.categoriesService && typeof window.categoriesService.populateDatalist === 'function') {
+                await window.categoriesService.populateDatalist('editCategoriaList');
             } else {
-                ['Alimentação','Transporte','Moradia','Saúde','Educação','Lazer','Vestuário','Outras'].forEach(cat => {
+                // Fallback para implementação direta se serviço não estiver disponível
+                console.warn('[LancamentosManager] Serviço de categorias não disponível, usando implementação direta');
+                const categorias = await this.getCategoriesFallback();
+                
+                // Limpa opções existentes
+                datalist.innerHTML = '';
+                
+                // Popula datalist
+                categorias.forEach(cat => {
                     const opt = document.createElement('option');
                     opt.value = cat;
                     datalist.appendChild(opt);
                 });
             }
-            datalist.dataset.populated = 'true';
-        } catch (e) {
-            ['Alimentação','Transporte','Moradia','Saúde','Educação','Lazer','Vestuário','Outras'].forEach(cat => {
-                const opt = document.createElement('option');
-                opt.value = cat;
-                datalist.appendChild(opt);
-            });
-            datalist.dataset.populated = 'true';
+        } catch (error) {
+            console.error('[LancamentosManager] Erro ao popular categorias de edição:', error);
+            // Em caso de erro, usa categorias padrão
+            this.populateDefaultCategories(datalist);
         }
+    }
+
+    /**
+     * Busca categorias com fallback (método auxiliar)
+     */
+    async getCategoriesFallback() {
+        try {
+            if (window.googleSheetsService && typeof window.googleSheetsService.getCategories === 'function') {
+                const categorias = await window.googleSheetsService.getCategories();
+                return (categorias && categorias.length > 0) ? categorias : this.getDefaultCategories();
+            }
+        } catch (error) {
+            console.error('[LancamentosManager] Erro ao buscar categorias:', error);
+        }
+        return this.getDefaultCategories();
+    }
+
+    /**
+     * Retorna categorias padrão
+     */
+    getDefaultCategories() {
+        return ['Alimentação', 'Transporte', 'Moradia', 'Saúde', 'Educação', 'Lazer', 'Vestuário', 'Outras'];
+    }
+
+    /**
+     * Popula datalist de contas no modal de edição
+     */
+    async populateEditAccounts() {
+        const datalist = document.getElementById('editContaList');
+        if (!datalist) return;
+        
+        try {
+            // Usa serviço centralizado de contas se disponível
+            if (window.accountsService && typeof window.accountsService.populateDatalist === 'function') {
+                await window.accountsService.populateDatalist('editContaList');
+            } else {
+                // Fallback para implementação direta se serviço não estiver disponível
+                console.warn('[LancamentosManager] Serviço de contas não disponível, usando implementação direta');
+                const contas = await this.getAccountsFallback();
+                
+                // Limpa opções existentes
+                datalist.innerHTML = '';
+                
+                // Popula datalist
+                contas.forEach(conta => {
+                    const opt = document.createElement('option');
+                    opt.value = conta;
+                    datalist.appendChild(opt);
+                });
+            }
+        } catch (error) {
+            console.error('[LancamentosManager] Erro ao popular contas de edição:', error);
+            // Em caso de erro, usa contas padrão
+            this.populateDefaultAccounts(datalist);
+        }
+    }
+
+    /**
+     * Busca contas com fallback (método auxiliar)
+     */
+    async getAccountsFallback() {
+        try {
+            if (window.googleSheetsService && typeof window.googleSheetsService.getFinancialSummary === 'function') {
+                const summary = await window.googleSheetsService.getFinancialSummary();
+                const contas = summary.contasSugeridas || [];
+                return (contas && contas.length > 0) ? contas : this.getDefaultAccounts();
+            }
+        } catch (error) {
+            console.error('[LancamentosManager] Erro ao buscar contas:', error);
+        }
+        return this.getDefaultAccounts();
+    }
+
+    /**
+     * Retorna contas padrão
+     */
+    getDefaultAccounts() {
+        return ['Conta Corrente', 'Poupança', 'Cartão de Crédito', 'Cartão de Débito', 'Dinheiro', 'PIX', 'Outras'];
+    }
+
+    /**
+     * Popula datalist com contas padrão
+     */
+    populateDefaultAccounts(datalist) {
+        datalist.innerHTML = '';
+        this.getDefaultAccounts().forEach(conta => {
+            const opt = document.createElement('option');
+            opt.value = conta;
+            datalist.appendChild(opt);
+        });
     }
 
     /**

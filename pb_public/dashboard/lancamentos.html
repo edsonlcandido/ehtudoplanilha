@@ -130,7 +130,8 @@
                 </div>
                 <div class="form-group">
                     <label for="editConta">Conta *</label>
-                    <input type="text" id="editConta" autocomplete="off" required>
+                    <input type="text" id="editConta" list="editContaList" autocomplete="off" required>
+                    <datalist id="editContaList"></datalist>
                 </div>
                 <div class="form-group">
                     <label for="editDescricao">Descrição *</label>
@@ -206,9 +207,18 @@
         import { estaAutenticado } from '../js/auth-service.js';
         import { exibirMenuUsuario } from '../js/menu-usuario.js';
         import lancamentosManager from '../js/lancamentos-manager.js';
+        import categoriesService from '../js/categories-service.js';
+        import accountsService from '../js/accounts-service.js';
+        import googleSheetsService from '../js/google/sheets-api.js';
 
         // Inicializa PocketBase
         window.pb = new PocketBase(apiConfig.getBaseURL());
+
+        // Disponibiliza serviços globalmente
+        window.categoriesService = categoriesService;
+        window.accountsService = accountsService;
+        window.googleSheetsService = googleSheetsService;
+        googleSheetsService.init(window.pb);
 
         // Verifica autenticação imediatamente (antes de carregar demais módulos)
         if (!estaAutenticado()) {

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Categorias</title>
+    <link rel="stylesheet" href="css/picnic.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .test-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+        .test-section {
+            margin: 2rem 0;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .test-result {
+            margin: 1rem 0;
+            padding: 0.5rem;
+            border-radius: 4px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Teste de Padronização de Categorias</h1>
+        
+        <div class="test-section">
+            <h2>Teste 1: Formulário de Novo Lançamento</h2>
+            <label for="testCategory1">Categoria:</label>
+            <input type="text" id="testCategory1" list="testCategoriaList1" placeholder="Digite ou selecione uma categoria">
+            <datalist id="testCategoriaList1"></datalist>
+            <button id="loadCategories1" class="button">Carregar Categorias</button>
+            <div id="result1" class="test-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Teste 2: Modal de Edição</h2>
+            <label for="testCategory2">Categoria:</label>
+            <input type="text" id="testCategory2" list="testCategoriaList2" placeholder="Digite ou selecione uma categoria">
+            <datalist id="testCategoriaList2"></datalist>
+            <button id="loadCategories2" class="button">Carregar Categorias</button>
+            <div id="result2" class="test-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Teste 3: Serviço Centralizado</h2>
+            <button id="testService" class="button">Testar Serviço Centralizados</button>
+            <div id="result3" class="test-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Teste 4: Cache e Performance</h2>
+            <button id="testCache" class="button">Testar Cache</button>
+            <div id="result4" class="test-result"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import categoriesService from './js/categories-service.js';
+
+        // Disponibiliza globalmente para testes
+        window.categoriesService = categoriesService;
+
+        // Mock do googleSheetsService para testes
+        window.googleSheetsService = {
+            getCategories: async () => {
+                // Simula delay de rede
+                await new Promise(resolve => setTimeout(resolve, 500));
+                return ['Alimentação', 'Transporte', 'Moradia', 'Saúde', 'Educação', 'Lazer', 'Vestuário', 'Outras', 'Categoria da Planilha'];
+            }
+        };
+
+        function showResult(elementId, message, type = 'info') {
+            const result = document.getElementById(elementId);
+            result.textContent = message;
+            result.className = `test-result ${type}`;
+        }
+
+        // Teste 1: Simula carregamento como no dashboard
+        document.getElementById('loadCategories1').addEventListener('click', async () => {
+            try {
+                showResult('result1', 'Carregando categorias...', 'info');
+                await categoriesService.populateDatalist('testCategoriaList1');
+                
+                const datalist = document.getElementById('testCategoriaList1');
+                const count = datalist.children.length;
+                showResult('result1', `✓ Sucesso! ${count} categorias carregadas`, 'success');
+            } catch (error) {
+                showResult('result1', `✗ Erro: ${error.message}`, 'error');
+            }
+        });
+
+        // Teste 2: Simula carregamento como no modal de edição
+        document.getElementById('loadCategories2').addEventListener('click', async () => {
+            try {
+                showResult('result2', 'Carregando categorias...', 'info');
+                await categoriesService.populateDatalist('testCategoriaList2');
+                
+                const datalist = document.getElementById('testCategoriaList2');
+                const count = datalist.children.length;
+                showResult('result2', `✓ Sucesso! ${count} categorias carregadas`, 'success');
+            } catch (error) {
+                showResult('result2', `✗ Erro: ${error.message}`, 'error');
+            }
+        });
+
+        // Teste 3: Testa métodos do serviço centralizados
+        document.getElementById('testService').addEventListener('click', async () => {
+            try {
+                showResult('result3', 'Testando serviço...', 'info');
+                
+                const start = Date.now();
+                const categories = await categoriesService.getCategories();
+                const duration = Date.now() - start;
+                
+                const defaultCategories = categoriesService.getDefaultCategories();
+                
+                showResult('result3', 
+                    `✓ Categorias: ${categories.length} | Padrão: ${defaultCategories.length} | Tempo: ${duration}ms`, 
+                    'success'
+                );
+            } catch (error) {
+                showResult('result3', `✗ Erro: ${error.message}`, 'error');
+            }
+        });
+
+        // Teste 4: Testa cache
+        document.getElementById('testCache').addEventListener('click', async () => {
+            try {
+                showResult('result4', 'Testando cache...', 'info');
+                
+                // Limpa cache
+                categoriesService.clearCache();
+                
+                // Primeira chamada (sem cache)
+                const start1 = Date.now();
+                await categoriesService.getCategories();
+                const duration1 = Date.now() - start1;
+                
+                // Segunda chamada (com cache)
+                const start2 = Date.now();
+                await categoriesService.getCategories();
+                const duration2 = Date.now() - start2;
+                
+                showResult('result4', 
+                    `✓ 1ª chamada: ${duration1}ms | 2ª chamada (cache): ${duration2}ms`, 
+                    'success'
+                );
+            } catch (error) {
+                showResult('result4', `✗ Erro: ${error.message}`, 'error');
+            }
+        });
+
+        // Auto-executa teste básico
+        setTimeout(() => {
+            document.getElementById('loadCategories1').click();
+        }, 1000);
+    </script>
+</body>
+</html>
