@@ -13,6 +13,7 @@ class LancamentosManager {
         this.searchTerm = '';
         this.isLoading = false;
         this.currentEditingEntry = null;
+        this.currentSplittingEntry = null;
         this.isMobile = window.innerWidth <= 768;
         this.pendingDeleteRowIndex = null;
         this._initialLoadDone = false; // controla primeira carga para mensagens
@@ -518,6 +519,9 @@ class LancamentosManager {
                     <button class="button small" onclick="lancamentosManager.editEntry(${entry.rowIndex})" title="Editar">
                         ✏️
                     </button>
+                    <button class="button small" onclick="lancamentosManager.splitEntry(${entry.rowIndex})" title="Dividir em parcelas">
+                        📊
+                    </button>
                     <button class="button danger small" onclick="lancamentosManager.deleteEntry(${entry.rowIndex})" title="Excluir">
                         🗑️
                     </button>
@@ -593,6 +597,9 @@ class LancamentosManager {
                 <td class="actions">
                     <button class="button small" onclick="lancamentosManager.editEntry(${entry.rowIndex})" title="Editar">
                         ✏️
+                    </button>
+                    <button class="button small" onclick="lancamentosManager.splitEntry(${entry.rowIndex})" title="Dividir em parcelas">
+                        📊
                     </button>
                     <button class="button danger small" onclick="lancamentosManager.deleteEntry(${entry.rowIndex})" title="Excluir">
                         🗑️
@@ -1243,6 +1250,227 @@ class LancamentosManager {
         }
         
         return orcamento;
+    }
+
+    /**
+     * Abre modal de divisão de parcelas
+     */
+    async splitEntry(rowIndex) {
+        const entry = this.entries.find(e => e.rowIndex === rowIndex);
+        if (!entry) {
+            this.showMessage('Entrada não encontrada', 'error');
+            return;
+        }
+
+        this.currentSplittingEntry = entry;
+        this.openSplitModal(entry);
+    }
+
+    /**
+     * Abre modal de divisão de parcelas
+     */
+    openSplitModal(entry) {
+        const modal = document.getElementById('splitModal');
+        if (!modal) return;
+
+        // Preenche informações do lançamento atual
+        document.getElementById('splitDescription').textContent = entry.descricao || '(sem descrição)';
+        document.getElementById('splitValue').textContent = this.formatCurrency(entry.valor || 0);
+        document.getElementById('splitDate').textContent = this.formatDate(entry.data) || '-';
+
+        // Reset form
+        document.getElementById('splitInstallments').value = '2';
+        document.getElementById('splitPreview').style.display = 'none';
+
+        // Listener para atualizar preview
+        const installmentsInput = document.getElementById('splitInstallments');
+        installmentsInput.oninput = () => this.updateSplitPreview();
+
+        modal.style.display = 'flex';
+    }
+
+    /**
+     * Fecha modal de divisão
+     */
+    closeSplitModal() {
+        const modal = document.getElementById('splitModal');
+        if (modal) modal.style.display = 'none';
+        this.currentSplittingEntry = null;
+    }
+
+    /**
+     * Atualiza preview da divisão
+     */
+    updateSplitPreview() {
+        const installments = parseInt(document.getElementById('splitInstallments').value) || 2;
+        const entry = this.currentSplittingEntry;
+        
+        if (!entry || installments < 2) {
+            document.getElementById('splitPreview').style.display = 'none';
+            return;
+        }
+
+        const totalValue = parseFloat(entry.valor) || 0;
+        const installmentValue = totalValue / installments;
+
+        // Calcula as datas das parcelas
+        const baseDate = this.parseBudgetDate(entry.orcamento);
+        const installmentsList = [];
+        
+        for (let i = 0; i < installments; i++) {
+            const parcDate = new Date(baseDate);
+            parcDate.setMonth(baseDate.getMonth() + i);
+            
+            const mesNome = this.getMonthName(parcDate.getMonth());
+            const anoCurto = String(parcDate.getFullYear()).slice(-2);
+            const budgetFormatted = `${mesNome}/${anoCurto}`;
+            
+            installmentsList.push({
+                numero: i + 1,
+                valor: installmentValue,
+                orcamento: budgetFormatted
+            });
+        }
+
+        // Atualiza UI
+        document.getElementById('splitInstallmentValue').textContent = this.formatCurrency(installmentValue);
+        
+        const listEl = document.getElementById('splitInstallmentsList');
+        listEl.innerHTML = installmentsList.map((parc, index) => 
+            `<li>Parcela ${parc.numero}: ${this.formatCurrency(parc.valor)} - ${parc.orcamento}${index === 0 ? ' (atual)' : ''}</li>`
+        ).join('');
+
+        document.getElementById('splitPreview').style.display = 'block';
+    }
+
+    /**
+     * Confirma a divisão em parcelas
+     */
+    async confirmSplit() {
+        if (!this.currentSplittingEntry) return;
+
+        const installments = parseInt(document.getElementById('splitInstallments').value) || 2;
+        if (installments < 2) {
+            this.showMessage('Número de parcelas deve ser maior que 1', 'error');
+            return;
+        }
+
+        const confirmBtn = document.getElementById('splitConfirmBtn');
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = 'Processando...';
+
+        try {
+            await this.processSplit(this.currentSplittingEntry, installments);
+            this.showMessage(`Lançamento dividido em ${installments} parcelas com sucesso!`, 'success');
+            this.closeSplitModal();
+            await this.loadEntries(); // Recarrega lista para mostrar novos lançamentos
+        } catch (error) {
+            console.error('Erro ao dividir lançamento:', error);
+            this.showMessage('Erro ao dividir lançamento: ' + error.message, 'error');
+        } finally {
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = 'Dividir Lançamento';
+        }
+    }
+
+    /**
+     * Processa a divisão criando novos lançamentos
+     */
+    async processSplit(entry, installments) {
+        const totalValue = parseFloat(entry.valor) || 0;
+        const installmentValue = totalValue / installments;
+        const baseDate = this.parseBudgetDate(entry.orcamento);
+
+        // Primeiro, atualiza o lançamento original com o valor da primeira parcela
+        const originalSnapshot = { ...entry };
+        entry.valor = installmentValue;
+        
+        try {
+            // Atualiza lançamento original
+            const editData = {
+                rowIndex: entry.rowIndex,
+                data: entry.data,
+                conta: entry.conta,
+                descricao: entry.descricao,
+                valor: installmentValue,
+                categoria: entry.categoria,
+                orcamento: entry.orcamento,
+                obs: entry.obs
+            };
+
+            await googleSheetsService.editSheetEntry(editData);
+
+            // Cria as parcelas subsequentes
+            for (let i = 1; i < installments; i++) {
+                const parcDate = new Date(baseDate);
+                parcDate.setMonth(baseDate.getMonth() + i);
+                
+                const mesNome = this.getMonthName(parcDate.getMonth());
+                const anoCurto = String(parcDate.getFullYear()).slice(-2);
+                const budgetFormatted = `${mesNome}/${anoCurto}`;
+                const budgetDateFormatted = this.formatBudgetDate(budgetFormatted);
+
+                const newEntryData = {
+                    data: entry.data, // Mantém a data original do lançamento
+                    conta: entry.conta,
+                    descricao: entry.descricao,
+                    valor: installmentValue,
+                    categoria: entry.categoria,
+                    orcamento: budgetDateFormatted,
+                    obs: entry.obs
+                };
+
+                await googleSheetsService.addEntry(newEntryData);
+            }
+
+        } catch (error) {
+            // Em caso de erro, tenta reverter o lançamento original
+            try {
+                Object.assign(entry, originalSnapshot);
+                await googleSheetsService.editSheetEntry({
+                    rowIndex: entry.rowIndex,
+                    data: entry.data,
+                    conta: entry.conta,
+                    descricao: entry.descricao,
+                    valor: originalSnapshot.valor,
+                    categoria: entry.categoria,
+                    orcamento: entry.orcamento,
+                    obs: entry.obs
+                });
+            } catch (revertError) {
+                console.error('Erro ao reverter lançamento original:', revertError);
+            }
+            throw error;
+        }
+    }
+
+    /**
+     * Converte valor de orçamento para Date
+     */
+    parseBudgetDate(orcamento) {
+        if (!orcamento) return new Date();
+        
+        // Se é string no formato "setembro/25"
+        if (typeof orcamento === 'string' && orcamento.includes('/')) {
+            const [mesNome, anoCurto] = orcamento.split('/');
+            const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+            const mesIndex = meses.indexOf(mesNome.toLowerCase());
+            
+            if (mesIndex !== -1) {
+                const ano = parseInt('20' + anoCurto);
+                return new Date(ano, mesIndex, 1);
+            }
+        }
+        
+        return new Date();
+    }
+
+    /**
+     * Retorna nome do mês em português
+     */
+    getMonthName(monthIndex) {
+        const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+        return meses[monthIndex] || 'janeiro';
     }
 
     /**
