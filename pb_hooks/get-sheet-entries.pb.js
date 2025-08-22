@@ -15,7 +15,7 @@ routerAdd("GET", "/get-sheet-entries", (c) => {
 
     const userId = auth.id;
     const query = c.requestInfo().query || {};
-    const limit = parseInt(query.limit) || 50; // Padrão: últimas 50 entradas
+    const limit = parseInt(query.limit) || 100; // Padrão: últimas 100 entradas
 
     try {
         // Buscar informações do Google para o usuário

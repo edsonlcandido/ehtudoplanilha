@@ -131,12 +131,13 @@ class LancamentosManager {
 
         try {
             // Usar endpoint dedicado para lançamentos
-            const response = await this.fetchSheetEntries(50);
+            const response = await this.fetchSheetEntries(100);
 
             const rawEntries = response.entries || [];
             // Filtra fora linhas totalmente em branco (todas as colunas vazias)
             const cleaned = rawEntries.filter(e => !this.isBlankEntry(e));
-            this.originalEntries = cleaned.map(e => ({ ...e }));
+            // Normaliza as entradas locais (não persiste mudanças na planilha)
+            this.originalEntries = cleaned.map(e => this.normalizeEntry({ ...e }));
             this.entries = [...this.originalEntries];
 
             this.applySortingAndFilters(); // Aplica ordenação e filtros
@@ -159,7 +160,7 @@ class LancamentosManager {
     /**
      * Busca entradas diretamente do endpoint dedicado
      */
-    async fetchSheetEntries(limit = 50) {
+    async fetchSheetEntries(limit = 100) {
         if (!window.pb) {
             throw new Error('PocketBase não inicializado');
         }
@@ -211,9 +212,14 @@ class LancamentosManager {
 
     applySortingAndFilters() {
         console.log('LancamentosManager: Aplicando ordenação e filtros - sortBy:', this.sortBy, 'hideBlankDates:', this.hideBlankDates);
-        
-    // Base depende do modo: se 'original', usa cópia preservada
-    const baseEntries = this.sortBy === 'original' ? [...this.originalEntries] : [...this.entries];
+
+        // Garantir que temos cópias normalizadas para ordenar sem alterar o payload original
+        if (Array.isArray(this.originalEntries) && this.originalEntries.length) {
+            this.originalEntries = this.originalEntries.map(e => this.normalizeEntry(e));
+        }
+
+        // Base depende do modo: se 'original', usa cópia preservada
+        const baseEntries = this.sortBy === 'original' ? [...this.originalEntries] : [...this.entries].map(e => this.normalizeEntry(e));
 
         // Conjunto que será exibido (pode aplicar filtro de datas em branco)
         let viewEntries = [...baseEntries];
@@ -231,14 +237,14 @@ class LancamentosManager {
             });
         }
 
-        // Ordena conjunto de exibição conforme modo; se original, mantém ordem natural de rowIndex
-        viewEntries = this.sortEntries(viewEntries);
+    // Ordena conjunto de exibição conforme modo; se original, mantém ordem natural de rowIndex
+    viewEntries = this.sortEntries(viewEntries.map(e => this.normalizeEntry(e)));
 
         // Mantém this.entries sincronizado (ordenado exceto no modo original)
         if (this.sortBy === 'original') {
             this.entries = [...this.originalEntries];
         } else {
-            this.entries = this.sortEntries([...this.originalEntries]);
+            this.entries = this.sortEntries([...this.originalEntries].map(e => this.normalizeEntry(e)));
         }
 
         // Aplica filtro de pesquisa sobre o conjunto de exibição já ordenado
@@ -273,28 +279,28 @@ class LancamentosManager {
                 return (b.rowIndex || 0) - (a.rowIndex || 0);
             }
             // Coloca sem data no topo quando ordenando por critérios derivados
-            const hasDateA = !!a.data;
-            const hasDateB = !!b.data;
+            const hasDateA = !!(a._dateObj || a.data);
+            const hasDateB = !!(b._dateObj || b.data);
             if (hasDateA !== hasDateB) {
                 return hasDateA ? 1 : -1; // sem data (false) vem antes
             }
             if (this.sortBy === 'budget_date') {
                 // Primeiro ordena por orçamento, depois por data (mais recente primeiro)
-                const budgetA = this.getBudgetSortValue(a.orcamento);
-                const budgetB = this.getBudgetSortValue(b.orcamento);
-                
+                const budgetA = (typeof a._orcamentoKey !== 'undefined') ? a._orcamentoKey : this.getBudgetSortValue(a.orcamento);
+                const budgetB = (typeof b._orcamentoKey !== 'undefined') ? b._orcamentoKey : this.getBudgetSortValue(b.orcamento);
+
                 if (budgetA !== budgetB) {
                     return budgetB - budgetA; // Orçamento mais recente primeiro
                 }
-                
+
                 // Se orçamentos são iguais, ordena por data (mais recente primeiro)
-                const dateA = this.getDateSortValue(a.data);
-                const dateB = this.getDateSortValue(b.data);
+                const dateA = a._dateObj ? a._dateObj.getTime() : this.getDateSortValue(a.data);
+                const dateB = b._dateObj ? b._dateObj.getTime() : this.getDateSortValue(b.data);
                 return dateB - dateA;
             } else if (this.sortBy === 'date') {
                 // Apenas ordena por data (mais recente primeiro)
-                const dateA = this.getDateSortValue(a.data);
-                const dateB = this.getDateSortValue(b.data);
+                const dateA = a._dateObj ? a._dateObj.getTime() : this.getDateSortValue(a.data);
+                const dateB = b._dateObj ? b._dateObj.getTime() : this.getDateSortValue(b.data);
                 return dateB - dateA;
             }
             
@@ -1463,6 +1469,96 @@ class LancamentosManager {
         }
         
         return new Date();
+    }
+
+    /**
+     * Converte serial Excel/Sheets para Date
+     * Aceita números e strings numéricas
+     */
+    excelSerialToDate(serial) {
+        const n = Number(serial);
+        if (isNaN(n)) return null;
+        // Excel epoch 1899-12-30
+        const excelEpoch = new Date(1899, 11, 30);
+        return new Date(excelEpoch.getTime() + n * 24 * 60 * 60 * 1000);
+    }
+
+    /**
+     * Normaliza um lançamento para uso interno
+     * - Converte data (serial Excel ou string) para _dateObj
+     * - Cria _dateDisplay e _orcamentoDisplay
+     * - Cria _orcamentoKey (numérico para ordenação)
+     * Não altera o objeto original da API (opera em cópia passada)
+     */
+    normalizeEntry(entry) {
+        if (!entry) return entry;
+        if (entry._normalized) return entry;
+
+        const e = { ...entry };
+
+        // Normalizar data
+        try {
+            let dateObj = null;
+            if (typeof e.data === 'number' || /^\d+(?:\.\d+)?$/.test(String(e.data))) {
+                dateObj = this.excelSerialToDate(e.data);
+            } else if (typeof e.data === 'string') {
+                // dd/MM/yyyy ou ISO
+                if (/\d{2}\/\d{2}\/\d{4}/.test(e.data)) {
+                    const [parteData, parteHora='00:00'] = e.data.split(' ');
+                    const [dia, mes, ano] = parteData.split('/').map(Number);
+                    const [hora, minuto='00'] = (parteHora || '00:00').split(':').map(Number);
+                    dateObj = new Date(ano, mes - 1, dia, hora, minuto);
+                } else {
+                    const parsed = new Date(e.data);
+                    if (!isNaN(parsed.getTime())) dateObj = parsed;
+                }
+            }
+            e._dateObj = (dateObj && !isNaN(dateObj.getTime())) ? dateObj : null;
+            e._dateDisplay = e._dateObj ? this.formatDate(e._dateObj) : (e.data || '');
+        } catch (err) {
+            e._dateObj = null;
+            e._dateDisplay = e.data || '';
+        }
+
+        // Normalizar orcamento
+        try {
+            if (typeof e.orcamento === 'number' || /^\d+(?:\.\d+)?$/.test(String(e.orcamento))) {
+                const d = this.excelSerialToDate(e.orcamento);
+                if (d && !isNaN(d.getTime())) {
+                    const mesNome = this.getMonthName(d.getMonth());
+                    const anoCurto = String(d.getFullYear()).slice(-2);
+                    e._orcamentoDisplay = `${mesNome}/${anoCurto}`;
+                } else {
+                    e._orcamentoDisplay = String(e.orcamento || '');
+                }
+            } else if (typeof e.orcamento === 'string') {
+                // Se for data no formato dd/MM/yyyy ou dd/MM/yy, converte para mesNome/yy
+                if (/^\d{2}\/\d{2}\/\d{2,4}/.test(e.orcamento)) {
+                    const [d, m, y] = e.orcamento.split('/').map(s => s.trim());
+                    const ano = y.length === 2 ? ('20' + y) : y;
+                    const mesIndex = parseInt(m, 10) - 1;
+                    if (!isNaN(mesIndex) && mesIndex >= 0 && mesIndex <= 11) {
+                        const mesNome = this.getMonthName(mesIndex);
+                        const anoCurto = String(ano).slice(-2);
+                        e._orcamentoDisplay = `${mesNome}/${anoCurto}`;
+                    } else {
+                        e._orcamentoDisplay = e.orcamento;
+                    }
+                } else {
+                    e._orcamentoDisplay = e.orcamento;
+                }
+            } else {
+                e._orcamentoDisplay = '';
+            }
+
+            e._orcamentoKey = this.getBudgetSortValue(e._orcamentoDisplay || e.orcamento);
+        } catch (err) {
+            e._orcamentoDisplay = e.orcamento || '';
+            e._orcamentoKey = 0;
+        }
+
+        e._normalized = true;
+        return e;
     }
 
     /**
