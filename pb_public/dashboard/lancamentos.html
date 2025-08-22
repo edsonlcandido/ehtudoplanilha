@@ -166,6 +166,43 @@
         </div>
     </div>
 
+    <!-- Modal de divisão de parcelas -->
+    <div id="splitModal" class="modal" style="display:none; align-items:center; justify-content:center;">
+        <div class="modal-content solution-card" style="max-width:500px; width:95%; position:relative; text-align:left;">
+            <button class="modal-close" onclick="lancamentosManager.closeSplitModal()" style="position:absolute; top:10px; right:10px; background:transparent; border:none; font-size:1.5rem; cursor:pointer;">×</button>
+            <h3 style="margin-top:0; text-align:center;">Dividir em Parcelas</h3>
+            
+            <div style="margin-bottom:1rem; padding:1rem; background:#f8f9fa; border-radius:4px;">
+                <h4 style="margin:0 0 0.5rem;">Lançamento atual:</h4>
+                <div><strong>Descrição:</strong> <span id="splitDescription"></span></div>
+                <div><strong>Valor:</strong> <span id="splitValue"></span></div>
+                <div><strong>Data:</strong> <span id="splitDate"></span></div>
+            </div>
+
+            <form id="splitForm" onsubmit="return false;" style="margin-top:1rem;">
+                <div class="form-group">
+                    <label for="splitInstallments">Número de parcelas *</label>
+                    <input type="number" id="splitInstallments" min="2" max="60" value="2" required>
+                    <small style="color:#666;">Entre 2 e 60 parcelas</small>
+                </div>
+                
+                <div id="splitPreview" style="margin:1rem 0; padding:1rem; background:#e8f5e8; border-radius:4px; display:none;">
+                    <h4 style="margin:0 0 0.5rem;">Resultado da divisão:</h4>
+                    <div><strong>Valor por parcela:</strong> <span id="splitInstallmentValue"></span></div>
+                    <div style="margin-top:0.5rem;">
+                        <strong>Parcelas:</strong>
+                        <ul id="splitInstallmentsList" style="margin:0.5rem 0 0; padding-left:1rem;"></ul>
+                    </div>
+                </div>
+
+                <div class="form-actions" style="margin-top:1.5rem; gap:1rem;">
+                    <button type="button" class="button" onclick="lancamentosManager.closeSplitModal()">Cancelar</button>
+                    <button type="button" class="button primary" onclick="lancamentosManager.confirmSplit()" id="splitConfirmBtn">Dividir Lançamento</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Modal de confirmação de exclusão -->
     <div id="deleteModal" class="modal" style="display:none;">
         <div class="modal-content">
