@@ -2,7 +2,7 @@ ARG BUILD_DIR=/tmp/pb_build # Diretório temporário para o build
 
 # Estágio de BASE
 # Define a imagem base para os outros estágios
-FROM alpine:3.22 AS base
+FROM alpine:3.22.1 AS base
 
 # Instala pacotes essenciais que serão necessários em estágios futuros.
 # ca-certificates é para HTTPS, curl para baixar arquivos.
