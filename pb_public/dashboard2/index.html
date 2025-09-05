@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Dashboard - Seu App Financeiro</title>
+    <link rel="stylesheet" href="../css/picnic.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/responsive-tables.css">
+    <link rel="stylesheet" href="./css/style.css">
+    <script src="../js/pocketbase/dist/pocketbase.umd.js"></script>
+</head>
+
+<body>
+    <!-- NAV: menu dinâmico igual ao index.html -->
+    <nav>
+        <a href="/" class="brand">
+            <span>Planilha Eh Tudo</span>
+        </a>
+        <input id="bmenub" type="checkbox" class="show">
+        <label for="bmenub" class="burger pseudo button">menu</label>
+        <div class="menu" id="menu-user">
+            <a href="#" class="pseudo button icon-picture">Demo</a>
+            <a href="../login.html" class="button icon-puzzle" id="loginBtn">Login</a>
+            <a href="../registro.html" class="button icon-user" id="registerBtn">Registrar</a>
+        </div>
+    </nav>
+
+    <!-- Container principal com menu lateral -->
+    <div class="app-container">
+        <!-- Menu lateral fixo -->
+        <aside class="sidebar-menu">
+            <a href="index.html" class="active" title="Dashboard">
+                <span class="menu-icon">🏠</span>
+                <span class="menu-text">Dashboard</span>
+            </a>
+            <a href="lancamentos.html" title="Lançamentos">
+                <span class="menu-icon">📋</span>
+                <span class="menu-text">Lançamentos</span>
+            </a>
+        </aside>
+
+        <!-- Conteúdo principal rolável -->
+        <main class="main-content">
+            <!-- SECTION MAIN: conteúdo principal ocupando toda tela -->
+            <section class="section section-light dashboard-main">
+                <div class="container text-center">
+                    <h2>Bem-vindo ao seu Dashboard!</h2>
+                    <p>Aqui você pode visualizar e inserir lançamentos de forma simples e rápida.</p>
+
+                    <div style="margin-top: 2rem;">
+                        <a href="configuracao.html" id="configBtn" class="button primary" style="display: none;">⚙️
+                            Configurar
+                            Integração</a>
+                    </div>
+
+                    <!-- Seletor de Mês para Análise -->
+                    <div style="margin-top: 2rem; margin-bottom: 1rem;">
+                        <div class="form-group" style="max-width: 300px; margin: 0 auto;">
+                            <label for="monthSelector"
+                                style="display: block; margin-bottom: 0.5rem; font-weight: bold;">
+                                📅 Mês para Análise:
+                            </label>
+                            <select id="monthSelector" class="form-control" aria-label="Selecionar mês para análise">
+                                <option value="">Carregando meses...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Cards Financeiros (skeleton exibido imediatamente para melhor UX) -->
+                    <div id="financialCards" aria-live="polite"></div>
+
+                    <!-- Adicione aqui os componentes do dashboard -->
+
+                </div>
+                <!-- Botão de adicionar lançamento (flutuante) -->
+                <button id="openEntryModal" class="button" aria-label="Adicionar lançamento">+</button>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal de lançamento de despesas/receitas -->
+    <div id="entryModal"
+        style="display:none; position:fixed; top:60px; left:0; width:100%; height:calc(100% - 60px); background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:1000;">
+        <button id="closeEntryModal" aria-label="Fechar modal"
+            style="position:absolute; top:10px; right:10px; background:transparent; border:none; color:inherit; font-size:1.5rem; cursor:pointer; z-index:1002;">×</button>
+        <div class="modal-content solution-card"
+            style="background:white; padding:1.5rem; border-radius:4px; max-width:600px; width:90%; position:relative; max-height:90vh; overflow:auto;">
+            <section class="section" style="padding:2rem 0; margin:0;">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-8 col-lg-6 mx-auto">
+                            <div class="solution-card">
+                                <h3 style="margin-bottom: 1.5rem;">Lançamento de Despesa/Receita</h3>
+                                <form id="expenseForm">
+                                    <fieldset>
+                                        <!-- Data e Hora -->
+                                        <div class="form-group" style="margin-bottom: 1rem;">
+                                            <label for="expenseDate">Data:</label>
+                                            <input type="datetime-local" id="expenseDate" name="data"
+                                                class="form-control" required>
+                                        </div>
+                                        <!-- Conta -->
+                                        <div class="form-group" style="margin-bottom: 1rem;">
+                                            <label for="expenseAccount">Conta:</label>
+                                            <input type="text" id="expenseAccount" name="conta" class="form-control"
+                                                placeholder="Ex: Conta Corrente, Cartão de Crédito" required>
+                                        </div>
+                                        <!-- Valor com toggle de sinal -->
+                                        <div class="form-group" style="margin-bottom: 1rem;">
+                                            <label for="expenseValue">Valor:</label>
+                                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                                <button type="button" id="expenseSignBtn" class="button outline"
+                                                    aria-label="Alternar sinal"
+                                                    style="background-color: white; color: inherit; border: 1px solid #ccc; width: 2.5rem; text-align: center;">-</button>
+                                                <input type="number" id="expenseValue" name="valor" class="form-control"
+                                                    step="0.01" min="0" placeholder="0,00" required>
+                                                <input type="hidden" id="expenseSignValue" name="sinal" value="-">
+                                            </div>
+                                        </div>
+                                        <!-- Descrição -->
+                                        <div class="form-group" style="margin-bottom: 1rem;">
+                                            <label for="expenseDescription">Descrição:</label>
+                                            <input type="text" id="expenseDescription" name="descricao"
+                                                class="form-control" placeholder="Descrição da despesa" required>
+                                        </div>
+                                        <!-- Categoria: combobox com filtro -->
+                                        <div class="form-group" style="margin-bottom: 1rem;">
+                                            <label for="expenseCategory">Categoria:</label>
+                                            <input type="text" id="expenseCategory" name="categoria"
+                                                class="form-control" placeholder="Selecione ou digite uma categoria"
+                                                list="categoriaList" autocomplete="off" required>
+                                            <datalist id="categoriaList"></datalist>
+                                        </div>
+                                        <!-- Orçamento -->
+                                        <div class="form-group" style="margin-bottom: 1.5rem;">
+                                            <label for="expenseBudget">Orçamento:</label>
+                                            <select id="expenseBudget" name="orcamento" class="form-control"
+                                                required></select>
+                                        </div>
+                                        <!-- Botões -->
+
+                                        <div class="form-group"
+                                            style="display:flex; justify-content:space-around; align-items:center; margin-top:2rem;">
+                                            <button type="reset" class="button warning">Limpar</button>
+                                            <button type="submit" class="button success">Salvar</button>
+                                        </div>
+                                    </fieldset>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div> <!-- modal-content -->
+    </div> <!-- entryModal -->
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Planilha Eh Tudo. Simplificando suas finanças.</p>
+        </div>
+        <p>
+            <small>Produzido por
+                <a href="https://www.ehtudo.app">Eh!Tudo.app</a></small>
+        </p>
+    </footer>
+    <script type="module">
+        import apiConfig from '../js/config/api-config.js';
+        import { inicializarMenuUsuario } from '../js/menu-usuario.js';
+
+        // Inicializa o PocketBase globalmente antes dos módulos
+        window.pb = new PocketBase(apiConfig.getBaseURL());
+
+        inicializarMenuUsuario();
+
+        window.sheetEntries = await fetch(`${apiConfig.getBaseURL()}/get-sheet-entries?limit=1000`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${pb.authStore.token}`
+                    }
+                });
+    </script>
+</body>
+
+</html>
