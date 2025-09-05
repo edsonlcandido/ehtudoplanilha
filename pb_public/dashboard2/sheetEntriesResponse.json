@@ -1,0 +1,2067 @@
+{
+    "entries": [
+        {
+            "categoria": "Medicamentos",
+            "conta": "",
+            "data": "",
+            "descricao": "Avamys",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 207,
+            "valor": -48
+        },
+        {
+            "categoria": "Medicamentos",
+            "conta": "",
+            "data": "",
+            "descricao": "Relvar Elipta",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 206,
+            "valor": -185
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "",
+            "data": "",
+            "descricao": "Churras Batismo Caduzinho",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 205,
+            "valor": -236
+        },
+        {
+            "categoria": "Combustível",
+            "conta": "",
+            "data": "",
+            "descricao": "Adriana Slomp",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 204,
+            "valor": -400
+        },
+        {
+            "categoria": "Presentes",
+            "conta": "",
+            "data": "",
+            "descricao": "Roupa Batizado Caduzinho",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 203,
+            "valor": -236
+        },
+        {
+            "categoria": "Casamento",
+            "conta": "",
+            "data": "",
+            "descricao": "Casamento",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 202,
+            "valor": -2040
+        },
+        {
+            "categoria": "Doações",
+            "conta": "",
+            "data": "",
+            "descricao": "Unicancer",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 201,
+            "valor": -10
+        },
+        {
+            "categoria": "Renda",
+            "conta": "",
+            "data": "",
+            "descricao": "Leonardo Maldonado Ferreira",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 200,
+            "valor": 700
+        },
+        {
+            "categoria": "Luz",
+            "conta": "",
+            "data": "",
+            "descricao": "CPFL",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 199,
+            "valor": -152
+        },
+        {
+            "categoria": "Salário",
+            "conta": "",
+            "data": "",
+            "descricao": "Vale",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 198,
+            "valor": 4657
+        },
+        {
+            "categoria": "Salário",
+            "conta": "",
+            "data": "",
+            "descricao": "Salario",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 197,
+            "valor": 4000
+        },
+        {
+            "categoria": "Telefone Celular",
+            "conta": "",
+            "data": "",
+            "descricao": "Recarga TIM",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 196,
+            "valor": -60
+        },
+        {
+            "categoria": "Investimentos",
+            "conta": "",
+            "data": "",
+            "descricao": "Raimundo Candido Barbosa",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 195,
+            "valor": -600
+        },
+        {
+            "categoria": "Internet",
+            "conta": "",
+            "data": "",
+            "descricao": "Internet Claro",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 194,
+            "valor": -184
+        },
+        {
+            "categoria": "Cabeleireiro",
+            "conta": "",
+            "data": "",
+            "descricao": "Gusttacortes",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 193,
+            "valor": -75
+        },
+        {
+            "categoria": "Serviços",
+            "conta": "",
+            "data": "",
+            "descricao": "Google Youtubepremium",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 192,
+            "valor": -53.9
+        },
+        {
+            "categoria": "Serviços",
+            "conta": "",
+            "data": "",
+            "descricao": "Github, Inc.",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 191,
+            "valor": -66.8
+        },
+        {
+            "categoria": "Aluguel",
+            "conta": "",
+            "data": "",
+            "descricao": "Aluguel",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 190,
+            "valor": -1600
+        },
+        {
+            "categoria": "Serviços",
+            "conta": "",
+            "data": "",
+            "descricao": "Google Ambi Servicos",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 189,
+            "valor": -3.89
+        },
+        {
+            "categoria": "Gás",
+            "conta": "",
+            "data": "",
+            "descricao": "Congas",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 188,
+            "valor": -14.54
+        },
+        {
+            "categoria": "Carro",
+            "conta": "PICPAY",
+            "data": "",
+            "descricao": "Multa carro maesoca",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 187,
+            "valor": -140.18
+        },
+        {
+            "categoria": "Renda",
+            "conta": "NUCONTA",
+            "data": "",
+            "descricao": "MSP UNIAO OSASCO KSK 6/10 - Gardenia",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 186,
+            "valor": 164.95
+        },
+        {
+            "categoria": "Outros",
+            "conta": "NUCONTA",
+            "data": 45904.541666666664,
+            "descricao": "Laertes Oselame",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 185,
+            "valor": -50
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45903.91378472222,
+            "descricao": "POSTOTELLES",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 184,
+            "valor": -1.49
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45903.78778935185,
+            "descricao": "LCP SOLUCOES EMPRESARI",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 183,
+            "valor": -35.72
+        },
+        {
+            "categoria": "Cinema",
+            "conta": "NUCONTA",
+            "data": 45903.75299768519,
+            "descricao": "MOVIECOM MAXI JUNDIAI",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 182,
+            "valor": -10
+        },
+        {
+            "categoria": "Casa",
+            "conta": "NUBANK",
+            "data": 45903.7484837963,
+            "descricao": "MARAVILHAS DO LAR MAXI",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 181,
+            "valor": -19.99
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45902.82119212963,
+            "descricao": "BAR DO LU E AMIGOS",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 180,
+            "valor": -16.5
+        },
+        {
+            "categoria": "Presentes",
+            "conta": "NUBANK",
+            "data": 45902.811111111114,
+            "descricao": "Gardenia de Carvalho Correia",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 179,
+            "valor": -52.03
+        },
+        {
+            "categoria": "Academia",
+            "conta": "NUBANK",
+            "data": 45902.757893518516,
+            "descricao": "Wellhub Gympass BR Gym",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 178,
+            "valor": -36.32
+        },
+        {
+            "categoria": "Academia",
+            "conta": "NUBANK",
+            "data": 45901.486712962964,
+            "descricao": "Wellhub Gympass BR Gym",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 177,
+            "valor": -189.9
+        },
+        {
+            "categoria": "Serviços",
+            "conta": "NUBANK",
+            "data": 45901.41204861111,
+            "descricao": "OPENROUTER INC",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 176,
+            "valor": -32.84
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45901.29043981482,
+            "descricao": "AutoPosto",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 175,
+            "valor": -3.47
+        },
+        {
+            "categoria": "Combustível",
+            "conta": "NUBANK",
+            "data": 45901.290185185186,
+            "descricao": "AutoPosto",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 174,
+            "valor": -159.44
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45900.778761574074,
+            "descricao": "BETA REFEICOES",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 173,
+            "valor": -48.35
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45900.52369212963,
+            "descricao": "DIA BRASIL LJ 236",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 172,
+            "valor": -78.87
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45899.897685185184,
+            "descricao": "OXXO BRATYS",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 171,
+            "valor": -55.41
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45899.80847222222,
+            "descricao": "PAO DE ACUCAR-1696",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 170,
+            "valor": -42.77
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45899.76734953704,
+            "descricao": "ATACADAO 939 AS",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 169,
+            "valor": -81.53
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45899.63597222222,
+            "descricao": "OXXO BRATYS",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 168,
+            "valor": -22.85
+        },
+        {
+            "categoria": "Estacionamento / Pedágio",
+            "conta": "NUCONTA",
+            "data": 45899.4799537037,
+            "descricao": "PARK ESTACIONAMENTO",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 167,
+            "valor": -8
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45899.42383101852,
+            "descricao": "O POMPOZO",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 166,
+            "valor": -46.06
+        },
+        {
+            "categoria": "Metrô / Ônibus",
+            "conta": "NUBANK",
+            "data": 45898.976331018515,
+            "descricao": "PICPAY CittamobiSP",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 165,
+            "valor": -26
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45898.96443287037,
+            "descricao": "ATHENAS CAFE",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 164,
+            "valor": -47.3
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45898.93320601852,
+            "descricao": "GPR I BARES E RESTAURANTE",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 163,
+            "valor": -18
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45898.79107638889,
+            "descricao": "FinoGourmetSp",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 162,
+            "valor": -50
+        },
+        {
+            "categoria": "Material escolar",
+            "conta": "NUBANK",
+            "data": 45889.81438657407,
+            "descricao": "LIVRARIA LEITURA JUNDI 2/2",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 161,
+            "valor": -82.5
+        },
+        {
+            "categoria": "Esteticista",
+            "conta": "NUBANK",
+            "data": 45829.528020833335,
+            "descricao": "ROSANGELAKAWAKITA 4/4",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 160,
+            "valor": -137.5
+        },
+        {
+            "categoria": "Presentes",
+            "conta": "INTER",
+            "data": 45766.70582175926,
+            "descricao": "MSP UNIAO OSASCO KSK 6/10",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 159,
+            "valor": -329.9
+        },
+        {
+            "categoria": "Acessórios",
+            "conta": "NUBANK",
+            "data": 45752.79738425926,
+            "descricao": "ALIANCAS FOREVER 6/10",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 158,
+            "valor": -460
+        },
+        {
+            "categoria": "Medicamentos",
+            "conta": "NUBANK",
+            "data": 45593.70277777778,
+            "descricao": "Drograria2284 jundiai li 10/10",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 157,
+            "valor": -42.11
+        },
+        {
+            "categoria": "Renda",
+            "conta": "NUCONTA",
+            "data": 45904.89444444444,
+            "descricao": "INSPIRE BEM ESTAR E S 3/3 - Presente Monica GARDENIA",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 156,
+            "valor": 58
+        },
+        {
+            "categoria": "Renda",
+            "conta": "NUCONTA",
+            "data": 45904.89444444444,
+            "descricao": "MSP UNIAO OSASCO KSK 5/10 - Gardenia",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 155,
+            "valor": 24.95
+        },
+        {
+            "categoria": "Luz",
+            "conta": "ITAU",
+            "data": 45901.833333333336,
+            "descricao": "CPFL",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 154,
+            "valor": -147
+        },
+        {
+            "categoria": "Casamento",
+            "conta": "NUCONTA",
+            "data": 45901.52916666667,
+            "descricao": "Casamento",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 153,
+            "valor": -1315
+        },
+        {
+            "categoria": "Renda",
+            "conta": "NUCONTA",
+            "data": 45901.51736111111,
+            "descricao": "caixinha alianças - Saque",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 152,
+            "valor": 460
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUCONTA",
+            "data": 45901.4375,
+            "descricao": "Ayslan Fazzian",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 151,
+            "valor": -13
+        },
+        {
+            "categoria": "Combustível",
+            "conta": "NUCONTA",
+            "data": 45901.35277777778,
+            "descricao": "Adriana Slomp",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 150,
+            "valor": -222
+        },
+        {
+            "categoria": "Salário",
+            "conta": "NUCONTA",
+            "data": 45898.30625,
+            "descricao": "Salario",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 149,
+            "valor": 4000
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45897.74811342593,
+            "descricao": "ATACADAO 633 SA",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 148,
+            "valor": -11.9
+        },
+        {
+            "categoria": "Serviços",
+            "conta": "NUBANK",
+            "data": 45897.67265046296,
+            "descricao": "Google AMBI SERVICOS",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 147,
+            "valor": -3.89
+        },
+        {
+            "categoria": "Combustível",
+            "conta": "NUBANK",
+            "data": 45897.315,
+            "descricao": "POSTO CACULA",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 146,
+            "valor": -3.37
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45896.86094907407,
+            "descricao": "VEINHOLANCHES",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 145,
+            "valor": -64
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45896.82619212963,
+            "descricao": "MP GUSTTACORTES",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 144,
+            "valor": -75
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45894.77831018518,
+            "descricao": "BOTECO DO BENE",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 143,
+            "valor": -13
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45894.75655092593,
+            "descricao": "BOTECO DO BENE",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 142,
+            "valor": -36
+        },
+        {
+            "categoria": "Estacionamento / Pedágio",
+            "conta": "INTER",
+            "data": 45894.32361111111,
+            "descricao": "Sp-360 - jundiai norte",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 141,
+            "valor": -6.1
+        },
+        {
+            "categoria": "Estacionamento / Pedágio",
+            "conta": "INTER",
+            "data": 45894.30694444444,
+            "descricao": "SP-348 - Campo Limpo - Norte",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 140,
+            "valor": -13.7
+        },
+        {
+            "categoria": "Medicamentos",
+            "conta": "NUBANK",
+            "data": 45893.944375,
+            "descricao": "FARMACIA E DROGARIA NI",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 139,
+            "valor": -28.9
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45893.906273148146,
+            "descricao": "NOVA CORA LANCHES LTD",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 138,
+            "valor": -81.16
+        },
+        {
+            "categoria": "Investimentos",
+            "conta": "NUCONTA",
+            "data": 45893.75,
+            "descricao": "Caixinha Gatinha",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 137,
+            "valor": -10
+        },
+        {
+            "categoria": "Serviços",
+            "conta": "NUBANK",
+            "data": 45893.6190162037,
+            "descricao": "GITHUB INC",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 136,
+            "valor": -58.48
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45893.58611111111,
+            "descricao": "Atacadao 939 As",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 135,
+            "valor": -38.82
+        },
+        {
+            "categoria": "Acessórios",
+            "conta": "NUBANK",
+            "data": 45892.99722222222,
+            "descricao": "Drogasil2052",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 134,
+            "valor": -16.89
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45892.972916666666,
+            "descricao": "Star Food",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 133,
+            "valor": -36.32
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45892.91875,
+            "descricao": "ADEGA",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 132,
+            "valor": -95
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45892.822222222225,
+            "descricao": "Expressacougue",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 131,
+            "valor": -49.1
+        },
+        {
+            "categoria": "Carro",
+            "conta": "NUCONTA",
+            "data": 45892.756944444445,
+            "descricao": "Lavagem do carro",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 130,
+            "valor": -30
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45892.44184027778,
+            "descricao": "O POMPOZO",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 129,
+            "valor": -17.39
+        },
+        {
+            "categoria": "Combustível",
+            "conta": "NUBANK",
+            "data": 45892.05905092593,
+            "descricao": "AutoPosto",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 128,
+            "valor": -148.85
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45892.042592592596,
+            "descricao": "ADEGA",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 127,
+            "valor": -51
+        },
+        {
+            "categoria": "Estacionamento / Pedágio",
+            "conta": "INTER",
+            "data": 45891.81041666667,
+            "descricao": "Sp-348 - Caieras - sul",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 126,
+            "valor": -13.7
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45891.79096064815,
+            "descricao": "EXTRA HIPER-1386",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 125,
+            "valor": -38.93
+        },
+        {
+            "categoria": "Material escolar",
+            "conta": "NUCONTA",
+            "data": 45891.75486111111,
+            "descricao": "Herospark Tecnologia Para Educacao",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 124,
+            "valor": -129.8
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45891.746030092596,
+            "descricao": "BOTECO DO BENE",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 123,
+            "valor": -78
+        },
+        {
+            "categoria": "Estacionamento / Pedágio",
+            "conta": "INTER",
+            "data": 45891.725694444445,
+            "descricao": "Sp-360 - jundiai sul",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 122,
+            "valor": -6.1
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUCONTA",
+            "data": 45891.57916666667,
+            "descricao": "Ayslan Fazzian",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 121,
+            "valor": -24
+        },
+        {
+            "categoria": "Estacionamento / Pedágio",
+            "conta": "INTER",
+            "data": 45891.33263888889,
+            "descricao": "Sp-360 - jundiai norte",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 120,
+            "valor": -6.1
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45890.84061342593,
+            "descricao": "IRMAOS BOA",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 119,
+            "valor": -11.58
+        },
+        {
+            "categoria": "Serviços",
+            "conta": "NUBANK",
+            "data": 45890.82949074074,
+            "descricao": "Google Youtubepremium",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 118,
+            "valor": -53.9
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45890.81862268518,
+            "descricao": "SUSHI EXPRESS",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 117,
+            "valor": -83.95
+        },
+        {
+            "categoria": "Estacionamento / Pedágio",
+            "conta": "INTER",
+            "data": 45890.720138888886,
+            "descricao": "Sp-360 - jundiai sul",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 116,
+            "valor": -6.1
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUCONTA",
+            "data": 45890.67013888889,
+            "descricao": "Ana Julia Zago",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 115,
+            "valor": -13
+        },
+        {
+            "categoria": "Internet",
+            "conta": "NUCONTA",
+            "data": 45890.35833333333,
+            "descricao": "Internet Claro",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 114,
+            "valor": -184
+        },
+        {
+            "categoria": "Estacionamento / Pedágio",
+            "conta": "INTER",
+            "data": 45890.33263888889,
+            "descricao": "Sp-360 - jundiai norte",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 113,
+            "valor": -6.1
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45889.924849537034,
+            "descricao": "IGTakeandGoJun",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 112,
+            "valor": -11.98
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45889.911516203705,
+            "descricao": "IGTakeandGoJun",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 111,
+            "valor": -11.98
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45889.90760416666,
+            "descricao": "IGTakeandGoJun",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 110,
+            "valor": -21.96
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45889.84347222222,
+            "descricao": "BOTECO DO BENE",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 109,
+            "valor": -26
+        },
+        {
+            "categoria": "Material escolar",
+            "conta": "NUBANK",
+            "data": 45889.81438657407,
+            "descricao": "LIVRARIA LEITURA JUNDI 1/2",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 108,
+            "valor": -82.5
+        },
+        {
+            "categoria": "Casa",
+            "conta": "NUBANK",
+            "data": 45889.79597222222,
+            "descricao": "DAISO BRASIL COMERCIO",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 107,
+            "valor": -9.99
+        },
+        {
+            "categoria": "Estacionamento / Pedágio",
+            "conta": "INTER",
+            "data": 45889.77777777778,
+            "descricao": "maxi shopping",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 106,
+            "valor": -16
+        },
+        {
+            "categoria": "Estacionamento / Pedágio",
+            "conta": "INTER",
+            "data": 45889.72152777778,
+            "descricao": "Sp-360 - jundiai sul",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 105,
+            "valor": -6.1
+        },
+        {
+            "categoria": "Estacionamento / Pedágio",
+            "conta": "INTER",
+            "data": 45889.33125,
+            "descricao": "Sp-360 - jundiai norte",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 104,
+            "valor": -6.1
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45888.82341435185,
+            "descricao": "BOTECO DO BENE",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 103,
+            "valor": -24
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45888.80032407407,
+            "descricao": "BOTECO DO BENE",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 102,
+            "valor": -26
+        },
+        {
+            "categoria": "Estacionamento / Pedágio",
+            "conta": "INTER",
+            "data": 45888.725,
+            "descricao": "Sp-360 - jundiai sul",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 101,
+            "valor": -6.1
+        },
+        {
+            "categoria": "Serviços",
+            "conta": "NUBANK",
+            "data": 45888.53125,
+            "descricao": "Asa*Edson Luiz Candido",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 100,
+            "valor": -10
+        },
+        {
+            "categoria": "Estacionamento / Pedágio",
+            "conta": "INTER",
+            "data": 45888.32777777778,
+            "descricao": "Sp-360 - jundiai norte",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 99,
+            "valor": -6.1
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45887.87747685185,
+            "descricao": "MARAVILHAS DO LAR MAXI",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 98,
+            "valor": -11.98
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45887.790972222225,
+            "descricao": "Burger King",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 97,
+            "valor": -38.9
+        },
+        {
+            "categoria": "Estacionamento / Pedágio",
+            "conta": "INTER",
+            "data": 45887.78194444445,
+            "descricao": "maxi shopping",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 96,
+            "valor": -16
+        },
+        {
+            "categoria": "Estacionamento / Pedágio",
+            "conta": "INTER",
+            "data": 45887.71875,
+            "descricao": "Sp-360 - jundiai sul",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 95,
+            "valor": -6.1
+        },
+        {
+            "categoria": "Estacionamento / Pedágio",
+            "conta": "INTER",
+            "data": 45887.325,
+            "descricao": "Sp-360 - jundiai norte",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 94,
+            "valor": -6.1
+        },
+        {
+            "categoria": "Estacionamento / Pedágio",
+            "conta": "INTER",
+            "data": 45887.30694444444,
+            "descricao": "SP-348 - Campo Limpo - Norte",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 93,
+            "valor": -13.7
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45886.60136574074,
+            "descricao": "PARAIBA BEBIDAS",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 92,
+            "valor": -31
+        },
+        {
+            "categoria": "Carro",
+            "conta": "PICPAY",
+            "data": 45886.46388888889,
+            "descricao": "Multa carro Mesoca",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 91,
+            "valor": -142
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45886.43541666667,
+            "descricao": "O POMPOZO",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 90,
+            "valor": -5.58
+        },
+        {
+            "categoria": "Casa",
+            "conta": "NUBANK",
+            "data": 45885.39449074074,
+            "descricao": "KIAMOR MODAS",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 89,
+            "valor": -135.6
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45885.387291666666,
+            "descricao": "CONVENIENCIA E PASTELA",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 88,
+            "valor": -7.5
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45885.38679398148,
+            "descricao": "CONVENIENCIA E PASTELA",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 87,
+            "valor": -24
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45885.32078703704,
+            "descricao": "Uber UBER PENDING",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 86,
+            "valor": -19.14
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45885.320289351854,
+            "descricao": "Uber UBER TRIP HELP U",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 85,
+            "valor": -1
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45885.062743055554,
+            "descricao": "UBER PENDING",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 84,
+            "valor": -20.56
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45885.06018518518,
+            "descricao": "Uber UBER TRIP HELP",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 83,
+            "valor": -1
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45885.02847222222,
+            "descricao": "Uber UBER PENDING",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 82,
+            "valor": -33.18
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45885.02847222222,
+            "descricao": "Uber UBER TRIP HELP U",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 81,
+            "valor": -1
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45885.02013888889,
+            "descricao": "Villa B.B.M Gastrobar",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 80,
+            "valor": -375.53
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45884.85827546296,
+            "descricao": "AUTO POSTO MACKENZIE",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 79,
+            "valor": -18.57
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45884.837118055555,
+            "descricao": "AUTO POSTO MACKENZIE",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 78,
+            "valor": -20.48
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45884.81537037037,
+            "descricao": "AUTO POSTO MACKENZIE",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 77,
+            "valor": -17.98
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45884.803391203706,
+            "descricao": "AUTOPOSTOMACKENZIE",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 76,
+            "valor": -9.99
+        },
+        {
+            "categoria": "Investimentos",
+            "conta": "NUCONTA",
+            "data": 45884.532638888886,
+            "descricao": "Raimundo Candido Barbosa",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 75,
+            "valor": -600
+        },
+        {
+            "categoria": "Aluguel",
+            "conta": "NUCONTA",
+            "data": 45884.39375,
+            "descricao": "Aluguel",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 74,
+            "valor": -1600
+        },
+        {
+            "categoria": "Salário",
+            "conta": "NUCONTA",
+            "data": 45884.291666666664,
+            "descricao": "Vale",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 73,
+            "valor": 4657
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45883.81083333334,
+            "descricao": "CarlosCesarDe",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 72,
+            "valor": -9
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUCONTA",
+            "data": 45883.625,
+            "descricao": "Ana Julia Zago",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 71,
+            "valor": -14
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45883.54136574074,
+            "descricao": "CARLITOS LANCHONETE",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 70,
+            "valor": -27.5
+        },
+        {
+            "categoria": "Renda",
+            "conta": "NUCONTA",
+            "data": 45883.46913194445,
+            "descricao": "Leonardo Maldonado Ferreira",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 69,
+            "valor": 915
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45882.98521990741,
+            "descricao": "IGTakeandGoJun",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 68,
+            "valor": -10.98
+        },
+        {
+            "categoria": "Serviços",
+            "conta": "NUBANK",
+            "data": 45882.900185185186,
+            "descricao": "AMAZON SERVICOS DE VAR",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 67,
+            "valor": -19.9
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45882.75608796296,
+            "descricao": "BOTECO DO BENE",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 66,
+            "valor": -13
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45882.73328703704,
+            "descricao": "BOTECO DO BENE",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 65,
+            "valor": -26
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45881.81024305556,
+            "descricao": "FORT ATACADISTA 635",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 64,
+            "valor": -33.46
+        },
+        {
+            "categoria": "Gás",
+            "conta": "NUCONTA",
+            "data": 45881.291666666664,
+            "descricao": "Congas",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 63,
+            "valor": -14.54
+        },
+        {
+            "categoria": "Serviços",
+            "conta": "NUBANK",
+            "data": 45880.94505787037,
+            "descricao": "IGTakeandGoJun",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 62,
+            "valor": -15.65
+        },
+        {
+            "categoria": "Telefone celular",
+            "conta": "NUBANK",
+            "data": 45880.740277777775,
+            "descricao": "Recarga Keloca",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 61,
+            "valor": -25
+        },
+        {
+            "categoria": "Medicamentos",
+            "conta": "NUBANK",
+            "data": 45880.73125,
+            "descricao": "Drogasil3236",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 60,
+            "valor": -28.41
+        },
+        {
+            "categoria": "Metrô / Ônibus",
+            "conta": "NUBANK",
+            "data": 45879.92361111111,
+            "descricao": "Transurb Tra*1t250810-",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 59,
+            "valor": -6.15
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45879.92222222222,
+            "descricao": "Espetinho",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 58,
+            "valor": -5
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45879.85625,
+            "descricao": "Uber Uber * Pending",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 57,
+            "valor": -30.97
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45879.601006944446,
+            "descricao": "MARINEUDI",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 56,
+            "valor": -46
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45879.5903125,
+            "descricao": "ADEGA",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 55,
+            "valor": -43
+        },
+        {
+            "categoria": "Telefone Celular",
+            "conta": "NUBANK",
+            "data": 45879.472916666666,
+            "descricao": "Recarga TIM",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 54,
+            "valor": -60
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45879.461805555555,
+            "descricao": "Meep Pa*Arca Events",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 53,
+            "valor": -19
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45878.798622685186,
+            "descricao": "ST MARCHE",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 52,
+            "valor": -6.99
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45878.77568287037,
+            "descricao": "BacioddiLatteLJ0061",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 51,
+            "valor": -69.9
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45878.767060185186,
+            "descricao": "PAODEACUCAR1696",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 50,
+            "valor": -25.99
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45878.63439814815,
+            "descricao": "OXXO BRATYS",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 49,
+            "valor": -36.13
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45878.588738425926,
+            "descricao": "SAMS CLUB LJ 4415",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 48,
+            "valor": -138
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45878.427083333336,
+            "descricao": "O Pompozo",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 47,
+            "valor": -6.06
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45877.822164351855,
+            "descricao": "SAO JORGE ATACADISTA",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 46,
+            "valor": -21.58
+        },
+        {
+            "categoria": "Serviços",
+            "conta": "NUBANK",
+            "data": 45877.027962962966,
+            "descricao": "IUGUTakeandGoJun",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 45,
+            "valor": -17.97
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45876.835173611114,
+            "descricao": "BOTECO DO BENE",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 44,
+            "valor": -13
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45876.80050925926,
+            "descricao": "BOTECO DO BENE",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 43,
+            "valor": -26
+        },
+        {
+            "categoria": "Serviços",
+            "conta": "NUBANK",
+            "data": 45876.68188657407,
+            "descricao": "DMGoDaddycomL",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 42,
+            "valor": -281.11
+        },
+        {
+            "categoria": "Serviços",
+            "conta": "NUBANK",
+            "data": 45875.967824074076,
+            "descricao": "IUGUTakeandGoJun",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 41,
+            "valor": -23.96
+        },
+        {
+            "categoria": "Serviços",
+            "conta": "NUBANK",
+            "data": 45875.94881944444,
+            "descricao": "IUGUTakeandGoJun",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 40,
+            "valor": -16.47
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45875.785532407404,
+            "descricao": "LOJAGP8",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 39,
+            "valor": -7.4
+        },
+        {
+            "categoria": "Outros",
+            "conta": "NUBANK",
+            "data": 45875.7596875,
+            "descricao": "Michel",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 38,
+            "valor": -33
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45875.74662037037,
+            "descricao": "50861461Marcia",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 37,
+            "valor": -15
+        },
+        {
+            "categoria": "Outros",
+            "conta": "NUBANK",
+            "data": 45875.74508101852,
+            "descricao": "Michel",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 36,
+            "valor": -25
+        },
+        {
+            "categoria": "Medicamentos",
+            "conta": "NUBANK",
+            "data": 45875.742164351854,
+            "descricao": "Drogaria_SP drogariasp",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 35,
+            "valor": -223.94
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45874.84357638889,
+            "descricao": "FORT ATACADISTA 635",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 34,
+            "valor": -15.57
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45874.8256712963,
+            "descricao": "BAR DO LU E AMIGOS",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 33,
+            "valor": -30.8
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45873.53857638889,
+            "descricao": "Uber UBER TRIP HELP U",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 32,
+            "valor": -1
+        },
+        {
+            "categoria": "Estacionamento / Pedágio",
+            "conta": "INTER",
+            "data": 45873.333333333336,
+            "descricao": "Debito intertag",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 31,
+            "valor": -5
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45872.989386574074,
+            "descricao": "Uber Uber PENDING",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 30,
+            "valor": -12.98
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45872.989212962966,
+            "descricao": "Uber UBER TRIP HELP U",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 29,
+            "valor": -1
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45872.89388888889,
+            "descricao": "AUTOPOSTORELIXLTDA",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 28,
+            "valor": -45.94
+        },
+        {
+            "categoria": "Metrô / Ônibus",
+            "conta": "NUBANK",
+            "data": 45872.88193287037,
+            "descricao": "PICPAYCittamobiSP",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 27,
+            "valor": -26
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45872.67927083333,
+            "descricao": "MARIA DELUCIA TAVARES",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 26,
+            "valor": -25
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45872.678136574075,
+            "descricao": "MARIA DELUCIA TAVARES",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 25,
+            "valor": -45
+        },
+        {
+            "categoria": "Combustível",
+            "conta": "NUBANK",
+            "data": 45872.56893518518,
+            "descricao": "AutoPosto",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 24,
+            "valor": -93.99
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45872.56384259259,
+            "descricao": "PAO DE ACUCAR 1696",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 23,
+            "valor": -40
+        },
+        {
+            "categoria": "Estacionamento / Pedágio",
+            "conta": "INTER",
+            "data": 45872.544444444444,
+            "descricao": "SP-348 - Perus - Sul",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 22,
+            "valor": -13.7
+        },
+        {
+            "categoria": "Serviços",
+            "conta": "NUBANK",
+            "data": 45872.4184375,
+            "descricao": "MP SUPERFERRARI",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 21,
+            "valor": -30.98
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45871.93788194445,
+            "descricao": "SUSHI EXPRESS",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 20,
+            "valor": -146.87
+        },
+        {
+            "categoria": "Serviços",
+            "conta": "NUBANK",
+            "data": 45871.735983796294,
+            "descricao": "IUGUTakeandGoJund",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 19,
+            "valor": -21.96
+        },
+        {
+            "categoria": "Estacionamento / Pedágio",
+            "conta": "INTER",
+            "data": 45871.53958333333,
+            "descricao": "SP-348 - Campo Limpo - Norte",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 18,
+            "valor": -13.7
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45871.51771990741,
+            "descricao": "POSTO ILHAS DO HAVAI",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 17,
+            "valor": -48.9
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45870.85603009259,
+            "descricao": "MINUTOPA2039",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 16,
+            "valor": -24.95
+        },
+        {
+            "categoria": "Estacionamento / Pedágio",
+            "conta": "INTER",
+            "data": 45870.83888888889,
+            "descricao": "SP-348 - Perus - Sul",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 15,
+            "valor": -13.7
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45870.55972222222,
+            "descricao": "Ana Julia Zago",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 14,
+            "valor": -15.62
+        },
+        {
+            "categoria": "Academia",
+            "conta": "NUBANK",
+            "data": 45870.49420138889,
+            "descricao": "Wellhub Gympass Br Gym",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 13,
+            "valor": -139.9
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45869.90833333333,
+            "descricao": "Fort Atacadista",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 12,
+            "valor": -52.8
+        },
+        {
+            "categoria": "Acessórios",
+            "conta": "NUBANK",
+            "data": 45869.90542824074,
+            "descricao": "COMPER 633",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 11,
+            "valor": -20.9
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45869.89400462963,
+            "descricao": "BAR DO LU E AMIGOS",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 10,
+            "valor": -92.84
+        },
+        {
+            "categoria": "Serviços",
+            "conta": "NUBANK",
+            "data": 45868.937743055554,
+            "descricao": "IUGUtakeandgojund",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 9,
+            "valor": -37.96
+        },
+        {
+            "categoria": "Serviços",
+            "conta": "NUBANK",
+            "data": 45868.931655092594,
+            "descricao": "IUGUTakeandGoJund",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 8,
+            "valor": -17.48
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45868.781956018516,
+            "descricao": "BAR DO LU E AMIGOS",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 7,
+            "valor": -30.8
+        },
+        {
+            "categoria": "Esteticista",
+            "conta": "NUBANK",
+            "data": 45829.528020833335,
+            "descricao": "ROSANGELAKAWAKITA 3/4",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 6,
+            "valor": -137.5
+        },
+        {
+            "categoria": "Presentes",
+            "conta": "NUBANK",
+            "data": 45820.41106481481,
+            "descricao": "INSPIRE BEM ESTAR E S 3/3",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 5,
+            "valor": -116.67
+        },
+        {
+            "categoria": "Presentes",
+            "conta": "INTER",
+            "data": 45766.70582175926,
+            "descricao": "MSP UNIAO OSASCO KSK 5/10",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 4,
+            "valor": -329.9
+        },
+        {
+            "categoria": "Acessórios",
+            "conta": "NUBANK",
+            "data": 45752.79738425926,
+            "descricao": "ALIANCAS FOREVER 5/10",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 3,
+            "valor": -460
+        },
+        {
+            "categoria": "Medicamentos",
+            "conta": "NUBANK",
+            "data": 45593.70277777778,
+            "descricao": "Drograria2284 jundiai li 9/10",
+            "obs": "",
+            "orcamento": 45900,
+            "rowIndex": 2,
+            "valor": -42.11
+        }
+    ],
+    "limit": 1000,
+    "success": true,
+    "total": 206
+}

@@ -55,22 +55,6 @@
                             Integração</a>
                     </div>
 
-                    <!-- Seletor de Mês para Análise -->
-                    <div style="margin-top: 2rem; margin-bottom: 1rem;">
-                        <div class="form-group" style="max-width: 300px; margin: 0 auto;">
-                            <label for="monthSelector"
-                                style="display: block; margin-bottom: 0.5rem; font-weight: bold;">
-                                📅 Mês para Análise:
-                            </label>
-                            <select id="monthSelector" class="form-control" aria-label="Selecionar mês para análise">
-                                <option value="">Carregando meses...</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Cards Financeiros (skeleton exibido imediatamente para melhor UX) -->
-                    <div id="financialCards" aria-live="polite"></div>
-
                     <!-- Adicione aqui os componentes do dashboard -->
 
                 </div>
@@ -175,13 +159,129 @@
 
         inicializarMenuUsuario();
 
-        window.sheetEntries = await fetch(`${apiConfig.getBaseURL()}/get-sheet-entries?limit=1000`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${pb.authStore.token}`
-                    }
-                });
+        const response = await fetch(`${apiConfig.getBaseURL()}/get-sheet-entries?limit=1000`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${pb.authStore.token}`
+            }
+        });
+
+        window.sheetEntries = await response.json();
+
+        // Código para rodar no console / frontend
+        // Converte Date -> serial Excel (considera bug do 1900 leap year)
+        function toExcelSerial(date) {
+            // base Excel: 1899-12-31 00:00:00 UTC
+            const baseUtc = Date.UTC(1899, 11, 31, 0, 0, 0);
+            const utcMillis = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds());
+            let serial = (utcMillis - baseUtc) / 86400000; // dias com fração
+            // corrige bug do Excel (1900 leap year): números >= 60 são deslocados +1
+            if (serial >= 60) serial += 1;
+            return serial;
+        }
+
+        // Converte serial Excel -> Date (para inspeção)
+        function excelSerialToDate(serial) {
+            // corrige bug do Excel
+            let s = Number(serial);
+            if (s >= 60) s -= 1;
+            const baseUtc = Date.UTC(1899, 11, 31, 0, 0, 0);
+            const ms = baseUtc + s * 86400000;
+            return new Date(ms);
+        }
+
+        // Calcula intervalo: hoje -5 dias (início do dia) até hoje +35 dias (fim do dia)
+        function getIntervalSerials() {
+            const now = new Date();
+            // início do dia (00:00) local
+            const startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 5, 0, 0, 0, 0);
+            // fim do dia (23:59:59.999) local
+            const endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 35, 23, 59, 59, 999);
+            return {
+                startSerial: toExcelSerial(startDate),
+                endSerial: toExcelSerial(endDate),
+                startDate,
+                endDate
+            };
+        }
+
+        // Filtra entries (considera entries com campo `data` numérico)
+        function filterEntriesByInterval(entries) {
+            const { startSerial, endSerial, startDate, endDate } = getIntervalSerials();
+            //console.log('Intervalo (JS):', startDate.toISOString(), '->', endDate.toISOString());
+            //console.log('Intervalo (Excel serial):', startSerial, '->', endSerial);
+            const filtered = (entries || []).filter(e => {
+                const d = e && e.orcamento;
+                return typeof d === 'number' && !Number.isNaN(d) && d >= startSerial && d <= endSerial;
+            });
+            //console.log('Total entries original:', (entries || []).length);
+            //console.log('Entries no intervalo:', filtered.length);
+            // Exemplo: mapear data serial para JS Date para inspeção
+            const sample = filtered.slice(0, 10).map(e => ({
+                descricao: e.descricao,
+                rowIndex: e.rowIndex,
+                excelData: e.data,
+                jsDate: excelSerialToDate(e.data).toLocaleString()
+            }));
+            //console.table(sample);
+            return filtered;
+        }
+
+        // Formata serial Excel para rótulo 'MM/YYYY' (útil para orcamento)
+        function excelSerialToMonthLabel(serial) {
+            const d = excelSerialToDate(serial);
+            if (!d) return String(serial);
+            const dd = String(d.getDate()).padStart(2, '0'); // dia
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const yyyy = d.getFullYear();
+            return `${dd}/${mm}/${yyyy}`;
+        }
+
+        // Agrega entries por orcamento
+        function aggregateByBudget(entries) {
+            const map = new Map();
+
+            (entries || []).forEach((e) => {
+                // considera orcamento numérico (pode ser serial Excel) ou string
+                const key = e && (typeof e.orcamento === 'number' ? e.orcamento : Number(e.orcamento));
+                if (!Number.isFinite(key)) return;
+
+                const valor = Number(e.valor) || 0;
+                const existing = map.get(key) || { orcamento: key, sum: 0, count: 0, incomes: 0, expenses: 0 };
+                existing.sum += valor;
+                existing.count += 1;
+                if (valor >= 0) existing.incomes += valor; else existing.expenses += valor;
+                map.set(key, existing);
+            });
+
+            // converte para array e adiciona metadados
+            const result = Array.from(map.values())
+                .map(item => ({
+                    orcamento: item.orcamento,
+                    label: excelSerialToMonthLabel(item.orcamento),
+                    count: item.count,
+                    sum: Number(item.sum.toFixed(2)),
+                    incomes: Number(item.incomes.toFixed(2)),
+                    expenses: Number(item.expenses.toFixed(2))
+                }))
+                // ordena do mais recente para o mais antigo (maior serial -> mais recente)
+                .sort((a, b) => b.orcamento - a.orcamento);
+
+            return result;
+        }
+
+        // Uso: assume window.sheetEntries.entries disponível (conforme seu debug)
+        const entries = window.sheetEntries?.entries ?? [];
+        const results = filterEntriesByInterval(entries);
+
+        window.filteredEntries = results; // expõe para inspeção no console
+
+        const summary = aggregateByBudget(entries);
+
+        // expõe para inspeção e debug
+        window.summaryByBudget = summary;
+
     </script>
 </body>
 
