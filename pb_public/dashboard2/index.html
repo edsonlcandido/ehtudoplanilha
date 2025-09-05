@@ -161,7 +161,7 @@
 
         inicializarMenuUsuario();
 
-        const response = await fetch(`${apiConfig.getBaseURL()}/get-sheet-entries?limit=0`, {
+        const response = await fetch(`${apiConfig.getBaseURL()}/get-sheet-entries`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
