@@ -153,7 +153,7 @@
     <script type="module">
         import apiConfig from '../js/config/api-config.js';
         import { inicializarMenuUsuario } from '../js/menu-usuario.js';
-        import { filterEntriesByInterval, aggregateByBudget } from '../js/utils/sheet-entries.js';
+        import { filterEntriesByInterval, aggregateByBudget, budgetsInInterval } from '../js/utils/sheet-entries.js';
 
 
         // Inicializa o PocketBase globalmente antes dos módulos
@@ -161,7 +161,7 @@
 
         inicializarMenuUsuario();
 
-        const response = await fetch(`${apiConfig.getBaseURL()}/get-sheet-entries`, {
+        const response = await fetch(`${apiConfig.getBaseURL()}/get-sheet-entries?limit=0`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -181,6 +181,12 @@
 
         // expõe para inspeção e debug
         window.summaryByBudget = summary;
+
+        // expõe os orçamentos únicos do intervalo filtrado
+        window.budgetsInInterval = budgetsInInterval(results);
+
+        //expoe todos os orçamentos
+        window.allBudgets = budgetsInInterval(window.sheetEntries?.entries);
 
     </script>
 </body>
