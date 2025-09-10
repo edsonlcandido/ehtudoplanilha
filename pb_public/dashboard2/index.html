@@ -7,8 +7,8 @@
     <title>Dashboard - Seu App Financeiro</title>
     <link rel="stylesheet" href="../css/picnic.css">
     <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/responsive-tables.css">
     <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/financial-cards.css">
     <script src="../js/pocketbase/dist/pocketbase.umd.js"></script>
 </head>
 
@@ -170,115 +170,21 @@
         import apiConfig from '../js/config/api-config.js';
         import { inicializarMenuUsuario } from '../js/menu-usuario.js';
         import { filterEntriesByInterval, aggregateByBudget, budgetsInEntries } from '../js/utils/sheet-entries.js';
+        import {
+            renderizarCards,
+            mostrarCardCarregamento,
+            mostrarErro,
+            inicializarEventos
+        } from './js/components/financial-cards.js';
 
         // Inicializa o PocketBase globalmente antes dos módulos
         window.pb = new PocketBase(apiConfig.getBaseURL());
 
         inicializarMenuUsuario();
+        inicializarEventos();
 
-        // Primeiro, renderiza cards para todos os orçamentos sem valores (placeholders)
-        const placeholderCards = document.getElementById('summaryCards');
-        if (placeholderCards) {
-            placeholderCards.innerHTML = ''; // Limpa o container
-
-            // Mostra card com loading
-            placeholderCards.innerHTML = `
-            <div class="financial-card saldo">
-                <div class="card-header">
-                    <h3 class="card-title">Carregando dados...</h3>
-                </div>
-                <div class="card-value">...</div>
-            </div>
-        `;
-        }
-
-        // Função global para manipular cliques em cartões inativos
-        function cardClickHandler() {
-            const budget = this.dataset.budget;
-            const sum = parseFloat(this.dataset.sum);
-            const incomes = parseFloat(this.dataset.incomes);
-            const expenses = parseFloat(this.dataset.expenses);
-
-            // Formata valores para moeda
-            const fmt = (v) => {
-                return Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-            };
-
-            // Adiciona classe clicked para remover hover após ser clicado
-            this.classList.add('clicked');
-            
-            // Remove o cursor pointer
-            this.style.cursor = 'default';
-
-            // Substitui o cartão inativo por um cartão detalhado
-            const cardClass = `financial-card ${sum >= 0 ? 'receitas' : 'despesas'} compacto`;
-            this.className = cardClass + ' clicked';
-            this.innerHTML = `
-                <button class="card-close" aria-label="Fechar cartão" data-budget="${budget}">✕</button>
-                <div class="card-header">
-                    <h3 class="card-title">${budget}</h3>
-                </div>
-                <div class="card-value" data-card="${budget}">${fmt(sum)}</div>
-
-                <div class="card-actions">
-                    <button class="button pseudo card-toggle" aria-expanded="false">Mostrar detalhes</button>
-                </div>
-
-                <div class="card-details">
-                    <div class="card-muted">Receitas: ${fmt(incomes)}</div>
-                    <div class="card-muted">Despesas: ${fmt(expenses)}</div>
-                </div>
-            `;
-
-            // Adiciona event listener para o botão de toggle
-            const toggleBtn = this.querySelector('.card-toggle');
-            if (toggleBtn) {
-                toggleBtn.addEventListener('click', function(e) {
-                    e.stopPropagation(); // Evita que o clique no botão propague para o cartão
-                    const card = this.closest('.financial-card');
-                    const isCompact = card.classList.toggle('compacto');
-                    this.setAttribute('aria-expanded', String(!isCompact));
-                    this.textContent = isCompact ? 'Mostrar detalhes' : 'Ocultar detalhes';
-                });
-            }
-
-            // Adiciona event listener para o botão de fechar
-            const closeBtn = this.querySelector('.card-close');
-            if (closeBtn) {
-                closeBtn.addEventListener('click', handleCloseClick);
-            }
-        }
-
-        // Função para manipular o clique no botão de fechar
-        function handleCloseClick(e) {
-            e.stopPropagation(); // Evita que o clique no botão propague para o cartão
-            const card = this.closest('.financial-card');
-            const budget = card.dataset.budget;
-            const sum = card.dataset.sum || this.dataset.sum;
-            const incomes = card.dataset.incomes || this.dataset.incomes;
-            const expenses = card.dataset.expenses || this.dataset.expenses;
-            
-            // Guarda os atributos de dados para quando o cartão inativo for clicado novamente
-            card.className = 'financial-card inactive';
-            card.style.cursor = 'pointer';
-            card.innerHTML = `<div class="card-value">...</div>`;
-            
-            // Certifica-se de que os atributos de dados estão preservados
-            card.dataset.budget = budget;
-            card.dataset.sum = sum;
-            card.dataset.incomes = incomes;
-            card.dataset.expenses = expenses;
-            
-            // Remove todos os event listeners antigos antes de adicionar o novo
-            card.replaceWith(card.cloneNode(true));
-            
-            // Recupera a referência após o cloneNode
-            const newCard = document.querySelector(`.financial-card.inactive[data-budget="${budget}"]`);
-            if (newCard) {
-                newCard.style.cursor = 'pointer';
-                newCard.addEventListener('click', cardClickHandler);
-            }
-        }
+        // Mostra card de carregamento inicial
+        mostrarCardCarregamento();
 
         try {
             // Busca dados da API
@@ -312,104 +218,11 @@
             });
 
             // Mostrar todos os orçamentos, valores apenas para os do intervalo atual
-            renderSummaryCards(allSummaries, budgetsInIntervalMap);
+            renderizarCards(allSummaries, budgetsInIntervalMap);
         } catch (error) {
             console.error('Erro ao carregar dados:', error);
-            // Mostra mensagem de erro
-            if (placeholderCards) {
-                placeholderCards.innerHTML = `
-                <div class="financial-card">
-                    <div class="card-header">
-                        <h3 class="card-title">Erro ao carregar dados</h3>
-                    </div>
-                    <div class="card-value">Verifique sua conexão e tente novamente</div>
-                </div>
-            `;
-            }
+            mostrarErro('Não foi possível carregar os dados. Verifique sua conexão e tente novamente.');
         }
-
-        /**
-         * Renderiza os cards de resumo dos orçamentos
-         * @param {Array} summary - Array de resumos dos orçamentos
-         * @param {Object} intervalBudgets - Objeto com orçamentos no intervalo atual como chaves
-         */
-        function renderSummaryCards(summary, intervalBudgets) {
-            const container = document.getElementById('summaryCards');
-            if (!container) return;
-
-            // Ordena por orcamento (data) decrescente (mais recente primeiro)
-            const sorted = (summary || []).slice().sort((a, b) => b.orcamento - a.orcamento);
-
-            const fmt = (v) => {
-                return Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-            };
-
-            container.innerHTML = '';
-
-            sorted.forEach(item => {
-                // Verifica se o orçamento está no intervalo atual
-                const isInInterval = intervalBudgets[item.label] === true;
-
-                if (isInInterval) {
-                    // Cartão ativo - mostra todos os detalhes
-                    const cardClass = `financial-card ${item.sum >= 0 ? 'receitas' : 'despesas'} compacto`;
-                    
-                    const cardTemplate = `
-                        <div class="${cardClass}" data-budget="${item.label}" data-sum="${item.sum}" data-incomes="${item.incomes}" data-expenses="${item.expenses}">
-                            <button class="card-close" aria-label="Fechar cartão" data-budget="${item.label}">✕</button>
-                            <div class="card-header">
-                                <h3 class="card-title">${item.label}</h3>
-                            </div>
-                            <div class="card-value" data-card="${item.label}">${fmt(item.sum)}</div>
-
-                            <div class="card-actions">
-                                <button class="button pseudo card-toggle" aria-expanded="false">Mostrar detalhes</button>
-                            </div>
-
-                            <div class="card-details">
-                                <div class="card-muted">Receitas: ${fmt(item.incomes)}</div>
-                                <div class="card-muted">Despesas: ${fmt(item.expenses)}</div>
-                            </div>
-                        </div>
-                    `;
-                    container.innerHTML += cardTemplate;
-                } else {
-                    // Cartão inativo - clicável para mostrar detalhes
-                    const cardTemplate = `
-                        <div class="financial-card inactive" data-budget="${item.label}" data-sum="${item.sum}" data-incomes="${item.incomes}" data-expenses="${item.expenses}">
-                            <div class="card-value">...</div>
-                        </div>
-                    `;
-                    container.innerHTML += cardTemplate;
-                }
-            });
-
-            // Adicionar event listeners para os cartões inativos
-            const inactiveCards = container.querySelectorAll('.financial-card.inactive');
-            inactiveCards.forEach(card => {
-                card.style.cursor = 'pointer';
-                card.addEventListener('click', cardClickHandler);
-            });
-
-            // Adicionar event listeners para os botões de fechar dos cartões ativos
-            const closeButtons = container.querySelectorAll('.card-close');
-            closeButtons.forEach(btn => {
-                btn.addEventListener('click', handleCloseClick);
-            });
-        }
-
-        // Toggle por delegação (funciona para cards estáticos e dinâmicos)
-        document.getElementById('summaryCards')?.addEventListener('click', (e) => {
-            const btn = e.target.closest('.card-toggle');
-            if (!btn) return;
-
-            const card = btn.closest('.financial-card');
-            const isCompact = card.classList.toggle('compacto');
-
-            // Atualiza estado acessível e rótulo
-            btn.setAttribute('aria-expanded', String(!isCompact));
-            btn.textContent = isCompact ? 'Mostrar detalhes' : 'Ocultar detalhes';
-        });
     </script>
 </body>
 
