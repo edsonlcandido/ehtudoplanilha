@@ -297,8 +297,9 @@
                                 </div>
                                 <!-- Orçamento -->
                                 <div class="form-group" style="margin-bottom: 1.5rem;">
-                                    <label for="expenseBudget">Orçamento:</label>
-                                    <select id="expenseBudget" name="orcamento" class="form-control" required></select>
+                                    <label for="expenseBudgetDate">Orçamento (data-chave):</label>
+                                    <input type="date" id="expenseBudgetDate" name="orcamento" class="form-control" required>
+                                    <small style="color: #666; font-size: 0.8rem;">Data de referência para este orçamento (ex: data de fechamento da fatura)</small>
                                 </div>
                                 <!-- Botões -->
 
@@ -339,6 +340,7 @@
         import TopCategoriesChart from '../js/components/top-categories-chart.js';
         import FinancialCards from '../js/components/financial-cards.js';
         import categoriesService from '../js/categories-service.js';
+        import { collectBudgetDates, nextFaturaBudgetDate, isoFromDate, backendBudgetFromISO } from '../js/utils/budget-date.js';
 
         // Inicializa o PocketBase globalmente antes dos módulos
         window.pb = new PocketBase(apiConfig.getBaseURL());
@@ -870,24 +872,51 @@
             const localTime = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
             expenseDateInput.value = `${localDate}T${localTime}`;
         }
-        const expenseBudgetSelect = document.getElementById('expenseBudget');
-        if (expenseBudgetSelect) {
-            // Meses em português
-            const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
-            const now = new Date();
-            const atual = new Date(now.getFullYear(), now.getMonth(), 1);
-            for (let i = -6; i <= 6; i++) {
-                const d = new Date(atual.getFullYear(), atual.getMonth() + i, 1);
-                const mesNome = meses[d.getMonth()];
-                const anoCurto = String(d.getFullYear()).slice(-2);
-                const valor = `${mesNome}/${anoCurto}`;
-                const opt = document.createElement('option');
-                opt.value = valor;
-                opt.textContent = valor.charAt(0).toUpperCase() + valor.slice(1);
-                if (i === 0) opt.selected = true;
-                expenseBudgetSelect.appendChild(opt);
+        
+        // Inicializa o campo de data do orçamento com sugestão inteligente
+        async function inicializarCampoOrcamento() {
+            const expenseBudgetDateInput = document.getElementById('expenseBudgetDate');
+            if (!expenseBudgetDateInput) return;
+            
+            try {
+                // Carrega as entradas existentes para analisar padrões de orçamento
+                const response = await fetch(`${apiConfig.getBaseURL()}/get-sheet-entries?limit=100`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${window.pb.authStore.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const entries = data.entries || [];
+                    
+                    // Coleta as datas de orçamento existentes
+                    const budgetDates = collectBudgetDates(entries);
+                    
+                    // Sugere a próxima data de orçamento
+                    const nextDate = nextFaturaBudgetDate(budgetDates);
+                    
+                    // Define o valor sugerido no campo
+                    expenseBudgetDateInput.value = isoFromDate(nextDate);
+                    
+                    console.log('Data de orçamento sugerida:', isoFromDate(nextDate));
+                } else {
+                    // Se não conseguir carregar entradas, sugere hoje
+                    const hoje = new Date();
+                    expenseBudgetDateInput.value = isoFromDate(hoje);
+                }
+            } catch (error) {
+                console.error('Erro ao inicializar campo de orçamento:', error);
+                // Fallback: sugere hoje
+                const hoje = new Date();
+                expenseBudgetDateInput.value = isoFromDate(hoje);
             }
         }
+        
+        // Chama a inicialização do campo de orçamento
+        inicializarCampoOrcamento();
 
 
         // Carrega categorias diretamente da planilha (aba 'Categorias')
@@ -957,7 +986,7 @@
                     const valor = sinal === '-' ? -Math.abs(valorBase) : Math.abs(valorBase);
                     const descricao = document.getElementById('expenseDescription').value.trim();
                     const categoria = document.getElementById('expenseCategory').value.trim();
-                    const orcamento = formatarDataOrcamento(document.getElementById('expenseBudget').value);
+                    const orcamento = backendBudgetFromISO(document.getElementById('expenseBudgetDate').value);
 
                     const entryData = {
                         data,
@@ -1004,24 +1033,16 @@
             const minuto = String(dt.getMinutes()).padStart(2, '0');
             return `${dia}/${mes}/${ano} ${hora}:${minuto}`;
         }
-        function formatarDataOrcamento(data) {
-            // Converte "setembro/25" para "01/09/2025"
-            if (!data) return '';
-            const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
-            const [mesNome, anoCurto] = data.split('/');
-            const mesIndex = meses.indexOf(mesNome.toLowerCase());
-            if (mesIndex === -1) return '';
-            const ano = '20' + anoCurto;
-            const mes = String(mesIndex + 1).padStart(2, '0');
-            return `01/${mes}/${ano}`;
-        }
-        function limparCamposFormulario() {
+        async function limparCamposFormulario() {
             document.getElementById('expenseAccount').value = '';
             document.getElementById('expenseValue').value = '';
             document.getElementById('expenseDescription').value = '';
             document.getElementById('expenseCategory').value = '';
             currentSign = '-';
             updateSign();
+            
+            // Re-inicializa o campo de orçamento com nova sugestão após o lançamento
+            await inicializarCampoOrcamento();
         }
         function mostrarMensagem(tipo, texto) {
             let msgEl = document.getElementById('feedback-message');

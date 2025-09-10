@@ -4,6 +4,7 @@
  */
 
 import googleSheetsService from './google/sheets-api.js';
+import { parseBudgetStr, formatBudgetDateForBackend, isoFromDate, backendBudgetFromISO } from './utils/budget-date.js';
 
 class LancamentosManager {
     constructor() {
@@ -748,8 +749,6 @@ class LancamentosManager {
         // Implementar modal de edição (será criado no HTML)
         const modal = document.getElementById('editModal');
         if (!modal) return;
-        // Garantir opções de orçamento (12 meses centrados no atual)
-        this.populateEditBudgetSelect();
 
         // Preencher campos do modal
         const dataInput = document.getElementById('editData');
@@ -759,7 +758,7 @@ class LancamentosManager {
         const signBtn = document.getElementById('editSignBtn');
         const signValue = document.getElementById('editSignValue');
         const catInput = document.getElementById('editCategoria');
-        const orcSelect = document.getElementById('editOrcamento');
+        const orcDateInput = document.getElementById('editOrcamentoDate');
         const obsInput = document.getElementById('editObs');
 
         // Converter data existente para datetime-local se possível
@@ -783,11 +782,29 @@ class LancamentosManager {
 
         // Categoria / Orçamento / Observações
         catInput.value = entry.categoria || '';
+        
+        // Converter orçamento para formato ISO date
         if (entry.orcamento) {
-            // Tenta selecionar orçamento correspondente
-            const opt = Array.from(orcSelect.options).find(o => o.value === entry.orcamento || o.textContent === entry.orcamento);
-            if (opt) opt.selected = true;
+            try {
+                // Se orçamento está em formato dd/MM/YYYY, converter para ISO
+                if (typeof entry.orcamento === 'string' && entry.orcamento.includes('/')) {
+                    const parts = entry.orcamento.split('/');
+                    if (parts.length === 3) {
+                        const [dia, mes, ano] = parts;
+                        const isoDate = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+                        orcDateInput.value = isoDate;
+                    }
+                } else {
+                    // Tentar converter outros formatos
+                    const budgetDate = parseBudgetStr(entry.orcamento);
+                    orcDateInput.value = isoFromDate(budgetDate);
+                }
+            } catch (error) {
+                console.warn('Erro ao converter orçamento para date input:', error);
+                orcDateInput.value = '';
+            }
         }
+        
         obsInput.value = entry.obs || '';
 
         // Listener de toggle de sinal (somente adiciona uma vez)
@@ -866,30 +883,6 @@ class LancamentosManager {
         } catch (e) {
             return '';
         }
-    }
-
-    /**
-     * Preenche select de orçamento no modal de edição (meses -6 a +6 do atual)
-     */
-    populateEditBudgetSelect() {
-        const select = document.getElementById('editOrcamento');
-        if (!select || select.dataset.populated) return;
-        select.innerHTML = '';
-        const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
-        const now = new Date();
-        const base = new Date(now.getFullYear(), now.getMonth(), 1);
-        for (let i=-6;i<=6;i++) {
-            const d = new Date(base.getFullYear(), base.getMonth()+i, 1);
-            const mesNome = meses[d.getMonth()];
-            const anoCurto = String(d.getFullYear()).slice(-2);
-            const valor = `${mesNome}/${anoCurto}`;
-            const opt = document.createElement('option');
-            opt.value = valor;
-            opt.textContent = valor.charAt(0).toUpperCase()+valor.slice(1);
-            if (i===0) opt.selected = true;
-            select.appendChild(opt);
-        }
-        select.dataset.populated = 'true';
     }
 
     /**
@@ -1045,7 +1038,7 @@ class LancamentosManager {
             descricao: document.getElementById('editDescricao').value.trim(),
             valor: valorFinal,
             categoria: document.getElementById('editCategoria').value.trim(),
-            orcamento: this.formatBudgetDate(document.getElementById('editOrcamento').value),
+            orcamento: backendBudgetFromISO(document.getElementById('editOrcamentoDate').value),
             obs: document.getElementById('editObs').value.trim()
         };
 
@@ -1099,19 +1092,6 @@ class LancamentosManager {
             const pad = n => String(n).padStart(2, '0');
             return `${pad(date.getDate())}/${pad(date.getMonth()+1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
         } catch (e) { return ''; }
-    }
-
-    /**
-     * Converte valor de orçamento (ex: setembro/25) em 01/MM/20YY
-     */
-    formatBudgetDate(valor) {
-        if (!valor) return '';
-        const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
-        const [nome, anoCurto] = valor.split('/');
-        const idx = meses.indexOf(nome.toLowerCase());
-        if (idx === -1) return '';
-        const pad = n => String(n).padStart(2,'0');
-        return `01/${pad(idx+1)}/20${anoCurto}`;
     }
 
     /**
@@ -1320,7 +1300,7 @@ class LancamentosManager {
         const installmentValue = totalValue / installments;
 
         // Calcula as datas das parcelas
-        const baseDate = this.parseBudgetDate(entry.orcamento);
+        const baseDate = parseBudgetStr(entry.orcamento);
         const installmentsList = [];
         
         for (let i = 0; i < installments; i++) {
@@ -1385,7 +1365,7 @@ class LancamentosManager {
     async processSplit(entry, installments) {
         const totalValue = parseFloat(entry.valor) || 0;
         const installmentValue = totalValue / installments;
-        const baseDate = this.parseBudgetDate(entry.orcamento);
+        const baseDate = parseBudgetStr(entry.orcamento);
 
         // Primeiro, atualiza o lançamento original com o valor da primeira parcela
         const originalSnapshot = { ...entry };
@@ -1411,10 +1391,8 @@ class LancamentosManager {
                 const parcDate = new Date(baseDate);
                 parcDate.setMonth(baseDate.getMonth() + i);
                 
-                const mesNome = this.getMonthName(parcDate.getMonth());
-                const anoCurto = String(parcDate.getFullYear()).slice(-2);
-                const budgetFormatted = `${mesNome}/${anoCurto}`;
-                const budgetDateFormatted = this.formatBudgetDate(budgetFormatted);
+                // Converter data para formato backend dd/MM/YYYY
+                const budgetDateFormatted = formatBudgetDateForBackend(parcDate);
 
                 const newEntryData = {
                     data: entry.data, // Mantém a data original do lançamento
@@ -1448,27 +1426,6 @@ class LancamentosManager {
             }
             throw error;
         }
-    }
-
-    /**
-     * Converte valor de orçamento para Date
-     */
-    parseBudgetDate(orcamento) {
-        if (!orcamento) return new Date();
-        
-        // Se é string no formato "setembro/25"
-        if (typeof orcamento === 'string' && orcamento.includes('/')) {
-            const [mesNome, anoCurto] = orcamento.split('/');
-            const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
-            const mesIndex = meses.indexOf(mesNome.toLowerCase());
-            
-            if (mesIndex !== -1) {
-                const ano = parseInt('20' + anoCurto);
-                return new Date(ano, mesIndex, 1);
-            }
-        }
-        
-        return new Date();
     }
 
     /**
