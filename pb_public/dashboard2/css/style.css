@@ -146,6 +146,19 @@
             padding: 0.15rem 0.5rem;
         }
 
+        /* Adicione isto às suas regras CSS existentes */
+
+        /* Estilo para orçamentos fora do intervalo atual */
+        .financial-card.inactive {
+            border-left-color: #ccc;
+            opacity: 0.7;
+        }
+
+        .financial-card.inactive .card-value,
+        .financial-card.inactive .card-muted {
+            color: #999;
+        }
+
         /* Estilos para telas menores (mobile) */
         @media (max-width: 768px) {
             #summaryCards .financial-card {

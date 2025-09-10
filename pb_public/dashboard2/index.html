@@ -171,46 +171,85 @@
         import { inicializarMenuUsuario } from '../js/menu-usuario.js';
         import { filterEntriesByInterval, aggregateByBudget, budgetsInEntries } from '../js/utils/sheet-entries.js';
 
-
         // Inicializa o PocketBase globalmente antes dos módulos
         window.pb = new PocketBase(apiConfig.getBaseURL());
 
         inicializarMenuUsuario();
 
-        const response = await fetch(`${apiConfig.getBaseURL()}/get-sheet-entries?limit=0`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${pb.authStore.token}`
+        // Primeiro, renderiza cards para todos os orçamentos sem valores (placeholders)
+        const placeholderCards = document.getElementById('summaryCards');
+        if (placeholderCards) {
+            placeholderCards.innerHTML = ''; // Limpa o container
+
+            // Mostra card com loading
+            placeholderCards.innerHTML = `
+            <div class="financial-card saldo">
+                <div class="card-header">
+                    <h3 class="card-title">Carregando dados...</h3>
+                </div>
+                <div class="card-value">...</div>
+            </div>
+        `;
+        }
+
+        try {
+            // Busca dados da API
+            const response = await fetch(`${apiConfig.getBaseURL()}/get-sheet-entries?limit=0`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${pb.authStore.token}`
+                }
+            });
+
+            window.sheetEntries = await response.json();
+            const entries = window.sheetEntries?.entries ?? [];
+
+            // Primeiro, processa todos os orçamentos (para exibir lista completa)
+            const allSummaries = aggregateByBudget(entries);
+            window.allBudgets = budgetsInEntries(entries);
+
+            // Depois processa apenas os do intervalo atual (filtrados)
+            const entriesInInterval = filterEntriesByInterval(entries);
+            const currentSummary = aggregateByBudget(entriesInInterval);
+            window.filteredEntries = entriesInInterval;
+            window.summaryByBudget = currentSummary;
+            window.budgetsInInterval = budgetsInEntries(entriesInInterval);
+
+            // Aqui está o problema: Precisamos criar corretamente o mapa de orçamentos no intervalo
+            const budgetsInIntervalMap = {};
+            currentSummary.forEach(budget => {
+                // Usamos o label do orçamento como chave no mapa
+                budgetsInIntervalMap[budget.label] = true;
+            });
+
+            // Mostrar todos os orçamentos, valores apenas para os do intervalo atual
+            renderSummaryCards(allSummaries, budgetsInIntervalMap);
+        } catch (error) {
+            console.error('Erro ao carregar dados:', error);
+            // Mostra mensagem de erro
+            if (placeholderCards) {
+                placeholderCards.innerHTML = `
+                <div class="financial-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Erro ao carregar dados</h3>
+                    </div>
+                    <div class="card-value">Verifique sua conexão e tente novamente</div>
+                </div>
+            `;
             }
-        });
+        }
 
-        window.sheetEntries = await response.json();
-
-        // Uso: assume window.sheetEntries.entries disponível (conforme seu debug)
-        const entries = window.sheetEntries?.entries ?? [];
-        const entriesInInterval = filterEntriesByInterval(entries);
-
-        window.filteredEntries = entriesInInterval; // expõe para inspeção no console
-
-        const summary = aggregateByBudget(entriesInInterval);
-
-        // expõe para inspeção e debug
-        window.summaryByBudget = summary;
-
-        // expõe os orçamentos únicos do intervalo filtrado
-        window.budgetsInInterval = budgetsInEntries(entriesInInterval);
-
-        //expoe todos os orçamentos
-        window.allBudgets = budgetsInEntries(window.sheetEntries?.entries);
-        const allSummaries = aggregateByBudget(entries);
-        renderSummaryCards(summary);
-
-        // --- Render summary cards: ordena por sum desc e cria cards simples ---
-        function renderSummaryCards(summary) {
+        /**
+         * Renderiza os cards de resumo dos orçamentos
+         * @param {Array} summary - Array de resumos dos orçamentos
+         * @param {Object} intervalBudgets - Objeto com orçamentos no intervalo atual como chaves
+         */
+        function renderSummaryCards(summary, intervalBudgets) {
             const container = document.getElementById('summaryCards');
             if (!container) return;
-            // copia e ordena por orcamento desc (maior orcamento primeiro)
+
+            // Ordena por orcamento (data) decrescente (mais recente primeiro)
             const sorted = (summary || []).slice().sort((a, b) => b.orcamento - a.orcamento);
 
             const fmt = (v) => {
@@ -220,27 +259,43 @@
             container.innerHTML = '';
 
             sorted.forEach(item => {
-                // Cria o template do card
-                const cardTemplate = `
-                    <div class="financial-card ${item.sum >= 0 ? 'receitas' : 'despesas'} compacto">
-                        <div class="card-header">
-                            <h3 class="card-title">${item.label}</h3>
-                        </div>
-                        <div class="card-value" data-card="${item.label}">${fmt(item.sum)}</div>
+                // Verifica se o orçamento está no intervalo atual
+                const isInInterval = intervalBudgets[item.label] === true;
 
-                        <div class="card-actions">
-                            <button class="button pseudo card-toggle" aria-expanded="false">Mostrar detalhes</button>
-                        </div>
+                if (isInInterval) {
+                    // Cartão ativo - mostra todos os detalhes
+                    const cardClass = `financial-card ${item.sum >= 0 ? 'receitas' : 'despesas'} compacto`;
+                    
+                    const cardTemplate = `
+                        <div class="${cardClass}">
+                            <div class="card-header">
+                                <h3 class="card-title">${item.label}</h3>
+                            </div>
+                            <div class="card-value" data-card="${item.label}">${fmt(item.sum)}</div>
 
-                        <div class="card-details">
-                            <div class="card-muted">Receitas: ${fmt(item.incomes)}</div>
-                            <div class="card-muted">Despesas: ${fmt(item.expenses)}</div>
+                            <div class="card-actions">
+                                <button class="button pseudo card-toggle" aria-expanded="false">Mostrar detalhes</button>
+                            </div>
+
+                            <div class="card-details">
+                                <div class="card-muted">Receitas: ${fmt(item.incomes)}</div>
+                                <div class="card-muted">Despesas: ${fmt(item.expenses)}</div>
+                            </div>
                         </div>
-                    </div>
-            `;
-                container.innerHTML += cardTemplate;
+                    `;
+                    container.innerHTML += cardTemplate;
+                } else {
+                    // Cartão inativo - mostra apenas "..." simplificado
+                    const cardTemplate = `
+                        <div class="financial-card inactive">
+                            <div class="card-value">...</div>
+                        </div>
+                    `;
+                    container.innerHTML += cardTemplate;
+                }
             });
-        };
+        }
+
         // Toggle por delegação (funciona para cards estáticos e dinâmicos)
         document.getElementById('summaryCards')?.addEventListener('click', (e) => {
             const btn = e.target.closest('.card-toggle');
@@ -253,7 +308,6 @@
             btn.setAttribute('aria-expanded', String(!isCompact));
             btn.textContent = isCompact ? 'Mostrar detalhes' : 'Ocultar detalhes';
         });
-
     </script>
 </body>
 
