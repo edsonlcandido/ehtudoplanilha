@@ -141,7 +141,7 @@ export function aggregateByBudget(entries = [], orcamentoField = 'orcamento') {
 
 //Função para mostrar os orcamentos disponiveis num intevalo de entradas filtrado
 //Retorna um array com {orcamento, label}
-export function budgetsInInterval(entries = [], orcamentoField = 'orcamento') {
+export function budgetsInEntries(entries = [], orcamentoField = 'orcamento') {
 
   // Função auxiliar para normalizar o valor do orçamento em um serial Excel (number) ou null
   const normalizeToSerial = (raw) => {

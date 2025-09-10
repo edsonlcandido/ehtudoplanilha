@@ -47,7 +47,7 @@
             <section class="section section-light dashboard-main">
                 <div class="container text-center">
                     <h2>Bem-vindo ao seu Dashboard!</h2>
-                    <p>Aqui você pode visualizar e inserir lançamentos de forma simples e rápida.</p>
+                    <p>Aqui você pode visualizar resumos e inserir lançamentos de forma simples e rápida.</p>
 
                     <div style="margin-top: 2rem;">
                         <a href="configuracao.html" id="configBtn" class="button primary" style="display: none;">⚙️
@@ -55,13 +55,27 @@
                             Integração</a>
                     </div>
 
-                        <!-- Adicione aqui os componentes do dashboard -->
-                        <!-- Summary cards -->
-                        <div id="summaryCards" class="row" style="display:flex; flex-direction:column; gap:1rem; align-items:center; margin-top:1.5rem; width:100%; padding:0 1rem;"></div>
+                    <!-- Adicione aqui os componentes do dashboard -->
+                    <!-- Summary cards -->
+                    <div id="summaryCards" class="flex row">
+                        <div class="financial-card loading saldo">
+                            <div class="card-header">
+                                <h3 class="card-title">31/08/2025</h3>
+                            </div>
 
-                </div>
-                <!-- Botão de adicionar lançamento (flutuante) -->
-                <button id="openEntryModal" class="button" aria-label="Adicionar lançamento">+</button>
+                            <div class="card-value" data-card="orcamento1">R$&nbsp;100,00</div>
+                            <div class="card-actions">
+                                <button class="button pseudo card-toggle" aria-expanded="false">Mostrar
+                                    detalhes</button>
+                            </div>
+                            <div class="card-details">
+                                <div class="card-muted" data-card="orcamento1">Receitas: R$&nbsp;100,00</div>
+                                <div class="card-muted" data-card="orcamento1">Despesas: R$&nbsp;100,00</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Botão de adicionar lançamento (flutuante) -->
+                    <button id="openEntryModal" class="button" aria-label="Adicionar lançamento">+</button>
             </section>
         </main>
     </div>
@@ -155,7 +169,7 @@
     <script type="module">
         import apiConfig from '../js/config/api-config.js';
         import { inicializarMenuUsuario } from '../js/menu-usuario.js';
-        import { filterEntriesByInterval, aggregateByBudget, budgetsInInterval } from '../js/utils/sheet-entries.js';
+        import { filterEntriesByInterval, aggregateByBudget, budgetsInEntries } from '../js/utils/sheet-entries.js';
 
 
         // Inicializa o PocketBase globalmente antes dos módulos
@@ -175,23 +189,25 @@
 
         // Uso: assume window.sheetEntries.entries disponível (conforme seu debug)
         const entries = window.sheetEntries?.entries ?? [];
-        const results = filterEntriesByInterval(entries);
+        const entriesInInterval = filterEntriesByInterval(entries);
 
-        window.filteredEntries = results; // expõe para inspeção no console
+        window.filteredEntries = entriesInInterval; // expõe para inspeção no console
 
-        const summary = aggregateByBudget(entries);
+        const summary = aggregateByBudget(entriesInInterval);
 
         // expõe para inspeção e debug
         window.summaryByBudget = summary;
 
         // expõe os orçamentos únicos do intervalo filtrado
-        window.budgetsInInterval = budgetsInInterval(results);
+        window.budgetsInInterval = budgetsInEntries(entriesInInterval);
 
         //expoe todos os orçamentos
-        window.allBudgets = budgetsInInterval(window.sheetEntries?.entries);
+        window.allBudgets = budgetsInEntries(window.sheetEntries?.entries);
+        const allSummaries = aggregateByBudget(entries);
+        renderSummaryCards(summary);
 
         // --- Render summary cards: ordena por sum desc e cria cards simples ---
-        (function renderSummaryCards() {
+        function renderSummaryCards(summary) {
             const container = document.getElementById('summaryCards');
             if (!container) return;
             // copia e ordena por orcamento desc (maior orcamento primeiro)
@@ -202,44 +218,41 @@
             };
 
             container.innerHTML = '';
+
             sorted.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'solution-card';
-                card.style.width = '100%';
-                card.style.maxWidth = '860px';
-                card.style.display = 'flex';
-                card.style.flexDirection = 'column';
-                card.style.gap = '0.5rem';
-                card.style.padding = '1rem 1.25rem';
-                card.style.boxShadow = '0 1px 4px rgba(0,0,0,0.08)';
-                card.style.border = '1px solid rgba(0,0,0,0.06)';
-                card.style.background = 'linear-gradient(180deg, #fff, #fbfbff)';
+                // Cria o template do card
+                const cardTemplate = `
+                    <div class="financial-card ${item.sum >= 0 ? 'receitas' : 'despesas'} compacto">
+                        <div class="card-header">
+                            <h3 class="card-title">${item.label}</h3>
+                        </div>
+                        <div class="card-value" data-card="${item.label}">${fmt(item.sum)}</div>
 
-                // label no topo
-                const labelEl = document.createElement('div');
-                labelEl.style.fontSize = '0.9rem';
-                labelEl.style.fontWeight = '700';
-                labelEl.style.color = 'var(--primary, #222)';
-                labelEl.textContent = item.label;
+                        <div class="card-actions">
+                            <button class="button pseudo card-toggle" aria-expanded="false">Mostrar detalhes</button>
+                        </div>
 
-                const sumEl = document.createElement('div');
-                sumEl.style.fontSize = '1.25rem';
-                sumEl.style.fontWeight = '700';
-                sumEl.style.color = item.sum < 0 ? '#b00020' : '#0b6623';
-                sumEl.textContent = fmt(item.sum);
-
-                const metaEl = document.createElement('div');
-                metaEl.style.fontSize = '0.9rem';
-                metaEl.style.color = 'var(--muted, #666)';
-                metaEl.textContent = `lançamentos: ${item.count} • entradas: ${fmt(item.incomes)} • saídas: ${fmt(item.expenses)}`;
-
-                card.appendChild(labelEl);
-                card.appendChild(sumEl);
-                card.appendChild(metaEl);
-
-                container.appendChild(card);
+                        <div class="card-details">
+                            <div class="card-muted">Receitas: ${fmt(item.incomes)}</div>
+                            <div class="card-muted">Despesas: ${fmt(item.expenses)}</div>
+                        </div>
+                    </div>
+            `;
+                container.innerHTML += cardTemplate;
             });
-        })();
+        };
+        // Toggle por delegação (funciona para cards estáticos e dinâmicos)
+        document.getElementById('summaryCards')?.addEventListener('click', (e) => {
+            const btn = e.target.closest('.card-toggle');
+            if (!btn) return;
+
+            const card = btn.closest('.financial-card');
+            const isCompact = card.classList.toggle('compacto');
+
+            // Atualiza estado acessível e rótulo
+            btn.setAttribute('aria-expanded', String(!isCompact));
+            btn.textContent = isCompact ? 'Mostrar detalhes' : 'Ocultar detalhes';
+        });
 
     </script>
 </body>

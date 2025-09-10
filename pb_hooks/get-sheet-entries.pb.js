@@ -152,8 +152,9 @@ routerAdd("GET", "/get-sheet-entries", (c) => {
             // Mais recentes primeiro (linhas maiores) sem precisar reverse depois de limitar: ordenar por rowIndex desc
             let recentEntries = entries.sort((a,b) => b.rowIndex - a.rowIndex);
             // se limit > 0 aplica slice; se limit === 0 retorna todas as linhas
-            if (limit > 0) recentEntries = recentEntries.slice(0, limit);
-
+            if (limit > 0) {
+                recentEntries = recentEntries.slice(0, limit);
+            }
             return c.json(200, {
                 "success": true,
                 "entries": recentEntries,
