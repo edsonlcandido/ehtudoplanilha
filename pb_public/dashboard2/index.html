@@ -176,12 +176,15 @@
             mostrarErro,
             inicializarEventos
         } from './js/components/financial-cards.js';
+        import { inicializarModalDeLancamento } from '../js/components/entry-modal.js';
+
 
         // Inicializa o PocketBase globalmente antes dos módulos
         window.pb = new PocketBase(apiConfig.getBaseURL());
 
         inicializarMenuUsuario();
         inicializarEventos();
+        inicializarModalDeLancamento();
 
         // Mostra card de carregamento inicial
         mostrarCardCarregamento();
