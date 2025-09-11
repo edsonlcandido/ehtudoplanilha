@@ -20,13 +20,13 @@
 
 /* Colunas: esquerda menor (summaryCards), direita maior (details) */
 .dashboard__col--left {
-    flex: 1 1 360px;
+    flex: 1 1 33.333%; /* Ocupa 1/3 do espaço */
     min-width: 260px;
     box-sizing: border-box;
 }
 
 .dashboard__col--right {
-    flex: 2 1 0%;
+    flex: 2 1 66.667%; /* Ocupa 2/3 do espaço */
     min-width: 320px;
     box-sizing: border-box;
 }
