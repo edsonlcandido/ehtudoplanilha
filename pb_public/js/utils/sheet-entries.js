@@ -6,26 +6,39 @@
 import apiConfig from '../config/api-config.js';
 
 
-// Converte Date -> serial Excel (corrige bug 1900 leap year)
-// dataHora = false -> usa apenas ano/mês/dia (meia-noite local)
-// dataHora = true  -> inclui horas/minutos/segundos/milisegundos (hora local)
+// Converte Date -> serial Excel (corrige bugs de timezone e leap year)
 export function toExcelSerial(date, dataHora = false) {
   if (!date || !(date instanceof Date)) return NaN;
-  // Cria ms em UTC a partir dos componentes locais para evitar shift de timezone.
-  // Se dataHora=false usamos apenas componente de data (midnight local).
-  const y = date.getFullYear();
-  const m = date.getMonth();
-  const d = date.getDate();
-  const hh = dataHora ? date.getHours() : 0;
-  const mm = dataHora ? date.getMinutes() : 0;
-  const ss = dataHora ? date.getSeconds() : 0;
-  const ms = dataHora ? date.getMilliseconds() : 0;
 
-  const utc = Date.UTC(y, m, d, hh, mm, ss, ms);
-  const baseUtc = Date.UTC(1899, 11, 31);
-  let serial = (utc - baseUtc) / 86400000; // dias (pode ser fracionário)
-  if (serial >= 60) serial += 1; // corrige bug do Excel (29/02/1900 inexistente)
-  return serial;
+  // Função auxiliar para verificar se um ano é bissexto
+  const isLeapYear = (year) => {
+    return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+  };
+  
+  // Clone da data para não modificar a original
+  const d = new Date(date);
+  
+  // Ajusta para meio-dia para evitar problemas de timezone
+  if (!dataHora) {
+    d.setHours(12, 0, 0, 0);
+  }
+  
+  // Método alternativo para calcular o Excel Serial
+  // Cria uma data base (31/12/1899 00:00:00 GMT)
+  const baseDate = new Date(Date.UTC(1899, 11, 31, 0, 0, 0));
+  
+  // Calcula diferença em dias entre as datas
+  const msPerDay = 24 * 60 * 60 * 1000;
+  let days = (d.getTime() - baseDate.getTime()) / msPerDay;
+  
+  // Corrige para o bug de leap year do Excel (considerar 29/02/1900 como válido)
+  const excelDate1900LeapBug = new Date(Date.UTC(1900, 1, 28, 0, 0, 0)); // 28/02/1900
+  if (d > excelDate1900LeapBug) {
+    days += 1; // Adiciona 1 dia para compensar o bug do ano bissexto
+  }
+  
+  // Força o valor para número com 10 casas decimais no máximo (evita imprecisões)
+  return Number(days.toFixed(10));
 }
 
 // Converte serial Excel -> Date (ou null se inválido)

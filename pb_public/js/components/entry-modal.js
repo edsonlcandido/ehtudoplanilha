@@ -1,4 +1,5 @@
 import { excelSerialToDate, toExcelSerial, excelSerialToMonthLabel } from '../utils/sheet-entries.js';
+import apiConfig from '../config/api-config.js';
 
 /**
  * @module entry-modal
@@ -12,8 +13,9 @@ export function inicializarModalDeLancamento() {
     const openModalBtn = document.getElementById('openEntryModal');
     const closeModalBtn = document.getElementById('closeEntryModal');
     const entryModal = document.getElementById('entryModal');
+    const expenseForm = document.getElementById('expenseForm');
 
-    if (!openModalBtn || !closeModalBtn || !entryModal) {
+    if (!openModalBtn || !closeModalBtn || !entryModal || !expenseForm) {
         console.error('Elementos do modal não encontrados. A funcionalidade pode estar comprometida.');
         return;
     }
@@ -28,11 +30,36 @@ export function inicializarModalDeLancamento() {
     const expenseDateInput = document.getElementById('expenseDate');
     const expenseBudgetInput = document.getElementById('expenseBudget'); // input type="date"
 
+    // Elemento para feedback de mensagens
+    let feedbackElement = document.getElementById('modalFeedback');
+    if (!feedbackElement) {
+        feedbackElement = document.createElement('div');
+        feedbackElement.id = 'modalFeedback';
+        feedbackElement.className = 'modal-feedback';
+        feedbackElement.style.display = 'none';
+        
+        // Inserir antes dos botões de ação
+        const formActions = document.querySelector('.form-actions');
+        if (formActions && formActions.parentNode) {
+            formActions.parentNode.insertBefore(feedbackElement, formActions);
+        }
+    }
+
     // armazenará os entries injetados, contas e orçamentos únicos
     let injectedEntries = [];
     let fetchedAccounts = []; 
-    let fetchedBudgets = []; // lista de orçamentos (datas) para autocomplete
-    let fetchedCategories = []; // lista de categorias para autocomplete
+    let fetchedBudgets = []; 
+    let fetchedCategories = [];
+    let fetchedDescriptions = []; // lista de descrições para autocomplete
+
+    // ----------------------------
+    // Escapa HTML para evitar injeção XSS
+    // ----------------------------
+    const escapeHtml = (str) => String(str ?? '').replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 
     // ----------------------------
     // Funções de toggle para sinal (+/-)
@@ -64,6 +91,205 @@ export function inicializarModalDeLancamento() {
         expenseSignBtn.addEventListener('click', () => {
             const isCurrentlyExpense = expenseSignBtn.textContent.trim() === '−';
             aplicarEstadoSinal(!isCurrentlyExpense);
+        });
+    }
+
+    // ----------------------------
+    // Autocomplete para categoria
+    // ----------------------------
+    const ensureCategorySuggestionsContainer = () => {
+        let container = document.getElementById('catSuggestions');
+        if (!container && expenseCategoryInput) {
+            container = document.createElement('div');
+            container.id = 'catSuggestions';
+            container.classList.add('entry-modal__suggestions');
+            container.setAttribute('role', 'listbox');
+            const parent = expenseCategoryInput.parentElement;
+            parent.style.position = parent.style.position || 'relative';
+            parent.appendChild(container);
+        }
+        return container;
+    };
+
+    const mostrarSugestoesCategoria = (query) => {
+        const container = ensureCategorySuggestionsContainer();
+        if (!container) return;
+        container.innerHTML = '';
+        if (!query || query.trim().length < 1 || fetchedCategories.length === 0) {
+            container.style.display = 'none';
+            return;
+        }
+        const q = query.trim().toLowerCase();
+        const suggestions = fetchedCategories.filter(cat => cat.toLowerCase().includes(q));
+        if (suggestions.length === 0) {
+            container.style.display = 'none';
+            return;
+        }
+        suggestions.forEach(s => {
+            const item = document.createElement('div');
+            item.setAttribute('role', 'option');
+            item.classList.add('entry-modal__suggestion');
+            item.innerHTML = escapeHtml(s);
+            item.addEventListener('click', () => {
+                expenseCategoryInput.value = s;
+                container.style.display = 'none';
+                expenseCategoryInput.focus();
+            });
+            container.appendChild(item);
+        });
+        container.style.display = 'block';
+    };
+
+    // ----------------------------
+    // Autocomplete para descrição
+    // ----------------------------
+    const ensureDescriptionSuggestionsContainer = () => {
+        let container = document.getElementById('descSuggestions');
+        if (!container && expenseDescriptionInput) {
+            container = document.createElement('div');
+            container.id = 'descSuggestions';
+            container.classList.add('entry-modal__suggestions');
+            container.setAttribute('role', 'listbox');
+            const parent = expenseDescriptionInput.parentElement;
+            parent.style.position = parent.style.position || 'relative';
+            parent.appendChild(container);
+        }
+        return container;
+    };
+
+    // Correção da função mostrarSugestoesDescricao para preencher a categoria automaticamente
+    const mostrarSugestoesDescricao = (query) => {
+        const container = ensureDescriptionSuggestionsContainer();
+        if (!container) return;
+        container.innerHTML = '';
+        if (!query || query.trim().length < 1 || fetchedDescriptions.length === 0) {
+            container.style.display = 'none';
+            return;
+        }
+        const q = query.trim().toLowerCase();
+        const suggestions = fetchedDescriptions.filter(desc => desc.toLowerCase().includes(q));
+        if (suggestions.length === 0) {
+            container.style.display = 'none';
+            return;
+        }
+        
+        suggestions.forEach(s => {
+            const item = document.createElement('div');
+            item.setAttribute('role', 'option');
+            item.classList.add('entry-modal__suggestion');
+            item.innerHTML = escapeHtml(s);
+            item.addEventListener('click', () => {
+                // Preencher descrição
+                expenseDescriptionInput.value = s;
+                container.style.display = 'none';
+                
+                // Buscar categoria correspondente nos entries
+                if (injectedEntries && injectedEntries.length > 0 && expenseCategoryInput) {
+                    // Encontra o primeiro entry que tem essa descrição
+                    const matchEntry = injectedEntries.find(e => 
+                        e.descricao && e.descricao.trim().toLowerCase() === s.toLowerCase()
+                    );
+                    
+                    // Se encontrou e tem categoria, preenche o campo
+                    if (matchEntry && matchEntry.categoria) {
+                        expenseCategoryInput.value = matchEntry.categoria;
+                    }
+                }
+                
+                // Manter o foco no campo de descrição
+                expenseDescriptionInput.focus();
+            });
+            container.appendChild(item);
+        });
+        container.style.display = 'block';
+    };
+
+    // ----------------------------
+    // Autocomplete para conta
+    // ----------------------------
+    const ensureAccountSuggestionsContainer = () => {
+        let container = document.getElementById('accountSuggestions');
+        if (!container && expenseAccountInput) {
+            container = document.createElement('div');
+            container.id = 'accountSuggestions';
+            container.classList.add('entry-modal__suggestions');
+            container.setAttribute('role', 'listbox');
+            const parent = expenseAccountInput.parentElement;
+            parent.style.position = parent.style.position || 'relative';
+            parent.appendChild(container);
+        }
+        return container;
+    };
+
+    const mostrarSugestoesConta = (query) => {
+        const container = ensureAccountSuggestionsContainer();
+        if (!container) return;
+        container.innerHTML = '';
+        if (!query || query.trim().length < 1 || fetchedAccounts.length === 0) {
+            container.style.display = 'none';
+            return;
+        }
+        const q = query.trim().toLowerCase();
+        const suggestions = fetchedAccounts.filter(acc => acc.toLowerCase().includes(q));
+        if (suggestions.length === 0) {
+            container.style.display = 'none';
+            return;
+        }
+        suggestions.forEach(s => {
+            const item = document.createElement('div');
+            item.setAttribute('role', 'option');
+            item.classList.add('entry-modal__suggestion');
+            item.innerHTML = escapeHtml(s);
+            item.addEventListener('click', () => {
+                expenseAccountInput.value = s;
+                container.style.display = 'none';
+                expenseAccountInput.focus();
+            });
+            container.appendChild(item);
+        });
+        container.style.display = 'block';
+    };
+
+    // Fecha as sugestões ao clicar fora
+    document.addEventListener('click', (ev) => {
+        const containers = [
+            { container: document.getElementById('catSuggestions'), input: expenseCategoryInput },
+            { container: document.getElementById('accountSuggestions'), input: expenseAccountInput },
+            { container: document.getElementById('descSuggestions'), input: expenseDescriptionInput }
+        ];
+        
+        containers.forEach(({ container, input }) => {
+            if (container && input && ev.target !== input && !container.contains(ev.target)) {
+                container.style.display = 'none';
+            }
+        });
+    });
+
+    // Adiciona os listeners para os inputs
+    if (expenseCategoryInput) {
+        expenseCategoryInput.addEventListener('focus', () => {
+            mostrarSugestoesCategoria(expenseCategoryInput.value);
+        });
+        expenseCategoryInput.addEventListener('input', (ev) => {
+            mostrarSugestoesCategoria(ev.target.value);
+        });
+    }
+
+    if (expenseDescriptionInput) {
+        expenseDescriptionInput.addEventListener('focus', () => {
+            mostrarSugestoesDescricao(expenseDescriptionInput.value);
+        });
+        expenseDescriptionInput.addEventListener('input', (ev) => {
+            mostrarSugestoesDescricao(ev.target.value);
+        });
+    }
+
+    if (expenseAccountInput) {
+        expenseAccountInput.addEventListener('focus', () => {
+            mostrarSugestoesConta(expenseAccountInput.value);
+        });
+        expenseAccountInput.addEventListener('input', (ev) => {
+            mostrarSugestoesConta(ev.target.value);
         });
     }
 
@@ -123,7 +349,13 @@ export function inicializarModalDeLancamento() {
         const contas = entries
             .map(e => String(e.conta || '').trim())
             .filter(Boolean);
-        fetchedAccounts = Array.from(new Set(contas));
+        fetchedAccounts = Array.from(new Set(contas)).sort();
+        
+        // Extrai descrições únicas
+        const descricoes = entries
+            .map(e => String(e.descricao || '').trim())
+            .filter(Boolean);
+        fetchedDescriptions = Array.from(new Set(descricoes)).sort();
         
         // Extrai orçamentos (valores Excel epoch)
         const orcamentos = entries
@@ -145,7 +377,7 @@ export function inicializarModalDeLancamento() {
                     setModalEntries(detail.entries);
                 }
                 if (Array.isArray(detail.categories)) {
-                    fetchedCategories = detail.categories;
+                    fetchedCategories = detail.categories.filter(Boolean).sort();
                 }
             }
             
@@ -155,6 +387,176 @@ export function inicializarModalDeLancamento() {
             console.error('Erro ao injetar entries e categorias no modal:', err);
         }
     });
+
+    // ----------------------------
+    // Envio do formulário
+    // ----------------------------
+    
+    /**
+     * Mostra mensagem de feedback no modal
+     * @param {string} message - Mensagem a ser exibida
+     * @param {string} type - Tipo de mensagem ('success', 'error', 'info')
+     * @param {number} duration - Duração em ms (0 para não esconder)
+     */
+    const showFeedback = (message, type = 'info', duration = 3000) => {
+        if (!feedbackElement) return;
+        
+        // Limpar classes anteriores e adicionar a atual
+        feedbackElement.className = 'modal-feedback';
+        feedbackElement.classList.add(`modal-feedback--${type}`);
+        
+        feedbackElement.textContent = message;
+        feedbackElement.style.display = 'block';
+        
+        if (duration > 0) {
+            setTimeout(() => {
+                feedbackElement.style.display = 'none';
+            }, duration);
+        }
+    };
+    
+    /**
+     * Desabilita ou habilita todos os campos e botões do formulário
+     */
+    const toggleFormFields = (disabled) => {
+        const elements = expenseForm.querySelectorAll('input, select, button');
+        elements.forEach(el => {
+            el.disabled = disabled;
+        });
+    };
+    
+    /**
+     * Limpa o formulário e reseta para valores iniciais
+     */
+    const resetForm = () => {
+        expenseForm.reset();
+        
+        // Reinicia o estado do sinal para negativo (despesa)
+        inicializarEstadoSinal();
+        
+        // Preenche a data atual
+        if (expenseDateInput) {
+            const now = new Date();
+            const pad = (v) => String(v).padStart(2, '0');
+            const yyyy = now.getFullYear();
+            const mm = pad(now.getMonth() + 1);
+            const dd = pad(now.getDate());
+            const hh = pad(now.getHours());
+            const min = pad(now.getMinutes());
+
+            const typestr = (expenseDateInput.getAttribute('type') || '').toLowerCase();
+            if (typestr === 'datetime-local') {
+                expenseDateInput.value = `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+            } else if (typestr === 'time') {
+                expenseDateInput.value = `${hh}:${min}`;
+            } else {
+                expenseDateInput.value = `${yyyy}-${mm}-${dd}`;
+            }
+        }
+        
+        // Define o próximo orçamento disponível
+        definirProximoOrcamento();
+    };
+    
+    /**
+     * Handler para envio do formulário
+     */
+    const handleFormSubmit = async (event) => {
+        event.preventDefault();
+        
+        try {
+            // Desabilitar formulário durante o envio
+            toggleFormFields(true);
+            
+            // Validação básica
+            if (!expenseDateInput.value || !expenseAccountInput.value || 
+                !expenseValueInput.value || !expenseDescriptionInput.value ||
+                !expenseCategoryInput.value || !expenseBudgetInput.value) {
+                showFeedback('Por favor, preencha todos os campos obrigatórios.', 'error');
+                toggleFormFields(false);
+                return;
+            }
+            
+            // Formatar valor com sinal correto
+            const valorBase = parseFloat(expenseValueInput.value) || 0;
+            const sinal = expenseSignValue.value === '-' ? -1 : 1;
+            const valorFinal = sinal * Math.abs(valorBase);
+            
+            // Converter a data do orçamento para Excel Serial (ajuste especial)
+            const dataBudget = new Date(expenseBudgetInput.value);
+
+            // Garantir que a data seja independente do fuso horário
+            // Extraímos os componentes da data e criamos uma nova data com hora fixa
+            const ano = dataBudget.getFullYear();
+            const mes = dataBudget.getMonth();
+            const dia = dataBudget.getDate();
+
+            // Criar uma nova data com hora fixa (meio-dia)
+            const dataBudgetAjustada = new Date(ano, mes, dia, 12, 0, 0, 0);
+
+            // Debug para verificar a data que estamos usando
+            console.log(`Data selecionada: ${dia}/${mes+1}/${ano} (${dataBudgetAjustada.toISOString()})`);
+
+            const orcamentoSerial = toExcelSerial(dataBudgetAjustada, false);
+            console.log(`Serial Excel gerado: ${orcamentoSerial}`);
+            
+            if (isNaN(orcamentoSerial)) {
+                showFeedback('Data de orçamento inválida.', 'error');
+                toggleFormFields(false);
+                return;
+            }
+            
+            // Preparar payload para o endpoint
+            const payload = {
+                data: expenseDateInput.value,
+                conta: expenseAccountInput.value,
+                valor: valorFinal,
+                descricao: expenseDescriptionInput.value,
+                categoria: expenseCategoryInput.value,
+                orcamento: orcamentoSerial
+            };
+            
+            // Enviar para o endpoint
+            const response = await fetch(`${apiConfig.getBaseURL()}/append-entry`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${window.pb.authStore.token}`
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok && data.success) {
+                // Sucesso
+                showFeedback('Lançamento adicionado com sucesso!', 'success');
+                
+                // Emitir evento para atualizar a lista de entries
+                document.dispatchEvent(new CustomEvent('entry:created', { 
+                    detail: { entry: payload }
+                }));
+                
+                // Reset do formulário
+                resetForm();
+                
+                // Não fechar o modal após sucesso, para permitir mais lançamentos
+                toggleFormFields(false);
+            } else {
+                // Erro retornado pelo servidor
+                const errorMsg = data.error || 'Ocorreu um erro ao salvar o lançamento.';
+                showFeedback(errorMsg, 'error');
+                toggleFormFields(false);
+            }
+        } catch (error) {
+            console.error('Erro ao enviar lançamento:', error);
+            showFeedback('Erro de conexão. Verifique sua internet e tente novamente.', 'error');
+            toggleFormFields(false);
+        }
+    };
+    
+    // Adicionar listener para o formulário
+    expenseForm.addEventListener('submit', handleFormSubmit);
 
     // ----------------------------
     // controle de abertura/fechamento do modal
@@ -188,18 +590,36 @@ export function inicializarModalDeLancamento() {
         
         // Define o próximo orçamento disponível
         definirProximoOrcamento();
+        
+        // Esconder mensagens anteriores
+        if (feedbackElement) {
+            feedbackElement.style.display = 'none';
+        }
 
+        // Exibe o modal e REMOVE o aria-hidden para corrigir erro de acessibilidade
         entryModal.style.display = 'flex';
+        entryModal.removeAttribute('aria-hidden');
         openModalBtn.classList.add('active');
         openModalBtn.setAttribute('aria-label', 'Fechar modal');
     };
 
     const closeModal = () => {
+        // Oculta o modal e configura aria-hidden="true" apenas quando fechado
         entryModal.style.display = 'none';
+        entryModal.setAttribute('aria-hidden', 'true');
         openModalBtn.classList.remove('active');
         openModalBtn.setAttribute('aria-label', 'Adicionar lançamento');
-        const container = document.getElementById('descSuggestions');
-        if (container) container.style.display = 'none';
+        
+        // Esconde as sugestões
+        const containers = [
+            document.getElementById('catSuggestions'),
+            document.getElementById('accountSuggestions'),
+            document.getElementById('descSuggestions')
+        ];
+        
+        containers.forEach(container => {
+            if (container) container.style.display = 'none';
+        });
     };
 
     openModalBtn.addEventListener('click', () => {
@@ -218,16 +638,18 @@ export function inicializarModalDeLancamento() {
             closeModal();
         }
     });
-
-    // Removida a chamada para inicializarCalendarioOrcamento que não existe mais
-    // inicializarCalendarioOrcamento();
     
     // Inicializar o estado do sinal ao carregar
     inicializarEstadoSinal();
     
+    // Garantir que o modal comece com aria-hidden="true"
+    entryModal.setAttribute('aria-hidden', 'true');
+    
     // retornar objeto público
     return { 
         setModalEntries,
-        inicializarEstadoSinal 
+        inicializarEstadoSinal,
+        showFeedback,
+        resetForm
     };
 }
