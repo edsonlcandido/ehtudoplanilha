@@ -34,7 +34,7 @@
 /* Grid responsivo para os cartões de resumo (apenas para o componente) */
 .summary-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: 1fr; /* Garante uma única coluna */
     gap: 0.75rem;
 }
 
@@ -58,7 +58,7 @@
 /* Área dos cartões agregados */
 .details__cards {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: 240px; /* Largura fixa para os cards */
     gap: 0.6rem;
     margin-bottom: 0.75rem;
 }
@@ -125,4 +125,6 @@
         flex: 1 1 auto;
     }
     .summary-cards {
-        grid
+        grid-template-columns: 1fr; /* Garante uma única coluna */
+    }
+}

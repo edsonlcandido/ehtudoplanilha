@@ -3,6 +3,11 @@ body {
     overflow-x: hidden;
 }
 
+/* Estilos para o container principal do dashboard */
+.dashboard-main {
+    padding: 0 1rem; /* Adiciona espaçamento lateral */
+}
+
 /* Estilos globais para tabelas roláveis */
 .tabela-rolavel {
     width: 100%;
