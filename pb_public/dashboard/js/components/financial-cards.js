@@ -220,12 +220,21 @@ function mostrarCardCarregamento() {
     if (!container) return;
     
     container.innerHTML = `
-        <div class="financial-card saldo">
-            <div class="card-header">
-                <h3 class="card-title">Carregando dados...</h3>
-            </div>
-            <div class="card-value">...</div>
-        </div>
+                <div class="financial-card loading saldo">
+                    <div class="card-header">
+                        <h3 class="card-title">dd/mm/yyyy</h3>
+                    </div>
+
+                    <div class="card-value" data-card="orcamento1">R$&nbsp;100,00</div>
+                    <div class="card-actions">
+                        <button class="button pseudo card-toggle" aria-expanded="false">Mostrar
+                            detalhes</button>
+                    </div>
+                    <div class="card-details">
+                        <div class="card-muted" data-card="orcamento1">Receitas: R$&nbsp;100,00</div>
+                        <div class="card-muted" data-card="orcamento1">Despesas: R$&nbsp;100,00</div>
+                    </div>
+                </div>
     `;
 }
 

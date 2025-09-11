@@ -193,5 +193,18 @@ export function budgetsInEntries(entries = [], orcamentoField = 'orcamento') {
 
   // Retorna array ordenado por orcamento asc
   return Array.from(map.values()).sort((a, b) => a.orcamento - b.orcamento);
+}
 
+// Converte somente a parte de data (dia) para serial Excel inteiro (sem horário)
+// Evita depender de timezone local usando Date.UTC
+export function toExcelSerialDia(date) {
+  if (!(date instanceof Date)) return NaN;
+  const y = date.getFullYear();
+  const m = date.getMonth();
+  const d = date.getDate();
+  const base = Date.UTC(1899, 11, 31); // 31/12/1899
+  const target = Date.UTC(y, m, d);
+  let days = Math.round((target - base) / 86400000);
+  if (days >= 60) days += 1; // bug do 29/02/1900
+  return days;
 }

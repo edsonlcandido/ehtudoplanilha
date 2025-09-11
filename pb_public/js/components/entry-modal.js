@@ -1,4 +1,4 @@
-import { excelSerialToDate, toExcelSerial, excelSerialToMonthLabel } from '../utils/sheet-entries.js';
+import { excelSerialToDate, toExcelSerial, excelSerialToMonthLabel, toExcelSerialDia } from '../utils/sheet-entries.js';
 import apiConfig from '../config/api-config.js';
 
 /**
@@ -344,28 +344,28 @@ export function inicializarModalDeLancamento() {
     const setModalEntries = (entries) => {
         if (!Array.isArray(entries)) return;
         injectedEntries = entries;
-        
+
         // Extrai contas únicas
         const contas = entries
             .map(e => String(e.conta || '').trim())
             .filter(Boolean);
         fetchedAccounts = Array.from(new Set(contas)).sort();
-        
+
         // Extrai descrições únicas
         const descricoes = entries
             .map(e => String(e.descricao || '').trim())
             .filter(Boolean);
         fetchedDescriptions = Array.from(new Set(descricoes)).sort();
-        
-        // Extrai orçamentos (valores Excel epoch)
+
+        // Extrai orçamentos (normaliza para inteiro)
         const orcamentos = entries
             .map(e => {
-                const orcamento = e.orcamento;
-                return typeof orcamento === 'number' && !isNaN(orcamento) ? orcamento : null;
+                const o = e.orcamento;
+                return (typeof o === 'number' && !isNaN(o)) ? Math.trunc(o) : null;
             })
             .filter(Boolean);
-        
-        fetchedBudgets = Array.from(new Set(orcamentos));
+
+        fetchedBudgets = Array.from(new Set(orcamentos)).sort((a,b) => a-b);
     };
 
     // ouvir evento global disparado por index.html após fetch dos entries
@@ -482,20 +482,11 @@ export function inicializarModalDeLancamento() {
             const sinal = expenseSignValue.value === '-' ? -1 : 1;
             const valorFinal = sinal * Math.abs(valorBase);
             
-            // CORREÇÃO PARA O PROBLEMA DA DATA - REMOVER COMPONENTE DE HORA
-            // Extrair componentes da data diretamente do input
-            const dataBudgetStr = expenseBudgetInput.value; // formato YYYY-MM-DD
-            const [ano, mes, dia] = dataBudgetStr.split('-').map(num => parseInt(num, 10));
-            
-            // Criar data sem componente de hora (zera a hora)
-            // Importante: não usamos UTC aqui para evitar problemas de fuso horário
-            const dataSimples = new Date(ano, mes-1, dia);
-            
-            // Garantir que a hora seja zerada
-            dataSimples.setHours(0, 0, 0, 0);
-            
-            // Converter para serial Excel SEM incluir informação de hora
-            const orcamentoSerial = toExcelSerial(dataSimples, false);
+            // CORREÇÃO DEFINITIVA PARA ORÇAMENTO (somente dia, inteiro, sem hora)
+            const dataBudgetStr = expenseBudgetInput.value; // YYYY-MM-DD
+            const [ano, mes, dia] = dataBudgetStr.split('-').map(n => parseInt(n, 10));
+            const dataSimples = new Date(ano, mes - 1, dia); // 00:00 local
+            const orcamentoSerial = toExcelSerialDia(dataSimples); // sempre inteiro
             
             // String formatada apenas para debug
             const dataFormatada = `${dia.toString().padStart(2, '0')}/${mes.toString().padStart(2, '0')}/${ano}`;
