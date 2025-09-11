@@ -1,0 +1,33 @@
+body {
+    max-width: 100vw;
+    overflow-x: hidden;
+}
+
+/* Estilos globais para tabelas roláveis */
+.tabela-rolavel {
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    border: 1px solid #ddd;
+    padding: 5px;
+    border-radius: 4px;
+    -webkit-overflow-scrolling: touch;
+    /* Rolagem suave em iOS */
+    scrollbar-width: thin;
+    /* Firefox */
+    scrollbar-color: #ccc transparent;
+    /* Firefox */
+}
+
+/* Estilo para o botão de adicionar lançamento quando o modal está aberto */
+button#openEntryModal.active {
+    background-color: #d9534f !important; /* Vermelho do Picnic CSS */
+    border-color: #d43f3a !important;
+    transform: rotate(45deg) !important;
+    /* Gira o '+' para parecer um 'x' */
+}
+
+/* Transição suave para o botão */
+#openEntryModal {
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}

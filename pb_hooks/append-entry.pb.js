@@ -17,7 +17,7 @@ routerAdd("POST", "/append-entry", (c) => {
     const requestData = c.requestInfo().body;
     
     // Validação básica dos dados
-    if (!requestData.data || !requestData.conta || !requestData.valor === undefined || !requestData.descricao) {
+    if (!requestData.data || !requestData.conta || requestData.valor === undefined || requestData.descricao === undefined) {
         return c.json(400, { "error": "Campos obrigatórios faltando" });
     }
 
@@ -48,13 +48,13 @@ routerAdd("POST", "/append-entry", (c) => {
         // Preparar linha para inserir na planilha
         const values = [
             [
-                requestData.data, 
+                requestData.data,
                 requestData.conta,
                 requestData.valor,
                 requestData.descricao,
                 requestData.categoria || '',
-                requestData.orcamento || '',
-                '' // Campo observação vazio, será editado diretamente no Google Sheets
+                (Number.isFinite(requestData.orcamento) ? Math.trunc(requestData.orcamento) : ''), // garante inteiro
+                ''
             ]
         ];
 

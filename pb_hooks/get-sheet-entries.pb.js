@@ -15,7 +15,23 @@ routerAdd("GET", "/get-sheet-entries", (c) => {
 
     const userId = auth.id;
     const query = c.requestInfo().query || {};
-    const limit = parseInt(query.limit) || 100; // Padrão: últimas 100 entradas
+    // Interpreta limit com as seguintes regras:
+    // - ausente -> default 100
+    // - >0 -> retorna esse número
+    // - 0 -> retorna todas as linhas (sem limite)
+    // - inválido/negativo -> fallback 100
+    let limit = 100;
+    if (query.limit !== undefined) {
+        const parsed = parseInt(query.limit, 10);
+        if (!Number.isNaN(parsed)) {
+            if (parsed === 0) {
+                limit = 0; // sinaliza "sem limite"
+            } else if (parsed > 0) {
+                limit = parsed;
+            }
+            // valores negativos ou NaN manterão o padrão
+        }
+    }
 
     try {
         // Buscar informações do Google para o usuário
@@ -134,10 +150,11 @@ routerAdd("GET", "/get-sheet-entries", (c) => {
                 });
 
             // Mais recentes primeiro (linhas maiores) sem precisar reverse depois de limitar: ordenar por rowIndex desc
-            const recentEntries = entries
-                .sort((a,b) => b.rowIndex - a.rowIndex)
-                .slice(0, limit);
-
+            let recentEntries = entries.sort((a,b) => b.rowIndex - a.rowIndex);
+            // se limit > 0 aplica slice; se limit === 0 retorna todas as linhas
+            if (limit > 0) {
+                recentEntries = recentEntries.slice(0, limit);
+            }
             return c.json(200, {
                 "success": true,
                 "entries": recentEntries,

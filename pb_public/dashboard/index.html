@@ -7,48 +7,10 @@
     <title>Dashboard - Seu App Financeiro</title>
     <link rel="stylesheet" href="../css/picnic.css">
     <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/responsive-tables.css">
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/financial-cards.css">
+    <link rel="stylesheet" href="./css/modal-entry.css">
     <script src="../js/pocketbase/dist/pocketbase.umd.js"></script>
-    <style>
-        body {
-            max-width: 100vw;
-            overflow-x: hidden;
-        }
-        
-        /* Estilos globais para tabelas roláveis */
-        .tabela-rolavel {
-            width: 100%;
-            overflow-x: auto;
-            white-space: nowrap;
-            border: 1px solid #ddd;
-            padding: 5px;
-            border-radius: 4px;
-            -webkit-overflow-scrolling: touch; /* Rolagem suave em iOS */
-            scrollbar-width: thin; /* Firefox */
-            scrollbar-color: #ccc transparent; /* Firefox */
-        }
-        
-        /* Garantir min-width nas tabelas dentro de contêineres roláveis */
-        .tabela-rolavel table {
-            min-width: 600px;
-            width: 100%;
-        }
-        
-        /* Evitar que a tabela quebre o layout em telas pequenas */
-        @media (max-width: 768px) {
-            .container-tabela {
-                position: relative;
-                max-width: 100%;
-                overflow: hidden;
-            }
-            
-            .top-categories-container {
-                max-width: 100%;
-                margin: 0;
-                padding: 0 10px;
-            }
-        }
-    </style>
 </head>
 
 <body>
@@ -65,7 +27,7 @@
             <a href="../registro.html" class="button icon-user" id="registerBtn">Registrar</a>
         </div>
     </nav>
-    
+
     <!-- Container principal com menu lateral -->
     <div class="app-container">
         <!-- Menu lateral fixo -->
@@ -84,237 +46,41 @@
         <main class="main-content">
             <!-- SECTION MAIN: conteúdo principal ocupando toda tela -->
             <section class="section section-light dashboard-main">
-        <div class="container text-center">
-            <h2>Bem-vindo ao seu Dashboard!</h2>
-            <p>Aqui você pode visualizar e inserir lançamentos de forma simples e rápida.</p>
-            
-             <div style="margin-top: 2rem;">
-                <a href="configuracao.html" id="configBtn" class="button primary" style="display: none;">⚙️ Configurar
-                    Integração</a>
-            </div>
+                <div class="container text-center">
+                    <h2>Bem-vindo ao seu Dashboard!</h2>
+                    <p>Aqui você pode visualizar resumos e inserir lançamentos de forma simples e rápida.</p>
 
-            <!-- Seletor de Mês para Análise -->
-            <div style="margin-top: 2rem; margin-bottom: 1rem;">
-                <div class="form-group" style="max-width: 300px; margin: 0 auto;">
-                    <label for="monthSelector" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">
-                        📅 Mês para Análise:
-                    </label>
-                    <select id="monthSelector" class="form-control" aria-label="Selecionar mês para análise">
-                        <option value="">Carregando meses...</option>
-                    </select>
-                </div>
-            </div>
+                    <div style="margin-top: 2rem;">
+                        <a href="configuracao.html" id="configBtn" class="button primary" style="display: none;">⚙️
+                            Configurar
+                            Integração</a>
+                    </div>
 
-            <!-- Cards Financeiros (skeleton exibido imediatamente para melhor UX) -->
-            <div id="financialCards" aria-live="polite"></div>
+                    <!-- Adicione aqui os componentes do dashboard -->
+                    <!-- Summary cards -->
+                    <div id="summaryCards" class="flex row">
+                        <div class="financial-card loading saldo">
+                            <div class="card-header">
+                                <h3 class="card-title">31/08/2025</h3>
+                            </div>
 
-            <!-- Adicione aqui os componentes do dashboard -->
-            <!-- Container de Categorias Top 10 -->
-            <div class="container-tabela" style="margin-top: 2rem;">
-                <div id="topCategoriesContainer">
-                    <div class="top-categories-container">
-                        <h4>Top 10 Categorias - Gastos</h4>
-                        <!-- Div com overflow-x explícito e sem classes -->
-                        <div class="tabela-rolavel" style="width: 100%; overflow-x: auto; white-space: nowrap; border: 1px solid #ddd; padding: 5px; border-radius: 4px; -webkit-overflow-scrolling: touch;">
-                            <table class="primary" style="min-width: 600px; width: 100%;">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Categoria</th>
-                                        <th>Valor</th>
-                                        <th>% do Total</th>
-                                    </tr>
-                                </thead>
-                            <tbody>
-                                <!-- Skeleton Rows -->
-                                <tr>
-                                    <td><div style="width:1rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                    <td><div style="width:6rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                    <td><div style="width:3rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                    <td><div style="width:4rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                </tr>
-                                <!-- Repetir 9 vezes -->
-                                <tr>
-                                    <td><div style="width:1rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                    <td><div style="width:6rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                    <td><div style="width:3rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                    <td><div style="width:4rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                </tr>
-                                <tr>
-                                    <td><div style="width:1rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                    <td><div style="width:6rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                    <td><div style="width:3rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                    <td><div style="width:4rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                </tr>
-                                <tr>
-                                    <td><div style="width:1rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                    <td><div style="width:6rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                    <td><div style="width:3rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                    <td><div style="width:4rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                </tr>
-                                <tr>
-                                    <td><div style="width:1rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                    <td><div style="width:6rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                    <td><div style="width:3rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                    <td><div style="width:4rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                </tr>
-                                <tr>
-                                    <td><div style="width:1rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                    <td><div style="width:6rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                    <td><div style="width:3rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                    <td><div style="width:4rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                </tr>
-                                <tr>
-                                    <td><div style="width:1rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                    <td><div style="width:6rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                    <td><div style="width:3rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                    <td><div style="width:4rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                </tr>
-                                <tr>
-                                    <td><div style="width:1rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                    <td><div style="width:6rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                    <td><div style="width:3rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                    <td><div style="width:4rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                </tr>
-                                <tr>
-                                    <td><div style="width:1rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                    <td><div style="width:6rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                    <td><div style="width:3rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                    <td><div style="width:4rem;height:1rem;background:#eee;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>
-                                </tr>
-                            </tbody>
-                        </table>
+                            <div class="card-value" data-card="orcamento1">R$&nbsp;100,00</div>
+                            <div class="card-actions">
+                                <button class="button pseudo card-toggle" aria-expanded="false">Mostrar
+                                    detalhes</button>
+                            </div>
+                            <div class="card-details">
+                                <div class="card-muted" data-card="orcamento1">Receitas: R$&nbsp;100,00</div>
+                                <div class="card-muted" data-card="orcamento1">Despesas: R$&nbsp;100,00</div>
+                            </div>
                         </div>
                     </div>
-                    <style>
-                        @keyframes pulse {
-                            0% { opacity: 1; }
-                            50% { opacity: 0.4; }
-                            100% { opacity: 1; }
-                        }
-                        
-                        /* Estilos para a tabela rolável */
-                        .tabela-rolavel {
-                            width: 100%;
-                            overflow-x: auto;
-                            white-space: nowrap;
-                            border: 1px solid #ddd;
-                            padding: 5px;
-                            border-radius: 4px;
-                            -webkit-overflow-scrolling: touch; /* Rolagem suave em iOS */
-                            scrollbar-width: thin; /* Firefox */
-                            scrollbar-color: #ccc transparent; /* Firefox */
-                        }
-                        
-                        /* Estilo da barra de rolagem para Chrome e Safari */
-                        .tabela-rolavel::-webkit-scrollbar {
-                            height: 8px;
-                            background-color: #f5f5f5;
-                        }
-                        
-                        .tabela-rolavel::-webkit-scrollbar-thumb {
-                            background-color: #ccc;
-                            border-radius: 4px;
-                        }
-                        
-                        /* Indicador visual de rolagem em dispositivos móveis */
-                        @media (max-width: 768px) {
-                            .tabela-rolavel {
-                                position: relative;
-                            }
-                            
-                            /* Indicador de rolagem à direita */
-                            .tabela-rolavel::after {
-                                content: "→";
-                                position: absolute;
-                                right: 5px;
-                                top: 50%;
-                                transform: translateY(-50%);
-                                color: #999;
-                                animation: fadeInOut 1.5s infinite;
-                                pointer-events: none;
-                                background: rgba(255,255,255,0.7);
-                                padding: 5px;
-                            }
-                            
-                            @keyframes fadeInOut {
-                                0%, 100% { opacity: 0.3; }
-                                50% { opacity: 1; }
-                            }
-                        }
-                    </style>
-                </div>
-            </div>
-            
-        </div>
-        <!-- Botão de adicionar lançamento (flutuante) -->
-        <button id="openEntryModal" class="button" aria-label="Adicionar lançamento">+</button>
-        </section>
+                    <!-- Botão de adicionar lançamento (flutuante) -->
+                    <button id="openEntryModal" class="button" aria-label="Adicionar lançamento">+</button>
+            </section>
         </main>
     </div>
 
-    <!-- Modal de lançamento de despesas/receitas -->
-    <div id="entryModal" style="display:none; position:fixed; top:60px; left:0; width:100%; height:calc(100% - 60px); background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:1000;">
-        <button id="closeEntryModal" aria-label="Fechar modal" style="position:absolute; top:10px; right:10px; background:transparent; border:none; color:inherit; font-size:1.5rem; cursor:pointer; z-index:1002;">×</button>
-        <div class="modal-content solution-card" style="background:white; padding:1.5rem; border-radius:4px; max-width:600px; width:90%; position:relative; max-height:90vh; overflow:auto;">
-    <section class="section" style="padding:2rem 0; margin:0;">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-8 col-lg-6 mx-auto">
-                    <div class="solution-card">
-                        <h3 style="margin-bottom: 1.5rem;">Lançamento de Despesa/Receita</h3>
-                        <form id="expenseForm">
-                            <fieldset>
-                                <!-- Data e Hora -->
-                                <div class="form-group" style="margin-bottom: 1rem;">
-                                    <label for="expenseDate">Data:</label>
-                                    <input type="datetime-local" id="expenseDate" name="data" class="form-control" required>
-                                </div>
-                                <!-- Conta -->
-                                <div class="form-group" style="margin-bottom: 1rem;">
-                                    <label for="expenseAccount">Conta:</label>
-                                    <input type="text" id="expenseAccount" name="conta" class="form-control" placeholder="Ex: Conta Corrente, Cartão de Crédito" required>
-                                </div>
-                                <!-- Valor com toggle de sinal -->
-                                <div class="form-group" style="margin-bottom: 1rem;">
-                                    <label for="expenseValue">Valor:</label>
-                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                        <button type="button" id="expenseSignBtn" class="button outline" aria-label="Alternar sinal" style="background-color: white; color: inherit; border: 1px solid #ccc; width: 2.5rem; text-align: center;">-</button>
-                                        <input type="number" id="expenseValue" name="valor" class="form-control" step="0.01" min="0" placeholder="0,00" required>
-                                        <input type="hidden" id="expenseSignValue" name="sinal" value="-">
-                                    </div>
-                                </div>
-                                <!-- Descrição -->
-                                <div class="form-group" style="margin-bottom: 1rem;">
-                                    <label for="expenseDescription">Descrição:</label>
-                                    <input type="text" id="expenseDescription" name="descricao" class="form-control" placeholder="Descrição da despesa" required>
-                                </div>
-                                <!-- Categoria: combobox com filtro -->
-                                <div class="form-group" style="margin-bottom: 1rem;">
-                                    <label for="expenseCategory">Categoria:</label>
-                                    <input type="text" id="expenseCategory" name="categoria" class="form-control" placeholder="Selecione ou digite uma categoria" list="categoriaList" autocomplete="off" required>
-                                    <datalist id="categoriaList"></datalist>
-                                </div>
-                                <!-- Orçamento -->
-                                <div class="form-group" style="margin-bottom: 1.5rem;">
-                                    <label for="expenseBudget">Orçamento:</label>
-                                    <select id="expenseBudget" name="orcamento" class="form-control" required></select>
-                                </div>
-                                <!-- Botões -->
-
-                                <div class="form-group" style="display:flex; justify-content:space-around; align-items:center; margin-top:2rem;">
-                                    <button type="reset" class="button warning">Limpar</button>
-                                    <button type="submit" class="button success">Salvar</button>
-                                </div>
-                            </fieldset>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-</div> <!-- modal-content -->
-</div> <!-- entryModal -->
 
     <!-- FOOTER -->
     <footer class="footer">
@@ -326,963 +92,80 @@
                 <a href="https://www.ehtudo.app">Eh!Tudo.app</a></small>
         </p>
     </footer>
-    <!-- Script PocketBase e módulos da aplicação -->
     <script type="module">
-        // Histórico para autocomplete de descrições
-        let historicoLancamentos = [];
-        
-        // Inicializar componente de cards financeiros
-        let financialCardsComponent = null;
         import apiConfig from '../js/config/api-config.js';
         import { inicializarMenuUsuario } from '../js/menu-usuario.js';
-        import googleSheetsService from '../js/google/sheets-api.js';
-        import TopCategoriesChart from '../js/components/top-categories-chart.js';
-        import FinancialCards from '../js/components/financial-cards.js';
-        import categoriesService from '../js/categories-service.js';
+        import { entryModalTemplate } from '../js/components/entry-modal-template.js';
+        import { filterEntriesByInterval, aggregateByBudget, budgetsInEntries } from '../js/utils/sheet-entries.js';
+        import {
+            renderizarCards,
+            mostrarCardCarregamento,
+            mostrarErro,
+            inicializarEventos
+        } from './js/components/financial-cards.js';
+        import { inicializarModalDeLancamento } from '../js/components/entry-modal.js';
+
+        // insere o modal no body
+        document.body.insertAdjacentHTML('beforeend', entryModalTemplate);
 
         // Inicializa o PocketBase globalmente antes dos módulos
         window.pb = new PocketBase(apiConfig.getBaseURL());
 
         inicializarMenuUsuario();
+        inicializarEventos();
+        inicializarModalDeLancamento();
 
-        // Inicializa o serviço Google Sheets
-        googleSheetsService.init(window.pb);
+        // Mostra card de carregamento inicial
+        mostrarCardCarregamento();
 
-        // Disponibiliza serviços globalmente
-        window.categoriesService = categoriesService;
-        window.googleSheetsService = googleSheetsService;
-
-        // Inicializa imediatamente os cards em estado de loading (placeholder)
-        financialCardsComponent = new FinancialCards('financialCards', { 
-            showToggleButtons: true 
-        }).init();
-        financialCardsComponent.show();
-
-        setTimeout(() => {
-            import('../js/protecao-dashboard.js')
-                .then(() => {
-                    console.log('Módulo de proteção do dashboard carregado com sucesso.');
-                })
-                .catch(err => {
-                    console.error('Erro ao carregar o módulo de proteção do dashboard:', err);
-                });
-        }, 100); // Aguarda 100 milissegundos para garantir que a autenticação seja verificada
-
-        // Substitui verificação frontend por rota de configuração no servidor
-        (async () => {
-            const configBtn = document.getElementById('configBtn');
-            
-            if (!configBtn) {
-                console.log('Botão de configuração não encontrado');
-                return;
-            }
-            
-            // Cards já foram inicializados anteriormente (placeholder loading)
-            
-            try {
-                console.log('Verificando status de configuração...');
-                const response = await fetch(`${apiConfig.getBaseURL()}/config-status`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${pb.authStore.token}`
-                    }
-                });
-                
-                console.log('Status da resposta de configuração:', response.status);
-                
-                if (!response.ok) {
-                    throw new Error('Erro na requisição de configuração');
-                }
-                
-                const data = await response.json();
-                console.log('Dados de configuração:', data);
-                
-                // Exibe botão se configuração inválida ou campos faltando
-                if (!data.validConfig) {
-                    console.log('Configuração incompleta, campos faltando:', data.missing);
-                    configBtn.style.display = '';
-                } else {
-                    console.log('Configuração OK, carregando dados financeiros...');
-                    // Se configuração OK, carrega meses disponíveis primeiro
-                    await carregarMesesDisponiveis();
-                    
-                    // Se configuração OK, carrega dados financeiros
-                    const nowCfg = new Date();
-                    const mesAtualCfg = `${nowCfg.getUTCFullYear()}-${String(nowCfg.getUTCMonth()+1).padStart(2, '0')}`;
-                    
-                    // Usa o mês selecionado se disponível, senão usa o atual
-                    const mesParaCarregar = mesAtualSelecionado || mesAtualCfg;
-                    const summaryInicial = await carregarDadosFinanceiros(mesParaCarregar);
-                    
-                    // Inicializa componente de categorias reutilizando summary
-                    topCategoriesComponent = new TopCategoriesChart('topCategoriesContainer', { 
-                        limit: 10, 
-                        periodo: 'atual', 
-                        mesBase: mesParaCarregar 
-                    });
-                    topCategoriesComponent.init(summaryInicial);
-                }
-            } catch (error) {
-                console.error('Erro ao verificar configuração do Google:', error);
-                configBtn.style.display = '';
-            }
-        })();
-
-        // Variável global para armazenar contas sugeridas
-        let contasSugeridas = [];
-
-        // Tenta carregar dados financeiros assim que DOM estiver pronto (caso configuração já esteja válida)
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Configura event listener para mudança de mês
-            const monthSelector = document.getElementById('monthSelector');
-            if (monthSelector) {
-                monthSelector.addEventListener('change', async (e) => {
-                    const novoMes = e.target.value;
-                    if (novoMes) {
-                        await onMonthChange(novoMes);
-                    }
-                });
-            }
-            
-            try {
-                // Evita duplicar se já tiver sido carregado dentro do fluxo de verificação
-                if (!financialCardsComponent) return;
-                
-                // Tenta carregar meses disponíveis se configuração estiver OK
-                try {
-                    await carregarMesesDisponiveis();
-                } catch (e) {
-                    console.warn('Erro ao carregar meses disponíveis na inicialização:', e);
-                }
-                
-                const now = new Date();
-                const mesAtual = `${now.getUTCFullYear()}-${String(now.getUTCMonth()+1).padStart(2, '0')}`;
-                const mesParaCarregar = mesAtualSelecionado || mesAtual;
-                const summary = await carregarDadosFinanceiros(mesParaCarregar);
-                if (summary && summary.success) {
-                    financialCardsComponent.updateData(summary);
-                    
-                    // Inicializa componente de categorias se não foi inicializado ainda
-                    if (!topCategoriesComponent) {
-                        topCategoriesComponent = new TopCategoriesChart('topCategoriesContainer', { 
-                            limit: 10, 
-                            periodo: 'atual', 
-                            mesBase: mesParaCarregar 
-                        });
-                        topCategoriesComponent.init(summary);
-                    }
-                }
-            } catch (e) {
-                console.warn('Falha no carregamento inicial otimista dos dados financeiros:', e);
-            }
-        });
-
-        // Função para carregar dados financeiros
-    async function carregarDadosFinanceiros(mesBase, forceRefresh = false) {
-             try {
-                console.log('Carregando dados financeiros...', 'mesBase:', mesBase, 'forceRefresh:', forceRefresh);
-                
-                // Garantir que os cards estão visíveis primeiro
-                if (financialCardsComponent) {
-                    financialCardsComponent.show();
-                    console.log('Cards forçados a ficar visíveis');
-                }
-                
-                // Aguardar um tempo para garantir que o DOM está pronto
-                await new Promise(resolve => setTimeout(resolve, 100));
-                
-                // Determina mês base (AAAA-MM) padrão se não for passado
-                let mesParam = mesBase;
-                if (!mesParam) {
-                    const now = new Date();
-                    mesParam = `${now.getUTCFullYear()}-${String(now.getUTCMonth()+1).padStart(2, '0')}`;
-                }
-                
-                const summary = await googleSheetsService.getFinancialSummary(mesParam, { force: forceRefresh });
-                // Armazena histórico e contas sugeridas
-                historicoLancamentos = summary.historicoLancamentos || [];
-                contasSugeridas = summary.contasSugeridas || [];
-                initDescricaoAutocomplete();
-                initContaAutocomplete();
-                console.log('Resposta da API financeira:', summary);
-                
-                if (summary && summary.success) {
-                    console.log('Dados válidos recebidos, atualizando cards...');
-                    if (financialCardsComponent) {
-                        financialCardsComponent.updateData(summary);
-                    }
-                } else {
-                    console.error('Erro ao carregar dados financeiros:', summary ? summary.error : 'Resposta inválida');
-                    if (financialCardsComponent) {
-                        financialCardsComponent.renderError(summary ? summary.error : 'Erro ao carregar dados');
-                    }
-                }
-                return summary;
-            } catch (error) {
-                console.error('Erro ao carregar dados financeiros:', error);
-                // Em caso de erro, mostra erro nos cards
-                if (financialCardsComponent) {
-                    financialCardsComponent.renderError(error.message || 'Erro ao carregar dados');
-                }
-                return null;
-            }
-        }
-
-        // === SELETOR DE MÊS PARA ANÁLISE ===
-        
-        // Variável global para armazenar componente de categorias e mês atual
-        let topCategoriesComponent = null;
-        let mesAtualSelecionado = null;
-
-        // Função para carregar meses disponíveis no seletor
-        async function carregarMesesDisponiveis() {
-            const monthSelector = document.getElementById('monthSelector');
-            if (!monthSelector) return;
-
-            try {
-                console.log('Carregando meses disponíveis...');
-                monthSelector.innerHTML = '<option value="">Carregando meses...</option>';
-                
-                const response = await googleSheetsService.getAvailableMonths();
-                
-                if (response.success && response.meses && response.meses.length > 0) {
-                    // Limpa as opções
-                    monthSelector.innerHTML = '';
-                    
-                    // Adiciona opções com os meses disponíveis
-                    response.meses.forEach(mes => {
-                        const option = document.createElement('option');
-                        option.value = mes.valor; // AAAA-MM
-                        option.textContent = mes.texto; // Janeiro/25
-                        monthSelector.appendChild(option);
-                    });
-                    
-                    // Define o mês atual como selecionado por padrão
-                    const now = new Date();
-                    const mesAtual = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
-                    
-                    // Se o mês atual estiver na lista, seleciona ele
-                    const mesAtualOption = monthSelector.querySelector(`option[value="${mesAtual}"]`);
-                    if (mesAtualOption) {
-                        mesAtualOption.selected = true;
-                        mesAtualSelecionado = mesAtual;
-                    } else if (response.meses.length > 0) {
-                        // Se não encontrar o mês atual, seleciona o primeiro (mais recente)
-                        monthSelector.selectedIndex = 0;
-                        mesAtualSelecionado = response.meses[0].valor;
-                    }
-                    
-                    console.log(`Carregados ${response.meses.length} meses. Mês selecionado: ${mesAtualSelecionado}`);
-                } else {
-                    monthSelector.innerHTML = '<option value="">Nenhum mês encontrado</option>';
-                    console.log('Nenhum mês disponível encontrado');
-                }
-            } catch (error) {
-                console.error('Erro ao carregar meses disponíveis:', error);
-                monthSelector.innerHTML = '<option value="">Erro ao carregar meses</option>';
-            }
-        }
-
-        // Função para atualizar dados quando o mês muda
-        async function onMonthChange(novoMes) {
-            if (!novoMes || novoMes === mesAtualSelecionado) return;
-            
-            console.log(`Mudando análise do mês ${mesAtualSelecionado} para ${novoMes}`);
-            mesAtualSelecionado = novoMes;
-            
-            try {
-                // Mostra estado de loading nos cards financeiros
-                if (financialCardsComponent) {
-                    financialCardsComponent.renderLoading();
-                }
-                
-                // Força limpeza do cache e busca dados com force=true
-                googleSheetsService.clearFinancialSummaryCache(novoMes);
-                const summary = await carregarDadosFinanceiros(novoMes, true);
-                
-                // Verifica se os dados foram carregados com sucesso
-                if (!summary || !summary.success) {
-                    throw new Error('Erro ao carregar dados financeiros para o mês selecionado');
-                }
-                
-                console.log('Dados carregados para o mês', novoMes, ':', summary);
-                
-                // Atualiza cards financeiros explicitamente
-                if (financialCardsComponent) {
-                    financialCardsComponent.updateData(summary);
-                    console.log('Cards financeiros atualizados');
-                }
-                
-                // Atualiza componente de categorias
-                if (topCategoriesComponent) {
-                    topCategoriesComponent.options.mesBase = novoMes;
-                    await topCategoriesComponent.fetchData(summary);
-                    console.log('Tabela de categorias atualizada');
-                } else {
-                    // Cria o componente se não existir
-                    console.log('Criando novo componente de categorias para mês', novoMes);
-                    topCategoriesComponent = new TopCategoriesChart('topCategoriesContainer', { 
-                        limit: 10, 
-                        periodo: 'atual', 
-                        mesBase: novoMes 
-                    });
-                    topCategoriesComponent.init(summary);
-                }
-                
-                // Dispara evento personalizado para outros componentes que possam estar ouvindo
-                document.dispatchEvent(new CustomEvent('monthChanged', { 
-                    detail: { novoMes, summary } 
-                }));
-                
-                console.log('Atualização concluída para o mês', novoMes);
-                
-            } catch (error) {
-                console.error('Erro ao atualizar dados para o novo mês:', error);
-                if (financialCardsComponent) {
-                    financialCardsComponent.renderError('Erro ao carregar dados do mês selecionado');
-                }
-                // Mostra mensagem de erro para o usuário
-                mostrarMensagem('error', 'Erro ao carregar dados do mês selecionado');
-            }
-        }
-
-        // Função para atualizar os cards com os dados
-        function atualizarCardsFinanceiros(data) {
-            console.log('Dados recebidos para atualizar cards:', data);
-            
-            // Verificar se os elementos existem
-            const saldoEl = document.getElementById('saldoValue');
-            const despesasValueText = document.getElementById('despesasValueText');
-            const receitasValueText = document.getElementById('receitasValueText');
-            const despesasVariationEl = document.getElementById('despesasVariation');
-            
-            console.log('Elementos encontrados:', {
-                saldo: saldoEl ? 'OK' : 'ERRO',
-                despesas: despesasValueText ? 'OK' : 'ERRO',
-                receitas: receitasValueText ? 'OK' : 'ERRO',
-                despesasVariation: despesasVariationEl ? 'OK' : 'ERRO'
-            });
-            
-            if (!saldoEl || !despesasValueText || !receitasValueText) {
-                console.error('Alguns elementos não foram encontrados no DOM');
-                return;
-            }
-            
-            // Formatador de moeda brasileira
-            const formatarMoeda = (valor) => {
-                console.log('Formatando valor:', valor, 'tipo:', typeof valor);
-                const resultado = new Intl.NumberFormat('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL'
-                }).format(valor);
-                console.log('Valor formatado:', resultado);
-                return resultado;
-            };
-
-            // Formatador de variação percentual (apenas para despesas)
-            const formatarVariacaoDespesas = (variacao) => {
-                console.log('Formatando variação de despesas:', variacao);
-                const sinal = variacao >= 0 ? '+' : '';
-                // Para despesas: variação negativa é boa (menos gastos = 📉 verde), positiva é ruim (mais gastos = 📈 vermelho)
-                const icone = variacao > 0 ? '📈' : variacao < 0 ? '📉' : '📊';
-                const classe = variacao > 0 ? 'variation-negative' : 
-                             variacao < 0 ? 'variation-positive' : 'variation-neutral';
-                
-                return {
-                    texto: `${sinal}${variacao.toFixed(1)}% em relação ao mês anterior`,
-                    classe: classe,
-                    icone: icone
-                };
-            };
-
-            // Atualizar Saldo (sem variação)
-            const saldoFormatado = formatarMoeda(data.saldo || 0);
-            console.log('Atualizando saldo com:', saldoFormatado);
-            saldoEl.textContent = saldoFormatado;
-
-            // Atualizar Despesas (com variação) e preservar visibilidade
-            const despesasFormatado = formatarMoeda(data.despesas || 0);
-            console.log('Atualizando despesas com:', despesasFormatado);
-            // Atualiza valor armazenado
-            valorDespesasAtual = despesasFormatado;
-            // Aplica visibilidade conforme preferência
-            if (despesasVisivel) {
-                despesasValueText.textContent = valorDespesasAtual;
-            } else {
-                despesasValueText.textContent = '••••••';
-            }
-
-            if (despesasVariationEl && typeof data.variacaoDespesas === 'number') {
-                const despesasVar = formatarVariacaoDespesas(data.variacaoDespesas);
-                despesasVariationEl.className = `card-variation ${despesasVar.classe}`;
-                despesasVariationEl.innerHTML = `
-                    <span class="variation-icon">${despesasVar.icone}</span>
-                    <span>${despesasVar.texto}</span>
-                `;
-                console.log('Variação de despesas atualizada:', despesasVar);
-            }
-
-            // Atualizar Receitas (sem variação) e preservar visibilidade
-            const receitasFormatado = formatarMoeda(data.receitas || 0);
-            console.log('Atualizando receitas com:', receitasFormatado);
-            // Atualiza valor armazenado
-            valorReceitasAtual = receitasFormatado;
-            // Aplica visibilidade conforme preferência
-            if (receitasVisivel) {
-                receitasValueText.textContent = valorReceitasAtual;
-            } else {
-                receitasValueText.textContent = '••••••';
-            }
-
-            // Remover estado de loading
-            removerLoadingCards();
-            
-            console.log('Cards financeiros atualizados com sucesso');
-            
-            // Verificar se os valores foram realmente aplicados
-            setTimeout(() => {
-                console.log('Verificação após atualização:');
-                console.log('Saldo DOM:', saldoEl.textContent);
-                console.log('Despesas DOM:', despesasEl.textContent);
-                console.log('Receitas DOM:', receitasEl.textContent);
-            }, 100);
-        }
-
-        // Função para remover estado de loading dos cards
-        function removerLoadingCards() {
-            console.log('Removendo estado de loading dos cards...');
-            document.querySelectorAll('.financial-card.loading').forEach(card => {
-                console.log('Removendo loading do card:', card.className);
-                card.classList.remove('loading');
-            });
-        }
-
-        // Função de teste para verificar se conseguimos atualizar os cards
-        function testarAtualizacaoCards() {
-            console.log('Testando atualização manual dos cards...');
-            const dadosTeste = {
-                saldo: 1000,
-                despesas: 500,
-                receitas: 1500,
-                variacaoDespesas: 10
-            };
-            atualizarCardsFinanceiros(dadosTeste);
-        }
-
-        // Função para testar DOM diretamente
-        function testeDomsimples() {
-            console.log('=== TESTE DOM SIMPLES ===');
-            
-            setTimeout(() => {
-                const saldoEl = document.getElementById('saldoValue');
-                const despesasEl = document.getElementById('despesasValue');
-                const receitasEl = document.getElementById('receitasValue');
-                
-                console.log('Saldo elemento:', saldoEl);
-                console.log('Despesas elemento:', despesasEl);
-                console.log('Receitas elemento:', receitasEl);
-                
-                if (saldoEl) {
-                    saldoEl.textContent = 'R$ 1.000,00';
-                    console.log('Saldo atualizado para R$ 1.000,00');
-                } else {
-                    console.error('Elemento saldoValue não encontrado!');
-                }
-                if (despesasEl) {
-                    despesasEl.textContent = 'R$ 500,00';
-                    console.log('Despesas atualizadas para R$ 500,00');
-                } else {
-                    console.error('Elemento despesasValue não encontrado!');
-                }
-                if (receitasEl) {
-                    receitasEl.textContent = 'R$ 1.500,00';
-                    console.log('Receitas atualizadas para R$ 1.500,00');
-                } else {
-                    console.error('Elemento receitasValue não encontrado!');
-                }
-                
-                // Verificar se mudou
-                setTimeout(() => {
-                    console.log('Verificação final:');
-                    console.log('Saldo atual:', saldoEl ? saldoEl.textContent : 'elemento não encontrado');
-                    console.log('Despesas atual:', despesasEl ? despesasEl.textContent : 'elemento não encontrado');
-                    console.log('Receitas atual:', receitasEl ? receitasEl.textContent : 'elemento não encontrado');
-                }, 1000);
-                
-            }, 2000);
-        }
-
-        // Disponibilizar função de teste globalmente para debug
-        //window.testarCards = testarAtualizacaoCards;
-        //window.testeDomsimples = testeDomsimples;
-        
-        // Executar teste automático
-        //setTimeout(testeDomsimples, 3000);
-
-        // Controle de sinal de valor
-        const expenseSignBtn = document.getElementById('expenseSignBtn');
-        const expenseSignValue = document.getElementById('expenseSignValue');
-        let currentSign = '-';
-        function updateSign() {
-            expenseSignBtn.textContent = currentSign;
-            expenseSignBtn.style.color = currentSign === '+' ? 'green' : 'red';
-            expenseSignValue.value = currentSign;
-        }
-        expenseSignBtn.addEventListener('click', () => {
-            currentSign = currentSign === '+' ? '-' : '+';
-            updateSign();
-        });
-        updateSign();
-        
-        // Script especial para garantir rolagem nas tabelas
-        document.addEventListener('DOMContentLoaded', function() {
-            // Forçar rolagem em todas as tabelas responsivas
-            const tables = document.querySelectorAll('.table-responsive');
-            tables.forEach(function(table) {
-                // Garante que a tabela interna seja larga o suficiente
-                const innerTable = table.querySelector('table');
-                if (innerTable) {
-                    innerTable.style.minWidth = '600px';
-                }
-                
-                // Força overflow-x: scroll (alguns navegadores mobile ignoram)
-                table.style.overflowX = 'scroll';
-                table.style.display = 'block';
-                
-                // Adiciona bordas para tornar visível
-                table.style.border = '1px solid #ddd';
-                table.style.borderRadius = '4px';
-                table.style.padding = '8px 0';
-                
-                // Ajusta a altura da scrollbar para ser mais visível
-                table.style.paddingBottom = '15px';
-            });
-        });
-
-        // Define valores iniciais dos inputs de data e orçamento
-        const expenseDateInput = document.getElementById('expenseDate');
-        // Define data e hora atuais no horário local
-        {
-            const now = new Date();
-            const pad = n => String(n).padStart(2, '0');
-            const localDate = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
-            const localTime = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
-            expenseDateInput.value = `${localDate}T${localTime}`;
-        }
-        const expenseBudgetSelect = document.getElementById('expenseBudget');
-        if (expenseBudgetSelect) {
-            // Meses em português
-            const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
-            const now = new Date();
-            const atual = new Date(now.getFullYear(), now.getMonth(), 1);
-            for (let i = -6; i <= 6; i++) {
-                const d = new Date(atual.getFullYear(), atual.getMonth() + i, 1);
-                const mesNome = meses[d.getMonth()];
-                const anoCurto = String(d.getFullYear()).slice(-2);
-                const valor = `${mesNome}/${anoCurto}`;
-                const opt = document.createElement('option');
-                opt.value = valor;
-                opt.textContent = valor.charAt(0).toUpperCase() + valor.slice(1);
-                if (i === 0) opt.selected = true;
-                expenseBudgetSelect.appendChild(opt);
-            }
-        }
-
-
-        // Carrega categorias diretamente da planilha (aba 'Categorias')
-        async function carregarCategorias() {
-            const categoryInput = document.getElementById('expenseCategory');
-            const dataList = document.getElementById('categoriaList');
-            if (!categoryInput || !dataList) return;
-            
-            try {
-                // Usa serviço centralizado de categorias se disponível
-                if (window.categoriesService && typeof window.categoriesService.populateDatalist === 'function') {
-                    await window.categoriesService.populateDatalist('categoriaList');
-                    console.log('[Dashboard] Categorias carregadas via serviço centralizado');
-                } else {
-                    // Fallback para implementação direta se serviço não estiver disponível
-                    console.warn('[Dashboard] Serviço de categorias não disponível, usando implementação direta');
-                    
-                    // Tenta buscar categorias da planilha
-                    const categorias = await googleSheetsService.getCategories();
-                    
-                    // Limpa opções existentes do datalist
-                    dataList.innerHTML = '';
-                    const lista = (categorias && categorias.length) ? categorias : [
-                        'Alimentação', 'Transporte', 'Moradia', 'Saúde',
-                        'Educação', 'Lazer', 'Vestuário', 'Outras'
-                    ];
-                    lista.forEach(cat => {
-                        const opt = document.createElement('option');
-                        opt.value = cat;
-                        dataList.appendChild(opt);
-                    });
-                    console.log('[Dashboard] Categorias disponíveis:', lista);
-                }
-            } catch (error) {
-                console.error('[Dashboard] Erro ao carregar categorias:', error);
-                // Em caso de erro, usa categorias padrão no datalist
-                dataList.innerHTML = '';
-                ['Alimentação', 'Transporte', 'Moradia', 'Saúde',
-                 'Educação', 'Lazer', 'Vestuário', 'Outras']
-                 .forEach(cat => {
-                    const opt = document.createElement('option');
-                    opt.value = cat;
-                    dataList.appendChild(opt);
-                });
-            }
-        }
-        
-        // Carrega as categorias ao iniciar a página
-        carregarCategorias();
-
-
-        // --- ENVIO DO FORMULÁRIO PARA APENDAR NA PLANILHA DO GOOGLE ---
-        const expenseForm = document.getElementById('expenseForm');
-        if (expenseForm) {
-            expenseForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                const submitBtn = this.querySelector('button[type="submit"]');
-                const originalBtnText = submitBtn.textContent;
-                submitBtn.textContent = 'Enviando...';
-                submitBtn.disabled = true;
-                try {
-                    // Coleta e prepara os dados do formulário
-                    const data = formatarData(document.getElementById('expenseDate').value);
-                    const conta = document.getElementById('expenseAccount').value.trim();
-                    const valorBase = parseFloat(document.getElementById('expenseValue').value);
-                    const sinal = document.getElementById('expenseSignValue').value;
-                    const valor = sinal === '-' ? -Math.abs(valorBase) : Math.abs(valorBase);
-                    const descricao = document.getElementById('expenseDescription').value.trim();
-                    const categoria = document.getElementById('expenseCategory').value.trim();
-                    const orcamento = formatarDataOrcamento(document.getElementById('expenseBudget').value);
-
-                    const entryData = {
-                        data,
-                        conta,
-                        valor: valor.toFixed(2).replace('.', ','),
-                        descricao,
-                        categoria,
-                        orcamento
-                    };
-
-                    // Chama o serviço para apendar na planilha
-                    const resultado = await googleSheetsService.addEntry(entryData);
-
-                    if (resultado.success) {
-                        mostrarMensagem('success', 'Lançamento enviado com sucesso!');
-                        limparCamposFormulario();
-                        // Atualiza os cards do resumo após novo lançamento
-                        await carregarDadosFinanceiros();
-                        // Fecha o modal automaticamente após sucesso
-                        setTimeout(() => {
-                            closeModal();
-                        }, 1000); // Aguarda 1 segundo para mostrar a mensagem
-                    } else {
-                        throw new Error(resultado.error || 'Erro ao enviar lançamento');
-                    }
-                } catch (error) {
-                    console.error('Erro ao enviar dados:', error);
-                    mostrarMensagem('error', 'Erro ao enviar lançamento: ' + (error.message || error));
-                } finally {
-                    submitBtn.textContent = originalBtnText;
-                    submitBtn.disabled = false;
+        try {
+            // Busca os entries
+            const responseEntries = await fetch(`${apiConfig.getBaseURL()}/get-sheet-entries?limit=0`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${pb.authStore.token}`
                 }
             });
-        }
+            const sheetEntriesData = await responseEntries.json();
+            const entries = sheetEntriesData?.entries ?? [];
 
-        // Funções auxiliares
-        function formatarData(dataHora) {
-            // Converte 2025-08-01T14:30 para 01/08/2025 14:30
-            const dt = new Date(dataHora);
-            const dia = String(dt.getDate()).padStart(2, '0');
-            const mes = String(dt.getMonth() + 1).padStart(2, '0');
-            const ano = dt.getFullYear();
-            const hora = String(dt.getHours()).padStart(2, '0');
-            const minuto = String(dt.getMinutes()).padStart(2, '0');
-            return `${dia}/${mes}/${ano} ${hora}:${minuto}`;
-        }
-        function formatarDataOrcamento(data) {
-            // Converte "setembro/25" para "01/09/2025"
-            if (!data) return '';
-            const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
-            const [mesNome, anoCurto] = data.split('/');
-            const mesIndex = meses.indexOf(mesNome.toLowerCase());
-            if (mesIndex === -1) return '';
-            const ano = '20' + anoCurto;
-            const mes = String(mesIndex + 1).padStart(2, '0');
-            return `01/${mes}/${ano}`;
-        }
-        function limparCamposFormulario() {
-            document.getElementById('expenseAccount').value = '';
-            document.getElementById('expenseValue').value = '';
-            document.getElementById('expenseDescription').value = '';
-            document.getElementById('expenseCategory').value = '';
-            currentSign = '-';
-            updateSign();
-        }
-        function mostrarMensagem(tipo, texto) {
-            let msgEl = document.getElementById('feedback-message');
-            if (!msgEl) {
-                msgEl = document.createElement('div');
-                msgEl.id = 'feedback-message';
-                msgEl.style.position = 'fixed';
-                msgEl.style.top = '70px';
-                msgEl.style.right = '20px';
-                msgEl.style.padding = '15px 20px';
-                msgEl.style.borderRadius = '4px';
-                msgEl.style.fontSize = '16px';
-                msgEl.style.fontWeight = 'bold';
-                msgEl.style.zIndex = '10000';
-                document.body.appendChild(msgEl);
-            }
-            if (tipo === 'success') {
-                msgEl.style.backgroundColor = '#4CAF50';
-                msgEl.style.color = 'white';
-            } else {
-                msgEl.style.backgroundColor = '#F44336';
-                msgEl.style.color = 'white';
-            }
-            msgEl.textContent = texto;
-            msgEl.style.display = 'block';
-            setTimeout(() => {
-                msgEl.style.display = 'none';
-            }, 5000);
-        }
-
-        // Remove aviso de formulário desabilitado
-        const aviso = document.querySelector('.solution-card > p');
-        if (aviso) aviso.style.display = 'none';
-
-        // Inicializa autocomplete para o campo de descrição
-        function initDescricaoAutocomplete() {
-            const input = document.getElementById('expenseDescription');
-            if (!input) return;
-            // Ajusta container pai para posicionamento
-            input.parentNode.style.position = 'relative';
-            let suggestions = document.getElementById('descricaoSuggestions');
-            if (!suggestions) {
-                suggestions = document.createElement('div');
-                suggestions.id = 'descricaoSuggestions';
-                Object.assign(suggestions.style, {
-                    position: 'absolute',
-                    top: '100%', // posiciona logo abaixo do input
-                    left: '0',
-                    right: '0',
-                    background: 'white',
-                    border: 'none', // sem borda após seleção
-                    maxHeight: '150px',
-                    overflowY: 'auto',
-                    zIndex: '1000'
-                });
-                input.parentNode.appendChild(suggestions);
-                // Oculta sugestões inicialmente
-                suggestions.style.display = 'none';
-            }
-            input.addEventListener('input', onDescricaoInput);
-            // Fecha sugestões ao clicar fora
-            document.addEventListener('click', (e) => {
-                if (e.target !== input && !suggestions.contains(e.target)) {
-                    suggestions.innerHTML = '';
-                    suggestions.style.display = 'none';
-                    suggestions.style.border = 'none';
+            // Busca as categorias
+            const responseCat = await fetch(`${apiConfig.getBaseURL()}/get-sheet-categories`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${pb.authStore.token}`
                 }
             });
-        }
+            const catData = await responseCat.json();
+            const categories = catData?.success && Array.isArray(catData.categories) ? catData.categories : [];
 
-        // Gera sugestões conforme digitação
-        function onDescricaoInput(e) {
-            const val = e.target.value.trim().toLowerCase();
-            const container = document.getElementById('descricaoSuggestions');
-            // Limpa e esconde container antes de processar
-            container.innerHTML = '';
-            if (val.length < 3) {
-                container.style.display = 'none';
-                return;
-            }
-            const matches = historicoLancamentos.filter(item => item.descricao.toLowerCase().includes(val));
-            if (matches.length === 0) {
-                container.style.display = 'none';
-                return;
-            }
-            // Exibe container de sugestões
-            container.style.display = 'block';
-            container.style.border = '1px solid #ccc';
-            matches.slice(0, 5).forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'suggestion-item';
-                div.textContent = item.descricao;
-                div.style.padding = '0.5rem';
-                div.style.cursor = 'pointer';
-                div.addEventListener('click', () => {
-                    // Preenche descrição e categoria
-                    document.getElementById('expenseDescription').value = item.descricao;
-                    const categoryInput = document.getElementById('expenseCategory');
-                    // Define o valor da categoria no input diretamente
-                    categoryInput.value = item.categoria;
-                    // Limpa e esconde o container de sugestões
-                    container.innerHTML = '';
-                    container.style.display = 'none';
-                });
-                container.appendChild(div);
-            });
-        }
-
-        // Autocomplete para contas
-        function initContaAutocomplete() {
-            const input = document.getElementById('expenseAccount');
-            if (!input) return;
-            input.parentNode.style.position = 'relative';
-            let suggestions = document.getElementById('contaSuggestions');
-            if (!suggestions) {
-                suggestions = document.createElement('div');
-                suggestions.id = 'contaSuggestions';
-                Object.assign(suggestions.style, {
-                    position: 'absolute',
-                    top: '100%', // posiciona abaixo do input
-                    left: '0', right: '0',
-                    background: 'white', border: 'none', // sem borda após seleção
-                    maxHeight: '150px', overflowY: 'auto', zIndex: '1000', display: 'none'
-                });
-                input.parentNode.appendChild(suggestions);
-            }
-            input.addEventListener('input', () => {
-                const val = input.value.trim().toLowerCase();
-                const container = document.getElementById('contaSuggestions');
-                container.innerHTML = '';
-                if (!val) {
-                  contasSugeridas.slice(0,5).forEach(c => {
-                    const div = document.createElement('div'); div.textContent = c; div.style.padding = '0.5rem'; div.style.cursor='pointer';
-                    div.addEventListener('click', ()=>{ input.value = c; container.innerHTML = ''; });
-                    container.appendChild(div);
-                  });
-                  container.style.display = 'block';
-                  container.style.border = '1px solid #ccc';
-                  return;
+            // Dispara evento para os módulos que precisam dos entries e das categorias
+            document.dispatchEvent(new CustomEvent('sheet:loaded', {
+                detail: {
+                    entries: entries.slice(0, 200),
+                    categories
                 }
-                const matches = contasSugeridas.filter(c=> c.toLowerCase().includes(val));
-                if (matches.length) {
-                  matches.slice(0,5).forEach(c => {
-                    const div = document.createElement('div'); div.textContent = c; div.style.padding = '0.5rem'; div.style.cursor='pointer';
-                    div.addEventListener('click', ()=>{ input.value = c; container.innerHTML = ''; container.style.display = 'none'; });
-                    container.appendChild(div);
-                  });
-                  container.style.display = 'block';
-                  container.style.border = '1px solid #ccc';
-                } else container.style.display = 'none';
-            });
-            document.addEventListener('click', e => {
-                if (e.target !== input && !suggestions.contains(e.target)) {
-                    suggestions.innerHTML = '';
-                    suggestions.style.display = 'none';
-                    suggestions.style.border = 'none';
-                }
-            });
-        }
+            }));
 
-        // Fechar modal ao clicar fora do conteúdo
-        const entryModalEl = document.getElementById('entryModal');
-        const openModalBtn = document.getElementById('openEntryModal');
-        const closeModalBtn = document.getElementById('closeEntryModal');
-        
-        entryModalEl.addEventListener('click', e => {
-            if (e.target === entryModalEl) {
-                closeModal();
-            }
-        });
-        
-        // Função para abrir modal e alterar botão
-        function openModal() {
-            entryModalEl.style.display = 'flex';
-            openModalBtn.classList.add('modal-open');
-            openModalBtn.textContent = '×';
-            openModalBtn.setAttribute('aria-label', 'Fechar modal');
+            // Processamento dos orçamentos e renderização
+            const allSummaries = aggregateByBudget(entries);
+            window.allBudgets = budgetsInEntries(entries);
+            const entriesInInterval = filterEntriesByInterval(entries);
+            const currentSummary = aggregateByBudget(entriesInInterval);
+            window.filteredEntries = entriesInInterval;
+            window.summaryByBudget = currentSummary;
+            window.budgetsInInterval = budgetsInEntries(entriesInInterval);
+            const budgetsInIntervalMap = {};
+            currentSummary.forEach(budget => {
+                budgetsInIntervalMap[budget.label] = true;
+            });
+            renderizarCards(allSummaries, budgetsInIntervalMap);
+        } catch (error) {
+            console.error('Erro ao carregar dados:', error);
+            mostrarErro('Não foi possível carregar os dados. Verifique sua conexão e tente novamente.');
         }
-        
-        // Função para fechar modal e alterar botão
-        function closeModal() {
-            entryModalEl.style.display = 'none';
-            openModalBtn.classList.remove('modal-open');
-            openModalBtn.textContent = '+';
-            openModalBtn.setAttribute('aria-label', 'Adicionar lançamento');
-        }
-        
-        // Botões de abrir e fechar modal
-        openModalBtn.addEventListener('click', () => {
-            if (entryModalEl.style.display === 'flex') {
-                closeModal();
-            } else {
-                openModal();
-            }
-        });
-        
-        closeModalBtn.addEventListener('click', () => {
-            closeModal();
-        });
-        
-        // Fechar modal com tecla ESC
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && entryModalEl.style.display === 'flex') {
-                closeModal();
-            }
-        });
-
-        // Script para garantir rolagem horizontal nas tabelas
-        document.addEventListener('DOMContentLoaded', function() {
-            // Forçar rolagem em todas as tabelas responsivas
-            function verificarTabelasRolaveis() {
-                const tables = document.querySelectorAll('.tabela-rolavel');
-                tables.forEach(function(table) {
-                    // Força overflow-x: auto
-                    table.style.overflowX = 'auto';
-                    
-                    // Verifica se a tabela precisa de rolagem
-                    if (table.scrollWidth > table.clientWidth) {
-                        // Adiciona indicador visual se necessário
-                        if (!table.querySelector('.scroll-indicator')) {
-                            const indicator = document.createElement('div');
-                            indicator.className = 'scroll-indicator';
-                            indicator.style.position = 'absolute';
-                            indicator.style.right = '10px';
-                            indicator.style.top = '50%';
-                            indicator.style.transform = 'translateY(-50%)';
-                            indicator.style.color = '#999';
-                            indicator.style.backgroundColor = 'rgba(255,255,255,0.7)';
-                            indicator.style.padding = '5px';
-                            indicator.style.borderRadius = '3px';
-                            indicator.style.pointerEvents = 'none';
-                            indicator.textContent = '→';
-                            indicator.style.animation = 'fadeInOut 1.5s infinite';
-                            
-                            // Posicionamento relativo para o indicador
-                            table.style.position = 'relative';
-                            table.appendChild(indicator);
-                        }
-                    }
-                });
-            }
-            
-            // Verifica imediatamente
-            verificarTabelasRolaveis();
-            
-            // Verifica novamente após o carregamento completo
-            setTimeout(verificarTabelasRolaveis, 1000);
-            
-            // Adiciona estilo para animação do indicador
-            if (!document.getElementById('fadeInOut-style')) {
-                const style = document.createElement('style');
-                style.id = 'fadeInOut-style';
-                style.textContent = `
-                    @keyframes fadeInOut {
-                        0%, 100% { opacity: 0.3; }
-                        50% { opacity: 1; }
-                    }
-                `;
-                document.head.appendChild(style);
-            }
-        });
     </script>
 </body>
 
