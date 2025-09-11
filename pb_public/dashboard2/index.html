@@ -81,80 +81,6 @@
         </main>
     </div>
 
-    <!-- Modal de lançamento de despesas/receitas -->
-    <div id="entryModal"
-        style="display:none; position:fixed; top:60px; left:0; width:100%; height:calc(100% - 60px); background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:1000;">
-        <button id="closeEntryModal" aria-label="Fechar modal"
-            style="position:absolute; top:10px; right:10px; background:transparent; border:none; color:inherit; font-size:1.5rem; cursor:pointer; z-index:1002;">×</button>
-        <div class="modal-content solution-card"
-            style="background:white; padding:1.5rem; border-radius:4px; max-width:600px; width:90%; position:relative; max-height:90vh; overflow:auto;">
-            <section class="section" style="padding:2rem 0; margin:0;">
-                <div class="container">
-                    <div class="row">
-                        <div class="col-md-8 col-lg-6 mx-auto">
-                            <div class="solution-card">
-                                <h3 style="margin-bottom: 1.5rem;">Lançamento de Despesa/Receita</h3>
-                                <form id="expenseForm">
-                                    <fieldset>
-                                        <!-- Data e Hora -->
-                                        <div class="form-group" style="margin-bottom: 1rem;">
-                                            <label for="expenseDate">Data:</label>
-                                            <input type="datetime-local" id="expenseDate" name="data"
-                                                class="form-control" required>
-                                        </div>
-                                        <!-- Conta -->
-                                        <div class="form-group" style="margin-bottom: 1rem;">
-                                            <label for="expenseAccount">Conta:</label>
-                                            <input type="text" id="expenseAccount" name="conta" class="form-control"
-                                                placeholder="Ex: Conta Corrente, Cartão de Crédito" required>
-                                        </div>
-                                        <!-- Valor com toggle de sinal -->
-                                        <div class="form-group" style="margin-bottom: 1rem;">
-                                            <label for="expenseValue">Valor:</label>
-                                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                                <button type="button" id="expenseSignBtn" class="button outline"
-                                                    aria-label="Alternar sinal"
-                                                    style="background-color: white; color: inherit; border: 1px solid #ccc; width: 2.5rem; text-align: center;">-</button>
-                                                <input type="number" id="expenseValue" name="valor" class="form-control"
-                                                    step="0.01" min="0" placeholder="0,00" required>
-                                                <input type="hidden" id="expenseSignValue" name="sinal" value="-">
-                                            </div>
-                                        </div>
-                                        <!-- Descrição -->
-                                        <div class="form-group" style="margin-bottom: 1rem;">
-                                            <label for="expenseDescription">Descrição:</label>
-                                            <input type="text" id="expenseDescription" name="descricao"
-                                                class="form-control" placeholder="Descrição da despesa" required>
-                                        </div>
-                                        <!-- Categoria: combobox com filtro -->
-                                        <div class="form-group" style="margin-bottom: 1rem;">
-                                            <label for="expenseCategory">Categoria:</label>
-                                            <input type="text" id="expenseCategory" name="categoria"
-                                                class="form-control" placeholder="Digite uma categoria"
-                                                required>
-                                        </div>
-                                        <!-- Orçamento -->
-                                        <div class="form-group" style="margin-bottom: 1.5rem;">
-                                            <label for="expenseBudget">Orçamento:</label>
-                                            <select id="expenseBudget" name="orcamento" class="form-control"
-                                                required></select>
-                                        </div>
-                                        <!-- Botões -->
-
-                                        <div class="form-group"
-                                            style="display:flex; justify-content:space-around; align-items:center; margin-top:2rem;">
-                                            <button type="reset" class="button warning">Limpar</button>
-                                            <button type="submit" class="button success">Salvar</button>
-                                        </div>
-                                    </fieldset>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </div> <!-- modal-content -->
-    </div> <!-- entryModal -->
 
     <!-- FOOTER -->
     <footer class="footer">
@@ -169,6 +95,7 @@
     <script type="module">
         import apiConfig from '../js/config/api-config.js';
         import { inicializarMenuUsuario } from '../js/menu-usuario.js';
+        import { entryModalTemplate } from '../js/components/entry-modal-template.js';
         import { filterEntriesByInterval, aggregateByBudget, budgetsInEntries } from '../js/utils/sheet-entries.js';
         import {
             renderizarCards,
@@ -178,6 +105,8 @@
         } from './js/components/financial-cards.js';
         import { inicializarModalDeLancamento } from '../js/components/entry-modal.js';
 
+        // insere o modal no body
+        document.body.insertAdjacentHTML('beforeend', entryModalTemplate);
 
         // Inicializa o PocketBase globalmente antes dos módulos
         window.pb = new PocketBase(apiConfig.getBaseURL());
@@ -190,40 +119,48 @@
         mostrarCardCarregamento();
 
         try {
-            // Busca dados da API
-            const response = await fetch(`${apiConfig.getBaseURL()}/get-sheet-entries?limit=0`, {
+            // Busca os entries
+            const responseEntries = await fetch(`${apiConfig.getBaseURL()}/get-sheet-entries?limit=0`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${pb.authStore.token}`
                 }
             });
+            const sheetEntriesData = await responseEntries.json();
+            const entries = sheetEntriesData?.entries ?? [];
 
-            window.sheetEntries = await response.json();
-            const entries = window.sheetEntries?.entries ?? [];
+            // Busca as categorias
+            const responseCat = await fetch(`${apiConfig.getBaseURL()}/get-sheet-categories`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${pb.authStore.token}`
+                }
+            });
+            const catData = await responseCat.json();
+            const categories = catData?.success && Array.isArray(catData.categories) ? catData.categories : [];
 
-            // dispatch evento para módulos que precisem dos entries (ex.: entry-modal)
-            document.dispatchEvent(new CustomEvent('sheet:loaded', { detail: entries.slice(0,200) }));
+            // Dispara evento para os módulos que precisam dos entries e das categorias
+            document.dispatchEvent(new CustomEvent('sheet:loaded', {
+                detail: {
+                    entries: entries.slice(0, 200),
+                    categories
+                }
+            }));
 
-            // Primeiro, processa todos os orçamentos (para exibir lista completa)
+            // Processamento dos orçamentos e renderização
             const allSummaries = aggregateByBudget(entries);
             window.allBudgets = budgetsInEntries(entries);
-
-            // Depois processa apenas os do intervalo atual (filtrados)
             const entriesInInterval = filterEntriesByInterval(entries);
             const currentSummary = aggregateByBudget(entriesInInterval);
             window.filteredEntries = entriesInInterval;
             window.summaryByBudget = currentSummary;
             window.budgetsInInterval = budgetsInEntries(entriesInInterval);
-
-            // Cria um mapa dos orçamentos no intervalo para fácil verificação
             const budgetsInIntervalMap = {};
             currentSummary.forEach(budget => {
-                // Usamos o label do orçamento como chave no mapa
                 budgetsInIntervalMap[budget.label] = true;
             });
-
-            // Mostrar todos os orçamentos, valores apenas para os do intervalo atual
             renderizarCards(allSummaries, budgetsInIntervalMap);
         } catch (error) {
             console.error('Erro ao carregar dados:', error);
