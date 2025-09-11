@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="./css/style.css">
     <link rel="stylesheet" href="./css/financial-cards.css">
+    <link rel="stylesheet" href="./css/modal-entry.css">
     <script src="../js/pocketbase/dist/pocketbase.umd.js"></script>
 </head>
 
@@ -129,9 +130,8 @@
                                         <div class="form-group" style="margin-bottom: 1rem;">
                                             <label for="expenseCategory">Categoria:</label>
                                             <input type="text" id="expenseCategory" name="categoria"
-                                                class="form-control" placeholder="Selecione ou digite uma categoria"
-                                                list="categoriaList" autocomplete="off" required>
-                                            <datalist id="categoriaList"></datalist>
+                                                class="form-control" placeholder="Digite uma categoria"
+                                                required>
                                         </div>
                                         <!-- Orçamento -->
                                         <div class="form-group" style="margin-bottom: 1.5rem;">
@@ -201,6 +201,9 @@
 
             window.sheetEntries = await response.json();
             const entries = window.sheetEntries?.entries ?? [];
+
+            // dispatch evento para módulos que precisem dos entries (ex.: entry-modal)
+            document.dispatchEvent(new CustomEvent('sheet:loaded', { detail: entries.slice(0,200) }));
 
             // Primeiro, processa todos os orçamentos (para exibir lista completa)
             const allSummaries = aggregateByBudget(entries);
