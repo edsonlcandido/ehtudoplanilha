@@ -482,27 +482,23 @@ export function inicializarModalDeLancamento() {
             const sinal = expenseSignValue.value === '-' ? -1 : 1;
             const valorFinal = sinal * Math.abs(valorBase);
             
-            // CORREÇÃO PARA O PROBLEMA DA DATA
+            // CORREÇÃO PARA O PROBLEMA DA DATA - REMOVER COMPONENTE DE HORA
             // Extrair componentes da data diretamente do input
             const dataBudgetStr = expenseBudgetInput.value; // formato YYYY-MM-DD
             const [ano, mes, dia] = dataBudgetStr.split('-').map(num => parseInt(num, 10));
             
-            // Verificação de debug
-            console.log(`Data selecionada: ${dia}/${parseInt(mes)}/${ano}`);
+            // Criar data sem componente de hora (zera a hora)
+            // Importante: não usamos UTC aqui para evitar problemas de fuso horário
+            const dataSimples = new Date(ano, mes-1, dia);
             
-            // Representar a data de duas formas para o backend:
-            // 1. Como string no formato DD/MM/YYYY (evita problemas de conversão)
+            // Garantir que a hora seja zerada
+            dataSimples.setHours(0, 0, 0, 0);
+            
+            // Converter para serial Excel SEM incluir informação de hora
+            const orcamentoSerial = toExcelSerial(dataSimples, false);
+            
+            // String formatada apenas para debug
             const dataFormatada = `${dia.toString().padStart(2, '0')}/${mes.toString().padStart(2, '0')}/${ano}`;
-            
-            // 2. Também enviamos o serial Excel calculado corretamente
-            // Método mais confiável para gerar o serial Excel para esta data específica
-            // Usamos UTC para evitar problemas com timezones
-            const dataExata = new Date(Date.UTC(ano, mes-1, dia, 12, 0, 0, 0));
-            const orcamentoSerial = toExcelSerial(dataExata, false);
-            
-            console.log(`Data formatada: ${dataFormatada}`);
-            console.log(`Data exata UTC: ${dataExata.toISOString()}`);
-            console.log(`Serial Excel: ${orcamentoSerial}`);
             
             // Preparar payload para o endpoint
             const payload = {
@@ -511,8 +507,7 @@ export function inicializarModalDeLancamento() {
                 valor: valorFinal,
                 descricao: expenseDescriptionInput.value,
                 categoria: expenseCategoryInput.value,
-                orcamento: orcamentoSerial,
-                orcamentoFormatado: dataFormatada // campo adicional para debug/verificação
+                orcamento: orcamentoSerial
             };
             
             // Enviar para o endpoint
