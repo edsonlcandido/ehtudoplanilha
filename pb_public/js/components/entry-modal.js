@@ -482,29 +482,27 @@ export function inicializarModalDeLancamento() {
             const sinal = expenseSignValue.value === '-' ? -1 : 1;
             const valorFinal = sinal * Math.abs(valorBase);
             
-            // Converter a data do orçamento para Excel Serial (ajuste especial)
-            const dataBudget = new Date(expenseBudgetInput.value);
-
-            // Garantir que a data seja independente do fuso horário
-            // Extraímos os componentes da data e criamos uma nova data com hora fixa
-            const ano = dataBudget.getFullYear();
-            const mes = dataBudget.getMonth();
-            const dia = dataBudget.getDate();
-
-            // Criar uma nova data com hora fixa (meio-dia)
-            const dataBudgetAjustada = new Date(ano, mes, dia, 12, 0, 0, 0);
-
-            // Debug para verificar a data que estamos usando
-            console.log(`Data selecionada: ${dia}/${mes+1}/${ano} (${dataBudgetAjustada.toISOString()})`);
-
-            const orcamentoSerial = toExcelSerial(dataBudgetAjustada, false);
-            console.log(`Serial Excel gerado: ${orcamentoSerial}`);
+            // CORREÇÃO PARA O PROBLEMA DA DATA
+            // Extrair componentes da data diretamente do input
+            const dataBudgetStr = expenseBudgetInput.value; // formato YYYY-MM-DD
+            const [ano, mes, dia] = dataBudgetStr.split('-').map(num => parseInt(num, 10));
             
-            if (isNaN(orcamentoSerial)) {
-                showFeedback('Data de orçamento inválida.', 'error');
-                toggleFormFields(false);
-                return;
-            }
+            // Verificação de debug
+            console.log(`Data selecionada: ${dia}/${parseInt(mes)}/${ano}`);
+            
+            // Representar a data de duas formas para o backend:
+            // 1. Como string no formato DD/MM/YYYY (evita problemas de conversão)
+            const dataFormatada = `${dia.toString().padStart(2, '0')}/${mes.toString().padStart(2, '0')}/${ano}`;
+            
+            // 2. Também enviamos o serial Excel calculado corretamente
+            // Método mais confiável para gerar o serial Excel para esta data específica
+            // Usamos UTC para evitar problemas com timezones
+            const dataExata = new Date(Date.UTC(ano, mes-1, dia, 12, 0, 0, 0));
+            const orcamentoSerial = toExcelSerial(dataExata, false);
+            
+            console.log(`Data formatada: ${dataFormatada}`);
+            console.log(`Data exata UTC: ${dataExata.toISOString()}`);
+            console.log(`Serial Excel: ${orcamentoSerial}`);
             
             // Preparar payload para o endpoint
             const payload = {
@@ -513,7 +511,8 @@ export function inicializarModalDeLancamento() {
                 valor: valorFinal,
                 descricao: expenseDescriptionInput.value,
                 categoria: expenseCategoryInput.value,
-                orcamento: orcamentoSerial
+                orcamento: orcamentoSerial,
+                orcamentoFormatado: dataFormatada // campo adicional para debug/verificação
             };
             
             // Enviar para o endpoint
