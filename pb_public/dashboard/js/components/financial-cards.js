@@ -183,7 +183,10 @@ function handleCloseClick(e) {
     // Guarda os atributos de dados para quando o cartão inativo for clicado novamente
     card.className = 'financial-card inactive';
     card.style.cursor = 'pointer';
-    card.innerHTML = `<div class="card-value">...</div>`;
+    card.innerHTML = `
+        <div class="card-title">${budget}</div>
+        <div class="card-value">...</div>
+    `;
 
     // Certifica-se de que os atributos de dados estão preservados
     card.dataset.budget = budget;
@@ -194,12 +197,15 @@ function handleCloseClick(e) {
     // Remove todos os event listeners antigos antes de adicionar o novo
     card.replaceWith(card.cloneNode(true));
     
-    // Recupera a referência após o cloneNode
+    // Recupera a referência após o cloneNode e reativa listener
     const newCard = document.querySelector(`.financial-card.inactive[data-budget="${budget}"]`);
     if (newCard) {
         newCard.style.cursor = 'pointer';
         newCard.addEventListener('click', cardClickHandler);
     }
+    // Notifica remoção do orçamento para atualizar detalhes
+    const orc = Number(card.dataset.orcamento);
+    document.dispatchEvent(new CustomEvent('detail:show', { detail: { orcamento: orc } }));
 }
 
 /**
