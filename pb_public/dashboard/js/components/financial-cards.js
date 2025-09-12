@@ -65,6 +65,7 @@ function criarCardAtivo(item) {
     card.dataset.sum = item.sum;
     card.dataset.incomes = item.incomes;
     card.dataset.expenses = item.expenses;
+    card.dataset.orcamento = item.orcamento;  // armazena identificador do orçamento
     
     card.innerHTML = `
         <button class="card-close" aria-label="Fechar cartão" data-budget="${item.label}">✕</button>
@@ -100,8 +101,12 @@ function criarCardInativo(item) {
     card.dataset.sum = item.sum;
     card.dataset.incomes = item.incomes;
     card.dataset.expenses = item.expenses;
-    
-    card.innerHTML = `<div class="card-value">...</div>`;
+    card.dataset.orcamento = item.orcamento;  // armazena identificador do orçamento
+
+    card.innerHTML = `
+    <div class="card-title">${item.label}</div>
+    <div class="card-value">...</div>
+    `;
     
     return card;
 }
@@ -114,6 +119,7 @@ function cardClickHandler() {
     const sum = parseFloat(this.dataset.sum);
     const incomes = parseFloat(this.dataset.incomes);
     const expenses = parseFloat(this.dataset.expenses);
+    const orc = Number(this.dataset.orcamento);
 
     // Adiciona classe clicked para remover hover após ser clicado
     this.classList.add('clicked');
@@ -158,6 +164,8 @@ function cardClickHandler() {
     if (closeBtn) {
         closeBtn.addEventListener('click', handleCloseClick);
     }
+
+    document.dispatchEvent(new CustomEvent('detail:show', { detail: { orcamento: orc } }));
 }
 
 /**
@@ -176,7 +184,7 @@ function handleCloseClick(e) {
     card.className = 'financial-card inactive';
     card.style.cursor = 'pointer';
     card.innerHTML = `<div class="card-value">...</div>`;
-    
+
     // Certifica-se de que os atributos de dados estão preservados
     card.dataset.budget = budget;
     card.dataset.sum = sum;
@@ -260,5 +268,6 @@ export {
     renderizarCards,
     mostrarCardCarregamento,
     mostrarErro,
-    inicializarEventos
+    inicializarEventos,
+    formatarMoeda
 };

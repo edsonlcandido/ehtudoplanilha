@@ -78,7 +78,8 @@
 }
 
 .financial-card.loading .card-value,
-.financial-card.loading .card-muted {
+.financial-card.loading .card-muted,
+.financial-card.loading .card-title {
     color: transparent;
     background-color: #e0e0e0;
     border-radius: 4px;

@@ -113,6 +113,80 @@
     color: #b00020;
 }
 
+/* Animação de carregamento */
+.details__aggregates.loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.details__aggregates.loading::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.3),
+            transparent);
+    animation: shimmer 1.5s infinite;
+}
+
+.details__aggregates.loading .details__saldo,
+.details__aggregates.loading .details__card,
+.details__aggregates.loading .details__card-title,
+.details__aggregates.loading .details__card-value{
+    color: transparent;
+    background-color: #e0e0e0;
+    border-radius: 4px;
+    animation: pulse 1.5s infinite;
+}
+
+/* Loading shimmer para a tabela de categorias */
+.tabela-rolavel.loading {
+  position: relative;
+  overflow: hidden;
+}
+.tabela-rolavel.loading::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(255,255,255,0.3),
+    transparent);
+  animation: shimmer 1.5s infinite;
+}
+/* placeholder nos cabeçalhos e células */
+
+.tabela-rolavel.loading tr {
+  color: transparent;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes shimmer {
+    100% {
+        left: 100%;
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 0.6;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+
 /* Responsividade específica do componente: empilha colunas em telas pequenas */
 @media (max-width: 768px) {
     .dashboard__row {
