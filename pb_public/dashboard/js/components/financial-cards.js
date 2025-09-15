@@ -147,6 +147,9 @@ function cardClickHandler() {
         </div>
     `;
 
+    // Remove o evento de clique do próprio cartão para evitar ações indesejadas
+    this.removeEventListener('click', cardClickHandler);
+
     // Adiciona event listener para o botão de toggle
     const toggleBtn = this.querySelector('.card-toggle');
     if (toggleBtn) {
