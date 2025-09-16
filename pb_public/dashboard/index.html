@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="./css/style.css">
     <link rel="stylesheet" href="./css/financial-cards.css">
     <link rel="stylesheet" href="./css/modal-entry.css">
+    <!-- Estilos específicos da seção de detalhes -->
+    <link rel="stylesheet" href="./css/details.css">
     <script src="../js/pocketbase/dist/pocketbase.umd.js"></script>
 </head>
 
@@ -45,38 +47,139 @@
         <!-- Conteúdo principal rolável -->
         <main class="main-content">
             <!-- SECTION MAIN: conteúdo principal ocupando toda tela -->
-            <section class="section section-light dashboard-main">
-                <div class="container text-center">
-                    <h2>Bem-vindo ao seu Dashboard!</h2>
-                    <p>Aqui você pode visualizar resumos e inserir lançamentos de forma simples e rápida.</p>
+            <section class="section section-light dashboard-main"
+                style="min-height:100vh; display:flex; align-items:flex-start; justify-content:flex-start;">
+                <div class="container dashboard__content" style="align-items:flex-start; text-align:left;">
+                    <!-- Cabeçalho de boas-vindas alinhado à esquerda -->
+                    <header class="dashboard__header">
+                        <h2 class="dashboard__title">Bem-vindo ao seu Dashboard!</h2>
+                        <p class="dashboard__subtitle">Aqui você pode visualizar resumos e inserir lançamentos de forma
+                            simples e rápida.</p>
 
-                    <div style="margin-top: 2rem;">
-                        <a href="configuracao.html" id="configBtn" class="button primary" style="display: none;">⚙️
-                            Configurar
-                            Integração</a>
-                    </div>
+                        <div style="margin-top: 1.25rem;">
+                            <a href="configuracao.html" id="configBtn" class="button primary" style="display: none;">⚙️
+                                Configurar Integração</a>
+                        </div>
+                    </header>
 
-                    <!-- Adicione aqui os componentes do dashboard -->
-                    <!-- Summary cards -->
-                    <div id="summaryCards" class="flex row">
-                        <div class="financial-card loading saldo">
-                            <div class="card-header">
-                                <h3 class="card-title">31/08/2025</h3>
+                    <!-- Nova row dividida em 2 colunas: esquerda (cards) e direita (detalhes) -->
+                    <div class="dashboard__row">
+                        <!-- Coluna esquerda: cards de resumo (menor) -->
+                        <div class="dashboard__col dashboard__col--left">
+                            <div id="summaryCards" class="summary-cards">
+                                <!-- cartão de exemplo / placeholder (preservado) -->
+                                <div class="financial-card loading saldo">
+                                    <div class="card-header">
+                                        <h3 class="card-title">31/08/2025</h3>
+                                    </div>
+
+                                    <div class="card-value" data-card="orcamento1">R$&nbsp;100,00</div>
+                                    <div class="card-actions">
+                                        <button class="button pseudo card-toggle" aria-expanded="false">Mostrar
+                                            detalhes</button>
+                                    </div>
+                                    <div class="card-details">
+                                        <div class="card-muted" data-card="orcamento1">Receitas: R$&nbsp;100,00</div>
+                                        <div class="card-muted" data-card="orcamento1">Despesas: R$&nbsp;100,00</div>
+                                    </div>
+                                </div>
+                                <!-- novos cards serão renderizados aqui dinamicamente -->
                             </div>
 
-                            <div class="card-value" data-card="orcamento1">R$&nbsp;100,00</div>
-                            <div class="card-actions">
-                                <button class="button pseudo card-toggle" aria-expanded="false">Mostrar
-                                    detalhes</button>
-                            </div>
-                            <div class="card-details">
-                                <div class="card-muted" data-card="orcamento1">Receitas: R$&nbsp;100,00</div>
-                                <div class="card-muted" data-card="orcamento1">Despesas: R$&nbsp;100,00</div>
+                            <!-- Botão de adicionar lançamento (mantido) -->
+                            <div style="margin-top:1rem;">
+                                <button id="openEntryModal" class="button" aria-label="Adicionar lançamento">+</button>
                             </div>
                         </div>
+
+                        <!-- Coluna direita: seção de detalhes com agregados e tabela (maior) -->
+                        <aside class="dashboard__col dashboard__col--right details">
+                            <!-- Area de cartões agregados -->
+                            <div class="details__aggregates loading">
+                                <h3 class="details__title">Saldo e contas</h3>
+                                <h3><span class="details__saldo">R$ -129,77</span></h3>
+                                <div class="details__cards">
+                                    <div class="details__card">
+                                        <div class="details__card-title">Nubank</div>
+                                        <div class="details__card-value">R$ 0,00</div>
+                                    </div>
+                                    <div class="details__card">
+                                        <div class="details__card-title">Nuconta</div>
+                                        <div class="details__card-value">R$ 0,00</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tabela dos 10 maiores gastos por categoria (marcação apenas) -->
+                            <div class="details__top-categories" style="margin-top:1rem;">
+                                <h3 class="details__title">Top 10 Gastos por Categoria</h3>
+                                <div class="tabela-rolavel loading">
+                                    <table class="details__table primary">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Categoria</th>
+                                                <th>Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>1</td>
+                                                <td>Transporte</td>
+                                                <td>R$ -1.234,56</td>
+                                            </tr>
+                                            <tr>
+                                                <td>2</td>
+                                                <td>Alimentação</td>
+                                                <td>R$ -980,00</td>
+                                            </tr>
+                                            <tr>
+                                                <td>3</td>
+                                                <td><span>Moradia</span></td>
+                                                <td>R$ -750,00</td>
+                                            </tr>
+                                            <tr>
+                                                <td>4</td>
+                                                <td>Saúde</td>
+                                                <td>R$ -520,00</td>
+                                            </tr>
+                                            <tr>
+                                                <td>5</td>
+                                                <td>Lazer</td>
+                                                <td>R$ -410,00</td>
+                                            </tr>
+                                            <tr>
+                                                <td>6</td>
+                                                <td>Educação</td>
+                                                <td>R$ -320,00</td>
+                                            </tr>
+                                            <tr>
+                                                <td>7</td>
+                                                <td>Assinaturas</td>
+                                                <td>R$ -290,00</td>
+                                            </tr>
+                                            <tr>
+                                                <td>8</td>
+                                                <td>Compras</td>
+                                                <td>R$ -250,00</td>
+                                            </tr>
+                                            <tr>
+                                                <td>9</td>
+                                                <td>Pets</td>
+                                                <td>R$ -180,00</td>
+                                            </tr>
+                                            <tr>
+                                                <td>10</td>
+                                                <td>Outros</td>
+                                                <td>R$ -150,00</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </aside>
                     </div>
-                    <!-- Botão de adicionar lançamento (flutuante) -->
-                    <button id="openEntryModal" class="button" aria-label="Adicionar lançamento">+</button>
+                </div>
             </section>
         </main>
     </div>
@@ -104,6 +207,8 @@
             inicializarEventos
         } from './js/components/financial-cards.js';
         import { inicializarModalDeLancamento } from '../js/components/entry-modal.js';
+        import { inicializarDetalhes } from './js/components/details.js';
+
 
         // insere o modal no body
         document.body.insertAdjacentHTML('beforeend', entryModalTemplate);
@@ -115,8 +220,9 @@
         inicializarEventos();
         inicializarModalDeLancamento();
 
+
         // Mostra card de carregamento inicial
-        mostrarCardCarregamento();
+        //mostrarCardCarregamento();
 
         try {
             // Busca os entries
@@ -128,6 +234,7 @@
                 }
             });
             const sheetEntriesData = await responseEntries.json();
+            window.allEntries = sheetEntriesData?.entries ?? [];
             const entries = sheetEntriesData?.entries ?? [];
 
             // Busca as categorias
@@ -144,6 +251,7 @@
             // Dispara evento para os módulos que precisam dos entries e das categorias
             document.dispatchEvent(new CustomEvent('sheet:loaded', {
                 detail: {
+                    allentries: entries,
                     entries: entries.slice(0, 200),
                     categories
                 }
@@ -162,6 +270,7 @@
                 budgetsInIntervalMap[budget.label] = true;
             });
             renderizarCards(allSummaries, budgetsInIntervalMap);
+            inicializarDetalhes(entries, budgetsInInterval);
         } catch (error) {
             console.error('Erro ao carregar dados:', error);
             mostrarErro('Não foi possível carregar os dados. Verifique sua conexão e tente novamente.');

@@ -16,7 +16,7 @@ FROM base AS build
 # Ele NÃO estará na imagem final.
 RUN apk add --no-cache unzip git
 
-ARG PB_VERSION=0.28.4
+ARG PB_VERSION=0.30.0
 ARG BUILD_DIR=/tmp/pb_build # Diretório temporário para o build
 ARG REPO_DIR #<--- Diretório temporário para o clone GLOBAL
 

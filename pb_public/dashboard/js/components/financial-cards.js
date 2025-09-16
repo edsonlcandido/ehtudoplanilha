@@ -65,6 +65,7 @@ function criarCardAtivo(item) {
     card.dataset.sum = item.sum;
     card.dataset.incomes = item.incomes;
     card.dataset.expenses = item.expenses;
+    card.dataset.orcamento = item.orcamento;  // armazena identificador do orçamento
     
     card.innerHTML = `
         <button class="card-close" aria-label="Fechar cartão" data-budget="${item.label}">✕</button>
@@ -100,8 +101,12 @@ function criarCardInativo(item) {
     card.dataset.sum = item.sum;
     card.dataset.incomes = item.incomes;
     card.dataset.expenses = item.expenses;
-    
-    card.innerHTML = `<div class="card-value">...</div>`;
+    card.dataset.orcamento = item.orcamento;  // armazena identificador do orçamento
+
+    card.innerHTML = `
+    <div class="card-title">${item.label}</div>
+    <div class="card-value">...</div>
+    `;
     
     return card;
 }
@@ -114,6 +119,7 @@ function cardClickHandler() {
     const sum = parseFloat(this.dataset.sum);
     const incomes = parseFloat(this.dataset.incomes);
     const expenses = parseFloat(this.dataset.expenses);
+    const orc = Number(this.dataset.orcamento);
 
     // Adiciona classe clicked para remover hover após ser clicado
     this.classList.add('clicked');
@@ -141,6 +147,9 @@ function cardClickHandler() {
         </div>
     `;
 
+    // Remove o evento de clique do próprio cartão para evitar ações indesejadas
+    this.removeEventListener('click', cardClickHandler);
+
     // Adiciona event listener para o botão de toggle
     const toggleBtn = this.querySelector('.card-toggle');
     if (toggleBtn) {
@@ -158,6 +167,8 @@ function cardClickHandler() {
     if (closeBtn) {
         closeBtn.addEventListener('click', handleCloseClick);
     }
+
+    document.dispatchEvent(new CustomEvent('detail:show', { detail: { orcamento: orc } }));
 }
 
 /**
@@ -175,8 +186,11 @@ function handleCloseClick(e) {
     // Guarda os atributos de dados para quando o cartão inativo for clicado novamente
     card.className = 'financial-card inactive';
     card.style.cursor = 'pointer';
-    card.innerHTML = `<div class="card-value">...</div>`;
-    
+    card.innerHTML = `
+        <div class="card-title">${budget}</div>
+        <div class="card-value">...</div>
+    `;
+
     // Certifica-se de que os atributos de dados estão preservados
     card.dataset.budget = budget;
     card.dataset.sum = sum;
@@ -186,12 +200,15 @@ function handleCloseClick(e) {
     // Remove todos os event listeners antigos antes de adicionar o novo
     card.replaceWith(card.cloneNode(true));
     
-    // Recupera a referência após o cloneNode
+    // Recupera a referência após o cloneNode e reativa listener
     const newCard = document.querySelector(`.financial-card.inactive[data-budget="${budget}"]`);
     if (newCard) {
         newCard.style.cursor = 'pointer';
         newCard.addEventListener('click', cardClickHandler);
     }
+    // Notifica remoção do orçamento para atualizar detalhes
+    const orc = Number(card.dataset.orcamento);
+    document.dispatchEvent(new CustomEvent('detail:show', { detail: { orcamento: orc } }));
 }
 
 /**
@@ -260,5 +277,6 @@ export {
     renderizarCards,
     mostrarCardCarregamento,
     mostrarErro,
-    inicializarEventos
+    inicializarEventos,
+    formatarMoeda
 };
