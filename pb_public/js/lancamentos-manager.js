@@ -1147,50 +1147,54 @@ class LancamentosManager {
         const contaInput = document.getElementById('editConta');
         const descricaoInput = document.getElementById('editDescricao');
 
-        // Event listeners para categoria
-        if (categoriaInput) {
+        // Configurar autocomplete apenas se não foi configurado antes
+        if (categoriaInput && !categoriaInput.dataset.autocompleteSetup) {
             categoriaInput.addEventListener('focus', () => {
                 this.mostrarSugestoesCategoria(categoriaInput.value);
             });
             categoriaInput.addEventListener('input', (e) => {
                 this.mostrarSugestoesCategoria(e.target.value);
             });
+            categoriaInput.dataset.autocompleteSetup = 'true';
         }
 
-        // Event listeners para conta
-        if (contaInput) {
+        if (contaInput && !contaInput.dataset.autocompleteSetup) {
             contaInput.addEventListener('focus', () => {
                 this.mostrarSugestoesConta(contaInput.value);
             });
             contaInput.addEventListener('input', (e) => {
                 this.mostrarSugestoesConta(e.target.value);
             });
+            contaInput.dataset.autocompleteSetup = 'true';
         }
 
-        // Event listeners para descrição
-        if (descricaoInput) {
+        if (descricaoInput && !descricaoInput.dataset.autocompleteSetup) {
             descricaoInput.addEventListener('focus', () => {
                 this.mostrarSugestoesDescricao(descricaoInput.value);
             });
             descricaoInput.addEventListener('input', (e) => {
                 this.mostrarSugestoesDescricao(e.target.value);
             });
+            descricaoInput.dataset.autocompleteSetup = 'true';
         }
 
-        // Fechar sugestões ao clicar fora
-        document.addEventListener('click', (e) => {
-            const containers = [
-                { container: document.getElementById('editCatSuggestions'), input: categoriaInput },
-                { container: document.getElementById('editContaSuggestions'), input: contaInput },
-                { container: document.getElementById('editDescSuggestions'), input: descricaoInput }
-            ];
-            
-            containers.forEach(({ container, input }) => {
-                if (container && input && e.target !== input && !container.contains(e.target)) {
-                    container.style.display = 'none';
-                }
+        // Adicionar listener global apenas uma vez
+        if (!document.body.dataset.editModalClickSetup) {
+            document.addEventListener('click', (e) => {
+                const containers = [
+                    { container: document.getElementById('editCatSuggestions'), input: categoriaInput },
+                    { container: document.getElementById('editContaSuggestions'), input: contaInput },
+                    { container: document.getElementById('editDescSuggestions'), input: descricaoInput }
+                ];
+                
+                containers.forEach(({ container, input }) => {
+                    if (container && input && e.target !== input && !container.contains(e.target)) {
+                        container.style.display = 'none';
+                    }
+                });
             });
-        });
+            document.body.dataset.editModalClickSetup = 'true';
+        }
     }
 
     /**
