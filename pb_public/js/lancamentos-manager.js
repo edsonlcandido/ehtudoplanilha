@@ -522,13 +522,13 @@ class LancamentosManager {
                     ${entry.obs ? `<div class="entry-obs">${this.escapeHtml(entry.obs)}</div>` : ''}
                 </div>
                 <div class="entry-card-actions">
-                    <button class="button small" onclick="lancamentosManager.editEntry(${entry.rowIndex})" title="Editar">
+                    <button class="small" onclick="lancamentosManager.editEntry(${entry.rowIndex})" title="Editar">
                         ✏️
                     </button>
-                    <button class="button small" onclick="lancamentosManager.splitEntry(${entry.rowIndex})" title="Dividir em parcelas">
-                        📊
+                    <button class="small" onclick="lancamentosManager.splitEntry(${entry.rowIndex})" title="Dividir em parcelas">
+                        ➗
                     </button>
-                    <button class="button danger small" onclick="lancamentosManager.deleteEntry(${entry.rowIndex})" title="Excluir">
+                    <button class="danger small" onclick="lancamentosManager.deleteEntry(${entry.rowIndex})" title="Excluir">
                         🗑️
                     </button>
                 </div>
@@ -601,13 +601,13 @@ class LancamentosManager {
                     ${entry.obs ? this.escapeHtml(entry.obs.substring(0, 30)) + (entry.obs.length > 30 ? '...' : '') : ''}
                 </td>
                 <td class="actions">
-                    <button class="button small" onclick="lancamentosManager.editEntry(${entry.rowIndex})" title="Editar">
+                    <button class="button small" style="background-color:#ecf0f1;" onclick="lancamentosManager.editEntry(${entry.rowIndex})" title="Editar">
                         ✏️
                     </button>
-                    <button class="button small" onclick="lancamentosManager.splitEntry(${entry.rowIndex})" title="Dividir em parcelas">
-                        📊
+                    <button class="button small" style="background-color:#ecf0f1;" onclick="lancamentosManager.splitEntry(${entry.rowIndex})" title="Dividir em parcelas">
+                        ➗
                     </button>
-                    <button class="button danger small" onclick="lancamentosManager.deleteEntry(${entry.rowIndex})" title="Excluir">
+                    <button class="button danger small"  onclick="lancamentosManager.deleteEntry(${entry.rowIndex})" title="Excluir">
                         🗑️
                     </button>
                 </td>
@@ -812,6 +812,9 @@ class LancamentosManager {
         // Carregar contas no datalist usando o accounts-service
         this.populateEditAccounts();
 
+        // Configurar autocomplete avançado
+        this.setupEditAutocomplete();
+
         modal.style.display = 'flex';
     }
 
@@ -893,51 +896,313 @@ class LancamentosManager {
     }
 
     /**
-     * Popula datalist de categorias no modal de edição
+     * Escapa HTML para evitar injeção XSS
      */
-    async populateEditCategories() {
-        const datalist = document.getElementById('editCategoriaList');
-        if (!datalist) return;
+    escapeHtml(str) {
+        return String(str ?? '').replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    /**
+     * Cria container de sugestões para autocomplete
+     */
+    ensureSuggestionsContainer(containerId, inputElement) {
+        let container = document.getElementById(containerId);
+        if (!container && inputElement) {
+            container = document.createElement('div');
+            container.id = containerId;
+            container.classList.add('edit-modal__suggestions');
+            container.setAttribute('role', 'listbox');
+            container.style.cssText = `
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: white;
+                border: 1px solid #ccc;
+                border-top: none;
+                border-radius: 0 0 4px 4px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                max-height: 150px;
+                overflow-y: auto;
+                z-index: 1000;
+                display: none;
+            `;
+            const parent = inputElement.parentElement;
+            parent.style.position = parent.style.position || 'relative';
+            parent.appendChild(container);
+        }
+        return container;
+    }
+
+    /**
+     * Mostra sugestões para categorias
+     */
+    mostrarSugestoesCategoria(query) {
+        const input = document.getElementById('editCategoria');
+        const container = this.ensureSuggestionsContainer('editCatSuggestions', input);
+        if (!container) return;
+
+        container.innerHTML = '';
+        if (!query || query.trim().length < 1) {
+            container.style.display = 'none';
+            return;
+        }
+
+        const q = query.trim().toLowerCase();
+        const categorias = this.getUniqueCategories();
+        const suggestions = categorias.filter(cat => cat.toLowerCase().includes(q));
         
-        try {
-            // Usa serviço centralizado de categorias se disponível
-            if (window.categoriesService && typeof window.categoriesService.populateDatalist === 'function') {
-                await window.categoriesService.populateDatalist('editCategoriaList');
-            } else {
-                // Fallback para implementação direta se serviço não estiver disponível
-                console.warn('[LancamentosManager] Serviço de categorias não disponível, usando implementação direta');
-                const categorias = await this.getCategoriesFallback();
+        if (suggestions.length === 0) {
+            container.style.display = 'none';
+            return;
+        }
+
+        suggestions.forEach(cat => {
+            const item = document.createElement('div');
+            item.setAttribute('role', 'option');
+            item.style.cssText = `
+                padding: 8px 12px;
+                cursor: pointer;
+                border-bottom: 1px solid #eee;
+            `;
+            item.innerHTML = this.escapeHtml(cat);
+            item.addEventListener('click', () => {
+                input.value = cat;
+                container.style.display = 'none';
+                input.focus();
+            });
+            item.addEventListener('mouseenter', () => {
+                item.style.backgroundColor = '#f0f0f0';
+            });
+            item.addEventListener('mouseleave', () => {
+                item.style.backgroundColor = 'white';
+            });
+            container.appendChild(item);
+        });
+        container.style.display = 'block';
+    }
+
+    /**
+     * Mostra sugestões para contas
+     */
+    mostrarSugestoesConta(query) {
+        const input = document.getElementById('editConta');
+        const container = this.ensureSuggestionsContainer('editContaSuggestions', input);
+        if (!container) return;
+
+        container.innerHTML = '';
+        if (!query || query.trim().length < 1) {
+            container.style.display = 'none';
+            return;
+        }
+
+        const q = query.trim().toLowerCase();
+        const contas = this.getUniqueAccounts();
+        const suggestions = contas.filter(conta => conta.toLowerCase().includes(q));
+        
+        if (suggestions.length === 0) {
+            container.style.display = 'none';
+            return;
+        }
+
+        suggestions.forEach(conta => {
+            const item = document.createElement('div');
+            item.setAttribute('role', 'option');
+            item.style.cssText = `
+                padding: 8px 12px;
+                cursor: pointer;
+                border-bottom: 1px solid #eee;
+            `;
+            item.innerHTML = this.escapeHtml(conta);
+            item.addEventListener('click', () => {
+                input.value = conta;
+                container.style.display = 'none';
+                input.focus();
+            });
+            item.addEventListener('mouseenter', () => {
+                item.style.backgroundColor = '#f0f0f0';
+            });
+            item.addEventListener('mouseleave', () => {
+                item.style.backgroundColor = 'white';
+            });
+            container.appendChild(item);
+        });
+        container.style.display = 'block';
+    }
+
+    /**
+     * Mostra sugestões para descrições
+     */
+    mostrarSugestoesDescricao(query) {
+        const input = document.getElementById('editDescricao');
+        const container = this.ensureSuggestionsContainer('editDescSuggestions', input);
+        if (!container) return;
+
+        container.innerHTML = '';
+        if (!query || query.trim().length < 1) {
+            container.style.display = 'none';
+            return;
+        }
+
+        const q = query.trim().toLowerCase();
+        const descricoes = this.getUniqueDescriptions();
+        const suggestions = descricoes.filter(desc => desc.toLowerCase().includes(q));
+        
+        if (suggestions.length === 0) {
+            container.style.display = 'none';
+            return;
+        }
+
+        suggestions.forEach(desc => {
+            const item = document.createElement('div');
+            item.setAttribute('role', 'option');
+            item.style.cssText = `
+                padding: 8px 12px;
+                cursor: pointer;
+                border-bottom: 1px solid #eee;
+            `;
+            item.innerHTML = this.escapeHtml(desc);
+            item.addEventListener('click', () => {
+                // Preencher descrição
+                input.value = desc;
+                container.style.display = 'none';
                 
-                // Limpa opções existentes
-                datalist.innerHTML = '';
+                // Buscar categoria correspondente nos entries
+                const catInput = document.getElementById('editCategoria');
+                if (catInput && this.entries && this.entries.length > 0) {
+                    // Encontra o primeiro entry que tem essa descrição
+                    const matchEntry = this.entries.find(e => 
+                        e.descricao && e.descricao.trim().toLowerCase() === desc.toLowerCase()
+                    );
+                    
+                    // Se encontrou e tem categoria, preenche o campo
+                    if (matchEntry && matchEntry.categoria) {
+                        catInput.value = matchEntry.categoria;
+                    }
+                }
                 
-                // Popula datalist
-                categorias.forEach(cat => {
-                    const opt = document.createElement('option');
-                    opt.value = cat;
-                    datalist.appendChild(opt);
+                input.focus();
+            });
+            item.addEventListener('mouseenter', () => {
+                item.style.backgroundColor = '#f0f0f0';
+            });
+            item.addEventListener('mouseleave', () => {
+                item.style.backgroundColor = 'white';
+            });
+            container.appendChild(item);
+        });
+        container.style.display = 'block';
+    }
+
+    /**
+     * Obtém categorias únicas dos entries carregados
+     */
+    getUniqueCategories() {
+        if (!this.entries || !Array.isArray(this.entries)) return this.getDefaultCategories();
+        
+        const categorias = this.entries
+            .map(e => String(e.categoria || '').trim())
+            .filter(Boolean);
+        
+        const unique = Array.from(new Set(categorias)).sort();
+        return unique.length > 0 ? unique : this.getDefaultCategories();
+    }
+
+    /**
+     * Obtém contas únicas dos entries carregados
+     */
+    getUniqueAccounts() {
+        if (!this.entries || !Array.isArray(this.entries)) return this.getDefaultAccounts();
+        
+        const contas = this.entries
+            .map(e => String(e.conta || '').trim())
+            .filter(Boolean);
+        
+        const unique = Array.from(new Set(contas)).sort();
+        return unique.length > 0 ? unique : this.getDefaultAccounts();
+    }
+
+    /**
+     * Obtém descrições únicas dos entries carregados
+     */
+    getUniqueDescriptions() {
+        if (!this.entries || !Array.isArray(this.entries)) return [];
+        
+        const descricoes = this.entries
+            .map(e => String(e.descricao || '').trim())
+            .filter(Boolean);
+        
+        return Array.from(new Set(descricoes)).sort();
+    }
+
+    /**
+     * Configura event listeners para autocomplete no modal de edição
+     */
+    setupEditAutocomplete() {
+        const categoriaInput = document.getElementById('editCategoria');
+        const contaInput = document.getElementById('editConta');
+        const descricaoInput = document.getElementById('editDescricao');
+
+        // Configurar autocomplete apenas se não foi configurado antes
+        if (categoriaInput && !categoriaInput.dataset.autocompleteSetup) {
+            categoriaInput.addEventListener('focus', () => {
+                this.mostrarSugestoesCategoria(categoriaInput.value);
+            });
+            categoriaInput.addEventListener('input', (e) => {
+                this.mostrarSugestoesCategoria(e.target.value);
+            });
+            categoriaInput.dataset.autocompleteSetup = 'true';
+        }
+
+        if (contaInput && !contaInput.dataset.autocompleteSetup) {
+            contaInput.addEventListener('focus', () => {
+                this.mostrarSugestoesConta(contaInput.value);
+            });
+            contaInput.addEventListener('input', (e) => {
+                this.mostrarSugestoesConta(e.target.value);
+            });
+            contaInput.dataset.autocompleteSetup = 'true';
+        }
+
+        if (descricaoInput && !descricaoInput.dataset.autocompleteSetup) {
+            descricaoInput.addEventListener('focus', () => {
+                this.mostrarSugestoesDescricao(descricaoInput.value);
+            });
+            descricaoInput.addEventListener('input', (e) => {
+                this.mostrarSugestoesDescricao(e.target.value);
+            });
+            descricaoInput.dataset.autocompleteSetup = 'true';
+        }
+
+        // Adicionar listener global apenas uma vez
+        if (!document.body.dataset.editModalClickSetup) {
+            document.addEventListener('click', (e) => {
+                const containers = [
+                    { container: document.getElementById('editCatSuggestions'), input: categoriaInput },
+                    { container: document.getElementById('editContaSuggestions'), input: contaInput },
+                    { container: document.getElementById('editDescSuggestions'), input: descricaoInput }
+                ];
+                
+                containers.forEach(({ container, input }) => {
+                    if (container && input && e.target !== input && !container.contains(e.target)) {
+                        container.style.display = 'none';
+                    }
                 });
-            }
-        } catch (error) {
-            console.error('[LancamentosManager] Erro ao popular categorias de edição:', error);
-            // Em caso de erro, usa categorias padrão
-            this.populateDefaultCategories(datalist);
+            });
+            document.body.dataset.editModalClickSetup = 'true';
         }
     }
 
     /**
-     * Busca categorias com fallback (método auxiliar)
+     * Popula datalist de categorias no modal de edição (legacy para compatibilidade)
      */
-    async getCategoriesFallback() {
-        try {
-            if (window.googleSheetsService && typeof window.googleSheetsService.getCategories === 'function') {
-                const categorias = await window.googleSheetsService.getCategories();
-                return (categorias && categorias.length > 0) ? categorias : this.getDefaultCategories();
-            }
-        } catch (error) {
-            console.error('[LancamentosManager] Erro ao buscar categorias:', error);
-        }
-        return this.getDefaultCategories();
+    async populateEditCategories() {
+        // Não faz mais nada - o novo sistema de autocomplete substitui isso
+        // Mantido apenas para compatibilidade
     }
 
     /**
@@ -948,52 +1213,11 @@ class LancamentosManager {
     }
 
     /**
-     * Popula datalist de contas no modal de edição
+     * Popula datalist de contas no modal de edição (legacy para compatibilidade)
      */
     async populateEditAccounts() {
-        const datalist = document.getElementById('editContaList');
-        if (!datalist) return;
-        
-        try {
-            // Usa serviço centralizado de contas se disponível
-            if (window.accountsService && typeof window.accountsService.populateDatalist === 'function') {
-                await window.accountsService.populateDatalist('editContaList');
-            } else {
-                // Fallback para implementação direta se serviço não estiver disponível
-                console.warn('[LancamentosManager] Serviço de contas não disponível, usando implementação direta');
-                const contas = await this.getAccountsFallback();
-                
-                // Limpa opções existentes
-                datalist.innerHTML = '';
-                
-                // Popula datalist
-                contas.forEach(conta => {
-                    const opt = document.createElement('option');
-                    opt.value = conta;
-                    datalist.appendChild(opt);
-                });
-            }
-        } catch (error) {
-            console.error('[LancamentosManager] Erro ao popular contas de edição:', error);
-            // Em caso de erro, usa contas padrão
-            this.populateDefaultAccounts(datalist);
-        }
-    }
-
-    /**
-     * Busca contas com fallback (método auxiliar)
-     */
-    async getAccountsFallback() {
-        try {
-            if (window.googleSheetsService && typeof window.googleSheetsService.getFinancialSummary === 'function') {
-                const summary = await window.googleSheetsService.getFinancialSummary();
-                const contas = summary.contasSugeridas || [];
-                return (contas && contas.length > 0) ? contas : this.getDefaultAccounts();
-            }
-        } catch (error) {
-            console.error('[LancamentosManager] Erro ao buscar contas:', error);
-        }
-        return this.getDefaultAccounts();
+        // Não faz mais nada - o novo sistema de autocomplete substitui isso
+        // Mantido apenas para compatibilidade
     }
 
     /**
@@ -1001,18 +1225,6 @@ class LancamentosManager {
      */
     getDefaultAccounts() {
         return ['Conta Corrente', 'Poupança', 'Cartão de Crédito', 'Cartão de Débito', 'Dinheiro', 'PIX', 'Outras'];
-    }
-
-    /**
-     * Popula datalist com contas padrão
-     */
-    populateDefaultAccounts(datalist) {
-        datalist.innerHTML = '';
-        this.getDefaultAccounts().forEach(conta => {
-            const opt = document.createElement('option');
-            opt.value = conta;
-            datalist.appendChild(opt);
-        });
     }
 
     /**
@@ -1049,14 +1261,24 @@ class LancamentosManager {
             obs: document.getElementById('editObs').value.trim()
         };
 
-        // Validação básica
-        if (!entryData.data || !entryData.conta || !entryData.descricao) {
-            this.showMessage('Preencha todos os campos obrigatórios (Data, Conta, Descrição)', 'error');
+        // Validação básica - apenas valor, categoria e orçamento são obrigatórios
+        if (!entryData.valor && entryData.valor !== 0) {
+            this.showMessage('O campo Valor é obrigatório', 'error');
             return;
         }
 
-        // Validar formato da data
-    if (!this.isValidDate(entryData.data)) {
+        if (!entryData.categoria || entryData.categoria.trim() === '') {
+            this.showMessage('O campo Categoria é obrigatório', 'error');
+            return;
+        }
+
+        if (!entryData.orcamento || entryData.orcamento.trim() === '') {
+            this.showMessage('O campo Orçamento (data-chave) é obrigatório', 'error');
+            return;
+        }
+
+        // Validar formato da data apenas se ela for informada
+        if (entryData.data && !this.isValidDate(entryData.data)) {
             this.showMessage('Data deve estar no formato válido', 'error');
             return;
         }

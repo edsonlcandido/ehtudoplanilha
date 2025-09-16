@@ -4,7 +4,8 @@
  * Hook para editar uma entrada específica na planilha do usuário
  * Endpoint: PUT /edit-sheet-entry
  * Edita uma linha específica na aba "Lançamentos" da planilha
- * Body: { rowIndex: number, data: string, conta: string, valor: number, descricao: string, categoria: string, orcamento: string, obs: string }
+ * Body: { rowIndex: number, data?: string, conta?: string, valor: number, descricao?: string, categoria: string, orcamento: string, obs?: string }
+ * Campos obrigatórios: rowIndex, valor, categoria, orcamento
  */
 
 routerAdd("PUT", "/edit-sheet-entry", (c) => {
@@ -16,15 +17,21 @@ routerAdd("PUT", "/edit-sheet-entry", (c) => {
     const userId = auth.id;
     const requestData = c.requestInfo().body;
     
-    // Validação básica dos dados
+    // Validação básica dos dados - apenas valor, categoria e orçamento são obrigatórios
     if (requestData.rowIndex === undefined || requestData.rowIndex === null) {
         return c.json(400, { "error": "rowIndex é obrigatório" });
     }
     if (!Number.isInteger(requestData.rowIndex) || requestData.rowIndex < 2) {
         return c.json(400, { "error": "rowIndex deve ser inteiro >= 2" });
     }
-    if (!requestData.data || !requestData.conta || requestData.valor === undefined || !requestData.descricao) {
-        return c.json(400, { "error": "Campos obrigatórios faltando (data, conta, valor, descricao)" });
+    if (requestData.valor === undefined || requestData.valor === null) {
+        return c.json(400, { "error": "Campo valor é obrigatório" });
+    }
+    if (!requestData.categoria || requestData.categoria.trim() === '') {
+        return c.json(400, { "error": "Campo categoria é obrigatório" });
+    }
+    if (!requestData.orcamento || requestData.orcamento === '') {
+        return c.json(400, { "error": "Campo orçamento (data-chave) é obrigatório" });
     }
 
     try {
@@ -51,14 +58,15 @@ routerAdd("PUT", "/edit-sheet-entry", (c) => {
             return c.json(400, { "error": "Token de acesso não encontrado" });
         }
 
+
         // Preparar os valores para atualização
         const values = [[
-            requestData.data,
-            requestData.conta,
+            requestData.data || "",
+            requestData.conta || "",
             requestData.valor,
-            requestData.descricao,
-            requestData.categoria || "",
-            requestData.orcamento || "",
+            requestData.descricao || "",
+            requestData.categoria,
+            requestData.orcamento,
             requestData.obs || ""
         ]];
 
@@ -121,12 +129,12 @@ routerAdd("PUT", "/edit-sheet-entry", (c) => {
                 message: "Lançamento editado com sucesso na planilha",
                 rowIndex: requestData.rowIndex,
                 updated: {
-                    data: requestData.data,
-                    conta: requestData.conta,
+                    data: requestData.data || "",
+                    conta: requestData.conta || "",
                     valor: requestData.valor,
-                    descricao: requestData.descricao,
-                    categoria: requestData.categoria || "",
-                    orcamento: requestData.orcamento || "",
+                    descricao: requestData.descricao || "",
+                    categoria: requestData.categoria,
+                    orcamento: requestData.orcamento,
                     obs: requestData.obs || ""
                 }
             });

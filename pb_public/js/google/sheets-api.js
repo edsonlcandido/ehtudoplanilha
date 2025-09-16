@@ -504,7 +504,7 @@ class GoogleSheetsService {
         if (!Number.isInteger(rowIndex) || rowIndex < 2) {
             throw new Error('rowIndex inválido');
         }
-        if (!dataValue || !conta || valor === undefined || valor === null || !descricao) {
+        if (valor === undefined || valor === null || !descricao) {
             throw new Error('Campos obrigatórios ausentes');
         }
 
