@@ -16,6 +16,7 @@
     /* Firefox */
     scrollbar-width: thin;
     scrollbar-color: #999 #eee;
+        font-size: 0.95rem;
 }
 
 /* Estilo específico da barra de rolagem para navegadores Webkit */
@@ -47,6 +48,7 @@
     .table-responsive {
         border: 1px solid #ddd;
         box-shadow: 0 0 5px rgba(0,0,0,0.05);
+            font-size: 0.95rem;
     }
     
     /* Garante largura mínima para forçar rolagem */
@@ -282,6 +284,10 @@
     line-height: 1;
     border: 1px solid transparent;
     transition: all 0.15s ease-in-out;
+}
+
+.entries-table .actions button{
+    background-color: #ecf0f1;
 }
 
 .entries-table .actions button:hover,
