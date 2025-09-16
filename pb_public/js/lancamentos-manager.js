@@ -1049,14 +1049,24 @@ class LancamentosManager {
             obs: document.getElementById('editObs').value.trim()
         };
 
-        // Validação básica
-        if (!entryData.data || !entryData.conta || !entryData.descricao) {
-            this.showMessage('Preencha todos os campos obrigatórios (Data, Conta, Descrição)', 'error');
+        // Validação básica - apenas valor, categoria e orçamento são obrigatórios
+        if (!entryData.valor && entryData.valor !== 0) {
+            this.showMessage('O campo Valor é obrigatório', 'error');
             return;
         }
 
-        // Validar formato da data
-    if (!this.isValidDate(entryData.data)) {
+        if (!entryData.categoria || entryData.categoria.trim() === '') {
+            this.showMessage('O campo Categoria é obrigatório', 'error');
+            return;
+        }
+
+        if (!entryData.orcamento || entryData.orcamento.trim() === '') {
+            this.showMessage('O campo Orçamento (data-chave) é obrigatório', 'error');
+            return;
+        }
+
+        // Validar formato da data apenas se ela for informada
+        if (entryData.data && !this.isValidDate(entryData.data)) {
             this.showMessage('Data deve estar no formato válido', 'error');
             return;
         }
