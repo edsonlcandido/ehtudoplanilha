@@ -30,7 +30,7 @@ routerAdd("PUT", "/edit-sheet-entry", (c) => {
     if (!requestData.categoria || requestData.categoria.trim() === '') {
         return c.json(400, { "error": "Campo categoria é obrigatório" });
     }
-    if (!requestData.orcamento || requestData.orcamento.trim() === '') {
+    if (!requestData.orcamento || requestData.orcamento === '') {
         return c.json(400, { "error": "Campo orçamento (data-chave) é obrigatório" });
     }
 
@@ -57,6 +57,7 @@ routerAdd("PUT", "/edit-sheet-entry", (c) => {
         if (!accessToken) {
             return c.json(400, { "error": "Token de acesso não encontrado" });
         }
+
 
         // Preparar os valores para atualização
         const values = [[
