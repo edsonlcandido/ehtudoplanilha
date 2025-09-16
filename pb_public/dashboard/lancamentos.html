@@ -151,8 +151,8 @@
                     <datalist id="editCategoriaList"></datalist>
                 </div>
                 <div class="form-group">
-                    <label for="editOrcamento">Orçamento (mês)</label>
-                    <select id="editOrcamento"></select>
+                    <label for="editOrcamento">Orçamento (data-chave):</label>
+                    <input type="date" id="editOrcamento" name="orcamento" class="form-control" required>
                 </div>
                 <div class="form-group">
                     <label for="editObs">Observações</label>
@@ -247,6 +247,9 @@
         import categoriesService from '../js/categories-service.js';
         import accountsService from '../js/accounts-service.js';
         import googleSheetsService from '../js/google/sheets-api.js';
+        import '../js/utils/sheet-entries.js'; // Importa utilitários de conversão de datas
+        import '../js/components/lancamentos-patch.js';
+        import '../js/components/orcamento-date-init.js';
 
         // Inicializa PocketBase
         window.pb = new PocketBase(apiConfig.getBaseURL());
