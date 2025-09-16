@@ -57,14 +57,8 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         // Validação básica
-        if (!entryData.data || !entryData.conta || !entryData.descricao) {
+        if (!entryData.descricao) {
             this.showMessage('Preencha todos os campos obrigatórios (Data, Conta, Descrição)', 'error');
-            return;
-        }
-
-        // Validar formato da data
-        if (!this.isValidDate(entryData.data)) {
-            this.showMessage('Data deve estar no formato válido', 'error');
             return;
         }
 
