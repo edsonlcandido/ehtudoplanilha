@@ -278,8 +278,27 @@
             mostrarErro('Não foi possível carregar os dados. Verifique sua conexão e tente novamente.');
         }
         // Soma total dos valores
-        const somaTotal = query(window.allEntries,'.|map(.valor)|sum');
+        const somaTotal = query(window.allEntries, ['pipe', ['map', ['get', 'valor']], ['sum']]);
         console.log('Soma total:', somaTotal);
+
+        // Soma total dos valores apenas dos orçamentos do intervalo atual
+        const orcamentosValidos = window.budgetsInInterval || [];
+        window.orcamentoArrayInt = query(orcamentosValidos,`map(.orcamento)`);
+        const orcamentoArrayInt2 = window.orcamentoArrayInt;
+        const somaTotalFiltrada = query(
+            window.allEntries,
+[
+  "pipe",
+  [
+    "filter",
+    entry => orcamentoArrayInt2.includes(entry.orcamento)
+  ],
+  ["map", ["get", "valor"]],
+  ["sum"]
+]
+        );
+        console.log('Soma total (filtrada por orçamento no intervalo):', somaTotalFiltrada);
+
 
     </script>
 </body>
