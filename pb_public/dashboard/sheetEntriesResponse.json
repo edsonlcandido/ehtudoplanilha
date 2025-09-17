@@ -1,13 +1,283 @@
 {
     "entries": [
         {
+            "categoria": "Restaurantes",
+            "conta": "NUCONTA",
+            "data": 45915.35625,
+            "descricao": "Ayslan Fazzian",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 401,
+            "valor": -13
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUCONTA",
+            "data": 45915.35555555556,
+            "descricao": "Myrella de Paula Silva",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 400,
+            "valor": -10
+        },
+        {
+            "categoria": "Outros",
+            "conta": "NUCONTA",
+            "data": 45916.575694444444,
+            "descricao": "Iris de Franco",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 399,
+            "valor": -15
+        },
+        {
+            "categoria": "Metrô / Ônibus",
+            "conta": "NUBANK",
+            "data": 45916.283842592595,
+            "descricao": "TRANSURB TRA1T250916",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 6,15 APROVADA em TRANSURB TRA*1T250916- para o cartão com final 6652. ",
+            "orcamento": 45930,
+            "rowIndex": 398,
+            "valor": -6.15
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45915.74966435185,
+            "descricao": "FORT ATACADISTA 635",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 21,86 APROVADA em FORT ATACADISTA 635 para o cartão com final 6652. ",
+            "orcamento": 45930,
+            "rowIndex": 397,
+            "valor": -21.86
+        },
+        {
+            "categoria": "Renda",
+            "conta": "",
+            "data": "",
+            "descricao": "Leonardo Maldonado Ferreira",
+            "obs": "",
+            "orcamento": 45961,
+            "rowIndex": 396,
+            "valor": 700
+        },
+        {
+            "categoria": "Casamento",
+            "conta": "",
+            "data": "",
+            "descricao": "Casamento",
+            "obs": "",
+            "orcamento": 45961,
+            "rowIndex": 395,
+            "valor": -1940
+        },
+        {
+            "categoria": "Academia",
+            "conta": "",
+            "data": "",
+            "descricao": "Wellhub Gympass Br Gym",
+            "obs": "",
+            "orcamento": 45961,
+            "rowIndex": 394,
+            "valor": -220
+        },
+        {
+            "categoria": "Doações",
+            "conta": "",
+            "data": "",
+            "descricao": "Unicancer",
+            "obs": "",
+            "orcamento": 45961,
+            "rowIndex": 393,
+            "valor": -10
+        },
+        {
+            "categoria": "Luz",
+            "conta": "",
+            "data": "",
+            "descricao": "CPFL",
+            "obs": "",
+            "orcamento": 45961,
+            "rowIndex": 392,
+            "valor": -152
+        },
+        {
+            "categoria": "Salário",
+            "conta": "",
+            "data": "",
+            "descricao": "Vale",
+            "obs": "",
+            "orcamento": 45961,
+            "rowIndex": 391,
+            "valor": 4657
+        },
+        {
+            "categoria": "Salário",
+            "conta": "",
+            "data": "",
+            "descricao": "Salario",
+            "obs": "",
+            "orcamento": 45961,
+            "rowIndex": 390,
+            "valor": 4000
+        },
+        {
+            "categoria": "Telefone Celular",
+            "conta": "",
+            "data": "",
+            "descricao": "Recarga TIM",
+            "obs": "",
+            "orcamento": 45961,
+            "rowIndex": 389,
+            "valor": -60
+        },
+        {
+            "categoria": "Investimentos",
+            "conta": "",
+            "data": "",
+            "descricao": "Raimundo Candido Barbosa",
+            "obs": "",
+            "orcamento": 45961,
+            "rowIndex": 388,
+            "valor": -600
+        },
+        {
+            "categoria": "Internet",
+            "conta": "",
+            "data": "",
+            "descricao": "Internet Claro",
+            "obs": "",
+            "orcamento": 45961,
+            "rowIndex": 387,
+            "valor": -184
+        },
+        {
+            "categoria": "Cabeleireiro",
+            "conta": "",
+            "data": "",
+            "descricao": "Gusttacortes",
+            "obs": "",
+            "orcamento": 45961,
+            "rowIndex": 386,
+            "valor": -75
+        },
+        {
+            "categoria": "Serviços",
+            "conta": "",
+            "data": "",
+            "descricao": "Google Youtubepremium",
+            "obs": "",
+            "orcamento": 45961,
+            "rowIndex": 385,
+            "valor": -53.9
+        },
+        {
+            "categoria": "Serviços",
+            "conta": "",
+            "data": "",
+            "descricao": "Github, Inc.",
+            "obs": "",
+            "orcamento": 45961,
+            "rowIndex": 384,
+            "valor": -66.8
+        },
+        {
+            "categoria": "Aluguel",
+            "conta": "",
+            "data": "",
+            "descricao": "Aluguel",
+            "obs": "",
+            "orcamento": 45961,
+            "rowIndex": 383,
+            "valor": -1600
+        },
+        {
+            "categoria": "Serviços",
+            "conta": "",
+            "data": "",
+            "descricao": "Google Ambi Servicos",
+            "obs": "",
+            "orcamento": 45961,
+            "rowIndex": 382,
+            "valor": -3.89
+        },
+        {
+            "categoria": "Gás",
+            "conta": "",
+            "data": "",
+            "descricao": "Congas",
+            "obs": "",
+            "orcamento": 45961,
+            "rowIndex": 381,
+            "valor": -14.54
+        },
+        {
+            "categoria": "Presentes",
+            "conta": "",
+            "data": "",
+            "descricao": "MSP UNIAO OSASCO KSK 7/10 - Gardenia",
+            "obs": "",
+            "orcamento": 45961,
+            "rowIndex": 380,
+            "valor": 164.95
+        },
+        {
+            "categoria": "Roupas",
+            "conta": "NUBANK",
+            "data": 45913.44375,
+            "descricao": "OUTLET JEANS POLO JACK 2/2",
+            "obs": "",
+            "orcamento": 45961,
+            "rowIndex": 379,
+            "valor": -99.99
+        },
+        {
+            "categoria": "Acessórios",
+            "conta": "NUBANK",
+            "data": 45906.64934027778,
+            "descricao": "HNAOBOTICARIO 2/2",
+            "obs": "",
+            "orcamento": 45961,
+            "rowIndex": 378,
+            "valor": -51.77
+        },
+        {
+            "categoria": "Calçados",
+            "conta": "NUBANK",
+            "data": 45906.56542824074,
+            "descricao": "WORLDTENNIS 2/3",
+            "obs": "",
+            "orcamento": 45961,
+            "rowIndex": 377,
+            "valor": -216.66
+        },
+        {
+            "categoria": "Presentes",
+            "conta": "INTER",
+            "data": 45766.705555555556,
+            "descricao": "MSP UNIAO OSASCO KSK 7/10",
+            "obs": "",
+            "orcamento": 45961,
+            "rowIndex": 376,
+            "valor": -329.9
+        },
+        {
+            "categoria": "Casamento",
+            "conta": "NUBANK",
+            "data": 45752.80138888889,
+            "descricao": "ALIANCAS FOREVER 7/10",
+            "obs": "",
+            "orcamento": 45961,
+            "rowIndex": 375,
+            "valor": -460
+        },
+        {
             "categoria": "Medicamentos",
             "conta": "",
             "data": "",
             "descricao": "Avamys",
             "obs": "",
             "orcamento": 45930,
-            "rowIndex": 207,
+            "rowIndex": 374,
             "valor": -48
         },
         {
@@ -17,7 +287,7 @@
             "descricao": "Relvar Elipta",
             "obs": "",
             "orcamento": 45930,
-            "rowIndex": 206,
+            "rowIndex": 373,
             "valor": -185
         },
         {
@@ -27,7 +297,7 @@
             "descricao": "Churras Batismo Caduzinho",
             "obs": "",
             "orcamento": 45930,
-            "rowIndex": 205,
+            "rowIndex": 372,
             "valor": -236
         },
         {
@@ -37,17 +307,17 @@
             "descricao": "Adriana Slomp",
             "obs": "",
             "orcamento": 45930,
-            "rowIndex": 204,
+            "rowIndex": 371,
             "valor": -400
         },
         {
             "categoria": "Presentes",
-            "conta": "",
-            "data": "",
+            "conta": "NUCONTA",
+            "data": 45916.38958333333,
             "descricao": "Roupa Batizado Caduzinho",
             "obs": "",
             "orcamento": 45930,
-            "rowIndex": 203,
+            "rowIndex": 370,
             "valor": -236
         },
         {
@@ -57,8 +327,8 @@
             "descricao": "Casamento",
             "obs": "",
             "orcamento": 45930,
-            "rowIndex": 202,
-            "valor": -2040
+            "rowIndex": 369,
+            "valor": -1940
         },
         {
             "categoria": "Doações",
@@ -67,7 +337,7 @@
             "descricao": "Unicancer",
             "obs": "",
             "orcamento": 45930,
-            "rowIndex": 201,
+            "rowIndex": 368,
             "valor": -10
         },
         {
@@ -77,8 +347,8 @@
             "descricao": "Leonardo Maldonado Ferreira",
             "obs": "",
             "orcamento": 45930,
-            "rowIndex": 200,
-            "valor": 700
+            "rowIndex": 367,
+            "valor": 850
         },
         {
             "categoria": "Luz",
@@ -87,18 +357,8 @@
             "descricao": "CPFL",
             "obs": "",
             "orcamento": 45930,
-            "rowIndex": 199,
+            "rowIndex": 366,
             "valor": -152
-        },
-        {
-            "categoria": "Salário",
-            "conta": "",
-            "data": "",
-            "descricao": "Vale",
-            "obs": "",
-            "orcamento": 45930,
-            "rowIndex": 198,
-            "valor": 4657
         },
         {
             "categoria": "Salário",
@@ -107,28 +367,8 @@
             "descricao": "Salario",
             "obs": "",
             "orcamento": 45930,
-            "rowIndex": 197,
+            "rowIndex": 365,
             "valor": 4000
-        },
-        {
-            "categoria": "Telefone Celular",
-            "conta": "",
-            "data": "",
-            "descricao": "Recarga TIM",
-            "obs": "",
-            "orcamento": 45930,
-            "rowIndex": 196,
-            "valor": -60
-        },
-        {
-            "categoria": "Investimentos",
-            "conta": "",
-            "data": "",
-            "descricao": "Raimundo Candido Barbosa",
-            "obs": "",
-            "orcamento": 45930,
-            "rowIndex": 195,
-            "valor": -600
         },
         {
             "categoria": "Internet",
@@ -137,7 +377,7 @@
             "descricao": "Internet Claro",
             "obs": "",
             "orcamento": 45930,
-            "rowIndex": 194,
+            "rowIndex": 364,
             "valor": -184
         },
         {
@@ -147,7 +387,7 @@
             "descricao": "Gusttacortes",
             "obs": "",
             "orcamento": 45930,
-            "rowIndex": 193,
+            "rowIndex": 363,
             "valor": -75
         },
         {
@@ -157,7 +397,7 @@
             "descricao": "Google Youtubepremium",
             "obs": "",
             "orcamento": 45930,
-            "rowIndex": 192,
+            "rowIndex": 362,
             "valor": -53.9
         },
         {
@@ -167,18 +407,8 @@
             "descricao": "Github, Inc.",
             "obs": "",
             "orcamento": 45930,
-            "rowIndex": 191,
+            "rowIndex": 361,
             "valor": -66.8
-        },
-        {
-            "categoria": "Aluguel",
-            "conta": "",
-            "data": "",
-            "descricao": "Aluguel",
-            "obs": "",
-            "orcamento": 45930,
-            "rowIndex": 190,
-            "valor": -1600
         },
         {
             "categoria": "Serviços",
@@ -187,7 +417,7 @@
             "descricao": "Google Ambi Servicos",
             "obs": "",
             "orcamento": 45930,
-            "rowIndex": 189,
+            "rowIndex": 360,
             "valor": -3.89
         },
         {
@@ -197,28 +427,458 @@
             "descricao": "Congas",
             "obs": "",
             "orcamento": 45930,
-            "rowIndex": 188,
+            "rowIndex": 359,
             "valor": -14.54
         },
         {
-            "categoria": "Carro",
-            "conta": "PICPAY",
-            "data": "",
-            "descricao": "Multa carro maesoca",
-            "obs": "",
-            "orcamento": 45930,
-            "rowIndex": 187,
-            "valor": -140.18
-        },
-        {
-            "categoria": "Renda",
-            "conta": "NUCONTA",
+            "categoria": "Presentes",
+            "conta": "",
             "data": "",
             "descricao": "MSP UNIAO OSASCO KSK 6/10 - Gardenia",
             "obs": "",
             "orcamento": 45930,
-            "rowIndex": 186,
+            "rowIndex": 358,
             "valor": 164.95
+        },
+        {
+            "categoria": "Outros",
+            "conta": "NUBANK",
+            "data": 45930.99930555555,
+            "descricao": "Atualização NUBANK",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 357,
+            "valor": 0
+        },
+        {
+            "categoria": "Carro",
+            "conta": "NUCONTA",
+            "data": 45915.42222222222,
+            "descricao": "Multa carro maesoca",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 356,
+            "valor": -141
+        },
+        {
+            "categoria": "Metrô / Ônibus",
+            "conta": "NUBANK",
+            "data": 45915.393645833334,
+            "descricao": "TRANSURB TRA1T250915",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 6,15 APROVADA em TRANSURB TRA*1T250915- para o cartão com final 6652. ",
+            "orcamento": 45930,
+            "rowIndex": 355,
+            "valor": -6.15
+        },
+        {
+            "categoria": "Aluguel",
+            "conta": "NUCONTA",
+            "data": 45915.35,
+            "descricao": "Aluguel",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 354,
+            "valor": -1600
+        },
+        {
+            "categoria": "Salário",
+            "conta": "NUCONTA",
+            "data": 45915.29583333333,
+            "descricao": "Vale",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 353,
+            "valor": 4657
+        },
+        {
+            "categoria": "Investimentos",
+            "conta": "NUCONTA",
+            "data": 45915.29583333333,
+            "descricao": "Raimundo Candido Barbosa",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 352,
+            "valor": -600
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45914.92412037037,
+            "descricao": "Uber UBER PENDING",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 14,69 APROVADA em Uber UBER * PENDING para o cartão com final 8441.",
+            "orcamento": 45930,
+            "rowIndex": 351,
+            "valor": -14.69
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45914.92387731482,
+            "descricao": "UBER TRIP",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 1,00 APROVADA em UBER* TRIP para o cartão com final 8441.",
+            "orcamento": 45930,
+            "rowIndex": 350,
+            "valor": -1
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45914.86754629629,
+            "descricao": "JK MINIMERCADO E CONV",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 10,50 APROVADA em JK MINI MERCADO E CONV para o cartão com final 6652.",
+            "orcamento": 45930,
+            "rowIndex": 349,
+            "valor": -10.5
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45914.558530092596,
+            "descricao": "MP ADEGAGARAGEM",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 24,00 APROVADA em MP *ADEGAGARAGEM para o cartão com final 6652",
+            "orcamento": 45930,
+            "rowIndex": 348,
+            "valor": -24
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45914.508043981485,
+            "descricao": "Uber UBER TRIP HELP U",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 31,32 APROVADA em Uber UBER *TRIP HELP.U para o cartão com final 8441.",
+            "orcamento": 45930,
+            "rowIndex": 347,
+            "valor": -31.32
+        },
+        {
+            "categoria": "Serviços",
+            "conta": "NUBANK",
+            "data": 45913.90584490741,
+            "descricao": "AMAZON SERVICOS DE VAR",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 19,90 APROVADA em AMAZON SERVICOS DE VAR para o cartão com final 8441.",
+            "orcamento": 45930,
+            "rowIndex": 346,
+            "valor": -19.9
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45913.72375,
+            "descricao": "SAO JORGE ATACADISTA",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 38,14 APROVADA em SAO JORGE ATACADISTA para o cartão com final 6652.",
+            "orcamento": 45930,
+            "rowIndex": 345,
+            "valor": -38.14
+        },
+        {
+            "categoria": "Metrô / Ônibus",
+            "conta": "NUBANK",
+            "data": 45913.44599537037,
+            "descricao": "PICPAYCittamobiSP",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 36,40 APROVADA em PICPAY*CittamobiSP para o cartão com final 8441. ",
+            "orcamento": 45930,
+            "rowIndex": 344,
+            "valor": -36.4
+        },
+        {
+            "categoria": "Roupas",
+            "conta": "NUBANK",
+            "data": 45913.44375,
+            "descricao": "OUTLET JEANS POLO JACK 1/2",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 199,98 APROVADA em OUTLET JEANS POLO JACK para o cartão com final 6652.",
+            "orcamento": 45930,
+            "rowIndex": 343,
+            "valor": -99.99
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45913.39896990741,
+            "descricao": "Uber UBER TRIP HELPU",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 1,00 APROVADA em Uber UBER *TRIP HELP.U para o cartão com final 8441. ",
+            "orcamento": 45930,
+            "rowIndex": 342,
+            "valor": -1
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45913.37038194444,
+            "descricao": "Uber UBER PENDING",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 18,77 APROVADA em Uber UBER * PENDING para o cartão com final 8441. ",
+            "orcamento": 45930,
+            "rowIndex": 341,
+            "valor": -18.77
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45912.93898148148,
+            "descricao": "UBER TRIP",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 1,00 APROVADA em UBER* TRIP para o cartão com final 8441. ",
+            "orcamento": 45930,
+            "rowIndex": 340,
+            "valor": -1
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45912.78465277778,
+            "descricao": "Uber UBER  PENDING",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 30,03 APROVADA em Uber UBER * PENDING para o cartão com final 8441. ",
+            "orcamento": 45930,
+            "rowIndex": 339,
+            "valor": -30.03
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45912.783587962964,
+            "descricao": "UBER TRIP",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 1,00 APROVADA em UBER* TRIP para o cartão com final 8441. ",
+            "orcamento": 45930,
+            "rowIndex": 338,
+            "valor": -1
+        },
+        {
+            "categoria": "Carro",
+            "conta": "NUBANK",
+            "data": 45912.39513888889,
+            "descricao": "Aliexpress",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 159,00 APROVADA em aliexpress para o cartão com final 8441.",
+            "orcamento": 45930,
+            "rowIndex": 337,
+            "valor": -159
+        },
+        {
+            "categoria": "Médico",
+            "conta": "NUBANK",
+            "data": 45911.20208333333,
+            "descricao": "Clinica Franco Peghini - reembolso",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 336,
+            "valor": 221
+        },
+        {
+            "categoria": "Doações",
+            "conta": "NUBANK",
+            "data": 45910.834027777775,
+            "descricao": "Maria Luis Marcelino",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 335,
+            "valor": -273.12
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45910.50809027778,
+            "descricao": "KAL RESTAURANTE",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 34,00 APROVADA em KAL RESTAURANTE para o cartão com final 6652.",
+            "orcamento": 45930,
+            "rowIndex": 334,
+            "valor": -34
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45910.486979166664,
+            "descricao": "MP SUPERFERRARI",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 11,99 APROVADA em MP *SUPERFERRARI para o cartão com final 6652.",
+            "orcamento": 45930,
+            "rowIndex": 333,
+            "valor": -11.99
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45910.456979166665,
+            "descricao": "MIL MILK SHAKE",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 12,50 APROVADA em MIL MILK SHAKE para o cartão com final 6652.",
+            "orcamento": 45930,
+            "rowIndex": 332,
+            "valor": -12.5
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45910.39040509259,
+            "descricao": "Uber UBER PENDING",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 15,91 APROVADA em Uber UBER * PENDING para o cartão com final 8441",
+            "orcamento": 45930,
+            "rowIndex": 331,
+            "valor": -15.91
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45910.39,
+            "descricao": "Uber UBER TRIP HELP",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 1,00 APROVADA em Uber UBER *TRIP HELP.U para o cartão com final 8441",
+            "orcamento": 45930,
+            "rowIndex": 330,
+            "valor": -1
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45909.812581018516,
+            "descricao": "BAR DO LU E AMIGOS",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 18,00 APROVADA em BAR DO LU E AMIGOS para o cartão com final 6652.",
+            "orcamento": 45930,
+            "rowIndex": 329,
+            "valor": -18
+        },
+        {
+            "categoria": "Telefone Celular",
+            "conta": "NUBANK",
+            "data": 45909.43263888889,
+            "descricao": "Recarga TIM",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 328,
+            "valor": -60
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45908.96738425926,
+            "descricao": "UBER PENDING",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 9,92 APROVADA em UBER* PENDING para o cartão com final 8441.",
+            "orcamento": 45930,
+            "rowIndex": 327,
+            "valor": -9.92
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45908.96712962963,
+            "descricao": "Uber UBER TRIP HELP",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 1,00 APROVADA em Uber UBER *TRIP HELP.U para o cartão com final 8441.",
+            "orcamento": 45930,
+            "rowIndex": 326,
+            "valor": -1
+        },
+        {
+            "categoria": "Serviços",
+            "conta": "NUBANK",
+            "data": 45908.81202546296,
+            "descricao": "ifood NOVA CORA",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 76,76 APROVADA em ifood *IFD*NOVA CORA para o cartão com final 8441.",
+            "orcamento": 45930,
+            "rowIndex": 325,
+            "valor": -76.76
+        },
+        {
+            "categoria": "Combustível",
+            "conta": "NUBANK",
+            "data": 45908.60958333333,
+            "descricao": "AutoPosto",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 118,50 APROVADA em AutoPosto para o cartão com final 6652.",
+            "orcamento": 45930,
+            "rowIndex": 324,
+            "valor": -118.5
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45908.47837962963,
+            "descricao": "O POMPOZO",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 16,88 APROVADA em O POMPOZO para o cartão com final 6652.",
+            "orcamento": 45930,
+            "rowIndex": 323,
+            "valor": -16.88
+        },
+        {
+            "categoria": "Casa",
+            "conta": "NUBANK",
+            "data": 45908.46658564815,
+            "descricao": "MOEMA COMERCIO DE MATE",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 38,05 APROVADA em MOEMA COMERCIO DE MATE para o cartão com final 6652.",
+            "orcamento": 45930,
+            "rowIndex": 322,
+            "valor": -38.05
+        },
+        {
+            "categoria": "Material escolar",
+            "conta": "NUBANK",
+            "data": 45906.66914351852,
+            "descricao": "LIVRARIA SEBO CULTURAL",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 321,
+            "valor": -34
+        },
+        {
+            "categoria": "Acessórios",
+            "conta": "NUBANK",
+            "data": 45906.64934027778,
+            "descricao": "HNAOBOTICARIO 1/2",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 320,
+            "valor": -51.77
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45906.57616898148,
+            "descricao": "BURGER KING SHOP LIGHT",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 319,
+            "valor": -47.8
+        },
+        {
+            "categoria": "Calçados",
+            "conta": "NUBANK",
+            "data": 45906.56542824074,
+            "descricao": "WORLDTENNIS 1/3",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 318,
+            "valor": -216.66
+        },
+        {
+            "categoria": "Medicamentos",
+            "conta": "NUBANK",
+            "data": 45906.43114583333,
+            "descricao": "DROGASIL1282",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 317,
+            "valor": -17.58
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45905.869097222225,
+            "descricao": "DEGAS POMPEIA",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 316,
+            "valor": -180.83
+        },
+        {
+            "categoria": "Médico",
+            "conta": "NUBANK",
+            "data": 45905.33819444444,
+            "descricao": "Clinica Franco Peghini",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 315,
+            "valor": -277.57
+        },
+        {
+            "categoria": "Médico",
+            "conta": "NUBANK",
+            "data": 45905.33611111111,
+            "descricao": "Clinica Franco Peghini",
+            "obs": "",
+            "orcamento": 45930,
+            "rowIndex": 314,
+            "valor": -277.58
         },
         {
             "categoria": "Outros",
@@ -227,7 +887,7 @@
             "descricao": "Laertes Oselame",
             "obs": "",
             "orcamento": 45930,
-            "rowIndex": 185,
+            "rowIndex": 313,
             "valor": -50
         },
         {
@@ -235,9 +895,9 @@
             "conta": "NUBANK",
             "data": 45903.91378472222,
             "descricao": "POSTOTELLES",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 1,49 APROVADA em POSTO TELLES para o cartão com final 6652.",
             "orcamento": 45930,
-            "rowIndex": 184,
+            "rowIndex": 312,
             "valor": -1.49
         },
         {
@@ -245,9 +905,9 @@
             "conta": "NUBANK",
             "data": 45903.78778935185,
             "descricao": "LCP SOLUCOES EMPRESARI",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 35,72 APROVADA em LCP SOLUCOES EMPRESARI para o cartão com final 6652.",
             "orcamento": 45930,
-            "rowIndex": 183,
+            "rowIndex": 311,
             "valor": -35.72
         },
         {
@@ -257,7 +917,7 @@
             "descricao": "MOVIECOM MAXI JUNDIAI",
             "obs": "",
             "orcamento": 45930,
-            "rowIndex": 182,
+            "rowIndex": 310,
             "valor": -10
         },
         {
@@ -265,9 +925,9 @@
             "conta": "NUBANK",
             "data": 45903.7484837963,
             "descricao": "MARAVILHAS DO LAR MAXI",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 19,99 APROVADA em MARAVILHAS DO LAR MAXI para o cartão com final 6652.",
             "orcamento": 45930,
-            "rowIndex": 181,
+            "rowIndex": 309,
             "valor": -19.99
         },
         {
@@ -275,9 +935,9 @@
             "conta": "NUBANK",
             "data": 45902.82119212963,
             "descricao": "BAR DO LU E AMIGOS",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 16,50 APROVADA em BAR DO LU E AMIGOS para o cartão com final 6652.",
             "orcamento": 45930,
-            "rowIndex": 180,
+            "rowIndex": 308,
             "valor": -16.5
         },
         {
@@ -287,7 +947,7 @@
             "descricao": "Gardenia de Carvalho Correia",
             "obs": "",
             "orcamento": 45930,
-            "rowIndex": 179,
+            "rowIndex": 307,
             "valor": -52.03
         },
         {
@@ -295,9 +955,9 @@
             "conta": "NUBANK",
             "data": 45902.757893518516,
             "descricao": "Wellhub Gympass BR Gym",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 36,32 APROVADA em Wellhub Gympass BR Gym para o cartão com final 8441.",
             "orcamento": 45930,
-            "rowIndex": 178,
+            "rowIndex": 306,
             "valor": -36.32
         },
         {
@@ -305,9 +965,9 @@
             "conta": "NUBANK",
             "data": 45901.486712962964,
             "descricao": "Wellhub Gympass BR Gym",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 189,90 APROVADA em Wellhub Gympass BR Gym para o cartão com final 8441.",
             "orcamento": 45930,
-            "rowIndex": 177,
+            "rowIndex": 305,
             "valor": -189.9
         },
         {
@@ -315,9 +975,9 @@
             "conta": "NUBANK",
             "data": 45901.41204861111,
             "descricao": "OPENROUTER INC",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 32,84 APROVADA em OPENROUTER, INC para o cartão com final 8441.",
             "orcamento": 45930,
-            "rowIndex": 176,
+            "rowIndex": 304,
             "valor": -32.84
         },
         {
@@ -325,9 +985,9 @@
             "conta": "NUBANK",
             "data": 45901.29043981482,
             "descricao": "AutoPosto",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 3,47 APROVADA em AutoPosto para o cartão com final 6652.",
             "orcamento": 45930,
-            "rowIndex": 175,
+            "rowIndex": 303,
             "valor": -3.47
         },
         {
@@ -337,7 +997,7 @@
             "descricao": "AutoPosto",
             "obs": "",
             "orcamento": 45930,
-            "rowIndex": 174,
+            "rowIndex": 302,
             "valor": -159.44
         },
         {
@@ -345,9 +1005,9 @@
             "conta": "NUBANK",
             "data": 45900.778761574074,
             "descricao": "BETA REFEICOES",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 48,35 APROVADA em BETA REFEICOES para o cartão com final 6652.",
             "orcamento": 45930,
-            "rowIndex": 173,
+            "rowIndex": 301,
             "valor": -48.35
         },
         {
@@ -355,9 +1015,9 @@
             "conta": "NUBANK",
             "data": 45900.52369212963,
             "descricao": "DIA BRASIL LJ 236",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 78,87 APROVADA em DIA BRASIL LJ 236 para o cartão com final 8441.",
             "orcamento": 45930,
-            "rowIndex": 172,
+            "rowIndex": 300,
             "valor": -78.87
         },
         {
@@ -365,9 +1025,9 @@
             "conta": "NUBANK",
             "data": 45899.897685185184,
             "descricao": "OXXO BRATYS",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 55,41 APROVADA em OXXO BRATYS para o cartão com final 6652.",
             "orcamento": 45930,
-            "rowIndex": 171,
+            "rowIndex": 299,
             "valor": -55.41
         },
         {
@@ -375,9 +1035,9 @@
             "conta": "NUBANK",
             "data": 45899.80847222222,
             "descricao": "PAO DE ACUCAR-1696",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 42,77 APROVADA em PAO DE ACUCAR-1696 para o cartão com final 6652.",
             "orcamento": 45930,
-            "rowIndex": 170,
+            "rowIndex": 298,
             "valor": -42.77
         },
         {
@@ -385,9 +1045,9 @@
             "conta": "NUBANK",
             "data": 45899.76734953704,
             "descricao": "ATACADAO 939 AS",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 81,53 APROVADA em ATACADAO 939 AS para o cartão com final 6652.",
             "orcamento": 45930,
-            "rowIndex": 169,
+            "rowIndex": 297,
             "valor": -81.53
         },
         {
@@ -395,9 +1055,9 @@
             "conta": "NUBANK",
             "data": 45899.63597222222,
             "descricao": "OXXO BRATYS",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 22,85 APROVADA em OXXO BRATYS para o cartão com final 6652.",
             "orcamento": 45930,
-            "rowIndex": 168,
+            "rowIndex": 296,
             "valor": -22.85
         },
         {
@@ -405,9 +1065,9 @@
             "conta": "NUCONTA",
             "data": 45899.4799537037,
             "descricao": "PARK ESTACIONAMENTO",
-            "obs": "",
+            "obs": "title=Compra no débito aprovada package=com.nu.production message=Compra de R$ 8,00 em PARK ESTACIONAMENTO",
             "orcamento": 45930,
-            "rowIndex": 167,
+            "rowIndex": 295,
             "valor": -8
         },
         {
@@ -415,9 +1075,9 @@
             "conta": "NUBANK",
             "data": 45899.42383101852,
             "descricao": "O POMPOZO",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 46,06 APROVADA em O POMPOZO para o cartão com final 6652.",
             "orcamento": 45930,
-            "rowIndex": 166,
+            "rowIndex": 294,
             "valor": -46.06
         },
         {
@@ -425,9 +1085,9 @@
             "conta": "NUBANK",
             "data": 45898.976331018515,
             "descricao": "PICPAY CittamobiSP",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 26,00 APROVADA em PICPAY*CittamobiSP para o cartão com final 8441.",
             "orcamento": 45930,
-            "rowIndex": 165,
+            "rowIndex": 293,
             "valor": -26
         },
         {
@@ -435,9 +1095,9 @@
             "conta": "NUBANK",
             "data": 45898.96443287037,
             "descricao": "ATHENAS CAFE",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 47,30 APROVADA em ATHENAS CAFE para o cartão com final 6652.",
             "orcamento": 45930,
-            "rowIndex": 164,
+            "rowIndex": 292,
             "valor": -47.3
         },
         {
@@ -445,9 +1105,9 @@
             "conta": "NUBANK",
             "data": 45898.93320601852,
             "descricao": "GPR I BARES E RESTAURANTE",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 18,00 APROVADA em GPR I BARES E RESTAURA para o cartão com final 6652.",
             "orcamento": 45930,
-            "rowIndex": 163,
+            "rowIndex": 291,
             "valor": -18
         },
         {
@@ -455,9 +1115,9 @@
             "conta": "NUBANK",
             "data": 45898.79107638889,
             "descricao": "FinoGourmetSp",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 50,00 APROVADA em FinoGourmetSp para o cartão com final 6652.",
             "orcamento": 45930,
-            "rowIndex": 162,
+            "rowIndex": 290,
             "valor": -50
         },
         {
@@ -467,7 +1127,7 @@
             "descricao": "LIVRARIA LEITURA JUNDI 2/2",
             "obs": "",
             "orcamento": 45930,
-            "rowIndex": 161,
+            "rowIndex": 289,
             "valor": -82.5
         },
         {
@@ -477,7 +1137,7 @@
             "descricao": "ROSANGELAKAWAKITA 4/4",
             "obs": "",
             "orcamento": 45930,
-            "rowIndex": 160,
+            "rowIndex": 288,
             "valor": -137.5
         },
         {
@@ -487,17 +1147,17 @@
             "descricao": "MSP UNIAO OSASCO KSK 6/10",
             "obs": "",
             "orcamento": 45930,
-            "rowIndex": 159,
+            "rowIndex": 287,
             "valor": -329.9
         },
         {
-            "categoria": "Acessórios",
+            "categoria": "Casamento",
             "conta": "NUBANK",
             "data": 45752.79738425926,
             "descricao": "ALIANCAS FOREVER 6/10",
             "obs": "",
             "orcamento": 45930,
-            "rowIndex": 158,
+            "rowIndex": 286,
             "valor": -460
         },
         {
@@ -507,7 +1167,7 @@
             "descricao": "Drograria2284 jundiai li 10/10",
             "obs": "",
             "orcamento": 45930,
-            "rowIndex": 157,
+            "rowIndex": 285,
             "valor": -42.11
         },
         {
@@ -517,7 +1177,7 @@
             "descricao": "INSPIRE BEM ESTAR E S 3/3 - Presente Monica GARDENIA",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 156,
+            "rowIndex": 284,
             "valor": 58
         },
         {
@@ -527,7 +1187,7 @@
             "descricao": "MSP UNIAO OSASCO KSK 5/10 - Gardenia",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 155,
+            "rowIndex": 283,
             "valor": 24.95
         },
         {
@@ -537,7 +1197,7 @@
             "descricao": "CPFL",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 154,
+            "rowIndex": 282,
             "valor": -147
         },
         {
@@ -547,7 +1207,7 @@
             "descricao": "Casamento",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 153,
+            "rowIndex": 281,
             "valor": -1315
         },
         {
@@ -557,7 +1217,7 @@
             "descricao": "caixinha alianças - Saque",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 152,
+            "rowIndex": 280,
             "valor": 460
         },
         {
@@ -567,7 +1227,7 @@
             "descricao": "Ayslan Fazzian",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 151,
+            "rowIndex": 279,
             "valor": -13
         },
         {
@@ -577,7 +1237,7 @@
             "descricao": "Adriana Slomp",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 150,
+            "rowIndex": 278,
             "valor": -222
         },
         {
@@ -587,7 +1247,7 @@
             "descricao": "Salario",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 149,
+            "rowIndex": 277,
             "valor": 4000
         },
         {
@@ -595,9 +1255,9 @@
             "conta": "NUBANK",
             "data": 45897.74811342593,
             "descricao": "ATACADAO 633 SA",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 11,90 APROVADA em ATACADAO 633 SA para o cartão com final 6652.",
             "orcamento": 45900,
-            "rowIndex": 148,
+            "rowIndex": 276,
             "valor": -11.9
         },
         {
@@ -605,9 +1265,9 @@
             "conta": "NUBANK",
             "data": 45897.67265046296,
             "descricao": "Google AMBI SERVICOS",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 3,89 APROVADA em Google AMBI SERVICOS para o cartão com final 8441.",
             "orcamento": 45900,
-            "rowIndex": 147,
+            "rowIndex": 275,
             "valor": -3.89
         },
         {
@@ -615,9 +1275,9 @@
             "conta": "NUBANK",
             "data": 45897.315,
             "descricao": "POSTO CACULA",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 3,37 APROVADA em POSTO CACULA para o cartão com final 6652.",
             "orcamento": 45900,
-            "rowIndex": 146,
+            "rowIndex": 274,
             "valor": -3.37
         },
         {
@@ -625,9 +1285,9 @@
             "conta": "NUBANK",
             "data": 45896.86094907407,
             "descricao": "VEINHOLANCHES",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 64,00 APROVADA em veinholanches para o cartão com final 6652.",
             "orcamento": 45900,
-            "rowIndex": 145,
+            "rowIndex": 273,
             "valor": -64
         },
         {
@@ -635,9 +1295,9 @@
             "conta": "NUBANK",
             "data": 45896.82619212963,
             "descricao": "MP GUSTTACORTES",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 75,00 APROVADA em MP *GUSTTACORTES para o cartão com final 6652.",
             "orcamento": 45900,
-            "rowIndex": 144,
+            "rowIndex": 272,
             "valor": -75
         },
         {
@@ -645,9 +1305,9 @@
             "conta": "NUBANK",
             "data": 45894.77831018518,
             "descricao": "BOTECO DO BENE",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 13,00 APROVADA em BOTECO DO BENE para o cartão com final 6652.",
             "orcamento": 45900,
-            "rowIndex": 143,
+            "rowIndex": 271,
             "valor": -13
         },
         {
@@ -655,9 +1315,9 @@
             "conta": "NUBANK",
             "data": 45894.75655092593,
             "descricao": "BOTECO DO BENE",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 36,00 APROVADA em BOTECO DO BENE para o cartão com final 6652.",
             "orcamento": 45900,
-            "rowIndex": 142,
+            "rowIndex": 270,
             "valor": -36
         },
         {
@@ -667,7 +1327,7 @@
             "descricao": "Sp-360 - jundiai norte",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 141,
+            "rowIndex": 269,
             "valor": -6.1
         },
         {
@@ -677,7 +1337,7 @@
             "descricao": "SP-348 - Campo Limpo - Norte",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 140,
+            "rowIndex": 268,
             "valor": -13.7
         },
         {
@@ -685,9 +1345,9 @@
             "conta": "NUBANK",
             "data": 45893.944375,
             "descricao": "FARMACIA E DROGARIA NI",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 28,90 APROVADA em FARMACIA E DROGARIA NI para o cartão com final 6652.",
             "orcamento": 45900,
-            "rowIndex": 139,
+            "rowIndex": 267,
             "valor": -28.9
         },
         {
@@ -695,9 +1355,9 @@
             "conta": "NUBANK",
             "data": 45893.906273148146,
             "descricao": "NOVA CORA LANCHES LTD",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 81,16 APROVADA em NOVA CORA LANCHES LTD para o cartão com final 6652.",
             "orcamento": 45900,
-            "rowIndex": 138,
+            "rowIndex": 266,
             "valor": -81.16
         },
         {
@@ -707,7 +1367,7 @@
             "descricao": "Caixinha Gatinha",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 137,
+            "rowIndex": 265,
             "valor": -10
         },
         {
@@ -715,9 +1375,9 @@
             "conta": "NUBANK",
             "data": 45893.6190162037,
             "descricao": "GITHUB INC",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 57,16 APROVADA em GITHUB, INC. para o cartão com final 8441.",
             "orcamento": 45900,
-            "rowIndex": 136,
+            "rowIndex": 264,
             "valor": -58.48
         },
         {
@@ -727,7 +1387,7 @@
             "descricao": "Atacadao 939 As",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 135,
+            "rowIndex": 263,
             "valor": -38.82
         },
         {
@@ -737,7 +1397,7 @@
             "descricao": "Drogasil2052",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 134,
+            "rowIndex": 262,
             "valor": -16.89
         },
         {
@@ -747,7 +1407,7 @@
             "descricao": "Star Food",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 133,
+            "rowIndex": 261,
             "valor": -36.32
         },
         {
@@ -757,7 +1417,7 @@
             "descricao": "ADEGA",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 132,
+            "rowIndex": 260,
             "valor": -95
         },
         {
@@ -767,7 +1427,7 @@
             "descricao": "Expressacougue",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 131,
+            "rowIndex": 259,
             "valor": -49.1
         },
         {
@@ -777,7 +1437,7 @@
             "descricao": "Lavagem do carro",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 130,
+            "rowIndex": 258,
             "valor": -30
         },
         {
@@ -785,9 +1445,9 @@
             "conta": "NUBANK",
             "data": 45892.44184027778,
             "descricao": "O POMPOZO",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 17,39 APROVADA em O POMPOZO para o cartão com final 6652.",
             "orcamento": 45900,
-            "rowIndex": 129,
+            "rowIndex": 257,
             "valor": -17.39
         },
         {
@@ -795,9 +1455,9 @@
             "conta": "NUBANK",
             "data": 45892.05905092593,
             "descricao": "AutoPosto",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 148,85 APROVADA em AutoPosto para o cartão com final 6652.",
             "orcamento": 45900,
-            "rowIndex": 128,
+            "rowIndex": 256,
             "valor": -148.85
         },
         {
@@ -805,9 +1465,9 @@
             "conta": "NUBANK",
             "data": 45892.042592592596,
             "descricao": "ADEGA",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 51,00 APROVADA em ADEGA para o cartão com final 6652.",
             "orcamento": 45900,
-            "rowIndex": 127,
+            "rowIndex": 255,
             "valor": -51
         },
         {
@@ -817,7 +1477,7 @@
             "descricao": "Sp-348 - Caieras - sul",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 126,
+            "rowIndex": 254,
             "valor": -13.7
         },
         {
@@ -825,9 +1485,9 @@
             "conta": "NUBANK",
             "data": 45891.79096064815,
             "descricao": "EXTRA HIPER-1386",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 38,93 APROVADA em EXTRA HIPER-1386 para o cartão com final 6652.",
             "orcamento": 45900,
-            "rowIndex": 125,
+            "rowIndex": 253,
             "valor": -38.93
         },
         {
@@ -837,7 +1497,7 @@
             "descricao": "Herospark Tecnologia Para Educacao",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 124,
+            "rowIndex": 252,
             "valor": -129.8
         },
         {
@@ -845,9 +1505,9 @@
             "conta": "NUBANK",
             "data": 45891.746030092596,
             "descricao": "BOTECO DO BENE",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 78,00 APROVADA em BOTECO DO BENE para o cartão com final 6652.",
             "orcamento": 45900,
-            "rowIndex": 123,
+            "rowIndex": 251,
             "valor": -78
         },
         {
@@ -857,7 +1517,7 @@
             "descricao": "Sp-360 - jundiai sul",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 122,
+            "rowIndex": 250,
             "valor": -6.1
         },
         {
@@ -867,7 +1527,7 @@
             "descricao": "Ayslan Fazzian",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 121,
+            "rowIndex": 249,
             "valor": -24
         },
         {
@@ -877,7 +1537,7 @@
             "descricao": "Sp-360 - jundiai norte",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 120,
+            "rowIndex": 248,
             "valor": -6.1
         },
         {
@@ -885,9 +1545,9 @@
             "conta": "NUBANK",
             "data": 45890.84061342593,
             "descricao": "IRMAOS BOA",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 11,58 APROVADA em IRMAOS BOA para o cartão com final 6652.",
             "orcamento": 45900,
-            "rowIndex": 119,
+            "rowIndex": 247,
             "valor": -11.58
         },
         {
@@ -895,9 +1555,9 @@
             "conta": "NUBANK",
             "data": 45890.82949074074,
             "descricao": "Google Youtubepremium",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 53,90 APROVADA em Google YouTubePremium para o cartão com final 8441.",
             "orcamento": 45900,
-            "rowIndex": 118,
+            "rowIndex": 246,
             "valor": -53.9
         },
         {
@@ -905,9 +1565,9 @@
             "conta": "NUBANK",
             "data": 45890.81862268518,
             "descricao": "SUSHI EXPRESS",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 83,95 APROVADA em SUSHI EXPRESS para o cartão com final 6652.",
             "orcamento": 45900,
-            "rowIndex": 117,
+            "rowIndex": 245,
             "valor": -83.95
         },
         {
@@ -917,7 +1577,7 @@
             "descricao": "Sp-360 - jundiai sul",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 116,
+            "rowIndex": 244,
             "valor": -6.1
         },
         {
@@ -927,7 +1587,7 @@
             "descricao": "Ana Julia Zago",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 115,
+            "rowIndex": 243,
             "valor": -13
         },
         {
@@ -937,7 +1597,7 @@
             "descricao": "Internet Claro",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 114,
+            "rowIndex": 242,
             "valor": -184
         },
         {
@@ -947,7 +1607,7 @@
             "descricao": "Sp-360 - jundiai norte",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 113,
+            "rowIndex": 241,
             "valor": -6.1
         },
         {
@@ -955,9 +1615,9 @@
             "conta": "NUBANK",
             "data": 45889.924849537034,
             "descricao": "IGTakeandGoJun",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 11,98 APROVADA em IG*TakeandGoJun para o cartão com final 8441.",
             "orcamento": 45900,
-            "rowIndex": 112,
+            "rowIndex": 240,
             "valor": -11.98
         },
         {
@@ -965,9 +1625,9 @@
             "conta": "NUBANK",
             "data": 45889.911516203705,
             "descricao": "IGTakeandGoJun",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 11,98 APROVADA em IG*TakeandGoJun para o cartão com final 8441.",
             "orcamento": 45900,
-            "rowIndex": 111,
+            "rowIndex": 239,
             "valor": -11.98
         },
         {
@@ -975,9 +1635,9 @@
             "conta": "NUBANK",
             "data": 45889.90760416666,
             "descricao": "IGTakeandGoJun",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 21,96 APROVADA em IG*TakeandGoJun para o cartão com final 8441.",
             "orcamento": 45900,
-            "rowIndex": 110,
+            "rowIndex": 238,
             "valor": -21.96
         },
         {
@@ -985,9 +1645,9 @@
             "conta": "NUBANK",
             "data": 45889.84347222222,
             "descricao": "BOTECO DO BENE",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 26,00 APROVADA em BOTECO DO BENE para o cartão com final 6652.",
             "orcamento": 45900,
-            "rowIndex": 109,
+            "rowIndex": 237,
             "valor": -26
         },
         {
@@ -995,9 +1655,9 @@
             "conta": "NUBANK",
             "data": 45889.81438657407,
             "descricao": "LIVRARIA LEITURA JUNDI 1/2",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 165,00 APROVADA em LIVRARIA LEITURA JUNDI para o cartão com final 6652.",
             "orcamento": 45900,
-            "rowIndex": 108,
+            "rowIndex": 236,
             "valor": -82.5
         },
         {
@@ -1005,9 +1665,9 @@
             "conta": "NUBANK",
             "data": 45889.79597222222,
             "descricao": "DAISO BRASIL COMERCIO",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 9,99 APROVADA em DAISO BRASIL COMERCIO para o cartão com final 6652.",
             "orcamento": 45900,
-            "rowIndex": 107,
+            "rowIndex": 235,
             "valor": -9.99
         },
         {
@@ -1017,7 +1677,7 @@
             "descricao": "maxi shopping",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 106,
+            "rowIndex": 234,
             "valor": -16
         },
         {
@@ -1027,7 +1687,7 @@
             "descricao": "Sp-360 - jundiai sul",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 105,
+            "rowIndex": 233,
             "valor": -6.1
         },
         {
@@ -1037,7 +1697,7 @@
             "descricao": "Sp-360 - jundiai norte",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 104,
+            "rowIndex": 232,
             "valor": -6.1
         },
         {
@@ -1045,9 +1705,9 @@
             "conta": "NUBANK",
             "data": 45888.82341435185,
             "descricao": "BOTECO DO BENE",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 24,00 APROVADA em BOTECO DO BENE para o cartão com final 6652.",
             "orcamento": 45900,
-            "rowIndex": 103,
+            "rowIndex": 231,
             "valor": -24
         },
         {
@@ -1055,9 +1715,9 @@
             "conta": "NUBANK",
             "data": 45888.80032407407,
             "descricao": "BOTECO DO BENE",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 26,00 APROVADA em BOTECO DO BENE para o cartão com final 6652.",
             "orcamento": 45900,
-            "rowIndex": 102,
+            "rowIndex": 230,
             "valor": -26
         },
         {
@@ -1067,7 +1727,7 @@
             "descricao": "Sp-360 - jundiai sul",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 101,
+            "rowIndex": 229,
             "valor": -6.1
         },
         {
@@ -1077,7 +1737,7 @@
             "descricao": "Asa*Edson Luiz Candido",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 100,
+            "rowIndex": 228,
             "valor": -10
         },
         {
@@ -1087,7 +1747,7 @@
             "descricao": "Sp-360 - jundiai norte",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 99,
+            "rowIndex": 227,
             "valor": -6.1
         },
         {
@@ -1095,9 +1755,9 @@
             "conta": "NUBANK",
             "data": 45887.87747685185,
             "descricao": "MARAVILHAS DO LAR MAXI",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 11,98 APROVADA em MARAVILHAS DO LAR MAXI para o cartão com final 6652.",
             "orcamento": 45900,
-            "rowIndex": 98,
+            "rowIndex": 226,
             "valor": -11.98
         },
         {
@@ -1107,7 +1767,7 @@
             "descricao": "Burger King",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 97,
+            "rowIndex": 225,
             "valor": -38.9
         },
         {
@@ -1117,7 +1777,7 @@
             "descricao": "maxi shopping",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 96,
+            "rowIndex": 224,
             "valor": -16
         },
         {
@@ -1127,7 +1787,7 @@
             "descricao": "Sp-360 - jundiai sul",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 95,
+            "rowIndex": 223,
             "valor": -6.1
         },
         {
@@ -1137,7 +1797,7 @@
             "descricao": "Sp-360 - jundiai norte",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 94,
+            "rowIndex": 222,
             "valor": -6.1
         },
         {
@@ -1147,7 +1807,7 @@
             "descricao": "SP-348 - Campo Limpo - Norte",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 93,
+            "rowIndex": 221,
             "valor": -13.7
         },
         {
@@ -1155,9 +1815,9 @@
             "conta": "NUBANK",
             "data": 45886.60136574074,
             "descricao": "PARAIBA BEBIDAS",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 31,00 APROVADA em PARAIBA BEBIDAS para o cartão com final 6652.",
             "orcamento": 45900,
-            "rowIndex": 92,
+            "rowIndex": 220,
             "valor": -31
         },
         {
@@ -1167,7 +1827,7 @@
             "descricao": "Multa carro Mesoca",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 91,
+            "rowIndex": 219,
             "valor": -142
         },
         {
@@ -1177,7 +1837,7 @@
             "descricao": "O POMPOZO",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 90,
+            "rowIndex": 218,
             "valor": -5.58
         },
         {
@@ -1185,9 +1845,9 @@
             "conta": "NUBANK",
             "data": 45885.39449074074,
             "descricao": "KIAMOR MODAS",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 135,60 APROVADA em KIAMOR MODAS para o cartão com final 6652.",
             "orcamento": 45900,
-            "rowIndex": 89,
+            "rowIndex": 217,
             "valor": -135.6
         },
         {
@@ -1195,9 +1855,9 @@
             "conta": "NUBANK",
             "data": 45885.387291666666,
             "descricao": "CONVENIENCIA E PASTELA",
-            "obs": "",
+            "obs": "title=Compra no crédito aprovada package=com.nu.production message=Compra de R$ 7,50 APROVADA em CONVENIENCIA E PASTELA para o cartão com final 6652.",
             "orcamento": 45900,
-            "rowIndex": 88,
+            "rowIndex": 216,
             "valor": -7.5
         },
         {
@@ -1207,7 +1867,7 @@
             "descricao": "CONVENIENCIA E PASTELA",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 87,
+            "rowIndex": 215,
             "valor": -24
         },
         {
@@ -1217,7 +1877,7 @@
             "descricao": "Uber UBER PENDING",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 86,
+            "rowIndex": 214,
             "valor": -19.14
         },
         {
@@ -1227,7 +1887,7 @@
             "descricao": "Uber UBER TRIP HELP U",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 85,
+            "rowIndex": 213,
             "valor": -1
         },
         {
@@ -1237,7 +1897,7 @@
             "descricao": "UBER PENDING",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 84,
+            "rowIndex": 212,
             "valor": -20.56
         },
         {
@@ -1247,7 +1907,7 @@
             "descricao": "Uber UBER TRIP HELP",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 83,
+            "rowIndex": 211,
             "valor": -1
         },
         {
@@ -1257,7 +1917,7 @@
             "descricao": "Uber UBER PENDING",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 82,
+            "rowIndex": 210,
             "valor": -33.18
         },
         {
@@ -1267,7 +1927,7 @@
             "descricao": "Uber UBER TRIP HELP U",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 81,
+            "rowIndex": 209,
             "valor": -1
         },
         {
@@ -1277,7 +1937,7 @@
             "descricao": "Villa B.B.M Gastrobar",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 80,
+            "rowIndex": 208,
             "valor": -375.53
         },
         {
@@ -1287,7 +1947,7 @@
             "descricao": "AUTO POSTO MACKENZIE",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 79,
+            "rowIndex": 207,
             "valor": -18.57
         },
         {
@@ -1297,7 +1957,7 @@
             "descricao": "AUTO POSTO MACKENZIE",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 78,
+            "rowIndex": 206,
             "valor": -20.48
         },
         {
@@ -1307,7 +1967,7 @@
             "descricao": "AUTO POSTO MACKENZIE",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 77,
+            "rowIndex": 205,
             "valor": -17.98
         },
         {
@@ -1317,7 +1977,7 @@
             "descricao": "AUTOPOSTOMACKENZIE",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 76,
+            "rowIndex": 204,
             "valor": -9.99
         },
         {
@@ -1327,7 +1987,7 @@
             "descricao": "Raimundo Candido Barbosa",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 75,
+            "rowIndex": 203,
             "valor": -600
         },
         {
@@ -1337,7 +1997,7 @@
             "descricao": "Aluguel",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 74,
+            "rowIndex": 202,
             "valor": -1600
         },
         {
@@ -1347,7 +2007,7 @@
             "descricao": "Vale",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 73,
+            "rowIndex": 201,
             "valor": 4657
         },
         {
@@ -1357,7 +2017,7 @@
             "descricao": "CarlosCesarDe",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 72,
+            "rowIndex": 200,
             "valor": -9
         },
         {
@@ -1367,7 +2027,7 @@
             "descricao": "Ana Julia Zago",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 71,
+            "rowIndex": 199,
             "valor": -14
         },
         {
@@ -1377,7 +2037,7 @@
             "descricao": "CARLITOS LANCHONETE",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 70,
+            "rowIndex": 198,
             "valor": -27.5
         },
         {
@@ -1387,7 +2047,7 @@
             "descricao": "Leonardo Maldonado Ferreira",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 69,
+            "rowIndex": 197,
             "valor": 915
         },
         {
@@ -1397,7 +2057,7 @@
             "descricao": "IGTakeandGoJun",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 68,
+            "rowIndex": 196,
             "valor": -10.98
         },
         {
@@ -1407,7 +2067,7 @@
             "descricao": "AMAZON SERVICOS DE VAR",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 67,
+            "rowIndex": 195,
             "valor": -19.9
         },
         {
@@ -1417,7 +2077,7 @@
             "descricao": "BOTECO DO BENE",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 66,
+            "rowIndex": 194,
             "valor": -13
         },
         {
@@ -1427,7 +2087,7 @@
             "descricao": "BOTECO DO BENE",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 65,
+            "rowIndex": 193,
             "valor": -26
         },
         {
@@ -1437,7 +2097,7 @@
             "descricao": "FORT ATACADISTA 635",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 64,
+            "rowIndex": 192,
             "valor": -33.46
         },
         {
@@ -1447,7 +2107,7 @@
             "descricao": "Congas",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 63,
+            "rowIndex": 191,
             "valor": -14.54
         },
         {
@@ -1457,7 +2117,7 @@
             "descricao": "IGTakeandGoJun",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 62,
+            "rowIndex": 190,
             "valor": -15.65
         },
         {
@@ -1467,7 +2127,7 @@
             "descricao": "Recarga Keloca",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 61,
+            "rowIndex": 189,
             "valor": -25
         },
         {
@@ -1477,7 +2137,7 @@
             "descricao": "Drogasil3236",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 60,
+            "rowIndex": 188,
             "valor": -28.41
         },
         {
@@ -1487,7 +2147,7 @@
             "descricao": "Transurb Tra*1t250810-",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 59,
+            "rowIndex": 187,
             "valor": -6.15
         },
         {
@@ -1497,7 +2157,7 @@
             "descricao": "Espetinho",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 58,
+            "rowIndex": 186,
             "valor": -5
         },
         {
@@ -1507,7 +2167,7 @@
             "descricao": "Uber Uber * Pending",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 57,
+            "rowIndex": 185,
             "valor": -30.97
         },
         {
@@ -1517,7 +2177,7 @@
             "descricao": "MARINEUDI",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 56,
+            "rowIndex": 184,
             "valor": -46
         },
         {
@@ -1527,7 +2187,7 @@
             "descricao": "ADEGA",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 55,
+            "rowIndex": 183,
             "valor": -43
         },
         {
@@ -1537,7 +2197,7 @@
             "descricao": "Recarga TIM",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 54,
+            "rowIndex": 182,
             "valor": -60
         },
         {
@@ -1547,7 +2207,7 @@
             "descricao": "Meep Pa*Arca Events",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 53,
+            "rowIndex": 181,
             "valor": -19
         },
         {
@@ -1557,7 +2217,7 @@
             "descricao": "ST MARCHE",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 52,
+            "rowIndex": 180,
             "valor": -6.99
         },
         {
@@ -1567,7 +2227,7 @@
             "descricao": "BacioddiLatteLJ0061",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 51,
+            "rowIndex": 179,
             "valor": -69.9
         },
         {
@@ -1577,7 +2237,7 @@
             "descricao": "PAODEACUCAR1696",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 50,
+            "rowIndex": 178,
             "valor": -25.99
         },
         {
@@ -1587,7 +2247,7 @@
             "descricao": "OXXO BRATYS",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 49,
+            "rowIndex": 177,
             "valor": -36.13
         },
         {
@@ -1597,7 +2257,7 @@
             "descricao": "SAMS CLUB LJ 4415",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 48,
+            "rowIndex": 176,
             "valor": -138
         },
         {
@@ -1607,7 +2267,7 @@
             "descricao": "O Pompozo",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 47,
+            "rowIndex": 175,
             "valor": -6.06
         },
         {
@@ -1617,7 +2277,7 @@
             "descricao": "SAO JORGE ATACADISTA",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 46,
+            "rowIndex": 174,
             "valor": -21.58
         },
         {
@@ -1627,7 +2287,7 @@
             "descricao": "IUGUTakeandGoJun",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 45,
+            "rowIndex": 173,
             "valor": -17.97
         },
         {
@@ -1637,7 +2297,7 @@
             "descricao": "BOTECO DO BENE",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 44,
+            "rowIndex": 172,
             "valor": -13
         },
         {
@@ -1647,7 +2307,7 @@
             "descricao": "BOTECO DO BENE",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 43,
+            "rowIndex": 171,
             "valor": -26
         },
         {
@@ -1657,7 +2317,7 @@
             "descricao": "DMGoDaddycomL",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 42,
+            "rowIndex": 170,
             "valor": -281.11
         },
         {
@@ -1667,7 +2327,7 @@
             "descricao": "IUGUTakeandGoJun",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 41,
+            "rowIndex": 169,
             "valor": -23.96
         },
         {
@@ -1677,7 +2337,7 @@
             "descricao": "IUGUTakeandGoJun",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 40,
+            "rowIndex": 168,
             "valor": -16.47
         },
         {
@@ -1687,7 +2347,7 @@
             "descricao": "LOJAGP8",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 39,
+            "rowIndex": 167,
             "valor": -7.4
         },
         {
@@ -1697,7 +2357,7 @@
             "descricao": "Michel",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 38,
+            "rowIndex": 166,
             "valor": -33
         },
         {
@@ -1707,7 +2367,7 @@
             "descricao": "50861461Marcia",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 37,
+            "rowIndex": 165,
             "valor": -15
         },
         {
@@ -1717,7 +2377,7 @@
             "descricao": "Michel",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 36,
+            "rowIndex": 164,
             "valor": -25
         },
         {
@@ -1727,7 +2387,7 @@
             "descricao": "Drogaria_SP drogariasp",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 35,
+            "rowIndex": 163,
             "valor": -223.94
         },
         {
@@ -1737,7 +2397,7 @@
             "descricao": "FORT ATACADISTA 635",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 34,
+            "rowIndex": 162,
             "valor": -15.57
         },
         {
@@ -1747,7 +2407,7 @@
             "descricao": "BAR DO LU E AMIGOS",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 33,
+            "rowIndex": 161,
             "valor": -30.8
         },
         {
@@ -1757,7 +2417,7 @@
             "descricao": "Uber UBER TRIP HELP U",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 32,
+            "rowIndex": 160,
             "valor": -1
         },
         {
@@ -1767,7 +2427,7 @@
             "descricao": "Debito intertag",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 31,
+            "rowIndex": 159,
             "valor": -5
         },
         {
@@ -1777,7 +2437,7 @@
             "descricao": "Uber Uber PENDING",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 30,
+            "rowIndex": 158,
             "valor": -12.98
         },
         {
@@ -1787,7 +2447,7 @@
             "descricao": "Uber UBER TRIP HELP U",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 29,
+            "rowIndex": 157,
             "valor": -1
         },
         {
@@ -1797,7 +2457,7 @@
             "descricao": "AUTOPOSTORELIXLTDA",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 28,
+            "rowIndex": 156,
             "valor": -45.94
         },
         {
@@ -1807,7 +2467,7 @@
             "descricao": "PICPAYCittamobiSP",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 27,
+            "rowIndex": 155,
             "valor": -26
         },
         {
@@ -1817,7 +2477,7 @@
             "descricao": "MARIA DELUCIA TAVARES",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 26,
+            "rowIndex": 154,
             "valor": -25
         },
         {
@@ -1827,7 +2487,7 @@
             "descricao": "MARIA DELUCIA TAVARES",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 25,
+            "rowIndex": 153,
             "valor": -45
         },
         {
@@ -1837,7 +2497,7 @@
             "descricao": "AutoPosto",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 24,
+            "rowIndex": 152,
             "valor": -93.99
         },
         {
@@ -1847,7 +2507,7 @@
             "descricao": "PAO DE ACUCAR 1696",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 23,
+            "rowIndex": 151,
             "valor": -40
         },
         {
@@ -1857,7 +2517,7 @@
             "descricao": "SP-348 - Perus - Sul",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 22,
+            "rowIndex": 150,
             "valor": -13.7
         },
         {
@@ -1867,7 +2527,7 @@
             "descricao": "MP SUPERFERRARI",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 21,
+            "rowIndex": 149,
             "valor": -30.98
         },
         {
@@ -1877,7 +2537,7 @@
             "descricao": "SUSHI EXPRESS",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 20,
+            "rowIndex": 148,
             "valor": -146.87
         },
         {
@@ -1887,7 +2547,7 @@
             "descricao": "IUGUTakeandGoJund",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 19,
+            "rowIndex": 147,
             "valor": -21.96
         },
         {
@@ -1897,7 +2557,7 @@
             "descricao": "SP-348 - Campo Limpo - Norte",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 18,
+            "rowIndex": 146,
             "valor": -13.7
         },
         {
@@ -1907,7 +2567,7 @@
             "descricao": "POSTO ILHAS DO HAVAI",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 17,
+            "rowIndex": 145,
             "valor": -48.9
         },
         {
@@ -1917,7 +2577,7 @@
             "descricao": "MINUTOPA2039",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 16,
+            "rowIndex": 144,
             "valor": -24.95
         },
         {
@@ -1927,7 +2587,7 @@
             "descricao": "SP-348 - Perus - Sul",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 15,
+            "rowIndex": 143,
             "valor": -13.7
         },
         {
@@ -1937,7 +2597,7 @@
             "descricao": "Ana Julia Zago",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 14,
+            "rowIndex": 142,
             "valor": -15.62
         },
         {
@@ -1947,7 +2607,7 @@
             "descricao": "Wellhub Gympass Br Gym",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 13,
+            "rowIndex": 141,
             "valor": -139.9
         },
         {
@@ -1957,7 +2617,7 @@
             "descricao": "Fort Atacadista",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 12,
+            "rowIndex": 140,
             "valor": -52.8
         },
         {
@@ -1967,7 +2627,7 @@
             "descricao": "COMPER 633",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 11,
+            "rowIndex": 139,
             "valor": -20.9
         },
         {
@@ -1977,7 +2637,7 @@
             "descricao": "BAR DO LU E AMIGOS",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 10,
+            "rowIndex": 138,
             "valor": -92.84
         },
         {
@@ -1987,7 +2647,7 @@
             "descricao": "IUGUtakeandgojund",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 9,
+            "rowIndex": 137,
             "valor": -37.96
         },
         {
@@ -1997,7 +2657,7 @@
             "descricao": "IUGUTakeandGoJund",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 8,
+            "rowIndex": 136,
             "valor": -17.48
         },
         {
@@ -2007,7 +2667,7 @@
             "descricao": "BAR DO LU E AMIGOS",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 7,
+            "rowIndex": 135,
             "valor": -30.8
         },
         {
@@ -2017,7 +2677,7 @@
             "descricao": "ROSANGELAKAWAKITA 3/4",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 6,
+            "rowIndex": 134,
             "valor": -137.5
         },
         {
@@ -2027,7 +2687,7 @@
             "descricao": "INSPIRE BEM ESTAR E S 3/3",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 5,
+            "rowIndex": 133,
             "valor": -116.67
         },
         {
@@ -2037,7 +2697,7 @@
             "descricao": "MSP UNIAO OSASCO KSK 5/10",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 4,
+            "rowIndex": 132,
             "valor": -329.9
         },
         {
@@ -2047,7 +2707,7 @@
             "descricao": "ALIANCAS FOREVER 5/10",
             "obs": "",
             "orcamento": 45900,
-            "rowIndex": 3,
+            "rowIndex": 131,
             "valor": -460
         },
         {
@@ -2057,11 +2717,1291 @@
             "descricao": "Drograria2284 jundiai li 9/10",
             "obs": "",
             "orcamento": 45900,
+            "rowIndex": 130,
+            "valor": -42.11
+        },
+        {
+            "categoria": "Renda",
+            "conta": "NUCONTA",
+            "data": 45875.334027777775,
+            "descricao": "MSP UNIAO OSASCO KSK 4/10 - Gardenia",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 129,
+            "valor": 164.95
+        },
+        {
+            "categoria": "Renda",
+            "conta": "NUCONTA",
+            "data": 45875.334027777775,
+            "descricao": "INSPIRE BEM ESTAR E S 2/3 - Presente Monica GARDENIA",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 128,
+            "valor": 58
+        },
+        {
+            "categoria": "Renda",
+            "conta": "NUCONTA",
+            "data": 45875.334027777775,
+            "descricao": "RENNER 5/5 - Gardenia",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 127,
+            "valor": 61
+        },
+        {
+            "categoria": "Renda",
+            "conta": "NUCONTA",
+            "data": 45875.334027777775,
+            "descricao": "RIACHUELO LO*Riachuelo 5/5  - GARDENIA",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 126,
+            "valor": 66
+        },
+        {
+            "categoria": "Outros",
+            "conta": "NUBANK",
+            "data": 45869.99930555555,
+            "descricao": "Atualização nubank",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 125,
+            "valor": -93.32
+        },
+        {
+            "categoria": "Casamento",
+            "conta": "NUCONTA",
+            "data": 45869.694444444445,
+            "descricao": "Casamento",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 124,
+            "valor": -1096
+        },
+        {
+            "categoria": "Luz",
+            "conta": "NUCONTA",
+            "data": 45869.69305555556,
+            "descricao": "CPFL",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 123,
+            "valor": -152
+        },
+        {
+            "categoria": "Renda",
+            "conta": "NUCONTA",
+            "data": 45868.75,
+            "descricao": "caixinha alianças - Saque",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 122,
+            "valor": 460
+        },
+        {
+            "categoria": "Combustível",
+            "conta": "NUCONTA",
+            "data": 45868.71873842592,
+            "descricao": "Adriana Slomp",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 121,
+            "valor": -263
+        },
+        {
+            "categoria": "Salário",
+            "conta": "NUCONTA",
+            "data": 45868.333333333336,
+            "descricao": "Salario",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 120,
+            "valor": 4000
+        },
+        {
+            "categoria": "Serviços",
+            "conta": "NUBANK",
+            "data": 45866.67265046296,
+            "descricao": "Google Ambi Servicos",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 119,
+            "valor": -3.89
+        },
+        {
+            "categoria": "Lazer",
+            "conta": "NUCONTA",
+            "data": 45866.62708333333,
+            "descricao": "Churras Jackson",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 118,
+            "valor": -90
+        },
+        {
+            "categoria": "Combustível",
+            "conta": "NUBANK",
+            "data": 45866.28223379629,
+            "descricao": "AutoPosto",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 117,
+            "valor": -139.28
+        },
+        {
+            "categoria": "Lazer",
+            "conta": "NUBANK",
+            "data": 45866.022002314814,
+            "descricao": "SMEC",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 116,
+            "valor": -166
+        },
+        {
+            "categoria": "Medicamentos",
+            "conta": "NUBANK",
+            "data": 45865.88082175926,
+            "descricao": "DROGARIA SAO PAULO 182",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 115,
+            "valor": -45.56
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45865.67234953704,
+            "descricao": "ZPADEGASARAH",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 114,
+            "valor": -50
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45865.59355324074,
+            "descricao": "ATACADAO 939 AS",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 113,
+            "valor": -109.3
+        },
+        {
+            "categoria": "Medicamentos",
+            "conta": "NUBANK",
+            "data": 45864.99175925926,
+            "descricao": "FARMACIA E DROGARIA NI",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 112,
+            "valor": -15.9
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45864.91577546296,
+            "descricao": "VILA GREGA",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 111,
+            "valor": -10
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45864.88936342593,
+            "descricao": "VILA GREGA",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 110,
+            "valor": -18
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45864.86101851852,
+            "descricao": "VILA GREGA",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 109,
+            "valor": -30
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45864.85702546296,
+            "descricao": "VILA GREGA",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 108,
+            "valor": -19
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45864.54038194445,
+            "descricao": "O POMPOZO",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 107,
+            "valor": -25.03
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45864.489224537036,
+            "descricao": "OXXO BRATYS",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 106,
+            "valor": -38.54
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45864.46319444444,
+            "descricao": "O Pompozo",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 105,
+            "valor": -24.38
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45864.43819444445,
+            "descricao": "Marquesa",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 104,
+            "valor": -80
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45864.42916666667,
+            "descricao": "Swift",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 103,
+            "valor": -27.83
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45864.41805555556,
+            "descricao": "NOvacamila",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 102,
+            "valor": -36.98
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45864.00170138889,
+            "descricao": "POSTO ILHAS DO HAVAI",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 101,
+            "valor": -44.4
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45863.99292824074,
+            "descricao": "PORTAL IMPERATRIZ",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 100,
+            "valor": -8.99
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45863.97225694444,
+            "descricao": "TERRAMAR",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 99,
+            "valor": -14
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45863.97121527778,
+            "descricao": "TERRAMAR",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 98,
+            "valor": -85.19
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45863.82550925926,
+            "descricao": "PAODEACUCAR1696",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 97,
+            "valor": -6.79
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45863.812997685185,
+            "descricao": "POSTO ILHAS DO HAVAI",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 96,
+            "valor": -8.5
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUCONTA",
+            "data": 45863.739583333336,
+            "descricao": "Palhadini",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 95,
+            "valor": -80
+        },
+        {
+            "categoria": "Doações",
+            "conta": "PICPAY",
+            "data": 45863.4,
+            "descricao": "Doação unicancer",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 94,
+            "valor": -50
+        },
+        {
+            "categoria": "Cabeleireiro",
+            "conta": "NUBANK",
+            "data": 45862.84476851852,
+            "descricao": "Gusttacortes",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 93,
+            "valor": -75
+        },
+        {
+            "categoria": "Serviços",
+            "conta": "NUBANK",
+            "data": 45862.620104166665,
+            "descricao": "Github, Inc.",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 92,
+            "valor": -58.02
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45861.83819444444,
+            "descricao": "Nappi",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 91,
+            "valor": -97
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45861.82283564815,
+            "descricao": "PARAIBA BEBIDAS",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 90,
+            "valor": -21
+        },
+        {
+            "categoria": "Presentes",
+            "conta": "NUCONTA",
+            "data": 45861.56597222222,
+            "descricao": "Presente Keloca",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 89,
+            "valor": -100
+        },
+        {
+            "categoria": "Combustível",
+            "conta": "NUBANK",
+            "data": 45861.517905092594,
+            "descricao": "AutoPostoTrevoDe",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 88,
+            "valor": -142.92
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45860.813055555554,
+            "descricao": "FORT ATACADISTA 635",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 87,
+            "valor": -8.47
+        },
+        {
+            "categoria": "Diarista",
+            "conta": "NUCONTA",
+            "data": 45860.79652777778,
+            "descricao": "Diarista",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 86,
+            "valor": -220
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45859.845625,
+            "descricao": "VEINHO LANCHES",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 85,
+            "valor": -53
+        },
+        {
+            "categoria": "Serviços",
+            "conta": "NUBANK",
+            "data": 45859.82946759259,
+            "descricao": "Google Youtubepremium",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 84,
+            "valor": -53.9
+        },
+        {
+            "categoria": "Lazer",
+            "conta": "NUBANK",
+            "data": 45859.30138888889,
+            "descricao": "VEINHO LANCHES",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 83,
+            "valor": -265
+        },
+        {
+            "categoria": "Internet",
+            "conta": "NUCONTA",
+            "data": 45858.291666666664,
+            "descricao": "Internet Claro",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 82,
+            "valor": -172
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45858.02591435185,
+            "descricao": "ADEGA",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 81,
+            "valor": -10
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45858.01795138889,
+            "descricao": "ADEGA",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 80,
+            "valor": -57
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45857.54678240741,
+            "descricao": "PAD MONTE AZUL",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 79,
+            "valor": -30
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45857.45245370371,
+            "descricao": "GLDosSantos",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 78,
+            "valor": -10
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45857.36388888889,
+            "descricao": "O POMPOZO",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 77,
+            "valor": -9.93
+        },
+        {
+            "categoria": "Combustível",
+            "conta": "NUBANK",
+            "data": 45856.98888888889,
+            "descricao": "Autoposto",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 76,
+            "valor": -133.98
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45856.86319444444,
+            "descricao": "Auto Posto Relix",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 75,
+            "valor": -20.98
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45856.74523148148,
+            "descricao": "IRMAOS BOA",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 74,
+            "valor": -9.98
+        },
+        {
+            "categoria": "Medicamentos",
+            "conta": "NUBANK",
+            "data": 45854.77784722222,
+            "descricao": "DROGARIA JUNDIA",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 73,
+            "valor": -57.88
+        },
+        {
+            "categoria": "Salário",
+            "conta": "NUCONTA",
+            "data": 45854.458333333336,
+            "descricao": "Reembolso Howden",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 72,
+            "valor": 108.6
+        },
+        {
+            "categoria": "Metrô / Ônibus",
+            "conta": "NUBANK",
+            "data": 45854.271828703706,
+            "descricao": "TRANSURB TRA 1T250623",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 71,
+            "valor": -5.5
+        },
+        {
+            "categoria": "Renda",
+            "conta": "NUCONTA",
+            "data": 45853.396527777775,
+            "descricao": "Leonardo Maldonado Ferreira",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 70,
+            "valor": 679
+        },
+        {
+            "categoria": "Aluguel",
+            "conta": "NUCONTA",
+            "data": 45853.31736111111,
+            "descricao": "Aluguel",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 69,
+            "valor": -1600
+        },
+        {
+            "categoria": "Investimentos",
+            "conta": "NUCONTA",
+            "data": 45853.3125,
+            "descricao": "Raimundo Candido Barbosa",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 68,
+            "valor": -600
+        },
+        {
+            "categoria": "Salário",
+            "conta": "NUCONTA",
+            "data": 45853.30972222222,
+            "descricao": "Vale",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 67,
+            "valor": 4657
+        },
+        {
+            "categoria": "Presentes",
+            "conta": "NUCONTA",
+            "data": 45852.95486111111,
+            "descricao": "Edsonegardenia",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 66,
+            "valor": -5
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45852.75038194445,
+            "descricao": "ROLDAO JUNDIAI",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 65,
+            "valor": -96.68
+        },
+        {
+            "categoria": "Investimentos",
+            "conta": "NUCONTA",
+            "data": 45852.416666666664,
+            "descricao": "Caixinha gatinha",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 64,
+            "valor": -10
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45851.41180555556,
+            "descricao": "Silvanaalmeidada",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 63,
+            "valor": -48.86
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45850.96163194445,
+            "descricao": "Uber UBER PENDING",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 62,
+            "valor": -18.88
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45850.77107638889,
+            "descricao": "UBER TRIP",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 61,
+            "valor": -1
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45850.770833333336,
+            "descricao": "Uber* Trip",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 60,
+            "valor": -28.81
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45850.704201388886,
+            "descricao": "Uber UBER PENDING",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 59,
+            "valor": -17.22
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45850.702210648145,
+            "descricao": "ALZIRAMIRANDAVILA",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 58,
+            "valor": -76
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45850.59542824074,
+            "descricao": "Bardocachorrao",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 57,
+            "valor": -83
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45850.58373842593,
+            "descricao": "Uber UBER TRIP HELP U",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 56,
+            "valor": -1
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45850.562939814816,
+            "descricao": "UBER PENDING",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 55,
+            "valor": -16.36
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45850.559328703705,
+            "descricao": "UBER TRIP",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 54,
+            "valor": -1
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45850.54068287037,
+            "descricao": "Uber UBER PENDING",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 53,
+            "valor": -26.38
+        },
+        {
+            "categoria": "Telefone Celular",
+            "conta": "NUBANK",
+            "data": 45849.60277777778,
+            "descricao": "Recarga TIM",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 52,
+            "valor": -60
+        },
+        {
+            "categoria": "Presentes",
+            "conta": "NUBANK",
+            "data": 45848.9894212963,
+            "descricao": "PICPAYEdson Luiz Ca",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 51,
+            "valor": -10.55
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45848.735081018516,
+            "descricao": "TG CONGELADOS JUNDIAI",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 50,
+            "valor": -17.9
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45848.52255787037,
+            "descricao": "RONNY SHIMA",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 49,
+            "valor": -50.26
+        },
+        {
+            "categoria": "Gás",
+            "conta": "NUCONTA",
+            "data": 45848.291666666664,
+            "descricao": "Congas",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 48,
+            "valor": -14.54
+        },
+        {
+            "categoria": "Presentes",
+            "conta": "NUBANK",
+            "data": 45847.82777777778,
+            "descricao": "Pix Gardenia",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 47,
+            "valor": -51.65
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUCONTA",
+            "data": 45845.527083333334,
+            "descricao": "Myrela de Paula da Silva",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 46,
+            "valor": -10
+        },
+        {
+            "categoria": "Serviços",
+            "conta": "NUBANK",
+            "data": 45845.479166666664,
+            "descricao": "Cloudflare",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 45,
+            "valor": -61.01
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45844.99832175926,
+            "descricao": "UBER TRIP",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 44,
+            "valor": -1
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45844.98884259259,
+            "descricao": "UBER PENDING",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 43,
+            "valor": -13.98
+        },
+        {
+            "categoria": "Metrô / Ônibus",
+            "conta": "NUCONTA",
+            "data": 45844.94305555556,
+            "descricao": "REDE RECARGA",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 42,
+            "valor": -25
+        },
+        {
+            "categoria": "Casa",
+            "conta": "NUBANK",
+            "data": 45844.84987268518,
+            "descricao": "MLPMagaluMdrDistrib",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 41,
+            "valor": -176.9
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45844.59302083333,
+            "descricao": "GLDosSantos",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 40,
+            "valor": -10
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45844.46844907408,
+            "descricao": "O POMPOZO",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 39,
+            "valor": -21.89
+        },
+        {
+            "categoria": "Doações",
+            "conta": "NUBANK",
+            "data": 45843.85575231481,
+            "descricao": "ASSOCIACAO MONTE AZUL",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 38,
+            "valor": -12
+        },
+        {
+            "categoria": "Doações",
+            "conta": "NUBANK",
+            "data": 45843.78113425926,
+            "descricao": "ASSOCIACAO MONTE AZUL",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 37,
+            "valor": -20
+        },
+        {
+            "categoria": "Doações",
+            "conta": "NUBANK",
+            "data": 45843.72896990741,
+            "descricao": "ASSOCIACAO MONTE AZUL",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 36,
+            "valor": -50
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45843.58325231481,
+            "descricao": "UBER TRIP",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 35,
+            "valor": -1
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45843.398935185185,
+            "descricao": "POSTO ILHAS DO HAVAI",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 34,
+            "valor": -3.5
+        },
+        {
+            "categoria": "Supermercado",
+            "conta": "NUBANK",
+            "data": 45842.91872685185,
+            "descricao": "PAO DE ACUCAR1696",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 33,
+            "valor": -94.8
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45842.810520833336,
+            "descricao": "Uber UBER PENDING",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 32,
+            "valor": -12.91
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45842.587060185186,
+            "descricao": "RESTAURANTE LACO DE OU",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 31,
+            "valor": -108.6
+        },
+        {
+            "categoria": "Outros",
+            "conta": "NUCONTA",
+            "data": 45842.30138888889,
+            "descricao": "Maria Leticia Machado Santos",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 30,
+            "valor": -30
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45841.81693287037,
+            "descricao": "CarlosCesarDe",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 29,
+            "valor": -8
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45840.85625,
+            "descricao": "Popeyes",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 28,
+            "valor": -28.8
+        },
+        {
+            "categoria": "Roupas",
+            "conta": "NUBANK",
+            "data": 45840.74082175926,
+            "descricao": "Lupo",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 27,
+            "valor": -121.8
+        },
+        {
+            "categoria": "Doações",
+            "conta": "NUCONTA",
+            "data": 45839.96319444444,
+            "descricao": "Unicancer",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 26,
+            "valor": -10
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45839.75347222222,
+            "descricao": "Bar do Lu e Amigos",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 25,
+            "valor": -16.9
+        },
+        {
+            "categoria": "Academia",
+            "conta": "NUBANK",
+            "data": 45839.48125,
+            "descricao": "Wellhub Gympass Br Gym",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 24,
+            "valor": -89.9
+        },
+        {
+            "categoria": "Academia",
+            "conta": "NUBANK",
+            "data": 45838.89655092593,
+            "descricao": "Wellhub Gympass BR Gym",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 23,
+            "valor": -50
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45838.00833333333,
+            "descricao": "Uber* Trip",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 22,
+            "valor": -15.91
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45838.00763888889,
+            "descricao": "Uber* Trip",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 21,
+            "valor": -1
+        },
+        {
+            "categoria": "Restaurantes",
+            "conta": "NUBANK",
+            "data": 45837.63958333333,
+            "descricao": "Novacamila",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 20,
+            "valor": -49.98
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45837.63958333333,
+            "descricao": "Uber UBER TRIP HELP",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 19,
+            "valor": -35.97
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45837.07361111111,
+            "descricao": "Uber UBER TRIP HELP",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 18,
+            "valor": -33.93
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45837.07361111111,
+            "descricao": "Uber UBER TRIP HELP",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 17,
+            "valor": -1
+        },
+        {
+            "categoria": "Bares",
+            "conta": "NUBANK",
+            "data": 45836.92361111111,
+            "descricao": "Mercadegamf",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 16,
+            "valor": -18
+        },
+        {
+            "categoria": "Uber e táxi",
+            "conta": "NUBANK",
+            "data": 45836.89166666667,
+            "descricao": "Uber UBER TRIP HELP",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 15,
+            "valor": -35.98
+        },
+        {
+            "categoria": "Serviços",
+            "conta": "NUBANK",
+            "data": 45836.67222222222,
+            "descricao": "Google Ambi Servicos",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 14,
+            "valor": -3.89
+        },
+        {
+            "categoria": "Casa",
+            "conta": "NUBANK",
+            "data": 45836.50824074074,
+            "descricao": "EMPORIO DO LENCOL",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 13,
+            "valor": -44.9
+        },
+        {
+            "categoria": "Metrô / Ônibus",
+            "conta": "NUBANK",
+            "data": 45835.58357638889,
+            "descricao": "TRANSURB TRA 1T250627",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 12,
+            "valor": -5.5
+        },
+        {
+            "categoria": "Outros",
+            "conta": "NUCONTA",
+            "data": 45834.52361111111,
+            "descricao": "Laertes Andre Oselame",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 11,
+            "valor": -30
+        },
+        {
+            "categoria": "Esteticista",
+            "conta": "NUBANK",
+            "data": 45829.528020833335,
+            "descricao": "ROSANGELAKAWAKITA 2/4",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 10,
+            "valor": -137.5
+        },
+        {
+            "categoria": "Presentes",
+            "conta": "NUBANK",
+            "data": 45820.41106481481,
+            "descricao": "INSPIRE BEM ESTAR E S 2/3",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 9,
+            "valor": -116.67
+        },
+        {
+            "categoria": "Roupas",
+            "conta": "NUBANK",
+            "data": 45806.64236111111,
+            "descricao": "Cravo Real Comercio 2/2",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 8,
+            "valor": -189.99
+        },
+        {
+            "categoria": "Viagens",
+            "conta": "NUBANK",
+            "data": 45797.40840277778,
+            "descricao": "LOCALIZA IGUATU 3/3",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 7,
+            "valor": -277.7
+        },
+        {
+            "categoria": "Presentes",
+            "conta": "INTER",
+            "data": 45766.70582175926,
+            "descricao": "MSP UNIAO OSASCO KSK 4/10",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 6,
+            "valor": -329.9
+        },
+        {
+            "categoria": "Acessórios",
+            "conta": "NUBANK",
+            "data": 45752.79738425926,
+            "descricao": "ALIANCAS FOREVER 410",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 5,
+            "valor": -460
+        },
+        {
+            "categoria": "Roupas",
+            "conta": "NUBANK",
+            "data": 45731.5624537037,
+            "descricao": "RENNER 5/5",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 4,
+            "valor": -142.72
+        },
+        {
+            "categoria": "Roupas",
+            "conta": "NUBANK",
+            "data": 45731.5134375,
+            "descricao": "RIACHUELO LO*Riachuelo 5/5",
+            "obs": "",
+            "orcamento": 45869,
+            "rowIndex": 3,
+            "valor": -66
+        },
+        {
+            "categoria": "Medicamentos",
+            "conta": "NUBANK",
+            "data": 45593.70277777778,
+            "descricao": "Drograria2284 jundiai li 8/10",
+            "obs": "",
+            "orcamento": 45869,
             "rowIndex": 2,
             "valor": -42.11
         }
     ],
-    "limit": 1000,
+    "limit": 0,
     "success": true,
-    "total": 206
+    "total": 400
 }

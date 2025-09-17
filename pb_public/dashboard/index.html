@@ -13,6 +13,8 @@
     <!-- Estilos específicos da seção de detalhes -->
     <link rel="stylesheet" href="./css/details.css">
     <script src="../js/pocketbase/dist/pocketbase.umd.js"></script>
+    <script src="../js/jsonquery.bundle.js"></script> <!-- Adicione esta linha -->
+
 </head>
 
 <body>
@@ -275,6 +277,10 @@
             console.error('Erro ao carregar dados:', error);
             mostrarErro('Não foi possível carregar os dados. Verifique sua conexão e tente novamente.');
         }
+        // Soma total dos valores
+        const somaTotal = query(window.allEntries, ['pipe', ['map', ['get', 'valor']], ['sum']]);
+        console.log('Soma total:', somaTotal);
+
     </script>
 </body>
 
