@@ -118,6 +118,52 @@
         </main>
     </div>
 
+    <!-- Modal de edição de lançamento -->
+    <div id="editModal" class="modal" style="display:none; align-items:center; justify-content:center;">
+        <div class="modal-content solution-card" style="max-width:600px; width:95%; position:relative; text-align:left;">
+            <button class="modal-close" onclick="lancamentosManager.closeEditModal()" style="position:absolute; top:10px; right:10px; background:transparent; border:none; font-size:1.5rem; cursor:pointer;">×</button>
+            <h3 style="margin-top:0; text-align:center;">Editar Lançamento</h3>
+            <form id="editForm" onsubmit="return false;" style="margin-top:1rem;">
+                <div class="form-group">
+                    <label for="editData">Data & Hora</label>
+                    <input type="datetime-local" id="editData">
+                </div>
+                <div class="form-group">
+                    <label for="editConta">Conta</label>
+                    <input type="text" id="editConta" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="editDescricao">Descrição</label>
+                    <input type="text" id="editDescricao" autocomplete="off">
+                </div>
+                <div class="form-group valor-toggle-group">
+                    <label>Valor *</label>
+                    <div class="valor-toggle-container">
+                        <button type="button" id="editSignBtn" class="toggle-sign" style="min-width:2.5rem;">-</button>
+                        <input type="hidden" id="editSignValue" value="-">
+                        <input type="number" id="editValor" step="0.01" min="0" required style="flex:1;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="editCategoria">Categoria *</label>
+                    <input type="text" id="editCategoria" autocomplete="off" required>
+                </div>
+                <div class="form-group">
+                    <label for="editOrcamento">Orçamento (data-chave) *</label>
+                    <input type="date" id="editOrcamento" name="orcamento" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="editObs">Observações</label>
+                    <textarea id="editObs" rows="3" placeholder="Notas adicionais..."></textarea>
+                </div>
+                <div class="form-actions" style="margin-top:1.5rem; gap:1rem;">
+                    <button type="button" class="button" onclick="lancamentosManager.closeEditModal()">Cancelar</button>
+                    <button type="button" class="button primary" onclick="lancamentosManager.saveEdit()">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Modal de divisão de parcelas -->
     <div id="splitModal" class="modal" style="display:none; align-items:center; justify-content:center;">
         <div class="modal-content solution-card" style="max-width:500px; width:95%; position:relative; text-align:left;">
@@ -202,8 +248,6 @@
         import '../js/utils/sheet-entries.js'; // Importa utilitários de conversão de datas
         import '../js/components/lancamentos-patch.js';
         import '../js/components/orcamento-date-init.js';
-    import { editEntryModalTemplate } from '../js/components/edit-entry-modal-template.js';
-    import { inicializarModalDeEdicao } from '../js/components/edit-entry-modal.js';
 
         // Inicializa PocketBase
         window.pb = new PocketBase(apiConfig.getBaseURL());
@@ -213,15 +257,6 @@
         window.accountsService = accountsService;
         window.googleSheetsService = googleSheetsService;
         googleSheetsService.init(window.pb);
-
-        // Injeta o template do modal de edição no body
-        try {
-            const wrapper = document.createElement('div');
-            wrapper.innerHTML = editEntryModalTemplate;
-            document.body.appendChild(wrapper.firstElementChild);
-        } catch (e) {
-            console.error('Falha ao injetar modal de edição:', e);
-        }
 
         // Verifica autenticação imediatamente (antes de carregar demais módulos)
         if (!estaAutenticado()) {
@@ -237,31 +272,6 @@
             ]).then(() => {
                 // Inicializa o gerenciador de lançamentos após todos os módulos carregarem
                 lancamentosManager.init();
-
-                // Inicializa o modal de edição e expõe uma função global para uso nos botões de cada item
-                const editModal = inicializarModalDeEdicao({
-                    onSave: async (payload) => {
-                        // Delega para o gerenciador existente se houver método de atualização; caso contrário, apenas dispare evento
-                        if (typeof lancamentosManager.updateEntry === 'function') {
-                            await lancamentosManager.updateEntry(payload);
-                        } else {
-                            // fallback: acione rota PocketBase/Google via serviço, se existir
-                            console.warn('updateEntry não encontrado em lancamentosManager. Ouça o evento entry:edited para tratar a atualização.');
-                        }
-                    }
-                });
-
-                // Disponibiliza para outros scripts
-                window.editEntryModal = editModal;
-                window.openEditEntry = (entry) => editModal?.open(entry);
-
-                // Atualiza cache de entries no modal quando a planilha é carregada
-                document.addEventListener('sheet:loaded', (ev) => {
-                    const entries = ev?.detail?.entries || ev?.detail || [];
-                    if (Array.isArray(entries)) {
-                        editModal?.setEntries(entries);
-                    }
-                });
             }).catch(err => console.error('Erro ao carregar módulos do dashboard:', err));
         }
     </script>
