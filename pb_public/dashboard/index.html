@@ -278,7 +278,7 @@
             mostrarErro('Não foi possível carregar os dados. Verifique sua conexão e tente novamente.');
         }
         // Soma total dos valores
-        const somaTotal = query(window.allEntries, ['pipe', ['map', ['get', 'valor']], ['sum']]);
+        const somaTotal = query(window.allEntries,'.|map(.valor)|sum');
         console.log('Soma total:', somaTotal);
 
     </script>
