@@ -8,8 +8,6 @@
     <link rel="stylesheet" href="../css/picnic.css">
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/responsive-tables.css">
-    <link rel="stylesheet" href="css/modal-entry.css">
-    <link rel="stylesheet" href="css/edit-entry-form.css">
     <script src="../js/pocketbase/dist/pocketbase.umd.js"></script>
     <style>
         body {
@@ -120,6 +118,52 @@
         </main>
     </div>
 
+    <!-- Modal de edição de lançamento -->
+    <div id="editModal" class="modal" style="display:none; align-items:center; justify-content:center;">
+        <div class="modal-content solution-card" style="max-width:600px; width:95%; position:relative; text-align:left;">
+            <button class="modal-close" onclick="lancamentosManager.closeEditModal()" style="position:absolute; top:10px; right:10px; background:transparent; border:none; font-size:1.5rem; cursor:pointer;">×</button>
+            <h3 style="margin-top:0; text-align:center;">Editar Lançamento</h3>
+            <form id="editForm" onsubmit="return false;" style="margin-top:1rem;">
+                <div class="form-group">
+                    <label for="editData">Data & Hora</label>
+                    <input type="datetime-local" id="editData">
+                </div>
+                <div class="form-group">
+                    <label for="editConta">Conta</label>
+                    <input type="text" id="editConta" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="editDescricao">Descrição</label>
+                    <input type="text" id="editDescricao" autocomplete="off">
+                </div>
+                <div class="form-group valor-toggle-group">
+                    <label>Valor *</label>
+                    <div class="valor-toggle-container">
+                        <button type="button" id="editSignBtn" class="toggle-sign" style="min-width:2.5rem;">-</button>
+                        <input type="hidden" id="editSignValue" value="-">
+                        <input type="number" id="editValor" step="0.01" min="0" required style="flex:1;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="editCategoria">Categoria *</label>
+                    <input type="text" id="editCategoria" autocomplete="off" required>
+                </div>
+                <div class="form-group">
+                    <label for="editOrcamento">Orçamento (data-chave) *</label>
+                    <input type="date" id="editOrcamento" name="orcamento" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="editObs">Observações</label>
+                    <textarea id="editObs" rows="3" placeholder="Notas adicionais..."></textarea>
+                </div>
+                <div class="form-actions" style="margin-top:1.5rem; gap:1rem;">
+                    <button type="button" class="button" onclick="lancamentosManager.closeEditModal()">Cancelar</button>
+                    <button type="button" class="button primary" onclick="lancamentosManager.saveEdit()">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Modal de divisão de parcelas -->
     <div id="splitModal" class="modal" style="display:none; align-items:center; justify-content:center;">
         <div class="modal-content solution-card" style="max-width:500px; width:95%; position:relative; text-align:left;">
@@ -204,8 +248,6 @@
         import '../js/utils/sheet-entries.js'; // Importa utilitários de conversão de datas
         import '../js/components/lancamentos-patch.js';
         import '../js/components/orcamento-date-init.js';
-    import { editEntryModalTemplate } from '../js/components/edit-entry-modal-template.js';
-    import { inicializarModalDeEdicao } from '../js/components/edit-entry-modal.js';
 
         // Inicializa PocketBase
         window.pb = new PocketBase(apiConfig.getBaseURL());
@@ -215,15 +257,6 @@
         window.accountsService = accountsService;
         window.googleSheetsService = googleSheetsService;
         googleSheetsService.init(window.pb);
-
-        // Injeta o template do modal de edição no body
-        try {
-            const wrapper = document.createElement('div');
-            wrapper.innerHTML = editEntryModalTemplate;
-            document.body.appendChild(wrapper.firstElementChild);
-        } catch (e) {
-            console.error('Falha ao injetar modal de edição:', e);
-        }
 
         // Verifica autenticação imediatamente (antes de carregar demais módulos)
         if (!estaAutenticado()) {
@@ -239,107 +272,6 @@
             ]).then(() => {
                 // Inicializa o gerenciador de lançamentos após todos os módulos carregarem
                 lancamentosManager.init();
-
-                // Inicializa o modal de edição e expõe uma função global para uso nos botões de cada item
-                const editModal = inicializarModalDeEdicao();
-
-                // Disponibiliza para outros scripts
-                window.editEntryModal = editModal;
-                window.openEditEntry = (entry) => {
-                    if (editModal && entry) {
-                        editModal.open(entry);
-                    }
-                };
-
-                // Função para abrir modal através do rowIndex
-                window.openEditEntryByRowIndex = (rowIndex) => {
-                    // Primeiro tenta buscar no cache
-                    let entries = window.lastLoadedEntries || [];
-                    let entry = entries.find(e => e.rowIndex === rowIndex);
-                    
-                    // Se não encontrou no cache, tenta buscar no lancamentosManager
-                    if (!entry && window.lancamentosManager && window.lancamentosManager.entries) {
-                        entries = window.lancamentosManager.entries;
-                        entry = entries.find(e => e.rowIndex === rowIndex);
-                        
-                        // Atualiza o cache do modal se encontrou
-                        if (entry && editModal) {
-                            editModal.setEntries(entries);
-                            window.lastLoadedEntries = entries;
-                        }
-                    }
-                    
-                    if (entry && editModal) {
-                        editModal.open(entry);
-                    } else {
-                        console.warn('Entrada não encontrada para rowIndex:', rowIndex);
-                        console.log('Entries disponíveis:', entries.map(e => e.rowIndex));
-                        
-                        // Como fallback, recarrega as entradas e tenta novamente
-                        if (window.lancamentosManager && typeof window.lancamentosManager.loadEntries === 'function') {
-                            window.lancamentosManager.loadEntries().then(() => {
-                                const refreshedEntries = window.lancamentosManager.entries || [];
-                                const refreshedEntry = refreshedEntries.find(e => e.rowIndex === rowIndex);
-                                if (refreshedEntry && editModal) {
-                                    editModal.setEntries(refreshedEntries);
-                                    window.lastLoadedEntries = refreshedEntries;
-                                    editModal.open(refreshedEntry);
-                                } else {
-                                    console.error('Entrada ainda não encontrada após recarregar:', rowIndex);
-                                }
-                            });
-                        }
-                    }
-                };
-
-                // Atualiza cache de entries no modal quando a planilha é carregada
-                document.addEventListener('sheet:loaded', (ev) => {
-                    const entries = ev?.detail?.entries || ev?.detail || [];
-                    if (Array.isArray(entries) && editModal) {
-                        editModal.setEntries(entries);
-                        // Armazena globalmente para uso das funções de edição
-                        window.lastLoadedEntries = entries;
-                    }
-                });
-
-                // Intercepta as chamadas do lancamentosManager para usar o modal autônomo
-                // Aguarda um pouco para garantir que o lancamentosManager esteja disponível
-                setTimeout(() => {
-                    if (window.lancamentosManager) {
-                        // Substitui a função editEntry para usar o modal autônomo
-                        const originalEditEntry = window.lancamentosManager.editEntry;
-                        window.lancamentosManager.editEntry = function(rowIndex) {
-                            window.openEditEntryByRowIndex(rowIndex);
-                        };
-                        
-                        // Intercepta o método loadEntries para atualizar o cache do modal
-                        const originalLoadEntries = window.lancamentosManager.loadEntries;
-                        window.lancamentosManager.loadEntries = async function() {
-                            const result = await originalLoadEntries.call(this);
-                            
-                            // Atualiza o cache do modal com as entradas carregadas
-                            if (this.entries && Array.isArray(this.entries) && editModal) {
-                                editModal.setEntries(this.entries);
-                                window.lastLoadedEntries = this.entries;
-                            }
-                            
-                            return result;
-                        };
-                        
-                        console.log('Modal de edição configurado e integrado com lancamentosManager');
-                    } else {
-                        console.warn('lancamentosManager não disponível para interceptação');
-                    }
-                }, 100);
-
-                // Escuta eventos de edição para recarregar a lista
-                document.addEventListener('entry:edited', () => {
-                    if (window.lancamentosManager && typeof window.lancamentosManager.loadEntries === 'function') {
-                        setTimeout(() => {
-                            window.lancamentosManager.loadEntries();
-                        }, 300);
-                    }
-                });
             }).catch(err => console.error('Erro ao carregar módulos do dashboard:', err));
         }
     </script>
