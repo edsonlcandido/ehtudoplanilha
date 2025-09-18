@@ -1,4 +1,4 @@
-# Arquitetura do SaaS Multi-Tenant com PocketBase e Google Sheets (Revisado)
+# Arquitetura do SaaS Planilha Eh Tudo
 
 ## 1. Visão Geral
 SaaS multi-tenant onde cada usuário gerencia lançamentos financeiros em sua própria planilha derivada de um template Google Sheets.  
@@ -35,6 +35,7 @@ A planilha modelo deve conter duas abas:
 | D      | descricao   | Texto   | máx 255 chars        |
 | E      | categoria   | Texto   | Deve existir na aba CATEGORIAS |
 | F      | orcamento   | Texto   | opcional             |
+| G      | observacao  | Texto   | opcional             |
 
 Range de append: `LANCAMENTOS!A:F`
 
@@ -79,29 +80,15 @@ Regras recomendadas:
 - `POST /provision-sheet`
 - `POST /append-entry`
 
-Respostas padrão:  
-Sucesso:
-```
-{ "success": true, "data": { ... } }
-```
-Erro:
-```
-{ "success": false, "error": { "code": "TOKEN_EXPIRED", "message": "Token expirado." } }
-```
-
 ## 6. Segurança
-- HTTPS obrigatório.
-- State + PKCE no OAuth.
-- Armazenar `refresh_token` com criptografia (opcional).
-- Limitar origens CORS.
-- Rate limiting (ex.: token bucket simples).
-- Sanitização e validação de payloads (valores numéricos positivos, strings limitadas).
-- (Opcional) Verificação de categoria válida antes de inserir linha.
+- OAuth: PKCE para cliente público + state assinado para evitar CSRF.
+- Tokens: armazenar `expires_at`, refresh automático.
+- Frontend: não enviar userId explícito, usar auth do PocketBase.
+- Regras de acesso: baseadas em `@request.auth.id`.
 
 ## 7. Escalabilidade & Operações
 - Backups SQLite: a cada 6h + retenção 7 dias + teste de restauração semanal.
 - Monitorar limites (Drive/Sheets) → retry exponencial em 429/5xx.
-- Logging estruturado JSON (campos: timestamp, userId, action, success, latencyMs).
 
 ## 8. Variáveis de Ambiente
 ```
@@ -109,12 +96,8 @@ GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 GOOGLE_REDIRECT_URI=https://seu-dominio.com/google-oauth-callback
 SHEET_TEMPLATE_ID=
-ENCRYPTION_KEY=        # opcional para tokens
-APP_BASE_URL=https://seu-dominio.com
 ```
 
 ## 9. Roadmap Futuro
 - Leitura agregada (dashboards analíticos)
-- Exportação CSV
-- Validação automática de categorias (cache local + fallback leitura Sheets)
 - Relatórios por tipo (despesa/receita) usando aba CATEGORIAS

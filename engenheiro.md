@@ -1,6 +1,6 @@
-# Instruções ao Engenheiro de Software (Revisado)
+# Instruções ao Engenheiro de Software
 
-Baseado em arquitetura revisada em [arquitetura.md](arquitetura.md).
+Baseado em arquitetura detalhada em [arquitetura.md](arquitetura.md).
 
 ---
 
@@ -33,8 +33,6 @@ GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
 GOOGLE_REDIRECT_URI=https://seu-dominio.com/google-oauth-callback
 SHEET_TEMPLATE_ID=...
-APP_BASE_URL=https://seu-dominio.com
-ENCRYPTION_KEY=...(opcional)
 
 ---
 
@@ -55,175 +53,43 @@ _criar arquivos de apoio_
 ## 4. Hooks
 
 ### 4.1 GET /google-oauth-callback (after)
-Valida state + executa troca de código:
-```js
-/// pb_hooks/google-oauth-callback.pb.js
-onAfterRequest(async ({ request, reply, pb }) => {
-  if (request.path !== '/google-oauth-callback') return;
-
-  try {
-    const { code, state } = request.query;
-    validateState(state); // lança erro se inválido
-
-    const userId = extractUserIdFromState(state);
-    const { access_token, refresh_token, expires_in, token_type, scope } =
-      await exchangeCodeForTokens(code, getCodeVerifier(state));
-
-    const expires_at = computeExpiresAt(expires_in);
-
-    // Tenta localizar registro existente
-    let rec;
-    try {
-      rec = await pb.collection('google_infos').getFirstListItem(`user_id="${userId}"`);
-      await pb.collection('google_infos').update(rec.id, {
-        access_token,
-        refresh_token,
-        token_type,
-        scope,
-        expires_at
-      });
-    } catch {
-      await pb.collection('google_infos').create({
-        user_id: userId,
-        access_token,
-        refresh_token,
-        token_type,
-        scope,
-        expires_at
-      });
-    }
-
-    reply.redirect('/dashboard');
-  } catch (err) {
-    console.error('[oauth-callback]', err);
-    reply.code(400).send({ success: false, error: { code: 'OAUTH_CALLBACK_ERROR', message: 'Falha no callback OAuth.' } });
-  }
+```javascript
+routerAdd("GET", "/google-oauth-callback", (c) => {
+  // 1. Validar state (anti-CSRF)
+  // 2. Trocar code por tokens via oauth.js
+  // 3. Salvar tokens e calcular expires_at
+  // 4. Redirecionar para dashboard
 });
 ```
 
 ### 4.2 POST /google-refresh-token (after)
-```js
-/// pb_hooks/google-refresh-token.pb.js
-onAfterRequest(async ({ request, reply, pb }) => {
-  if (request.path !== '/google-refresh-token' || request.method !== 'POST') return;
-
-  try {
-    const authUser = request.auth?.record;
-    if (!authUser) return reply.code(401).send({ success: false, error: { code: 'UNAUTH', message: 'Não autenticado.' } });
-
-    const info = await pb.collection('google_infos').getFirstListItem(`user_id="${authUser.id}"`);
-    const { access_token, expires_in, token_type, scope } = await refreshToken(info.refresh_token);
-    const expires_at = computeExpiresAt(expires_in);
-
-    await pb.collection('google_infos').update(info.id, { access_token, expires_at, token_type, scope });
-
-    reply.send({ success: true, data: { access_token, expires_at } });
-  } catch (err) {
-    console.error('[refresh-token]', err);
-    reply.code(400).send({ success: false, error: { code: 'REFRESH_ERROR', message: 'Falha ao renovar token.' } });
-  }
+```javascript
+routerAdd("POST", "/google-refresh-token", (c) => {
+  // 1. Verificar autenticação
+  // 2. Pegar refresh_token do usuário
+  // 3. Obter novos tokens
+  // 4. Atualizar no banco
 });
 ```
 
 ### 4.3 POST /provision-sheet (after)
-```js
-/// pb_hooks/provision-sheet.pb.js
-onAfterRequest(async ({ request, reply, pb }) => {
-  if (request.path !== '/provision-sheet' || request.method !== 'POST') return;
-
-  try {
-    const user = request.auth?.record;
-    if (!user) return reply.code(401).send({ success: false, error: { code: 'UNAUTH', message: 'Não autenticado.' } });
-
-    const info = await pb.collection('google_infos').getFirstListItem(`user_id="${user.id}"`);
-
-    if (info.sheet_id) {
-      return reply.code(409).send({ success: false, error: { code: 'ALREADY_PROVISIONED', message: 'Planilha já provisionada.' } });
-    }
-
-    // Refresh se expirada
-    if (isExpired(info.expires_at)) {
-      await refreshAndPersist(pb, info);
-    }
-
-    const copyRes = await fetch(
-      `https://www.googleapis.com/drive/v3/files/${process.env.SHEET_TEMPLATE_ID}/copy`,
-      { method: 'POST', headers: { Authorization: `Bearer ${info.access_token}` } }
-    );
-
-    if (!copyRes.ok) {
-      const txt = await copyRes.text();
-      throw new Error(`Erro ao copiar template: ${txt}`);
-    }
-
-    const { id: sheetId } = await copyRes.json();
-    await pb.collection('google_infos').update(info.id, { sheet_id: sheetId });
-
-    reply.send({ success: true, data: { sheet_id: sheetId } });
-  } catch (err) {
-    console.error('[provision-sheet]', err);
-    reply.code(400).send({ success: false, error: { code: 'PROVISION_ERROR', message: 'Falha ao provisionar planilha.' } });
-  }
+```javascript
+routerAdd("POST", "/provision-sheet", (c) => {
+  // 1. Verificar autenticação
+  // 2. Se já tem sheet_id: 409 ou reutilizar
+  // 3. Copiar template via Drive API
+  // 4. Atualizar sheet_id
 });
 ```
 
 ### 4.4 POST /append-entry (after)
-```js
-/// pb_hooks/append-entry.pb.js
-onAfterRequest(async ({ request, reply, pb }) => {
-  if (request.path !== '/append-entry' || request.method !== 'POST') return;
-
-  try {
-    const user = request.auth?.record;
-    if (!user) return reply.code(401).send({ success: false, error: { code: 'UNAUTH', message: 'Não autenticado.' } });
-
-    const body = await request.json();
-    const { data, conta, valor, descricao, categoria, orcamento } = body;
-
-    // Validações básicas
-    if (!data || !/^\d{4}-\d{2}-\d{2}$/.test(data)) {
-      return reply.code(422).send({ success: false, error: { code: 'INVALID_DATE', message: 'Data inválida.' } });
-    }
-    if (typeof valor !== 'number' || Number.isNaN(valor)) {
-      return reply.code(422).send({ success: false, error: { code: 'INVALID_VALUE', message: 'Valor deve ser numérico.' } });
-    }
-
-    const info = await pb.collection('google_infos').getFirstListItem(`user_id="${user.id}"`);
-    if (!info.sheet_id) {
-      return reply.code(409).send({ success: false, error: { code: 'NO_SHEET', message: 'Planilha não provisionada.' } });
-    }
-
-    if (isExpired(info.expires_at)) {
-      await refreshAndPersist(pb, info);
-    }
-
-    const range = 'LANCAMENTOS!A:F';
-    const appendRes = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${info.sheet_id}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${info.access_token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          values: [[data, conta || '', valor, descricao || '', categoria || '', orcamento || '']]
-        })
-      }
-    );
-
-    if (!appendRes.ok) {
-      const txt = await appendRes.text();
-      throw new Error(`Sheets append error: ${txt}`);
-    }
-
-    await pb.collection('google_infos').update(info.id, { last_success_append_at: new Date().toISOString() });
-
-    reply.send({ success: true, data: { message: 'Lançamento inserido com sucesso.' } });
-  } catch (err) {
-    console.error('[append-entry]', err);
-    reply.code(400).send({ success: false, error: { code: 'APPEND_ERROR', message: 'Falha ao inserir lançamento.' } });
-  }
+```javascript
+routerAdd("POST", "/append-entry", (c) => {
+  // 1. Extrair dados do request
+  // 2. Validar campos (data, valor)
+  // 3. Verificar expires_at e refresh se necessário
+  // 4. Append via Sheets API
+  // 5. Atualizar last_success_append_at
 });
 ```
 
@@ -232,7 +98,7 @@ onAfterRequest(async ({ request, reply, pb }) => {
 ## 5. Frontend Ajustes (dashboard)
 - Não enviar userId no payload.
 - Mostrar estado:
-  - Se não provisionado → botão “Provisionar Planilha”.
+  - Se não provisionado → botão "Provisionar Planilha".
   - Se provisionado → formulário habilitado.
 - Tratar erros uniformemente:
   ```js
@@ -256,14 +122,3 @@ Formato sugerido (stdout):
 - Refresh automático no append
 - Append com planilha não provisionada
 - Provisionar duas vezes (deve bloquear)
-- Token expirado (manipular expires_at passado)
-- Erro 429 (simulação → retry/backoff futuro)
-- Campos inválidos (data e valor)
-
----
-
-## 8. Roadmap Técnico
-- Adicionar /list-entries com leitura paginada (usando Sheets batchGet)
-- Implementar caching de categorias
-- Exportar CSV direto do Sheets
-- Mecanismo de soft delete (inserir coluna extra futuramente)

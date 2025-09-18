@@ -11,8 +11,27 @@ export function inicializarDetalhes(entries, budgetsInInterval) {
     const container = document.querySelector('.details');
     if (!container) return;
 
-    // estado de orçamentos selecionados
+    // estado de orçamentos selecionados e entries
     let selectedBudgets = budgetsInInterval.map(b => b.orcamento);
+    let currentEntries = entries || [];
+
+    // Função para atualizar dados com novo lançamento
+    const atualizarDadosComNovoLancamento = (entry, allEntries, newBudgetsInInterval) => {
+        if (!allEntries || !newBudgetsInInterval) return;
+        
+        currentEntries = allEntries;
+        // Atualiza a lista de orçamentos se disponível, mas mantém a seleção
+        if (Array.isArray(newBudgetsInInterval)) {
+            // Apenas atualiza se houver novos orçamentos
+            renderizarDetalhes(selectedBudgets);
+        }
+    };
+
+    // Ouvir evento de atualização dos cards
+    document.addEventListener('cards:updated', (ev) => {
+        const { entry, allEntries, budgetsInInterval } = ev.detail || {};
+        atualizarDadosComNovoLancamento(entry, allEntries, budgetsInInterval);
+    });
 
     // Agrupa lançamentos por conta
     const agruparPorConta = list => {
@@ -47,7 +66,7 @@ export function inicializarDetalhes(entries, budgetsInInterval) {
          const elAccounts    = container.querySelector('#detail-accounts-cards');
          const elCategories  = container.querySelector('#detail-categories-list');
          // filtra lançamentos dos orçamentos selecionados
-         const detalhe = entries.filter(e => orcNums.includes(e.orcamento));
+         const detalhe = currentEntries.filter(e => orcNums.includes(e.orcamento));
          if (!detalhe.length) return;
          const saldoTotal = detalhe.reduce((acc, e) => acc + (e.valor || 0), 0);
 
