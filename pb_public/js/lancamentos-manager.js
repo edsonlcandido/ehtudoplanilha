@@ -601,10 +601,10 @@ class LancamentosManager {
                     ${entry.obs ? this.escapeHtml(entry.obs.substring(0, 30)) + (entry.obs.length > 30 ? '...' : '') : ''}
                 </td>
                 <td class="actions">
-                    <button class="button small" style="background-color:#ecf0f1;" onclick="lancamentosManager.editEntry(${entry.rowIndex})" title="Editar">
+                    <button class="button small"  onclick="lancamentosManager.editEntry(${entry.rowIndex})" title="Editar">
                         ✏️
                     </button>
-                    <button class="button small" style="background-color:#ecf0f1;" onclick="lancamentosManager.splitEntry(${entry.rowIndex})" title="Dividir em parcelas">
+                    <button class="button small" onclick="lancamentosManager.splitEntry(${entry.rowIndex})" title="Dividir em parcelas">
                         ➗
                     </button>
                     <button class="button danger small"  onclick="lancamentosManager.deleteEntry(${entry.rowIndex})" title="Excluir">

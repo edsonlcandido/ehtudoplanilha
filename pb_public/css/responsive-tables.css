@@ -1,7 +1,8 @@
 /* Versão robusta para tabelas responsivas com rolagem horizontal */
 .table-responsive {
     width: 100%;
-    overflow-x: scroll !important; /* Força rolagem em vez de auto */
+    overflow-x: scroll !important;
+    /* Força rolagem em vez de auto */
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     margin: 0 0 15px 0;
@@ -10,13 +11,13 @@
     display: block;
     border-radius: 4px;
     background: #fff;
-    
+
     /* Safari e iOS */
     -webkit-overflow-scrolling: touch;
     /* Firefox */
     scrollbar-width: thin;
     scrollbar-color: #999 #eee;
-        font-size: 0.95rem;
+    font-size: 0.95rem;
 }
 
 /* Estilo específico da barra de rolagem para navegadores Webkit */
@@ -47,15 +48,15 @@
 @media (max-width: 768px) {
     .table-responsive {
         border: 1px solid #ddd;
-        box-shadow: 0 0 5px rgba(0,0,0,0.05);
-            font-size: 0.95rem;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
+        font-size: 0.95rem;
     }
-    
+
     /* Garante largura mínima para forçar rolagem */
     .table-responsive table {
         min-width: 600px;
     }
-    
+
     /* Indicadores visuais de rolagem */
     .table-responsive::after,
     .table-responsive::before {
@@ -67,29 +68,38 @@
         z-index: 1;
         pointer-events: none;
     }
-    
+
     .table-responsive::after {
         right: 0;
-        background: linear-gradient(to left, rgba(255,255,255,0.9), rgba(255,255,255,0));
+        background: linear-gradient(to left, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0));
     }
-    
+
     .table-responsive::before {
         left: 0;
-        background: linear-gradient(to right, rgba(255,255,255,0.9), rgba(255,255,255,0));
+        background: linear-gradient(to right, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0));
     }
-    
+
     /* Célula com tamanho otimizado */
     .table-responsive th,
     .table-responsive td {
         white-space: nowrap;
         padding: 8px 10px;
     }
-    
+
     /* Garante que contêineres não extravasem */
-    body, html, .container, .section, .dashboard-main, 
-    #topCategoriesContainer, .top-categories-container {
+    body,
+    html,
+    .container,
+    .section,
+    .dashboard-main,
+    #topCategoriesContainer,
+    .top-categories-container {
         max-width: 100%;
         overflow-x: hidden;
+    }
+
+    .entries-table .actions button {
+        background-color: #ecf0f1;
     }
 }
 
@@ -134,8 +144,13 @@
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* Messages */
@@ -153,7 +168,7 @@
     border-radius: 4px;
     background: #f8f9fa;
     border-left: 4px solid #007bff;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     animation: slideIn 0.3s ease-out;
 }
 
@@ -180,6 +195,7 @@
         transform: translateX(100%);
         opacity: 0;
     }
+
     to {
         transform: translateX(0);
         opacity: 1;
@@ -193,43 +209,51 @@
     background: white;
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    table-layout: fixed; /* evita expansão inesperada e rolagem horizontal */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    table-layout: fixed;
+    /* evita expansão inesperada e rolagem horizontal */
 }
 
 /* Larguras específicas para melhorar leitura:
    1: Data, 2: Conta, 3: Descrição, 4: Valor, 5: Categoria, 6: Observações, 7: Ações */
 .entries-table th:nth-child(1),
-.entries-table td:nth-child(1) { /* Data */
+.entries-table td:nth-child(1) {
+    /* Data */
     width: 110px;
     min-width: 100px;
     white-space: nowrap;
 }
 
 .entries-table th:nth-child(2),
-.entries-table td:nth-child(2) { /* Conta */
+.entries-table td:nth-child(2) {
+    /* Conta */
     width: 140px;
     min-width: 120px;
     white-space: nowrap;
 }
 
 .entries-table th:nth-child(3),
-.entries-table td:nth-child(3) { /* Descrição */
+.entries-table td:nth-child(3) {
+    /* Descrição */
     width: 32%;
-    max-width: 380px; /* limita largura para não comprimir Data/Conta */
-    white-space: normal; /* permite quebra */
+    max-width: 380px;
+    /* limita largura para não comprimir Data/Conta */
+    white-space: normal;
+    /* permite quebra */
     overflow-wrap: anywhere;
 }
 
 .entries-table th:nth-child(4),
-.entries-table td:nth-child(4) { /* Valor */
+.entries-table td:nth-child(4) {
+    /* Valor */
     width: 110px;
     min-width: 100px;
     white-space: nowrap;
 }
 
 .entries-table th:nth-child(7),
-.entries-table td:nth-child(7) { /* Ações */
+.entries-table td:nth-child(7) {
+    /* Ações */
     width: 90px;
     min-width: 80px;
     white-space: nowrap;
@@ -286,14 +310,14 @@
     transition: all 0.15s ease-in-out;
 }
 
-.entries-table .actions button{
+.entries-table .actions button {
     background-color: #ecf0f1;
 }
 
 .entries-table .actions button:hover,
 .entry-card-actions button:hover {
     transform: scale(1.1);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .entries-table .actions button.danger:hover,
@@ -314,7 +338,7 @@
     background: white;
     border-radius: 8px;
     padding: 1rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     border-left: 4px solid #007bff;
 }
 
@@ -399,7 +423,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -413,7 +437,7 @@
     max-width: 600px;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .modal-header {
@@ -486,7 +510,7 @@
 .form-group textarea:focus {
     outline: none;
     border-color: #007bff;
-    box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
 /* Mobile adaptations */
@@ -495,24 +519,28 @@
         flex-direction: column;
         align-items: center;
     }
-    
+
     .modal-content {
         width: 95%;
         margin: 1rem;
     }
-    
+
     .form-row {
         flex-direction: column;
         gap: 0.5rem;
     }
-    
+
     .modal-footer {
         flex-direction: column-reverse;
     }
-    
+
     .message-container {
         right: 10px;
         left: 10px;
         max-width: none;
+    }
+
+    .entry-card-actions button{
+        background-color: #ecf0f1;
     }
 }
