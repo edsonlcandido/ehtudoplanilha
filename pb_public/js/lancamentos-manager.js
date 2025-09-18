@@ -4,6 +4,7 @@
  */
 
 import googleSheetsService from './google/sheets-api.js';
+import { toExcelSerial, excelSerialToDate, toExcelSerialDia } from './utils/sheet-entries.js';
 
 class LancamentosManager {
     constructor() {
@@ -1541,22 +1542,28 @@ class LancamentosManager {
         const totalValue = parseFloat(entry.valor) || 0;
         const installmentValue = totalValue / installments;
 
-        // Calcula as datas das parcelas
+        // Calcula as datas das parcelas usando serial Excel
         const baseDate = this.parseBudgetDate(entry.orcamento);
         const installmentsList = [];
         
         for (let i = 0; i < installments; i++) {
+            // CORREÇÃO: Adiciona 1 mês na data chave quando dividir (i+1 em vez de i)
             const parcDate = new Date(baseDate);
-            parcDate.setMonth(baseDate.getMonth() + i);
+            parcDate.setMonth(baseDate.getMonth() + (i + 1));
             
+            // Usa serial Excel para o orçamento em vez do formato string "mesNome/AA"
+            const orcamentoSerial = toExcelSerialDia(new Date(parcDate.getFullYear(), parcDate.getMonth(), 1));
+            
+            // Para exibição, converte para formato legível
             const mesNome = this.getMonthName(parcDate.getMonth());
             const anoCurto = String(parcDate.getFullYear()).slice(-2);
-            const budgetFormatted = `${mesNome}/${anoCurto}`;
+            const budgetDisplayFormatted = `${mesNome}/${anoCurto}`;
             
             installmentsList.push({
                 numero: i + 1,
                 valor: installmentValue,
-                orcamento: budgetFormatted
+                orcamento: orcamentoSerial,
+                orcamentoDisplay: budgetDisplayFormatted
             });
         }
 
@@ -1565,7 +1572,7 @@ class LancamentosManager {
         
         const listEl = document.getElementById('splitInstallmentsList');
         listEl.innerHTML = installmentsList.map((parc, index) => 
-            `<li>Parcela ${parc.numero}: ${this.formatCurrency(parc.valor)} - ${parc.orcamento}${index === 0 ? ' (atual)' : ''}</li>`
+            `<li>Parcela ${parc.numero}: ${this.formatCurrency(parc.valor)} - ${parc.orcamentoDisplay}${index === 0 ? ' (próximo mês)' : ''}</li>`
         ).join('');
 
         document.getElementById('splitPreview').style.display = 'block';
@@ -1630,13 +1637,12 @@ class LancamentosManager {
 
             // Cria as parcelas subsequentes
             for (let i = 1; i < installments; i++) {
+                // CORREÇÃO: Adiciona 1 mês na data chave quando dividir (i+1 em vez de i)
                 const parcDate = new Date(baseDate);
-                parcDate.setMonth(baseDate.getMonth() + i);
+                parcDate.setMonth(baseDate.getMonth() + (i + 1));
                 
-                const mesNome = this.getMonthName(parcDate.getMonth());
-                const anoCurto = String(parcDate.getFullYear()).slice(-2);
-                const budgetFormatted = `${mesNome}/${anoCurto}`;
-                const budgetDateFormatted = this.formatBudgetDate(budgetFormatted);
+                // CORREÇÃO: Usa serial Excel diretamente em vez de formato string
+                const orcamentoSerial = toExcelSerialDia(new Date(parcDate.getFullYear(), parcDate.getMonth(), 1));
 
                 const newEntryData = {
                     data: entry.data, // Mantém a data original do lançamento
@@ -1644,7 +1650,7 @@ class LancamentosManager {
                     descricao: entry.descricao,
                     valor: installmentValue,
                     categoria: entry.categoria,
-                    orcamento: budgetDateFormatted,
+                    orcamento: orcamentoSerial, // Usa serial Excel em vez de string formatada
                     obs: entry.obs
                 };
 
