@@ -4,6 +4,7 @@
  */
 
 import googleSheetsService from './google/sheets-api.js';
+import { toExcelSerial, excelSerialToDate, toExcelSerialDia } from './utils/sheet-entries.js';
 
 class LancamentosManager {
     constructor() {
@@ -1539,24 +1540,41 @@ class LancamentosManager {
         }
 
         const totalValue = parseFloat(entry.valor) || 0;
-        const installmentValue = totalValue / installments;
+        const installmentValue = parseFloat((totalValue / installments).toFixed(2)); // CORREÇÃO: Arredonda para 2 casas decimais
 
-        // Calcula as datas das parcelas
+        // Calcula as datas das parcelas usando serial Excel
         const baseDate = this.parseBudgetDate(entry.orcamento);
         const installmentsList = [];
         
         for (let i = 0; i < installments; i++) {
-            const parcDate = new Date(baseDate);
-            parcDate.setMonth(baseDate.getMonth() + i);
+            let parcDate;
+            let orcamentoSerial;
+            let budgetDisplayFormatted;
             
-            const mesNome = this.getMonthName(parcDate.getMonth());
-            const anoCurto = String(parcDate.getFullYear()).slice(-2);
-            const budgetFormatted = `${mesNome}/${anoCurto}`;
+            if (i === 0) {
+                // CORREÇÃO: Primeira parcela mantém a data chave original
+                parcDate = new Date(baseDate);
+                orcamentoSerial = entry.orcamento; // Mantém o orçamento original
+                
+                // Para exibição, converte para formato DD/MM/AAAA
+                budgetDisplayFormatted = this.formatDate(orcamentoSerial);
+            } else {
+                // CORREÇÃO: Parcelas subsequentes têm data chave alterada (baseDate + i meses)
+                parcDate = new Date(baseDate);
+                parcDate.setMonth(baseDate.getMonth() + i);
+                
+                // CORREÇÃO: Usa serial Excel preservando o dia original da data base
+                orcamentoSerial = toExcelSerialDia(new Date(parcDate.getFullYear(), parcDate.getMonth(), baseDate.getDate()));
+                
+                // Para exibição, converte serial Excel para formato DD/MM/AAAA
+                budgetDisplayFormatted = this.formatDate(orcamentoSerial);
+            }
             
             installmentsList.push({
                 numero: i + 1,
                 valor: installmentValue,
-                orcamento: budgetFormatted
+                orcamento: orcamentoSerial,
+                orcamentoDisplay: budgetDisplayFormatted
             });
         }
 
@@ -1565,7 +1583,7 @@ class LancamentosManager {
         
         const listEl = document.getElementById('splitInstallmentsList');
         listEl.innerHTML = installmentsList.map((parc, index) => 
-            `<li>Parcela ${parc.numero}: ${this.formatCurrency(parc.valor)} - ${parc.orcamento}${index === 0 ? ' (atual)' : ''}</li>`
+            `<li>Parcela ${parc.numero}: ${this.formatCurrency(parc.valor)} - ${parc.orcamentoDisplay}${index === 0 ? ' (atual)' : ''}</li>`
         ).join('');
 
         document.getElementById('splitPreview').style.display = 'block';
@@ -1606,7 +1624,7 @@ class LancamentosManager {
      */
     async processSplit(entry, installments) {
         const totalValue = parseFloat(entry.valor) || 0;
-        const installmentValue = totalValue / installments;
+        const installmentValue = parseFloat((totalValue / installments).toFixed(2)); // CORREÇÃO: Arredonda para 2 casas decimais
         const baseDate = this.parseBudgetDate(entry.orcamento);
 
         // Primeiro, atualiza o lançamento original com o valor da primeira parcela
@@ -1614,7 +1632,7 @@ class LancamentosManager {
         entry.valor = installmentValue;
         
         try {
-            // Atualiza lançamento original
+            // Atualiza lançamento original (MANTÉM a data chave original)
             const editData = {
                 rowIndex: entry.rowIndex,
                 data: entry.data,
@@ -1622,21 +1640,20 @@ class LancamentosManager {
                 descricao: entry.descricao,
                 valor: installmentValue,
                 categoria: entry.categoria,
-                orcamento: entry.orcamento,
+                orcamento: entry.orcamento, // CORREÇÃO: Mantém orçamento original na primeira parcela
                 obs: entry.obs
             };
 
             await googleSheetsService.editSheetEntry(editData);
 
-            // Cria as parcelas subsequentes
+            // Cria as parcelas subsequentes (a partir da segunda parcela)
             for (let i = 1; i < installments; i++) {
+                // CORREÇÃO: Apenas as parcelas subsequentes têm data chave alterada
                 const parcDate = new Date(baseDate);
-                parcDate.setMonth(baseDate.getMonth() + i);
+                parcDate.setMonth(baseDate.getMonth() + i); // i=1 => próximo mês, i=2 => mês+2, etc.
                 
-                const mesNome = this.getMonthName(parcDate.getMonth());
-                const anoCurto = String(parcDate.getFullYear()).slice(-2);
-                const budgetFormatted = `${mesNome}/${anoCurto}`;
-                const budgetDateFormatted = this.formatBudgetDate(budgetFormatted);
+                // CORREÇÃO: Usa serial Excel preservando o dia original da data base
+                const orcamentoSerial = toExcelSerialDia(new Date(parcDate.getFullYear(), parcDate.getMonth(), baseDate.getDate()));
 
                 const newEntryData = {
                     data: entry.data, // Mantém a data original do lançamento
@@ -1644,7 +1661,7 @@ class LancamentosManager {
                     descricao: entry.descricao,
                     valor: installmentValue,
                     categoria: entry.categoria,
-                    orcamento: budgetDateFormatted,
+                    orcamento: orcamentoSerial, // Usa serial Excel em vez de string formatada
                     obs: entry.obs
                 };
 
@@ -1677,6 +1694,11 @@ class LancamentosManager {
      */
     parseBudgetDate(orcamento) {
         if (!orcamento) return new Date();
+        
+        // Se é número (serial Excel), converte para date
+        if (typeof orcamento === 'number') {
+            return this.excelSerialToDate(orcamento);
+        }
         
         // Se é string no formato "setembro/25"
         if (typeof orcamento === 'string' && orcamento.includes('/')) {
