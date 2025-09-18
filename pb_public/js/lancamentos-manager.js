@@ -1620,6 +1620,11 @@ class LancamentosManager {
         const originalSnapshot = { ...entry };
         entry.valor = installmentValue;
         
+        // CORREÇÃO: A primeira parcela também deve ser no próximo mês
+        const firstParcDate = new Date(baseDate);
+        firstParcDate.setMonth(baseDate.getMonth() + 1);
+        const firstOrcamentoSerial = toExcelSerialDia(new Date(firstParcDate.getFullYear(), firstParcDate.getMonth(), 1));
+        
         try {
             // Atualiza lançamento original
             const editData = {
@@ -1629,7 +1634,7 @@ class LancamentosManager {
                 descricao: entry.descricao,
                 valor: installmentValue,
                 categoria: entry.categoria,
-                orcamento: entry.orcamento,
+                orcamento: firstOrcamentoSerial, // CORREÇÃO: Usa próximo mês em vez do mês original
                 obs: entry.obs
             };
 
@@ -1637,7 +1642,7 @@ class LancamentosManager {
 
             // Cria as parcelas subsequentes
             for (let i = 1; i < installments; i++) {
-                // CORREÇÃO: Adiciona 1 mês na data chave quando dividir (i+1 em vez de i)
+                // CORREÇÃO: i+1 para ficar consistente com o updateSplitPreview
                 const parcDate = new Date(baseDate);
                 parcDate.setMonth(baseDate.getMonth() + (i + 1));
                 
