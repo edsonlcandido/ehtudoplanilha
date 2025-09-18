@@ -1556,27 +1556,18 @@ class LancamentosManager {
                 parcDate = new Date(baseDate);
                 orcamentoSerial = entry.orcamento; // Mantém o orçamento original
                 
-                // Para exibição, usa o formato original do entry
-                if (typeof entry.orcamento === 'string' && entry.orcamento.includes('/')) {
-                    budgetDisplayFormatted = entry.orcamento;
-                } else {
-                    // Se for serial, converte para formato legível
-                    const mesNome = this.getMonthName(parcDate.getMonth());
-                    const anoCurto = String(parcDate.getFullYear()).slice(-2);
-                    budgetDisplayFormatted = `${mesNome}/${anoCurto}`;
-                }
+                // Para exibição, converte para formato DD/MM/AAAA
+                budgetDisplayFormatted = this.formatDate(orcamentoSerial);
             } else {
-                // CORREÇÃO: Parcelas subsequentes têm data chave alterada (baseDate + i)
+                // CORREÇÃO: Parcelas subsequentes têm data chave alterada (baseDate + i meses)
                 parcDate = new Date(baseDate);
                 parcDate.setMonth(baseDate.getMonth() + i);
                 
                 // CORREÇÃO: Usa serial Excel preservando o dia original da data base
                 orcamentoSerial = toExcelSerialDia(new Date(parcDate.getFullYear(), parcDate.getMonth(), baseDate.getDate()));
                 
-                // Para exibição, converte para formato legível
-                const mesNome = this.getMonthName(parcDate.getMonth());
-                const anoCurto = String(parcDate.getFullYear()).slice(-2);
-                budgetDisplayFormatted = `${mesNome}/${anoCurto}`;
+                // Para exibição, converte serial Excel para formato DD/MM/AAAA
+                budgetDisplayFormatted = this.formatDate(orcamentoSerial);
             }
             
             installmentsList.push({
@@ -1703,6 +1694,11 @@ class LancamentosManager {
      */
     parseBudgetDate(orcamento) {
         if (!orcamento) return new Date();
+        
+        // Se é número (serial Excel), converte para date
+        if (typeof orcamento === 'number') {
+            return this.excelSerialToDate(orcamento);
+        }
         
         // Se é string no formato "setembro/25"
         if (typeof orcamento === 'string' && orcamento.includes('/')) {
