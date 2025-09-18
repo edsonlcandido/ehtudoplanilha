@@ -1540,7 +1540,7 @@ class LancamentosManager {
         }
 
         const totalValue = parseFloat(entry.valor) || 0;
-        const installmentValue = totalValue / installments;
+        const installmentValue = parseFloat((totalValue / installments).toFixed(2)); // CORREÇÃO: Arredonda para 2 casas decimais
 
         // Calcula as datas das parcelas usando serial Excel
         const baseDate = this.parseBudgetDate(entry.orcamento);
@@ -1570,8 +1570,8 @@ class LancamentosManager {
                 parcDate = new Date(baseDate);
                 parcDate.setMonth(baseDate.getMonth() + i);
                 
-                // Usa serial Excel para o orçamento
-                orcamentoSerial = toExcelSerialDia(new Date(parcDate.getFullYear(), parcDate.getMonth(), 1));
+                // CORREÇÃO: Usa serial Excel preservando o dia original da data base
+                orcamentoSerial = toExcelSerialDia(new Date(parcDate.getFullYear(), parcDate.getMonth(), baseDate.getDate()));
                 
                 // Para exibição, converte para formato legível
                 const mesNome = this.getMonthName(parcDate.getMonth());
@@ -1633,7 +1633,7 @@ class LancamentosManager {
      */
     async processSplit(entry, installments) {
         const totalValue = parseFloat(entry.valor) || 0;
-        const installmentValue = totalValue / installments;
+        const installmentValue = parseFloat((totalValue / installments).toFixed(2)); // CORREÇÃO: Arredonda para 2 casas decimais
         const baseDate = this.parseBudgetDate(entry.orcamento);
 
         // Primeiro, atualiza o lançamento original com o valor da primeira parcela
@@ -1661,8 +1661,8 @@ class LancamentosManager {
                 const parcDate = new Date(baseDate);
                 parcDate.setMonth(baseDate.getMonth() + i); // i=1 => próximo mês, i=2 => mês+2, etc.
                 
-                // CORREÇÃO: Usa serial Excel diretamente em vez de formato string
-                const orcamentoSerial = toExcelSerialDia(new Date(parcDate.getFullYear(), parcDate.getMonth(), 1));
+                // CORREÇÃO: Usa serial Excel preservando o dia original da data base
+                const orcamentoSerial = toExcelSerialDia(new Date(parcDate.getFullYear(), parcDate.getMonth(), baseDate.getDate()));
 
                 const newEntryData = {
                     data: entry.data, // Mantém a data original do lançamento
