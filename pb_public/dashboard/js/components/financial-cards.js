@@ -8,6 +8,10 @@ const formatarMoeda = (valor) => {
     return Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 };
 
+// Estado interno do módulo
+let _summaryData = [];
+let _intervalBudgetsMap = {};
+
 /**
  * Renderiza os cards de resumo dos orçamentos
  * @param {Array} summary - Array de resumos dos orçamentos
@@ -18,14 +22,18 @@ function renderizarCards(summary, intervalBudgets) {
     const container = document.getElementById('summaryCards');
     if (!container) return;
 
+    // Armazena os dados para atualizações futuras
+    _summaryData = summary || [];
+    _intervalBudgetsMap = intervalBudgets || {};
+
     // Ordena por orcamento (data) decrescente (mais recente primeiro)
-    const sorted = (summary || []).slice().sort((a, b) => b.orcamento - a.orcamento);
+    const sorted = _summaryData.slice().sort((a, b) => b.orcamento - a.orcamento);
 
     container.innerHTML = '';
 
     sorted.forEach(item => {
         // Verifica se o orçamento está no intervalo atual
-        const isInInterval = intervalBudgets[item.label] === true;
+        const isInInterval = _intervalBudgetsMap[item.label] === true;
 
         if (isInInterval) {
             // Cartão ativo - mostra todos os detalhes
@@ -273,10 +281,54 @@ function mostrarErro(mensagem = 'Verifique sua conexão e tente novamente') {
     `;
 }
 
+/**
+ * Atualiza os cards após a adição de um novo lançamento
+ * @param {Object} entry - Novo lançamento adicionado
+ * @param {Array} allEntries - Array com todos os lançamentos (incluindo o novo)
+ */
+function atualizarCardsComNovoLancamento(entry, allEntries) {
+    if (!entry || !Array.isArray(allEntries)) return;
+    
+    // Recalcular summaries com os entries atualizados
+    const { aggregateByBudget, filterEntriesByInterval, budgetsInEntries } = window.sheetEntriesUtils || {};
+    if (!aggregateByBudget || !filterEntriesByInterval || !budgetsInEntries) {
+        console.error('Funções de processamento de entries não disponíveis');
+        return;
+    }
+    
+    // Recalcular tudo
+    const allSummaries = aggregateByBudget(allEntries);
+    const entriesInInterval = filterEntriesByInterval(allEntries);
+    const currentSummary = aggregateByBudget(entriesInInterval);
+    const budgetsInInterval = budgetsInEntries(entriesInInterval);
+    
+    // Atualiza as referências globais
+    window.allEntries = allEntries;
+    window.filteredEntries = entriesInInterval;
+    window.summaryByBudget = currentSummary;
+    window.budgetsInInterval = budgetsInInterval;
+    window.allBudgets = budgetsInEntries(allEntries);
+    
+    // Atualiza o mapa de orçamentos no intervalo
+    const budgetsInIntervalMap = {};
+    currentSummary.forEach(budget => {
+        budgetsInIntervalMap[budget.label] = true;
+    });
+    
+    // Renderiza os cards novamente
+    renderizarCards(allSummaries, budgetsInIntervalMap);
+    
+    // Dispara evento para outros componentes atualizarem
+    document.dispatchEvent(new CustomEvent('cards:updated', {
+        detail: { entry, allEntries, budgetsInInterval }
+    }));
+}
+
 export {
     renderizarCards,
     mostrarCardCarregamento,
     mostrarErro,
     inicializarEventos,
-    formatarMoeda
+    formatarMoeda,
+    atualizarCardsComNovoLancamento
 };

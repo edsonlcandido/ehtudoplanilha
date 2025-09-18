@@ -206,7 +206,8 @@
             renderizarCards,
             mostrarCardCarregamento,
             mostrarErro,
-            inicializarEventos
+            inicializarEventos,
+            atualizarCardsComNovoLancamento
         } from './js/components/financial-cards.js';
         import { inicializarModalDeLancamento } from '../js/components/entry-modal.js';
         import { inicializarDetalhes } from './js/components/details.js';
@@ -259,6 +260,13 @@
                 }
             }));
 
+            // Exporta funções de utilidades para a janela global para uso em componentes
+            window.sheetEntriesUtils = {
+                filterEntriesByInterval,
+                aggregateByBudget,
+                budgetsInEntries
+            };
+
             // Processamento dos orçamentos e renderização
             const allSummaries = aggregateByBudget(entries);
             window.allBudgets = budgetsInEntries(entries);
@@ -299,7 +307,17 @@
         );
         console.log('Soma total (filtrada por orçamento no intervalo):', somaTotalFiltrada);
 
-
+        // Adiciona listener para evento de novo lançamento
+        document.addEventListener('entry:created', (ev) => {
+            const newEntry = ev.detail?.entry;
+            if (!newEntry) return;
+            
+            // Adiciona a entrada à lista global
+            const updatedEntries = [...window.allEntries, newEntry];
+            
+            // Atualiza cards financeiros
+            atualizarCardsComNovoLancamento(newEntry, updatedEntries);
+        });
     </script>
 </body>
 
