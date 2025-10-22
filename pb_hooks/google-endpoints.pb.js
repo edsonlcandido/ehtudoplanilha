@@ -414,9 +414,18 @@ routerAdd("POST", "/delete-sheet-config", (c) => {
       return c.json(404, { "error": "Configuração do Google não encontrada para este usuário." });
     }
 
-    // Limpa os campos da planilha
-    googleInfo.set("sheet_id", "");
-    googleInfo.set("sheet_name", "");
+    // Limpa campos relacionados à planilha
+    googleInfo.set("sheet_id", null);
+    googleInfo.set("sheet_name", null);
+
+    // Campos opcionais existentes podem precisar ser resetados para evitar referências antigas
+    try {
+      if (typeof googleInfo.get("last_success_append_at") !== "undefined") {
+        googleInfo.set("last_success_append_at", null);
+      }
+    } catch (_) {
+      // Campo não existe no schema atual; ignora reset adicional
+    }
 
     $app.save(googleInfo);
 
@@ -424,7 +433,9 @@ routerAdd("POST", "/delete-sheet-config", (c) => {
 
     return c.json(200, {
       "success": true,
-      "message": "Planilha desvinculada com sucesso."
+      "message": "Planilha desvinculada com sucesso.",
+      "sheet_id": null,
+      "sheet_name": null
     });
 
   } catch (error) {
