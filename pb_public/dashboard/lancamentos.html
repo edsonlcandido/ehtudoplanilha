@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml">
     <title>Lançamentos - Seu App Financeiro</title>
     <link rel="stylesheet" href="../css/picnic.css">
     <link rel="stylesheet" href="../css/style.css">
@@ -46,6 +47,10 @@
                 <span class="menu-icon">📋</span>
                 <span class="menu-text">Lançamentos</span>
             </a>
+            <a href="/pwa" title="Celular">
+                <span class="menu-icon">📱</span>
+                <span class="menu-text">Celular</span>
+            </a>
         </aside>
 
         <!-- Conteúdo principal rolável -->
@@ -55,7 +60,7 @@
                     <div class="lancamentos-header">
                         <h2>Lançamentos</h2>
                         <p>Visualize e gerencie todos os seus lançamentos financeiros.</p>
-                        
+
                         <div class="lancamentos-actions">
                             <button id="refreshEntriesBtn" class="button">
                                 🔄 Atualizar
@@ -75,14 +80,11 @@
                     <!-- Barra de pesquisa -->
                     <div class="search-container" style="margin-bottom: 1.5rem;">
                         <div class="search-input-wrapper">
-                            <input 
-                                type="text" 
-                                id="searchInput" 
+                            <input type="text" id="searchInput"
                                 placeholder="Pesquisar lançamentos por data, valor, descrição, categoria ou conta..."
-                                class="search-input"
-                                autocomplete="off"
-                            >
-                            <button id="clearSearchBtn" class="clear-search-btn" style="display: none;" title="Limpar pesquisa">
+                                class="search-input" autocomplete="off">
+                            <button id="clearSearchBtn" class="clear-search-btn" style="display: none;"
+                                title="Limpar pesquisa">
                                 ✕
                             </button>
                         </div>
@@ -92,10 +94,12 @@
                     </div>
 
                     <!-- Controles de ordenação -->
-                    <div class="sorting-controls" style="margin-bottom: 1.5rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                    <div class="sorting-controls"
+                        style="margin-bottom: 1.5rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
                         <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;">
                             <div class="form-group" style="margin: 0;">
-                                <label for="sortSelect" style="margin-right: 0.5rem; font-weight: 600;">Ordenar por:</label>
+                                <label for="sortSelect" style="margin-right: 0.5rem; font-weight: 600;">Ordenar
+                                    por:</label>
                                 <select id="sortSelect" style="min-width: 180px;">
                                     <option value="original" selected>Linhas da Planilha</option>
                                     <option value="budget_date">Orçamento > Data</option>
@@ -122,10 +126,12 @@
 
     <!-- Modal de divisão de parcelas -->
     <div id="splitModal" class="modal" style="display:none; align-items:center; justify-content:center;">
-        <div class="modal-content solution-card" style="max-width:500px; width:95%; position:relative; text-align:left;">
-            <button class="modal-close" onclick="lancamentosManager.closeSplitModal()" style="position:absolute; top:10px; right:10px; background:transparent; border:none; font-size:1.5rem; cursor:pointer;">×</button>
+        <div class="modal-content solution-card"
+            style="max-width:500px; width:95%; position:relative; text-align:left;">
+            <button class="modal-close" onclick="lancamentosManager.closeSplitModal()"
+                style="position:absolute; top:10px; right:10px; background:transparent; border:none; font-size:1.5rem; cursor:pointer;">×</button>
             <h3 style="margin-top:0; text-align:center;">Dividir em Parcelas</h3>
-            
+
             <div style="margin-bottom:1rem; padding:1rem; background:#f8f9fa; border-radius:4px;">
                 <h4 style="margin:0 0 0.5rem;">Lançamento atual:</h4>
                 <div><strong>Descrição:</strong> <span id="splitDescription"></span></div>
@@ -139,8 +145,9 @@
                     <input type="number" id="splitInstallments" min="2" max="99" value="2" required>
                     <small style="color:#666;">Entre 2 e 99 parcelas</small>
                 </div>
-                
-                <div id="splitPreview" style="margin:1rem 0; padding:1rem; background:#e8f5e8; border-radius:4px; display:none;">
+
+                <div id="splitPreview"
+                    style="margin:1rem 0; padding:1rem; background:#e8f5e8; border-radius:4px; display:none;">
                     <h4 style="margin:0 0 0.5rem;">Resultado da divisão:</h4>
                     <div><strong>Valor por parcela:</strong> <span id="splitInstallmentValue"></span></div>
                     <div style="margin-top:0.5rem;">
@@ -150,8 +157,10 @@
                 </div>
 
                 <div class="form-actions" style="margin-top:1.5rem; gap:1rem;">
-                    <button type="button" class="button" onclick="lancamentosManager.closeSplitModal()">Cancelar</button>
-                    <button type="button" class="button primary" onclick="lancamentosManager.confirmSplit()" id="splitConfirmBtn">Dividir Lançamento</button>
+                    <button type="button" class="button"
+                        onclick="lancamentosManager.closeSplitModal()">Cancelar</button>
+                    <button type="button" class="button primary" onclick="lancamentosManager.confirmSplit()"
+                        id="splitConfirmBtn">Dividir Lançamento</button>
                 </div>
             </form>
         </div>
@@ -172,11 +181,13 @@
                     <li><strong>Valor:</strong> <span id="deleteValue"></span></li>
                     <li><strong>Descrição:</strong> <span id="deleteDescription"></span></li>
                 </ul>
-                <p style="font-size:.8rem; color:#666; margin-top:.75rem;">A operação limpa a linha correspondente na planilha Google Sheets. Não há como desfazer.</p>
+                <p style="font-size:.8rem; color:#666; margin-top:.75rem;">A operação limpa a linha correspondente na
+                    planilha Google Sheets. Não há como desfazer.</p>
             </div>
             <div class="modal-footer">
                 <button class="button" onclick="lancamentosManager.closeDeleteModal()">Cancelar</button>
-                <button id="deleteConfirmBtn" class="button danger" onclick="lancamentosManager.confirmDelete()">Excluir</button>
+                <button id="deleteConfirmBtn" class="button danger"
+                    onclick="lancamentosManager.confirmDelete()">Excluir</button>
             </div>
         </div>
     </div>
@@ -204,8 +215,8 @@
         import '../js/utils/sheet-entries.js'; // Importa utilitários de conversão de datas
         import '../js/components/lancamentos-patch.js';
         import '../js/components/orcamento-date-init.js';
-    import { editEntryModalTemplate } from '../js/components/edit-entry-modal-template.js';
-    import { inicializarModalDeEdicao } from '../js/components/edit-entry-modal.js';
+        import { editEntryModalTemplate } from '../js/components/edit-entry-modal-template.js';
+        import { inicializarModalDeEdicao } from '../js/components/edit-entry-modal.js';
 
         // Inicializa PocketBase
         window.pb = new PocketBase(apiConfig.getBaseURL());
@@ -256,25 +267,25 @@
                     // Primeiro tenta buscar no cache
                     let entries = window.lastLoadedEntries || [];
                     let entry = entries.find(e => e.rowIndex === rowIndex);
-                    
+
                     // Se não encontrou no cache, tenta buscar no lancamentosManager
                     if (!entry && window.lancamentosManager && window.lancamentosManager.entries) {
                         entries = window.lancamentosManager.entries;
                         entry = entries.find(e => e.rowIndex === rowIndex);
-                        
+
                         // Atualiza o cache do modal se encontrou
                         if (entry && editModal) {
                             editModal.setEntries(entries);
                             window.lastLoadedEntries = entries;
                         }
                     }
-                    
+
                     if (entry && editModal) {
                         editModal.open(entry);
                     } else {
                         console.warn('Entrada não encontrada para rowIndex:', rowIndex);
                         console.log('Entries disponíveis:', entries.map(e => e.rowIndex));
-                        
+
                         // Como fallback, recarrega as entradas e tenta novamente
                         if (window.lancamentosManager && typeof window.lancamentosManager.loadEntries === 'function') {
                             window.lancamentosManager.loadEntries().then(() => {
@@ -308,24 +319,24 @@
                     if (window.lancamentosManager) {
                         // Substitui a função editEntry para usar o modal autônomo
                         const originalEditEntry = window.lancamentosManager.editEntry;
-                        window.lancamentosManager.editEntry = function(rowIndex) {
+                        window.lancamentosManager.editEntry = function (rowIndex) {
                             window.openEditEntryByRowIndex(rowIndex);
                         };
-                        
+
                         // Intercepta o método loadEntries para atualizar o cache do modal
                         const originalLoadEntries = window.lancamentosManager.loadEntries;
-                        window.lancamentosManager.loadEntries = async function() {
+                        window.lancamentosManager.loadEntries = async function () {
                             const result = await originalLoadEntries.call(this);
-                            
+
                             // Atualiza o cache do modal com as entradas carregadas
                             if (this.entries && Array.isArray(this.entries) && editModal) {
                                 editModal.setEntries(this.entries);
                                 window.lastLoadedEntries = this.entries;
                             }
-                            
+
                             return result;
                         };
-                        
+
                         console.log('Modal de edição configurado e integrado com lancamentosManager');
                     } else {
                         console.warn('lancamentosManager não disponível para interceptação');
