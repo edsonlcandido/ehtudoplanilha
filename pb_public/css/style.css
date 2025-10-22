@@ -200,6 +200,17 @@ body {
     overflow-x: hidden; /* evita barra horizontal global */
 }
 
+.sidebar-menu a.sidebar-link--disabled {
+    pointer-events: none;
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.sidebar-menu a.sidebar-link--disabled .menu-icon,
+.sidebar-menu a.sidebar-link--disabled .menu-text {
+    color: #888;
+}
+
 /* Ajuste para páginas internas onde a nav (do picnic) pode ser fixa */
 body.page-interna { padding-top: 70px; }
 

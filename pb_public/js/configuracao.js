@@ -9,6 +9,56 @@ import googleSheetsService from './google/sheets-api.js';
 // Use a instância global do PocketBase
 const pb = window.pb;
 
+const sidebarLinks = {
+    lancamentos: document.getElementById('sidebarLinkLancamentos'),
+    celular: document.getElementById('sidebarLinkCelular')
+};
+
+setSidebarLinksState(false);
+
+function setSidebarLinksState(enabled) {
+    const ariaValue = enabled ? 'false' : 'true';
+    Object.values(sidebarLinks).forEach(link => {
+        if (!link) return;
+        link.classList.toggle('sidebar-link--disabled', !enabled);
+        link.setAttribute('aria-disabled', ariaValue);
+        if (enabled) {
+            link.removeAttribute('tabindex');
+        } else {
+            link.setAttribute('tabindex', '-1');
+        }
+    });
+}
+
+async function refreshSidebarLinksState() {
+    if (!pb || !pb.authStore || !pb.authStore.token) {
+        setSidebarLinksState(false);
+        return null;
+    }
+
+    try {
+        const response = await fetch(`${pb.baseUrl}/config-status`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': pb.authStore.token
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Falha ao obter status da configuração: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setSidebarLinksState(data?.validConfig === true);
+        return data;
+    } catch (error) {
+        console.error('Erro ao verificar status de configuração:', error);
+        setSidebarLinksState(false);
+        return null;
+    }
+}
+
 // State management
 let hasRefreshToken = false;
 
@@ -166,6 +216,10 @@ async function handleRevokeClick(e) {
                     provisionSheetBtn.style.width = '100%';
                 }
             }
+
+            if (window.updateSidebarLinksState) {
+                try { window.updateSidebarLinksState(); } catch (err) { console.warn('Falha ao atualizar links da sidebar:', err); }
+            }
         } catch (error) {
             console.error('Erro ao revogar acesso:', error);
             showErrorMessage('Falha ao revogar acesso: ' + error.message);
@@ -255,6 +309,10 @@ function showMessage(message, backgroundColor, textColor) {
 async function initConfigurationPage() {
     // Initialize OAuth service with PocketBase instance
     googleOAuthService.init(pb);
+    googleSheetsService.init(pb);
+
+    window.updateSidebarLinksState = refreshSidebarLinksState;
+    await refreshSidebarLinksState();
     
     // Check if this is an OAuth callback
     handleOAuthCallback();
@@ -264,42 +322,51 @@ async function initConfigurationPage() {
     
     // Update button visibility based on token status
     updateAuthorizationButton();
+
+    // Garante que o botão de desvincular esteja com listener associado
+    setupDeleteSheetConfigButton();
 }
 
-// Adiciona o listener para o botão de desvincular
-document.addEventListener('DOMContentLoaded', () => {
+function setupDeleteSheetConfigButton() {
     const deleteSheetConfigBtn = document.getElementById('deleteSheetConfigBtn');
-
-    if (deleteSheetConfigBtn) {
-        deleteSheetConfigBtn.addEventListener('click', async () => {
-            if (!confirm('Tem certeza de que deseja desvincular sua planilha atual? Esta ação não pode ser desfeita.')) {
-                return;
-            }
-
-            try {
-                deleteSheetConfigBtn.disabled = true;
-                deleteSheetConfigBtn.textContent = 'Desvinculando...';
-
-                // Para este exemplo, vamos usar o serviço importado diretamente
-                googleSheetsService.init(pb);
-
-                await googleSheetsService.deleteSheetConfig();
-
-                showSuccessMessage('Planilha desvinculada com sucesso!');
-                
-                setTimeout(() => {
-                    window.location.reload(); // Recarrega a página para atualizar o estado da UI
-                }, 2000);
-
-            } catch (error) {
-                console.error('Erro ao desvincular planilha:', error);
-                showErrorMessage(`Não foi possível desvincular a planilha: ${error.message}`);
-                deleteSheetConfigBtn.disabled = false;
-                deleteSheetConfigBtn.textContent = 'Desvincular Planilha';
-            }
-        });
+    if (!deleteSheetConfigBtn || deleteSheetConfigBtn.dataset.listenerAttached === 'true') {
+        return;
     }
-});
+
+    deleteSheetConfigBtn.dataset.listenerAttached = 'true';
+
+    deleteSheetConfigBtn.addEventListener('click', async () => {
+        if (!confirm('Tem certeza de que deseja desvincular sua planilha atual? Esta ação não pode ser desfeita.')) {
+            return;
+        }
+
+        try {
+            deleteSheetConfigBtn.disabled = true;
+            deleteSheetConfigBtn.textContent = 'Desvinculando...';
+
+            await googleSheetsService.deleteSheetConfig();
+
+            showSuccessMessage('Planilha desvinculada com sucesso!');
+
+            if (window.updateSidebarLinksState) {
+                try { window.updateSidebarLinksState(); } catch (err) { console.warn('Falha ao atualizar links da sidebar após desvincular:', err); }
+            }
+            
+            setTimeout(() => {
+                window.location.reload(); // Recarrega a página para atualizar o estado da UI
+            }, 2000);
+
+        } catch (error) {
+            console.error('Erro ao desvincular planilha:', error);
+            showErrorMessage(`Não foi possível desvincular a planilha: ${error.message}`);
+            deleteSheetConfigBtn.disabled = false;
+            deleteSheetConfigBtn.textContent = 'Desvincular Planilha';
+        }
+    });
+}
+
+// Garante associação mesmo que import ocorra após DOMContentLoaded
+document.addEventListener('DOMContentLoaded', setupDeleteSheetConfigButton);
 
 // Inicializa quando DOM estiver pronto; se o listener for registrado após o evento já ter ocorrido (import dinâmico), chama imediatamente
 if (document.readyState === 'loading') {

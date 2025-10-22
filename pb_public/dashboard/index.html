@@ -41,11 +41,11 @@
                 <span class="menu-icon">🏠</span>
                 <span class="menu-text">Dashboard</span>
             </a>
-            <a href="lancamentos.html" title="Lançamentos">
+            <a id="sidebarLinkLancamentos" href="lancamentos.html" title="Lançamentos">
                 <span class="menu-icon">📋</span>
                 <span class="menu-text">Lançamentos</span>
             </a>
-            <a href="/pwa" title="Celular">
+            <a id="sidebarLinkCelular" href="/pwa" title="Celular">
                 <span class="menu-icon">📱</span>
                 <span class="menu-text">Celular</span>
             </a>
@@ -218,6 +218,24 @@
         import { inicializarDetalhes } from './js/components/details.js';
         import ConfigVerificator from '../js/components/config-verificator.js';
 
+        const sidebarLinks = {
+            lancamentos: document.getElementById('sidebarLinkLancamentos'),
+            celular: document.getElementById('sidebarLinkCelular')
+        };
+
+        function setSidebarLinksEnabled(enabled) {
+            Object.values(sidebarLinks).forEach(link => {
+                if (!link) return;
+                link.classList.toggle('sidebar-link--disabled', !enabled);
+                link.setAttribute('aria-disabled', String(!enabled));
+                if (enabled) {
+                    link.removeAttribute('tabindex');
+                } else {
+                    link.setAttribute('tabindex', '-1');
+                }
+            });
+        }
+
 
         // insere o modal no body
         document.body.insertAdjacentHTML('beforeend', entryModalTemplate);
@@ -234,6 +252,8 @@
         const configVerificator = new ConfigVerificator({ configBtnId: 'configBtn' }).init();
         const cfgResult = await configVerificator.verificarConfiguracao(pb);
         const isConfigValid = cfgResult && cfgResult.validConfig === true;
+
+        setSidebarLinksEnabled(isConfigValid);
 
         if (!isConfigValid) {
             // Mostrar botão de configuração (o componente também faz isso) e esconder áreas dependentes

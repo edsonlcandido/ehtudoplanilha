@@ -217,6 +217,10 @@ async function saveSelectedSheet() {
             // Sucesso - fechar modal e mostrar feedback
             closeSheetsModal();
             showSuccessMessage(`Planilha "${data.sheet_name}" selecionada com sucesso!`);
+
+            if (typeof window.updateSidebarLinksState === 'function') {
+                try { window.updateSidebarLinksState(); } catch (err) { console.warn('Falha ao atualizar links da sidebar após selecionar planilha:', err); }
+            }
             
             // Recarregar informações da planilha atual
             setTimeout(() => {
@@ -278,6 +282,10 @@ async function provisionTemplate() {
                 showSuccessMessage('Você já possui uma planilha configurada!');
             } else {
                 showSuccessMessage(`Template copiado com sucesso! Planilha "${data.sheet_name}" criada no seu Google Drive.`);
+
+                if (typeof window.updateSidebarLinksState === 'function') {
+                    try { window.updateSidebarLinksState(); } catch (err) { console.warn('Falha ao atualizar links da sidebar após provisionar template:', err); }
+                }
                 // Recarregar informações da planilha atual
                 setTimeout(() => {
                     loadCurrentSheetInfo();

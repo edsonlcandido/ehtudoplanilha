@@ -6,10 +6,10 @@
 class GoogleSheetsService {
     constructor() {
         this.pb = null;
-    // Cache em memória por mês (AAAA-MM ou serial) => { data, ts }
-    this._summaryCache = {};
-    // Promessas em andamento para evitar duplicação de fetch simultâneo
-    this._summaryInflight = {};
+        // Cache em memória por mês (AAAA-MM ou serial) => { data, ts }
+        this._summaryCache = {};
+        // Promessas em andamento para evitar duplicação de fetch simultâneo
+        this._summaryInflight = {};
     }
 
     /**
@@ -18,6 +18,27 @@ class GoogleSheetsService {
      */
     init(pocketbaseInstance) {
         this.pb = pocketbaseInstance;
+    }
+
+    /**
+     * Monta cabeçalhos com autenticação PocketBase
+     * @param {Record<string, string>} additionalHeaders
+     * @param {{ bearer?: boolean }} options
+     * @returns {Record<string, string>}
+     */
+    _buildAuthHeaders(additionalHeaders = {}, options = {}) {
+        const { bearer = false } = options;
+
+        if (!this.pb || !this.pb.authStore || !this.pb.authStore.token) {
+            throw new Error('Token de autenticação não encontrado');
+        }
+
+        const tokenValue = bearer ? `Bearer ${this.pb.authStore.token}` : this.pb.authStore.token;
+
+        return {
+            'Authorization': tokenValue,
+            ...additionalHeaders
+        };
     }
 
     /**
@@ -32,10 +53,9 @@ class GoogleSheetsService {
         try {
             const response = await fetch(`${this.pb.baseUrl}/list-google-sheets`, {
                 method: 'GET',
-                headers: {
-                    'Authorization': this.pb.authStore.token,
+                headers: this._buildAuthHeaders({
                     'Content-Type': 'application/json'
-                }
+                })
             });
 
             const data = await response.json();
@@ -65,10 +85,9 @@ class GoogleSheetsService {
         try {
             const response = await fetch(`${this.pb.baseUrl}/save-sheet-id`, {
                 method: 'POST',
-                headers: {
-                    'Authorization': this.pb.authStore.token,
+                headers: this._buildAuthHeaders({
                     'Content-Type': 'application/json'
-                },
+                }),
                 body: JSON.stringify({
                     sheet_id: sheetId,
                     sheet_name: sheetName
@@ -100,10 +119,9 @@ class GoogleSheetsService {
         try {
             const response = await fetch(`${this.pb.baseUrl}/provision-sheet`, {
                 method: 'POST',
-                headers: {
-                    'Authorization': this.pb.authStore.token,
+                headers: this._buildAuthHeaders({
                     'Content-Type': 'application/json'
-                }
+                })
             });
 
             const data = await response.json();
@@ -132,10 +150,9 @@ class GoogleSheetsService {
         try {
             const response = await fetch(`${this.pb.baseUrl}/append-entry`, {
                 method: 'POST',
-                headers: {
-                    'Authorization': this.pb.authStore.token,
+                headers: this._buildAuthHeaders({
                     'Content-Type': 'application/json'
-                },
+                }),
                 body: JSON.stringify(entryData)
             });
 
@@ -178,10 +195,9 @@ class GoogleSheetsService {
         try {
             const response = await fetch(`${this.pb.baseUrl}/get-current-sheet`, {
                 method: 'GET',
-                headers: {
-                    'Authorization': this.pb.authStore.token,
+                headers: this._buildAuthHeaders({
                     'Content-Type': 'application/json'
-                }
+                })
             });
 
             const data = await response.json();
@@ -209,10 +225,9 @@ class GoogleSheetsService {
         try {
             const response = await fetch(`${this.pb.baseUrl}/clear-sheet-content`, {
                 method: 'POST',
-                headers: {
-                    'Authorization': this.pb.authStore.token,
+                headers: this._buildAuthHeaders({
                     'Content-Type': 'application/json'
-                }
+                })
             });
 
             const data = await response.json();
@@ -242,10 +257,9 @@ class GoogleSheetsService {
             // para limpar os campos sheet_id e sheet_name do registro do usuário.
             const response = await fetch(`${this.pb.baseUrl}/delete-sheet-config`, {
                 method: 'POST', // ou 'DELETE'
-                headers: {
-                    'Authorization': this.pb.authStore.token,
+                headers: this._buildAuthHeaders({
                     'Content-Type': 'application/json'
-                }
+                })
             });
 
             const data = await response.json();
@@ -321,10 +335,9 @@ class GoogleSheetsService {
         try {
             const response = await fetch(`${this.pb.baseUrl}/get-sheet-categories`, {
                 method: 'GET',
-                headers: {
-                    'Authorization': this.pb.authStore.token,
+                headers: this._buildAuthHeaders({
                     'Content-Type': 'application/json'
-                }
+                })
             });
 
             const data = await response.json();
@@ -373,10 +386,9 @@ class GoogleSheetsService {
             console.log('[SheetsService] fetch resumo financeiro ->', url, 'force =', force);
             const fetchPromise = fetch(url, {
                 method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${this.pb.authStore.token}`,
+                headers: this._buildAuthHeaders({
                     'Content-Type': 'application/json'
-                }
+                })
             })
             .then(async (response) => {
                 console.log('[SheetsService] status resposta resumo', response.status);
@@ -413,10 +425,9 @@ class GoogleSheetsService {
         try {
             const response = await fetch(`${this.pb.baseUrl}/get-available-months`, {
                 method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${this.pb.authStore.token}`,
+                headers: this._buildAuthHeaders({
                     'Content-Type': 'application/json'
-                }
+                })
             });
 
             const data = await response.json();
@@ -462,10 +473,9 @@ class GoogleSheetsService {
             
             const response = await fetch(url, {
                 method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${this.pb.authStore.token}`,
+                headers: this._buildAuthHeaders({
                     'Content-Type': 'application/json'
-                }
+                })
             });
 
             const data = await response.json();
@@ -511,10 +521,9 @@ class GoogleSheetsService {
         try {
             const response = await fetch(`${this.pb.baseUrl}/edit-sheet-entry`, {
                 method: 'PUT',
-                headers: {
-                    'Authorization': this.pb.authStore.token,
+                headers: this._buildAuthHeaders({
                     'Content-Type': 'application/json'
-                },
+                }),
                 body: JSON.stringify({
                     rowIndex,
                     data: dataValue,
@@ -556,10 +565,9 @@ class GoogleSheetsService {
         try {
             const response = await fetch(`${this.pb.baseUrl}/delete-sheet-entry`, {
                 method: 'DELETE',
-                headers: {
-                    'Authorization': this.pb.authStore.token,
+                headers: this._buildAuthHeaders({
                     'Content-Type': 'application/json'
-                },
+                }),
                 body: JSON.stringify({ rowIndex })
             });
 
