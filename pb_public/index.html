@@ -9,7 +9,7 @@
     <meta name="description" content="Una a flexibilidade do Google Sheets com a velocidade de lançar gastos em segundos pelo navegador ou celular. Sem a rigidez dos apps financeiros tradicionais.">
     <link rel="stylesheet" href="css/picnic.css">
     <link rel="stylesheet" href="css/style.css">
-    <script src="js/pocketbase/dist/pocketbase.umd.js"></script>
+    <!-- <script src="js/pocketbase/dist/pocketbase.umd.js"></script> -->
 </head>
 
 <body>
@@ -137,7 +137,8 @@
         </div>
     </footer>
     <script type="module">
-        import apiConfig from '../js/config/api-config.js';
+        import PocketBase from 'pocketbase';
+        import apiConfig from './js/config/api-config.js';
         // Inicializa o PocketBase globalmente antes dos módulos
         window.pb = new PocketBase(apiConfig.getBaseURL());
         const menuUser = document.getElementById('menu-user');
