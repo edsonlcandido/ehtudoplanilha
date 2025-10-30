@@ -47,7 +47,7 @@ function renderAuthenticatedMenu(menuElement: HTMLElement): void {
  */
 function renderGuestMenu(menuElement: HTMLElement): void {
   menuElement.innerHTML = `
-    <a href="#" class="pseudo button icon-picture">Home</a>
+    <a href="/" class="pseudo button icon-picture">Home</a>
     <a href="login.html" class="button icon-puzzle" id="loginBtn">Login</a>
     <a href="registro.html" class="button icon-user" id="registerBtn">Registrar</a>
   `;

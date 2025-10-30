@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Prints & Recursos – Planilha Eh Tudo</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/picnic.css">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .prints-grid {
+      display: grid;
+      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      margin-top: 2rem;
+    }
+
+    .print-card {
+      background: var(--card-bg, #fff);
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 1rem;
+    }
+
+    .print-card figure {
+      margin: 0;
+    }
+
+    .print-card img {
+      width: 100%;
+      height: auto;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #f5f5f5;
+      object-fit: cover;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #0b7285;
+      color: #fff;
+      padding: .15rem .5rem;
+      border-radius: 12px;
+      font-size: .7rem;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+  </style>
+</head>
+
+<body class="page-interna">
+  <nav>
+    <a href="index.html" class="brand">Planilha Eh Tudo</a>
+  </nav>
+  <main class="container">
+    <h1>Prints de Telas & Fluxos</h1>
+    <p>Esta página apresenta capturas de tela (screenshots) e descrições dos principais fluxos exigidos para avaliação
+      de uso de APIs Google (Sheets / Drive).</p>
+
+    <p style="font-size:.85rem; opacity:.85;">Observação: a cópia do template oficial e criação das abas necessárias
+      ocorre automaticamente na página de configuração do app. Esta página serve apenas para demonstrar fluxos à
+      avaliação das APIs Google.</p>
+
+    <section>
+      <h2>0. Dashboard inicial</h2>
+      <p>Link para a pagina de configuração.</p>
+      <div class="prints-grid" id="prints-oauth">
+        <div class="print-card">
+          <figure>
+            <img src="img/print-dashboard-inicial.png" alt="Dashboard inicial" loading="lazy">
+            <figcaption>Visão geral do dashboard inicial.</figcaption>
+          </figure>
+        </div>
+        <div class="">
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>1. Autorização OAuth</h2>
+      <p>Fluxo de consentimento onde o usuário concede acesso apenas à planilha selecionada. Uso estrito dos escopos
+        mínimos.</p>
+      <div class="prints-grid" id="prints-oauth">
+        <div class="print-card">
+          <figure>
+            <img src="img/print-oauth-consent.png" alt="Tela de consentimento OAuth" loading="lazy">
+            <figcaption><span class="badge">Fluxo</span> Tela de consentimento exibindo escopos solicitados.
+            </figcaption>
+          </figure>
+        </div>
+        <div class="print-card">
+          <figure>
+            <img src="img/print-oauth-success.png" alt="Confirmação de autorização" loading="lazy">
+            <figcaption>Confirmação e redirecionamento seguro após autorização.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>2. Configuração da Planilha</h2>
+      <p>Usuário informa ou seleciona a planilha existente. Nenhuma alteração estrutural forçada.</p>
+      <div class="prints-grid" id="prints-config">
+        <div class="print-card">
+          <figure>
+            <img src="img/print-config-sheet.png" alt="Tela de configuração da planilha"
+              loading="lazy">
+            <figcaption>Formulário simples para informar seleção da planilha.</figcaption>
+          </figure>
+        </div>
+        <div class="">
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>3. Lançamento de Despesas</h2>
+      <p>Interface enxuta para inserção rápida de linha (valor, categoria, descrição, data).</p>
+      <div class="prints-grid" id="prints-lancamento">
+        <div class="print-card">
+          <figure>
+            <img src="img/print-add-expense.png" alt="Formulário de lançamento" loading="lazy">
+            <figcaption>Formulário de lançamento rápido.</figcaption>
+          </figure>
+        </div>
+        <div class="">
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>4. Resumo / Dashboard</h2>
+      <p>Visualização agregada que consome apenas os dados já presentes na planilha do usuário.</p>
+      <div class="prints-grid" id="prints-dashboard">
+        <div class="print-card">
+          <figure>
+            <img src="img/print-dashboard.png" alt="Dashboard financeiro" loading="lazy">
+            <figcaption>Resumo mensal e categorias principais.</figcaption>
+          </figure>
+        </div>
+        <div></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>5. Segurança e Revogação</h2>
+      <p>O usuário pode efetuar logout e remover tokens; revogação adicional pode ser feita no painel Google.</p>
+
+    </section>
+  </main>
+  <footer class="footer">
+    <div class="container">
+      <p><a href="index.html">Voltar à página inicial</a></p>
+    </div>
+  </footer>
+</body>
+
+</html>

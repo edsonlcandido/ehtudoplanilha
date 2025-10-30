@@ -18,25 +18,19 @@ function isDevelopmentEnvironment(): boolean {
     return import.meta.env.DEV;
   }
   
-  // Fallback: verificação manual por porta/hostname
-  const { hostname, port } = window.location;
-  return (
-    hostname === 'localhost' ||
-    hostname === '127.0.0.1' ||
-    port === '5500' ||
-    port === '5173' // Porta padrão do Vite
-  );
+  // Fallback: verificação manual
+  return false;
 }
 
 /**
- * Obtém a URL base do PocketBase baseada no ambiente
+ * Obtém a URL base do PocketBase
+ * Com proxy do Vite, sempre usa window.location.origin
+ * O proxy redireciona automaticamente para localhost:8090 em dev
  */
 function getPocketBaseUrl(): string {
-  if (isDevelopmentEnvironment()) {
-    return 'http://localhost:8090';
-  }
-  
-  // Em produção, usa a mesma origem (PocketBase serve o frontend)
+  // Sempre usa a mesma origem
+  // Em dev: Vite proxy redireciona para localhost:8090
+  // Em prod: PocketBase serve tudo da mesma origem
   return window.location.origin;
 }
 

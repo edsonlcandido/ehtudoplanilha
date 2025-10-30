@@ -48,6 +48,13 @@ export function redirectToDashboard(): void {
 }
 
 /**
+ * Redireciona para a página de registro
+ */
+export function redirectToRegister(): void {
+  window.location.href = '/registro.html';
+}
+
+/**
  * Observador de mudanças no estado de autenticação
  * @param callback Função chamada quando o estado muda
  */
