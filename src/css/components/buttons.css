@@ -3,6 +3,26 @@
  * Extensões e customizações de botões do Picnic CSS
  */
 
+/* ========== Remove estilos de link dos botões ========== */
+a.button,
+a.button:hover,
+a.button:focus,
+a.button:active {
+  text-decoration: none;
+  color: inherit; /* Mantém a cor definida pela classe do botão */
+}
+
+/* Remove o box-shadow do Picnic CSS mas permite efeito de clarear */
+button:hover,
+.button:hover,
+[type="submit"]:hover,
+button:focus,
+.button:focus,
+[type="submit"]:focus {
+  box-shadow: inset 0 0 0 99em rgba(255, 255, 255, 0.15) !important;
+  border: 0;
+}
+
 /* ========== Primary Button ========== */
 .button.primary {
   background-color: var(--primary-color);
@@ -29,6 +49,12 @@
 .button.success {
   background-color: var(--success-color);
   border-color: var(--success-color);
+  color: var(--white-color);
+}
+
+a.button.success,
+a.button.success:hover,
+a.button.success:focus {
   color: var(--white-color);
 }
 

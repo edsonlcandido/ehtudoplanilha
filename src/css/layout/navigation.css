@@ -11,5 +11,28 @@ nav {
   box-shadow: var(--shadow-sm);
 }
 
+/* Remove estilos de link do brand/logo */
+nav .brand,
+nav a.brand,
+nav a.brand:hover,
+nav a.brand:focus,
+nav a.brand:active {
+  text-decoration: none;
+  color: var(--text-color);
+}
+
+/* Botões do menu (Login, Registrar) com cor de texto branca */
+nav .menu a.button:not(.pseudo) {
+  color: var(--white-color);
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+nav .menu a.button:not(.pseudo):hover,
+nav .menu a.button:not(.pseudo):focus {
+  color: var(--white-color);
+}
+
 /* Picnic CSS já gerencia a maior parte do nav */
 /* Aqui só customizações específicas se necessário */
+
