@@ -75,6 +75,12 @@ export default defineConfig({
         configuracao: resolve(__dirname, 'dashboard/configuracao.html'),
         lancamentos: resolve(__dirname, 'dashboard/lancamentos.html'),
       },
+      output: {
+        // Remove hash dos nomes dos arquivos
+        entryFileNames: 'assets/[name].js',
+        chunkFileNames: 'assets/[name].js',
+        assetFileNames: 'assets/[name].[ext]',
+      },
     },
   },
   server: {
