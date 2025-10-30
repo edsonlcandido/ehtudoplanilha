@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-    <title>Registrar - Seu App Financeiro</title>
-    <link rel="stylesheet" href="css/picnic.css">
-    <link rel="stylesheet" href="css/style.css">
-    <script src="js/pocketbase/dist/pocketbase.umd.js"></script>
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <title>Registrar - Seu App Financeiro</title>
+  <script type="module" crossorigin src="/assets/registro.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/auth.js">
+  <link rel="stylesheet" crossorigin href="/assets/auth2.css">
+  <link rel="stylesheet" crossorigin href="/assets/auth.css">
 </head>
 <body>
     <nav>
-
-            <span  class="brand">Planilha Eh Tudo</span>
+        <span class="brand">Planilha Eh Tudo</span>
 
         <input id="bmenub" type="checkbox" class="show">
         <label for="bmenub" class="burger pseudo button">menu</label>
@@ -25,22 +25,41 @@
     <section class="section section-light">
         <div class="container text-center">
             <h2>Registrar</h2>
-            <form class="form" id="registerForm" style="max-width: 400px; margin: 0 auto;">
-                <div class="form-group">
-                    <label for="email">E-mail</label>
-                    <input type="email" id="email" name="email" placeholder="Seu e-mail" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">Senha</label>
-                    <input type="password" id="password" name="password" placeholder="Sua senha" required>
-                </div>
-                <div class="form-group">
-                    <label for="confirmPassword">Confirmar Senha</label>
-                    <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirme sua senha" required>
-                </div>
-                <button type="submit" class="button primary">Registrar</button>
-                <p id="errorMsg" style="color: red; margin-top: 1em; display: none;"></p>
-            </form>
+            
+            <div style="max-width: 500px; margin: 0 auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <form id="registerForm">
+                    <div style="margin-bottom: 1.5rem; text-align: left;">
+                        <label for="email" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">E-mail</label>
+                        <input type="email" id="email" name="email" placeholder="Seu e-mail" required 
+                               style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem;">
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem; text-align: left;">
+                        <label for="password" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Senha</label>
+                        <input type="password" id="password" name="password" placeholder="Sua senha" required
+                               style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem;">
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem; text-align: left;">
+                        <label for="confirmPassword" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Confirmar Senha</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirme sua senha" required
+                               style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem;">
+                    </div>
+                    
+                    <button type="submit" class="button primary" id="submitButton" 
+                            style="width: 100%; padding: 0.875rem; font-size: 1rem; font-weight: 600; text-transform: uppercase;">
+                        <span id="buttonText">Registrar</span>
+                        <span id="buttonLoading" style="display: none;">Criando conta...</span>
+                    </button>
+                    
+                    <div id="errorMsg" class="error-message" style="display: none; margin-top: 1rem; padding: 0.75rem; background: #fee; color: #c33; border-radius: 4px;"></div>
+                    <div id="successMsg" class="success-message" style="display: none; margin-top: 1rem; padding: 0.75rem; background: #efe; color: #3a3; border-radius: 4px;"></div>
+                    
+                    <p style="margin-top: 1.5rem; text-align: center;">
+                        Já tem uma conta? <a href="/login.html" style="color: #0074d9; font-weight: 600;">Fazer login</a>
+                    </p>
+                </form>
+            </div>
         </div>
     </section>
     <footer class="footer">
@@ -49,43 +68,9 @@
         </div>
         <p>
             <small>Produzido por
-                <a href="https://www.ehtudo.app">Eh!Tudo.app</a></small>
+                <a href="https://www.ehtudo.app">Eh!Tudo.app</a>
+            </small>
         </p>
-    </footer>
-    <script type="module">
-        import apiConfig from './js/config/api-config.js';
-        
-        // Inicializa o PocketBase globalmente
-        window.pb = new PocketBase(apiConfig.getBaseURL());
-        
-        document.getElementById('registerForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            var email = document.getElementById('email').value;
-            var password = document.getElementById('password').value;
-            var confirmPassword = document.getElementById('confirmPassword').value;
-            var errorMsg = document.getElementById('errorMsg');
-            
-            if (password !== confirmPassword) {
-                errorMsg.textContent = 'As senhas não coincidem.';
-                errorMsg.style.display = 'block';
-                return;
-            } else {
-                errorMsg.style.display = 'none';
-            }
-            
-            try {
-                await pb.collection('users').create({
-                    email: email,
-                    emailVisibility: true,
-                    password: password,
-                    passwordConfirm: confirmPassword
-                });
-                window.location.href = '/login.html';
-            } catch (err) {
-                errorMsg.textContent = err?.message || 'Erro ao registrar usuário.';
-                errorMsg.style.display = 'block';
-            }
-        });
-    </script>
+    </footer>
 </body>
 </html>

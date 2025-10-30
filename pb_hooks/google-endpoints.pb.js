@@ -9,10 +9,11 @@
 routerAdd("GET", "/env-variables", (c) => {
   const authUser = c.auth;
   console.log("Auth User:", authUser.id);
+  // IMPORTANTE: Não retornar CLIENT_SECRET para o frontend!
   return c.json(200, {
     GOOGLE_CLIENT_ID: $os.getenv("GOOGLE_CLIENT_ID"),
-    GOOGLE_CLIENT_SECRET: $os.getenv("GOOGLE_CLIENT_SECRET"),
     GOOGLE_REDIRECT_URI: $os.getenv("GOOGLE_REDIRECT_URI")
+    // CLIENT_SECRET é usado APENAS no backend
   })
 }, $apis.requireAuth())
 
