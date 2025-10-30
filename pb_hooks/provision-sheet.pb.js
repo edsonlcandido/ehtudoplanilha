@@ -201,13 +201,20 @@ routerAdd("POST", "/provision-sheet", (c) => {
         );
 
         if (!googleInfo) {
+            console.log(`❌ [provision-sheet] Google Info não encontrado para usuário ${userId}`);
             return c.json(404, { 
                 "error": "Informações do Google não encontradas. Execute primeiro a autorização OAuth." 
             });
         }
 
+        console.log(`📋 [provision-sheet] Google Info encontrado para usuário ${userId}`);
+        console.log(`📋 [provision-sheet] Tem access_token: ${!!googleInfo.get("access_token")}`);
+        console.log(`📋 [provision-sheet] Tem refresh_token: ${!!googleInfo.get("refresh_token")}`);
+        console.log(`📋 [provision-sheet] Tem sheet_id: ${!!googleInfo.get("sheet_id")}`);
+
         let accessToken = googleInfo.get("access_token");
         if (!accessToken) {
+            console.log(`❌ [provision-sheet] Access token não encontrado para usuário ${userId}`);
             return c.json(404, { 
                 "error": "Token de acesso não encontrado. Execute novamente a autorização OAuth." 
             });
@@ -216,6 +223,7 @@ routerAdd("POST", "/provision-sheet", (c) => {
         // Verificar se já existe uma planilha configurada
         const existingSheetId = googleInfo.get("sheet_id");
         if (existingSheetId && existingSheetId.trim() !== "") {
+            console.log(`ℹ️ [provision-sheet] Usuário ${userId} já possui planilha: ${existingSheetId}`);
             return c.json(200, {
                 "success": true,
                 "message": "Usuário já possui uma planilha configurada",
@@ -224,25 +232,33 @@ routerAdd("POST", "/provision-sheet", (c) => {
             });
         }
 
-        console.log(`Criando nova planilha para usuário ${userId}`);
+        console.log(`🔄 [provision-sheet] Criando nova planilha para usuário ${userId}`);
 
         // Criar planilha
         let createResponse = createSpreadsheet(accessToken, userName);
 
+        console.log(`📊 [provision-sheet] Resposta da criação: status ${createResponse.statusCode}`);
+
         // Se token expirado, renovar e tentar novamente
         if (createResponse.statusCode === 401) {
-            console.log("Token expirado, renovando...");
+            console.log(`⚠️ [provision-sheet] Token expirado (401), tentando renovar...`);
             
             const refreshToken = googleInfo.get("refresh_token");
+            console.log(`📋 [provision-sheet] Refresh token disponível: ${!!refreshToken}`);
+            
             if (!refreshToken) {
+                console.log(`❌ [provision-sheet] Refresh token não disponível para usuário ${userId}`);
                 return c.json(401, { 
                     "error": "Token expirado e refresh token não disponível. Execute novamente a autorização OAuth." 
                 });
             }
 
+            console.log(`🔄 [provision-sheet] Chamando refreshAccessToken...`);
             const tokenResponse = refreshAccessToken(refreshToken);
+            console.log(`📊 [provision-sheet] Resposta do refresh: status ${tokenResponse.statusCode}`);
+            
             if (tokenResponse.statusCode !== 200) {
-                console.log("Erro ao renovar token:", tokenResponse.json);
+                console.log(`❌ [provision-sheet] Erro ao renovar token:`, tokenResponse.json);
                 return c.json(400, { 
                     "error": "Falha ao renovar token de acesso. Execute novamente a autorização OAuth." 
                 });
@@ -254,13 +270,17 @@ routerAdd("POST", "/provision-sheet", (c) => {
             googleInfo.set("access_token", accessToken);
             $app.save(googleInfo);
 
+            console.log(`✅ [provision-sheet] Token renovado com sucesso, tentando criar planilha novamente...`);
+
             // Tentar criar planilha novamente
             createResponse = createSpreadsheet(accessToken, userName);
+            console.log(`📊 [provision-sheet] Resposta da segunda tentativa: status ${createResponse.statusCode}`);
         }
 
         // Verificar se criação foi bem-sucedida
         if (createResponse.statusCode !== 200) {
-            console.log("Erro ao criar planilha:", createResponse.json);
+            console.log(`❌ [provision-sheet] Erro ao criar planilha. Status: ${createResponse.statusCode}`);
+            console.log(`❌ [provision-sheet] Resposta completa:`, createResponse.json);
             const errorData = createResponse.json;
             return c.json(createResponse.statusCode, { 
                 "error": `Falha ao criar planilha: ${errorData.error?.message || 'Erro desconhecido'}` 
@@ -271,12 +291,16 @@ routerAdd("POST", "/provision-sheet", (c) => {
         const newSheetId = createData.spreadsheetId;
         const sheetUrl = createData.spreadsheetUrl;
 
-        console.log(`Planilha criada: ${newSheetId}`);
+        console.log(`✅ [provision-sheet] Planilha criada com sucesso: ${newSheetId}`);
 
         // Popula aba Categorias
+        console.log(`📋 [provision-sheet] Populando categorias...`);
         const populateResponse = populateCategorias(newSheetId, accessToken);
         if (populateResponse.statusCode !== 200) {
-            console.log("Aviso: Falha ao popular categorias padrão. Planilha criada mas categorias devem ser adicionadas manualmente:", populateResponse.json);
+            console.log(`⚠️ [provision-sheet] Aviso: Falha ao popular categorias. Status: ${populateResponse.statusCode}`);
+            console.log(`⚠️ [provision-sheet] Planilha criada mas categorias devem ser adicionadas manualmente:`, populateResponse.json);
+        } else {
+            console.log(`✅ [provision-sheet] Categorias populadas com sucesso`);
         }
 
         // Salvar informações da planilha
@@ -284,7 +308,9 @@ routerAdd("POST", "/provision-sheet", (c) => {
         googleInfo.set("sheet_name", createData.properties?.title || `Planilha Eh Tudo - ${userName}`);
         $app.save(googleInfo);
 
-        console.log(`Planilha provisionada com sucesso para usuário ${userId}`);
+        console.log(`✅ [provision-sheet] Planilha provisionada com sucesso para usuário ${userId}`);
+        console.log(`📋 [provision-sheet] Sheet ID: ${newSheetId}`);
+        console.log(`📋 [provision-sheet] Sheet Name: ${createData.properties?.title}`);
 
         return c.json(200, {
             "success": true,
@@ -296,7 +322,8 @@ routerAdd("POST", "/provision-sheet", (c) => {
         });
 
     } catch (error) {
-        console.log("Erro interno ao provisionar planilha:", error);
+        console.log(`❌ [provision-sheet] Erro interno ao provisionar planilha para usuário ${userId}:`, error);
+        console.log(`❌ [provision-sheet] Stack trace:`, error.stack || "N/A");
         return c.json(500, { 
             "error": "Erro interno do servidor ao criar planilha",
             "details": error.message || String(error)
