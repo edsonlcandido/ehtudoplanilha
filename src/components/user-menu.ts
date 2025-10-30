@@ -31,7 +31,8 @@ function renderAuthenticatedMenu(menuElement: HTMLElement): void {
 
   menuElement.innerHTML = `
     <span class="pseudo button">${escapeHtml(user.email)}</span>
-    <a href="dashboard/index.html" class="button success" id="dashboardBtn">Dashboard</a>
+    <a href="/dashboard/index.html" class="button success" id="dashboardBtn">Dashboard</a>
+    <a href="/dashboard/configuracao.html" class="button" id="configBtn">Configuração</a>
     <button class="button error" id="logoutBtn">Sair</button>
   `;
   

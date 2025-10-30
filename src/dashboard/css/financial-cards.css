@@ -1,0 +1,184 @@
+/* Estilos CSS para os cards financeiros */
+#summaryCards {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.financial-card {
+    background-color: var(--white-color);
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    border-left: 4px solid;
+    margin: 1rem 0 1rem 0;
+    text-align: center;
+    width: 100%;
+}
+
+.financial-card.saldo {
+    border-left-color: #007bff;
+}
+
+.financial-card.despesas {
+    border-left-color: #dc3545;
+}
+
+.financial-card.receitas {
+    border-left-color: #28a745;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+}
+
+.card-icon {
+    font-size: 2rem;
+    margin-right: 0.5rem;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    margin: 0;
+}
+
+.card-value {
+    margin-bottom: 0.25rem;
+    /* Reduz o espaçamento abaixo do valor */
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.card-muted {
+    font-size: 0.85rem;
+    margin-bottom: 0.1rem
+}
+
+/* Animação de carregamento para os cards */
+.financial-card.loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.financial-card.loading::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.3),
+            transparent);
+    animation: shimmer 1.5s infinite;
+}
+
+.financial-card.loading .card-value,
+.financial-card.loading .card-muted,
+.financial-card.loading .card-title {
+    color: transparent;
+    background-color: #e0e0e0;
+    border-radius: 4px;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes shimmer {
+    100% {
+        left: 100%;
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 0.6;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+/* Área de detalhes dentro do card (receitas/despesas) */
+.card-details {
+    margin-top: 0.25rem;
+}
+
+/* Esconde os detalhes quando o card estiver compacto */
+.financial-card.compacto .card-details {
+    display: none;
+}
+
+/* Ação do card (botão de mostrar/ocultar) */
+.card-actions {
+    text-align: right;
+    margin-top: 0.25rem;
+}
+
+.card-toggle {
+    font-size: 0.8rem;
+    padding: 0.15rem 0.5rem;
+}
+
+/* Adicione isto às suas regras CSS existentes */
+
+/* Estilo para orçamentos fora do intervalo atual */
+.financial-card.inactive {
+    border-left-color: #ccc;
+    opacity: 0.7;
+}
+
+.financial-card.inactive .card-value,
+.financial-card.inactive .card-muted {
+    color: #999;
+}
+
+/* Adicione este estilo para o botão de fechar nos cartões */
+.card-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    background-color: #f1f1f1;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.card-close:hover {
+    opacity: 1;
+    background-color: #e5e5e5;
+}
+
+/* Garante que o cartão tenha position relative para o botão de fechar */
+.financial-card {
+    position: relative;
+}
+
+/* Remove o hover do cartão inativo após clicado */
+.financial-card.inactive.clicked:hover {
+    cursor: default;
+    box-shadow: var(--shadow);
+    transform: none;
+}
+
+/* Estilos para telas menores (mobile) */
+@media (max-width: 768px) {
+    .financial-card{
+        width: 100%;
+    }
+
+}

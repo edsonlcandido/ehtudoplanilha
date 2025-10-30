@@ -44,7 +44,15 @@ Bem-vindo à documentação do projeto migrado para Vite e TypeScript!
 - Estados de loading
 - Redirecionamentos
 
-### 6. 📄 Exemplo Completo
+### 6. � Registro
+**[REGISTRO_GUIDE.md](./REGISTRO_GUIDE.md)** - Guia da página de registro
+- Implementação completa do registro
+- Validação de e-mail e senha
+- Confirmação de senha
+- Tratamento de erros específicos
+- Redirecionamento após sucesso
+
+### 7. �📄 Exemplo Completo
 **[EXAMPLE_PAGE.md](./EXAMPLE_PAGE.md)** - Exemplo de página completa
 - Página de lançamentos (lancamentos.html)
 - Implementação passo a passo
@@ -84,8 +92,9 @@ Bem-vindo à documentação do projeto migrado para Vite e TypeScript!
 3. Confira variáveis de ambiente
 
 ### Dúvidas sobre autenticação?
-1. Leia **[LOGIN_GUIDE.md](./LOGIN_GUIDE.md)**
-2. Consulte **AuthService** em **[API_REFERENCE.md](./API_REFERENCE.md)**
+1. Leia **[LOGIN_GUIDE.md](./LOGIN_GUIDE.md)** para login
+2. Leia **[REGISTRO_GUIDE.md](./REGISTRO_GUIDE.md)** para registro
+3. Consulte **AuthService** em **[API_REFERENCE.md](./API_REFERENCE.md)**
 
 ---
 
@@ -119,6 +128,7 @@ src/
 │   ├── CONFIG_GUIDE.md            # ⚙️ Configuração
 │   ├── API_REFERENCE.md           # 📡 API
 │   ├── LOGIN_GUIDE.md             # 🔐 Login
+│   ├── REGISTRO_GUIDE.md          # 📝 Registro
 │   ├── EXAMPLE_PAGE.md            # 📄 Exemplo
 │   └── USAGE_EXAMPLES.ts          # 💻 Código
 ├── config/
@@ -137,8 +147,10 @@ src/
 ├── main.ts                        # Inicialização global
 ├── index.ts                       # Lógica da index page
 ├── login.ts                       # Lógica da login page
+├── registro.ts                    # Lógica da registro page
 ├── index.html                     # Página inicial
 ├── login.html                     # Página de login
+├── registro.html                  # Página de registro
 ├── vite.config.ts                 # Config do Vite
 ├── tsconfig.json                  # Config do TypeScript
 └── package.json                   # Dependências
