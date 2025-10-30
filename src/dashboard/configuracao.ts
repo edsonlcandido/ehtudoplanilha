@@ -31,6 +31,7 @@ let pageState: PageState = {
 const elements = {
   // Cartão 1: Autorização Google
   googleAuthButton: document.getElementById('google-auth-button') as HTMLButtonElement,
+  revokeAuthButton: document.getElementById('revoke-auth-button') as HTMLButtonElement,
   
   // Cartão 2: Planilha
   currentSheetName: document.getElementById('current-sheet-name') as HTMLParagraphElement,
@@ -53,11 +54,21 @@ function updateGoogleAuthButton(): void {
     elements.googleAuthButton.classList.remove('primary');
     elements.googleAuthButton.classList.add('success');
     elements.googleAuthButton.disabled = true;
+    
+    // Mostrar botão de revogar
+    if (elements.revokeAuthButton) {
+      elements.revokeAuthButton.style.display = 'block';
+    }
   } else {
     elements.googleAuthButton.textContent = '🔑 Autorizar com Google';
     elements.googleAuthButton.classList.remove('success');
     elements.googleAuthButton.classList.add('primary');
     elements.googleAuthButton.disabled = false;
+    
+    // Esconder botão de revogar
+    if (elements.revokeAuthButton) {
+      elements.revokeAuthButton.style.display = 'none';
+    }
   }
 }
 
@@ -234,6 +245,64 @@ async function handleGoogleAuth(): Promise<void> {
   }
 }
 
+/**
+ * Revoga a autorização OAuth do Google
+ */
+async function handleRevokeAuth(): Promise<void> {
+  // Confirmar com o usuário
+  const confirmed = confirm(
+    'Tem certeza que deseja revogar a autorização do Google Drive?\n\n' +
+    'Isso irá:\n' +
+    '• Remover todos os tokens de acesso\n' +
+    '• Limpar a configuração da planilha\n' +
+    '• Será necessário autorizar novamente para usar o sistema\n\n' +
+    'Deseja continuar?'
+  );
+  
+  if (!confirmed) {
+    return;
+  }
+  
+  try {
+    console.log('🚫 Revogando autorização Google...');
+    
+    // Desabilitar botão durante o processo
+    if (elements.revokeAuthButton) {
+      elements.revokeAuthButton.disabled = true;
+      elements.revokeAuthButton.textContent = '⏳ Revogando...';
+    }
+    
+    // Chamar endpoint de revogação
+    await SheetsService.revokeGoogleAccess();
+    
+    console.log('✅ Autorização revogada com sucesso');
+    
+    // Atualizar estado local
+    pageState.hasRefreshToken = false;
+    pageState.hasSheetId = false;
+    pageState.sheetId = undefined;
+    pageState.sheetName = undefined;
+    
+    // Atualizar UI
+    updateGoogleAuthButton();
+    updateSheetInfo();
+    
+    showSuccessMessage('Autorização revogada com sucesso! Você pode autorizar novamente quando quiser.');
+    
+  } catch (error: any) {
+    console.error('❌ Erro ao revogar autorização:', error);
+    showErrorMessage(
+      error?.message || 'Erro ao revogar autorização. Tente novamente.'
+    );
+    
+    // Reabilitar botão em caso de erro
+    if (elements.revokeAuthButton) {
+      elements.revokeAuthButton.disabled = false;
+      elements.revokeAuthButton.textContent = '🚫 Revogar Autorização';
+    }
+  }
+}
+
 // ============================================================================
 // Event Listeners
 // ============================================================================
@@ -241,6 +310,7 @@ async function handleGoogleAuth(): Promise<void> {
 function setupEventListeners(): void {
   // Cartão 1: Autorização Google
   elements.googleAuthButton?.addEventListener('click', handleGoogleAuth);
+  elements.revokeAuthButton?.addEventListener('click', handleRevokeAuth);
 }
 
 // ============================================================================
