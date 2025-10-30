@@ -147,7 +147,10 @@ function showErrorMessage(message: string): void {
  */
 async function loadConfigStatus(): Promise<void> {
   try {
+    console.log('🔍 [loadConfigStatus] Iniciando...');
     const status = await SheetsService.getConfigStatus();
+    
+    console.log('📊 [loadConfigStatus] Status recebido do backend:', status);
     
     pageState = {
       hasRefreshToken: status.hasRefreshToken,
@@ -155,6 +158,8 @@ async function loadConfigStatus(): Promise<void> {
       sheetId: status.sheetId,
       sheetName: status.sheetName,
     };
+    
+    console.log('📊 [loadConfigStatus] PageState atualizado:', pageState);
     
     updateGoogleAuthButton();
     updateSheetInfo();
@@ -164,7 +169,13 @@ async function loadConfigStatus(): Promise<void> {
     // Se tem refresh token mas não tem planilha, criar automaticamente
     if (pageState.hasRefreshToken && !pageState.hasSheetId) {
       console.log('🔄 Usuário autorizado sem planilha, criando automaticamente...');
+      console.log('🔄 hasRefreshToken:', pageState.hasRefreshToken);
+      console.log('🔄 hasSheetId:', pageState.hasSheetId);
       await createSheetAutomatically();
+    } else {
+      console.log('ℹ️ Não criar planilha automaticamente porque:');
+      console.log('  - hasRefreshToken:', pageState.hasRefreshToken);
+      console.log('  - hasSheetId:', pageState.hasSheetId);
     }
   } catch (error) {
     console.error('❌ Erro ao carregar status:', error);
