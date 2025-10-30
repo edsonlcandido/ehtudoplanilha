@@ -1,9 +1,176 @@
 /// <reference path="../pb_data/types.d.ts" />
 
 /**
- * Hook para provisionar (copiar) planilha template para o Drive do usuário
- * Este endpoint é chamado automaticamente após autorização OAuth ou manualmente
+ * Hook para criar planilha programaticamente no Drive do usuário
+ * Usando escopo drive.file (sem necessidade de validação do Google)
  */
+
+// Estrutura de categorias padrão
+const CATEGORIAS_PADRAO = [
+    ["Categoria", "Tipo"], // Header
+    ["ALIMENTAÇÃO", "PRECISO"],
+    ["SUPERMERCADO", "PRECISO"],
+    ["MERCADO", "PRECISO"],
+    ["RESTAURANTE", "QUERO"],
+    ["DELIVERY", "QUERO"],
+    ["PADARIA", "PRECISO"],
+    ["AÇOUGUE", "PRECISO"],
+    ["FEIRA", "PRECISO"],
+    ["SAÚDE", "PRECISO"],
+    ["FARMÁCIA", "PRECISO"],
+    ["MÉDICO", "PRECISO"],
+    ["DENTISTA", "PRECISO"],
+    ["ACADEMIA", "QUERO"],
+    ["TERAPIA", "PRECISO"],
+    ["TRANSPORTE", "PRECISO"],
+    ["COMBUSTÍVEL", "PRECISO"],
+    ["ESTACIONAMENTO", "PRECISO"],
+    ["PEDÁGIO", "PRECISO"],
+    ["TRANSPORTE PÚBLICO", "PRECISO"],
+    ["APLICATIVO", "PRECISO"],
+    ["MORADIA", "PRECISO"],
+    ["ALUGUEL", "PRECISO"],
+    ["CONDOMÍNIO", "PRECISO"],
+    ["ÁGUA", "PRECISO"],
+    ["LUZ", "PRECISO"],
+    ["GÁS", "PRECISO"],
+    ["INTERNET", "PRECISO"],
+    ["TELEFONE", "PRECISO"],
+    ["EDUCAÇÃO", "PRECISO"],
+    ["ESCOLA", "PRECISO"],
+    ["CURSO", "QUERO"],
+    ["LIVROS", "QUERO"],
+    ["MATERIAL ESCOLAR", "PRECISO"],
+    ["LAZER", "QUERO"],
+    ["CINEMA", "QUERO"],
+    ["STREAMING", "QUERO"],
+    ["VIAGEM", "QUERO"],
+    ["PRESENTE", "QUERO"],
+    ["VESTUÁRIO", "QUERO"],
+    ["ROUPAS", "QUERO"],
+    ["CALÇADOS", "QUERO"],
+    ["BELEZA", "QUERO"],
+    ["INVESTIMENTOS", "INVESTIMENTOS"],
+    ["POUPANÇA", "INVESTIMENTOS"],
+    ["PREVIDÊNCIA", "INVESTIMENTOS"],
+    ["RENDA", "RENDA"],
+    ["SALÁRIO", "RENDA"],
+    ["FREELANCE", "RENDA"],
+    ["OUTROS", "QUERO"],
+    ["TRANSFERÊNCIA", "TRANSFERÊNCIA"],
+    ["SALDO INICIAL", "SALDO"]
+];
+
+/**
+ * Cria planilha programaticamente usando Sheets API v4
+ */
+function createSpreadsheet(accessToken, userName) {
+    const spreadsheetTitle = `Planilha Eh Tudo - ${userName}`;
+    
+    const requestBody = {
+        properties: {
+            title: spreadsheetTitle,
+            locale: "pt_BR",
+            timeZone: "America/Sao_Paulo"
+        },
+        sheets: [
+            {
+                properties: {
+                    title: "Lançamentos",
+                    gridProperties: {
+                        rowCount: 1000,
+                        columnCount: 7,
+                        frozenRowCount: 1
+                    }
+                },
+                data: [{
+                    startRow: 0,
+                    startColumn: 0,
+                    rowData: [{
+                        values: [
+                            { userEnteredValue: { stringValue: "Data" }, userEnteredFormat: { textFormat: { bold: true } } },
+                            { userEnteredValue: { stringValue: "Conta" }, userEnteredFormat: { textFormat: { bold: true } } },
+                            { userEnteredValue: { stringValue: "Valor" }, userEnteredFormat: { textFormat: { bold: true } } },
+                            { userEnteredValue: { stringValue: "Descrição" }, userEnteredFormat: { textFormat: { bold: true } } },
+                            { userEnteredValue: { stringValue: "Categoria" }, userEnteredFormat: { textFormat: { bold: true } } },
+                            { userEnteredValue: { stringValue: "Orçamento" }, userEnteredFormat: { textFormat: { bold: true } } },
+                            { userEnteredValue: { stringValue: "Observação" }, userEnteredFormat: { textFormat: { bold: true } } }
+                        ]
+                    }]
+                }]
+            },
+            {
+                properties: {
+                    title: "Categorias",
+                    gridProperties: {
+                        rowCount: 100,
+                        columnCount: 2,
+                        frozenRowCount: 1
+                    }
+                }
+            }
+        ]
+    };
+
+    const createResponse = $http.send({
+        url: "https://sheets.googleapis.com/v4/spreadsheets",
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${accessToken}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(requestBody)
+    });
+
+    return createResponse;
+}
+
+/**
+ * Popula aba Categorias com dados padrão
+ */
+function populateCategorias(spreadsheetId, accessToken) {
+    const requestBody = {
+        values: CATEGORIAS_PADRAO
+    };
+
+    const populateResponse = $http.send({
+        url: `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Categorias!A1:B${CATEGORIAS_PADRAO.length}?valueInputOption=RAW`,
+        method: "PUT",
+        headers: {
+            "Authorization": `Bearer ${accessToken}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(requestBody)
+    });
+
+    return populateResponse;
+}
+
+/**
+ * Renova access token usando refresh token
+ */
+function refreshAccessToken(refreshToken) {
+    const clientId = $os.getenv("GOOGLE_CLIENT_ID");
+    const clientSecret = $os.getenv("GOOGLE_CLIENT_SECRET");
+
+    const refreshRequestBody = [
+        `refresh_token=${encodeURIComponent(refreshToken)}`,
+        `client_id=${encodeURIComponent(clientId)}`,
+        `client_secret=${encodeURIComponent(clientSecret)}`,
+        `grant_type=refresh_token`
+    ].join('&');
+
+    const tokenResponse = $http.send({
+        url: "https://oauth2.googleapis.com/token",
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: refreshRequestBody
+    });
+
+    return tokenResponse;
+}
 
 routerAdd("POST", "/provision-sheet", (c) => {
     const authUser = c.auth;
@@ -12,6 +179,7 @@ routerAdd("POST", "/provision-sheet", (c) => {
     }
 
     const userId = authUser.id;
+    const userName = authUser.get("name") || "Usuário";
 
     try {
         // Buscar informações do Google para o usuário
@@ -27,7 +195,7 @@ routerAdd("POST", "/provision-sheet", (c) => {
             });
         }
 
-        const accessToken = googleInfo.get("access_token");
+        let accessToken = googleInfo.get("access_token");
         if (!accessToken) {
             return c.json(404, { 
                 "error": "Token de acesso não encontrado. Execute novamente a autorização OAuth." 
@@ -45,36 +213,14 @@ routerAdd("POST", "/provision-sheet", (c) => {
             });
         }
 
-        // Obter o ID do template das variáveis de ambiente
-        const templateId = $os.getenv("SHEET_TEMPLATE_ID");
-        if (!templateId) {
-            console.log("SHEET_TEMPLATE_ID não configurado");
-            return c.json(500, { 
-                "error": "Template de planilha não configurado no sistema" 
-            });
-        }
+        console.log(`Criando nova planilha para usuário ${userId}`);
 
-        console.log(`Copiando template ${templateId} para usuário ${userId}`);
+        // Criar planilha
+        let createResponse = createSpreadsheet(accessToken, userName);
 
-        // Preparar o corpo da requisição para copiar a planilha
-        const copyRequestBody = JSON.stringify({
-            "name": `Planilha Eh Tudo`
-        });
-
-        // Fazer requisição para copiar a planilha template
-        const copyResponse = $http.send({
-            url: `https://www.googleapis.com/drive/v3/files/${templateId}/copy`,
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${accessToken}`,
-                "Content-Type": "application/json"
-            },
-            body: copyRequestBody
-        });
-
-        if (copyResponse.statusCode === 401) {
-            // Token expirado, tentar renovar
-            console.log("Token expirado, tentando renovar...");
+        // Se token expirado, renovar e tentar novamente
+        if (createResponse.statusCode === 401) {
+            console.log("Token expirado, renovando...");
             
             const refreshToken = googleInfo.get("refresh_token");
             if (!refreshToken) {
@@ -83,26 +229,7 @@ routerAdd("POST", "/provision-sheet", (c) => {
                 });
             }
 
-            // Renovar token
-            const clientId = $os.getenv("GOOGLE_CLIENT_ID");
-            const clientSecret = $os.getenv("GOOGLE_CLIENT_SECRET");
-
-            const refreshRequestBody = [
-                `refresh_token=${encodeURIComponent(refreshToken)}`,
-                `client_id=${encodeURIComponent(clientId)}`,
-                `client_secret=${encodeURIComponent(clientSecret)}`,
-                `grant_type=refresh_token`
-            ].join('&');
-
-            const tokenResponse = $http.send({
-                url: "https://oauth2.googleapis.com/token",
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
-                },
-                body: refreshRequestBody
-            });
-
+            const tokenResponse = refreshAccessToken(refreshToken);
             if (tokenResponse.statusCode !== 200) {
                 console.log("Erro ao renovar token:", tokenResponse.json);
                 return c.json(400, { 
@@ -112,81 +239,57 @@ routerAdd("POST", "/provision-sheet", (c) => {
 
             // Atualizar token no banco
             const newTokenData = tokenResponse.json;
-            const newAccessToken = newTokenData.access_token;
-            googleInfo.set("access_token", newAccessToken);
+            accessToken = newTokenData.access_token;
+            googleInfo.set("access_token", accessToken);
             $app.save(googleInfo);
 
-            // Tentar novamente com o novo token
-            const retryResponse = $http.send({
-                url: `https://www.googleapis.com/drive/v3/files/${templateId}/copy`,
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${newAccessToken}`,
-                    "Content-Type": "application/json"
-                },
-                body: copyRequestBody
-            });
+            // Tentar criar planilha novamente
+            createResponse = createSpreadsheet(accessToken, userName);
+        }
 
-            if (retryResponse.statusCode !== 200) {
-                console.log("Erro ao copiar planilha após renovação de token:", retryResponse.json);
-                return c.json(400, { 
-                    "error": "Falha ao copiar planilha template. Verifique as permissões do Google Drive." 
-                });
-            }
-
-            const copyData = retryResponse.json;
-            const newSheetId = copyData.id;
-
-
-            // Salvar o ID e o nome da nova planilha
-            googleInfo.set("sheet_id", newSheetId);
-            googleInfo.set("sheet_name", copyData.name || "Planilha Eh Tudo");
-            $app.save(googleInfo);
-
-            console.log(`Planilha copiada com sucesso: ${newSheetId} para usuário ${userId}`);
-
-            return c.json(200, {
-                "success": true,
-                "message": "Planilha template copiada com sucesso para seu Google Drive!",
-                "sheet_id": newSheetId,
-                "sheet_name": copyData.name || `Planilha Eh Tudo`,
-                "action": "created"
-            });
-
-        } else if (copyResponse.statusCode !== 200) {
-            console.log("Erro ao copiar planilha:", copyResponse.json);
-            const errorData = copyResponse.json;
-            return c.json(copyResponse.statusCode, { 
-                "error": `Falha ao copiar planilha template: ${errorData.error?.message || 'Erro desconhecido'}` 
+        // Verificar se criação foi bem-sucedida
+        if (createResponse.statusCode !== 200) {
+            console.log("Erro ao criar planilha:", createResponse.json);
+            const errorData = createResponse.json;
+            return c.json(createResponse.statusCode, { 
+                "error": `Falha ao criar planilha: ${errorData.error?.message || 'Erro desconhecido'}` 
             });
         }
 
-        // Sucesso na primeira tentativa
-        const copyData = copyResponse.json;
-        const newSheetId = copyData.id;
+        const createData = createResponse.json;
+        const newSheetId = createData.spreadsheetId;
+        const sheetUrl = createData.spreadsheetUrl;
 
+        console.log(`Planilha criada: ${newSheetId}`);
 
-        // Salvar o ID e o nome da nova planilha
+        // Popula aba Categorias
+        const populateResponse = populateCategorias(newSheetId, accessToken);
+        if (populateResponse.statusCode !== 200) {
+            console.log("Aviso: Erro ao popular categorias:", populateResponse.json);
+            // Não falha o processo, apenas loga
+        }
+
+        // Salvar informações da planilha
         googleInfo.set("sheet_id", newSheetId);
-        googleInfo.set("sheet_name", copyData.name || "Planilha Eh Tudo");
+        googleInfo.set("sheet_name", createData.properties?.title || `Planilha Eh Tudo - ${userName}`);
         $app.save(googleInfo);
 
-        console.log(`Planilha copiada com sucesso: ${newSheetId} para usuário ${userId}`);
+        console.log(`Planilha provisionada com sucesso para usuário ${userId}`);
 
-        // Corrigir mensagem para garantir nome válido
-        const nomePlanilha = (copyData.name && copyData.name.trim()) ? copyData.name : 'Planilha Eh Tudo';
         return c.json(200, {
             "success": true,
-            "message": `Planilha template copiada com sucesso para seu Google Drive! Planilha "${nomePlanilha}" criada.`,
+            "message": "Planilha criada com sucesso no seu Google Drive!",
             "sheet_id": newSheetId,
-            "sheet_name": nomePlanilha,
+            "sheet_name": createData.properties?.title || `Planilha Eh Tudo - ${userName}`,
+            "sheet_url": sheetUrl,
             "action": "created"
         });
 
     } catch (error) {
         console.log("Erro interno ao provisionar planilha:", error);
         return c.json(500, { 
-            "error": "Erro interno do servidor ao copiar planilha template" 
+            "error": "Erro interno do servidor ao criar planilha",
+            "details": error.message || String(error)
         });
     }
 }, $apis.requireAuth());

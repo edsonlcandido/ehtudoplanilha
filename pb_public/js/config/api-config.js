@@ -23,7 +23,7 @@ class ApiConfig {
   // Configurações do Google OAuth
   getGoogleOAuthConfig() {
     return {
-      scopes: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/spreadsheets',
+      scopes: 'https://www.googleapis.com/auth/drive.file',
       responseType: 'code',
       accessType: 'offline',
       prompt: 'consent',

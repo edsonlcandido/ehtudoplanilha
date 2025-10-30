@@ -40,7 +40,7 @@ function getPocketBaseUrl(): string {
 export const config: EnvConfig = {
   isDevelopment: isDevelopmentEnvironment(),
   pocketbaseUrl: getPocketBaseUrl(),
-  googleOAuthScopes: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/spreadsheets',
+  googleOAuthScopes: 'https://www.googleapis.com/auth/drive.file',
 };
 
 /**

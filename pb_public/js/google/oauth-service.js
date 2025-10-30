@@ -97,7 +97,7 @@ class GoogleOAuthService {
             // Construir URL do Google OAuth
             const clientId = envData.GOOGLE_CLIENT_ID;
             const redirectUri = envData.GOOGLE_REDIRECT_URI;
-            const scope = 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/spreadsheets';
+            const scope = 'https://www.googleapis.com/auth/drive.file';
             const state = userId; // Usado para identificar usuário após callback
             
             const oauthUrl = `https://accounts.google.com/o/oauth2/v2/auth` +
