@@ -1,0 +1,105 @@
+/**
+ * Reset & Base Styles
+ * Estilos globais para html, body e elementos base
+ */
+
+/* ========== HTML & Body ========== */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  color: var(--text-color);
+  overflow-x: hidden;
+  font-size: var(--font-size-base);
+  line-height: 1.6;
+}
+
+/* ========== Box Sizing ========== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ========== Container ========== */
+.container {
+  width: 100%;
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+}
+
+/* ========== Text Utilities ========== */
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+/* ========== Display Utilities ========== */
+.hidden {
+  display: none !important;
+}
+
+.block {
+  display: block;
+}
+
+.inline-block {
+  display: inline-block;
+}
+
+.flex {
+  display: flex;
+}
+
+/* ========== Spacing Utilities ========== */
+.margin-top-2 {
+  margin-top: var(--spacing-xl);
+}
+
+/* ========== Sections ========== */
+.section {
+  flex: 1 0 auto;
+  padding: var(--spacing-3xl) var(--spacing-md);
+}
+
+.section-light {
+  background-color: var(--light-gray);
+}
+
+.section-dark {
+  background-color: var(--dark-gray);
+}
+
+.section-main {
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ========== Ajustes para páginas internas ========== */
+body.page-interna {
+  padding-top: 70px;
+}
+
+@media (max-width: 640px) {
+  body.page-interna {
+    padding-top: 90px;
+  }
+}

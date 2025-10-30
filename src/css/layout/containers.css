@@ -1,0 +1,54 @@
+/**
+ * Containers
+ * App container e main content
+ */
+
+/* ========== App Container ========== */
+.app-container {
+  display: flex;
+  flex: 1;
+  position: relative;
+}
+
+/* ========== Main Content ========== */
+.main-content {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: auto;
+}
+
+/* Ajuste da section dentro do main-content */
+.main-content .section {
+  min-height: auto;
+  height: auto;
+  padding: var(--spacing-xl) var(--spacing-md);
+}
+
+/* Dashboard main */
+.dashboard-main {
+  position: relative;
+  min-height: 70vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: var(--spacing-xl);
+  flex-grow: 1;
+}
+
+.main-content .dashboard-main {
+  min-height: auto;
+  height: auto;
+  align-items: flex-start;
+  padding: var(--spacing-xl) var(--spacing-md) var(--spacing-md);
+}
+
+/* ========== Mobile Adjustments ========== */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    margin-bottom: var(--sidebar-mobile-height);
+    min-height: auto;
+  }
+}

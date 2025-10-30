@@ -1,0 +1,15 @@
+/**
+ * Navigation (Top Bar)
+ * Menu superior com logo e links
+ */
+
+/* ========== Nav ========== */
+nav {
+  flex-shrink: 0;
+  background-color: var(--white-color);
+  border-bottom: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Picnic CSS já gerencia a maior parte do nav */
+/* Aqui só customizações específicas se necessário */
