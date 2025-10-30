@@ -1,6 +1,8 @@
-# 📦 Resumo dos JavaScripts do Projeto Original
+# 📦 Resumo dos JavaScripts do Projeto Original (PB_PUBLIC)
 
-Análise completa dos arquivos JavaScript em `pb_public/js/` para planejar refatoração para TypeScript.
+Análise dos arquivos JavaScript **ATUALMENTE EM USO** em `pb_public/` baseada nos imports dos arquivos HTML.
+
+> ⚠️ **Nota**: Este resumo contém apenas os arquivos que estão sendo carregados/importados pelos HTMLs do pb_public. Arquivos não usados foram removidos da análise.
 
 ---
 
@@ -20,20 +22,22 @@ pb_public/js/
 
 ## 📄 **ARQUIVOS PRINCIPAIS**
 
-### **1. pb-instance.js** (11 linhas)
-**O que faz:**
-- Cria **singleton** do PocketBase
-- Importa configuração de `api-config.js`
-- Exporta instância única `pb` para uso global
+### **1. config/api-config.js** (~30 linhas) - ✅ **EM USO**
+**Usado em:** `index.html`, `login.html`, `registro.html` (inline imports)
 
-**Dependências:** `api-config.js`
+**O que faz:**
+- Exporta `baseURL` do PocketBase
+- Detecta ambiente (dev/prod) baseado no hostname
+- `getBaseURL()` - Retorna URL base
 
 **Refatoração:**
-✅ **JÁ EXISTE** em `src/services/pocketbase.ts` (mesmo conceito)
+✅ **SIMILAR** a variáveis de ambiente do Vite
 
 ---
 
-### **2. auth-service.js** (~50 linhas)
+### **2. auth-service.js** (~50 linhas) - ✅ **EM USO**
+**Usado em:** `login.html` (inline import)
+
 **O que faz:**
 - `realizarLogin(email, senha)` - Autentica via PocketBase
 - `realizarLogout()` - Limpa authStore
@@ -47,7 +51,9 @@ pb_public/js/
 
 ---
 
-### **3. menu-usuario.js** (~40 linhas)
+### **3. menu-usuario.js** (~40 linhas) - ✅ **EM USO**
+**Usado em:** `dashboard/configuracao.html` (dynamic import)
+
 **O que faz:**
 - `exibirMenuUsuario(menuElementId)` - Renderiza menu dinâmico
   - **Logado**: Mostra email + Dashboard (verde) + Configuração + Sair (vermelho)
@@ -61,7 +67,9 @@ pb_public/js/
 
 ---
 
-### **4. protecao-dashboard.js** (~30 linhas)
+### **4. protecao-dashboard.js** (~30 linhas) - ✅ **EM USO**
+**Usado em:** `dashboard/configuracao.html` (dynamic import)
+
 **O que faz:**
 - `protegerPagina()` - Verifica autenticação e redireciona para login
 - `inicializarDashboard()` - Chama proteção + inicializa menu
@@ -74,22 +82,11 @@ pb_public/js/
 
 ---
 
-### **5. dashboard-auth.js** (~61 linhas)
-**O que faz:**
-- **Alternativa** ao `protecao-dashboard.js` (parece duplicado)
-- `checkDashboardAuthentication()` - Verifica auth
-- `renderDashboardUserMenu()` - Renderiza menu simplificado (só email + Sair)
-
-**Dependências:** `window.pb` (global)
-
-**Refatoração:**
-❓ **DUPLICADO** - Verificar qual está sendo usado e consolidar
-
----
-
 ## 🔑 **GOOGLE INTEGRATION**
 
-### **6. google/oauth-service.js** (~197 linhas)
+### **5. google/oauth-service.js** (~197 linhas) - ✅ **EM USO**
+**Usado em:** `configuracao.js` (importado)
+
 **O que faz:**
 - `checkRefreshTokenStatus()` - Verifica se usuário tem refresh_token no backend
 - `getOAuthEnvironmentVariables()` - Busca CLIENT_ID e REDIRECT_URI do backend
@@ -109,7 +106,9 @@ pb_public/js/
 
 ---
 
-### **7. google/sheets-api.js** (~593 linhas) 🔥 **MEGA ARQUIVO**
+### **6. google/sheets-api.js** (~593 linhas) 🔥 **MEGA ARQUIVO** - ✅ **EM USO**
+**Usado em:** Todos os managers (configuracao, sheets-manager, lancamentos-manager, contas-manager)
+
 **O que faz:**
 
 #### **Gerenciamento de Planilhas:**
@@ -159,7 +158,9 @@ pb_public/js/
 
 ## 🎯 **MANAGERS (Lógica de Página)**
 
-### **8. configuracao.js** (~377 linhas)
+### **7. configuracao.js** (~377 linhas) - ✅ **EM USO**
+**Usado em:** `dashboard/configuracao.html` (dynamic import)
+
 **O que faz:**
 
 #### **Sidebar State:**
@@ -185,7 +186,9 @@ pb_public/js/
 
 ---
 
-### **9. sheets-manager.js** (~544 linhas)
+### **8. sheets-manager.js** (~544 linhas) - ✅ **EM USO**
+**Usado em:** `dashboard/configuracao.html` (dynamic import)
+
 **O que faz:**
 
 #### **Modal de Seleção de Planilhas:**
@@ -210,7 +213,9 @@ pb_public/js/
 
 ---
 
-### **10. lancamentos-manager.js** (~1830 linhas) 🔥 **MAIOR ARQUIVO**
+### **9. lancamentos-manager.js** (~1830 linhas) 🔥 **MAIOR ARQUIVO** - ✅ **EM USO**
+**Usado em:** `dashboard/lancamentos.html` (dynamic import)
+
 **O que faz:**
 
 #### **CRUD de Lançamentos:**
@@ -247,7 +252,9 @@ pb_public/js/
 
 ---
 
-### **11. contas-manager.js** (~542 linhas)
+### **10. contas-manager.js** (~542 linhas) - ✅ **EM USO**
+**Usado em:** `dashboard/index.html` (dynamic import)
+
 **O que faz:**
 
 #### **Visão Geral por Contas:**
@@ -275,7 +282,9 @@ pb_public/js/
 
 ## 🎨 **COMPONENTES UI**
 
-### **12. components/financial-cards.js** (~375 linhas)
+### **11. components/financial-cards.js** (~375 linhas) - ✅ **EM USO**
+**Usado em:** `dashboard/index.html` (dynamic import)
+
 **O que faz:**
 
 #### **Renderiza 3 Cards:**
@@ -303,7 +312,9 @@ pb_public/js/
 
 ---
 
-### **13. components/entry-modal.js** (~640 linhas)
+### **12. components/entry-modal.js** (~640 linhas) - ✅ **EM USO**
+**Usado em:** `dashboard/lancamentos.html` (dynamic import)
+
 **O que faz:**
 
 #### **Modal de Adicionar Lançamento:**
@@ -327,7 +338,9 @@ pb_public/js/
 
 ---
 
-### **14. components/edit-entry-modal.js** (~524 linhas)
+### **13. components/edit-entry-modal.js** (~524 linhas) - ✅ **EM USO**
+**Usado em:** `dashboard/lancamentos.html` (dynamic import)
+
 **O que faz:**
 
 #### **Modal de Editar Lançamento:**
@@ -347,36 +360,9 @@ pb_public/js/
 
 ---
 
-### **15. components/config-verificator.js** (~80 linhas?)
-**O que faz:**
-- Verifica se configuração (Google OAuth + Sheet) está completa
-- Exibe avisos se algo estiver faltando
+### **14. components/details.js** + **details-template.js** - ✅ **EM USO**
+**Usado em:** `dashboard/index.html` (dynamic import)
 
-**Refatoração:**
-❓ **VERIFICAR SE É USADO**
-
----
-
-### **16. components/orcamento-date-init.js** (~50 linhas?)
-**O que faz:**
-- Inicializa campo de orçamento (date picker) com mês atual
-
-**Refatoração:**
-❓ **VERIFICAR SE É USADO**
-
----
-
-### **17. components/top-categories-chart.js** (~150 linhas?)
-**O que faz:**
-- Gráfico de barras horizontal com categorias mais gastas
-- Usa Chart.js ou canvas nativo
-
-**Refatoração:**
-❓ **VERIFICAR SE É USADO** (pode ter sido removido)
-
----
-
-### **18. components/details.js** + **details-template.js**
 **O que faz:**
 - Modal de detalhes de lançamentos por conta
 - Usado pelo `contas-manager.js`
@@ -386,57 +372,11 @@ pb_public/js/
 
 ---
 
-## 🛠️ **SERVIÇOS AUXILIARES**
-
-### **19. accounts-service.js** (~243 linhas)
-**O que faz:**
-
-#### **Gerenciamento de Contas:**
-- `getAccounts(forceRefresh)` - Lista de contas
-  - **PRIORIDADE 1**: Busca da planilha via `getFinancialSummary().contasSugeridas`
-  - **FALLBACK**: Contas padrão hardcoded
-- `populateAccountsDatalist(datalistId)` - Popula datalist HTML
-- **Cache** de 5 minutos
-
-**Contas Padrão:**
-```js
-['Conta Corrente', 'Poupança', 'Cartão de Crédito', 
- 'Cartão de Débito', 'Dinheiro', 'PIX', 'Outras']
-```
-
-**Dependências:** `window.googleSheetsService` (global)
-
-**Refatoração:**
-❌ **NÃO EXISTE** - Precisa criar service
-
----
-
-### **20. categories-service.js** (~145 linhas)
-**O que faz:**
-
-#### **Gerenciamento de Categorias:**
-- `getCategories(forceRefresh)` - Lista de categorias
-  - **PRIORIDADE 1**: Busca da aba "Categorias" via `getCategories()`
-  - **FALLBACK**: Categorias padrão hardcoded
-- `populateCategoriesDatalist(datalistId)` - Popula datalist HTML
-- **Cache** de 5 minutos
-
-**Categorias Padrão:**
-```js
-['Alimentação', 'Transporte', 'Moradia', 'Saúde',
- 'Educação', 'Lazer', 'Vestuário', 'Outras']
-```
-
-**Dependências:** `window.googleSheetsService` (global)
-
-**Refatoração:**
-❌ **NÃO EXISTE** - Precisa criar service
-
----
-
 ## 🧰 **UTILS**
 
-### **21. utils/sheet-entries.js** (~210 linhas)
+### **15. utils/sheet-entries.js** (~210 linhas) - ✅ **EM USO**
+**Usado em:** `entry-modal.js`, `edit-entry-modal.js`, `lancamentos-manager.js`
+
 **O que faz:**
 
 #### **Conversões de Data:**
@@ -461,55 +401,46 @@ pb_public/js/
 
 ---
 
-## ⚙️ **CONFIG**
+## ⚙️ **BIBLIOTECAS AUXILIARES**
 
-### **22. config/api-config.js** (~30 linhas)
+### **16. jsonquery.bundle.js** - ✅ **EM USO**
+**Usado em:** `dashboard/index.html` (script tag)
+
 **O que faz:**
-- Exporta `baseURL` do PocketBase
-- Detecta ambiente (dev/prod) baseado no hostname
-- `getBaseURL()` - Retorna URL base
+- Biblioteca externa para queries em objetos JSON
+- Usada para filtros e agregações nos lançamentos
 
 **Refatoração:**
-✅ **SIMILAR** a variáveis de ambiente do Vite
+❓ **AVALIAR** - Pode ser substituído por funções nativas TypeScript
 
 ---
 
-## 📱 **PWA (Service Worker)**
-
-### **23. pwa/sw.js** + **registerSW.js**
-**O que faz:**
-- Service Worker para cache offline
-- Manifest para PWA
-
-**Refatoração:**
-❓ **BAIXA PRIORIDADE** - PWA pode ser implementado depois
-
----
-
-## 📊 **RESUMO ESTATÍSTICO**
+## 📊 **RESUMO ESTATÍSTICO (APENAS ARQUIVOS EM USO)**
 
 | Tipo | Quantidade | Linhas Totais |
 |------|------------|---------------|
-| **Serviços de Auth** | 3 | ~140 |
+| **Config** | 1 | ~30 |
+| **Serviços de Auth** | 2 | ~80 |
 | **Google Integration** | 2 | ~790 |
 | **Managers (Páginas)** | 4 | ~3293 |
-| **Componentes UI** | 7 | ~2200 |
-| **Serviços Auxiliares** | 2 | ~388 |
+| **Componentes UI** | 3 | ~1539 |
 | **Utils** | 1 | ~210 |
-| **Config** | 1 | ~30 |
-| **PWA** | 2 | ~100 |
-| **TOTAL** | **22** | **~7151 linhas** |
+| **Bibliotecas** | 1 | ? |
+| **TOTAL** | **14** | **~5942 linhas** |
+
+> **Removidos do resumo original:** 8 arquivos não utilizados (pb-instance.js, dashboard-auth.js, accounts-service.js, categories-service.js, config-verificator.js, orcamento-date-init.js, top-categories-chart.js, PWA files)
 
 ---
 
 ## 🚨 **PRIORIDADES DE REFATORAÇÃO**
 
-### ✅ **JÁ EXISTEM (80% completos):**
-1. `pb-instance.js` → `services/pocketbase.ts` ✅
+### ✅ **JÁ EXISTEM (Parcialmente completos):**
+1. `api-config.js` → Variáveis de ambiente Vite ✅
 2. `auth-service.js` → `services/auth.ts` ✅
 3. `menu-usuario.js` → `components/user-menu.ts` ✅
-4. `google/oauth-service.js` → `services/google-oauth.ts` ✅ (verificar completude)
-5. `google/sheets-api.js` → `services/sheets.ts` ⚠️ (PARCIAL - falta CRUD e relatórios)
+4. `protecao-dashboard.js` → Similar mas precisa revisar ⚠️
+5. `google/oauth-service.js` → `services/google-oauth.ts` ⚠️ (verificar completude)
+6. `google/sheets-api.js` → `services/sheets.ts` ⚠️ (PARCIAL - falta CRUD e relatórios)
 
 ### 🔥 **ALTA PRIORIDADE (Funcionalidades Core):**
 1. **`lancamentos-manager.js`** (1830 linhas) - Página de lançamentos
@@ -534,10 +465,8 @@ pb_public/js/
    - `getCategories()` ❌
 
 ### ⚙️ **MÉDIA PRIORIDADE (Serviços de Suporte):**
-1. **`accounts-service.js`** - Service de contas com cache
-2. **`categories-service.js`** - Service de categorias com cache
-3. **`utils/sheet-entries.js`** - Conversões Excel serial
-4. **`contas-manager.js`** - Visão geral por contas (dashboard)
+1. **`utils/sheet-entries.js`** - Conversões Excel serial (CRÍTICO para lançamentos)
+2. **`contas-manager.js`** - Visão geral por contas (dashboard)
 
 ### 🎨 **COMPONENTES UI (Podem ser feitos gradualmente):**
 1. **`financial-cards.js`** - Cards de resumo financeiro
@@ -546,9 +475,8 @@ pb_public/js/
 4. **`details.js`** - Modal de detalhes por conta
 
 ### ⏸️ **BAIXA PRIORIDADE:**
-1. PWA (service worker)
-2. Charts (se não estiver sendo usado)
-3. Código duplicado (`dashboard-auth.js` vs `protecao-dashboard.js`)
+1. Consolidar duplicados (protecao-dashboard vs implementação atual)
+2. Avaliar substituição do jsonquery.bundle.js por código nativo
 
 ---
 
@@ -573,7 +501,7 @@ getAvailableMonths(): Promise<string[]>
 getCategories(): Promise<string[]>
 ```
 
-### 3. **Criar Utils de Conversão**
+### 3. **Criar Utils de Conversão** ⚠️ **CRÍTICO**
 ```typescript
 // src/utils/excel-serial.ts
 toExcelSerial(date: Date, withTime?: boolean): number
@@ -582,28 +510,13 @@ formatCurrency(value: number): string
 formatDate(serial: number): string
 ```
 
-### 4. **Criar Services de Cache**
-```typescript
-// src/services/accounts-service.ts
-class AccountsService {
-  private cache: string[] | null = null;
-  private cacheTimestamp: number | null = null;
-  
-  async getAccounts(forceRefresh = false): Promise<string[]>
-  async populateDatalist(elementId: string): Promise<void>
-}
-
-// src/services/categories-service.ts
-// Similar
-```
-
-### 5. **Componentizar Modais**
+### 4. **Componentizar Modais**
 Criar componentes reutilizáveis:
 - `src/components/entry-form-modal.ts` - Form genérico
 - `src/components/sheets-selector-modal.ts` - Seleção de planilhas
 - `src/components/details-modal.ts` - Detalhes de conta
 
-### 6. **Criar Managers de Página**
+### 5. **Criar Managers de Página**
 ```typescript
 // src/dashboard/lancamentos.ts
 class LancamentosManager {
@@ -632,10 +545,9 @@ class ConfiguracaoManager {
 ## 📝 **PRÓXIMOS PASSOS SUGERIDOS**
 
 ### Fase 1: Completar Service Layer (1-2 semanas)
-1. Expandir `sheets.ts` com CRUD completo
-2. Criar `accounts-service.ts`
-3. Criar `categories-service.ts`
-4. Criar `utils/excel-serial.ts`
+1. ⚠️ **CRÍTICO**: Criar `utils/excel-serial.ts` (necessário para todos os lançamentos)
+2. Expandir `sheets.ts` com CRUD completo
+3. Validar `google-oauth.ts` completude
 
 ### Fase 2: Página de Configuração (1 semana)
 1. `dashboard/configuracao.ts`
@@ -662,4 +574,22 @@ class ConfiguracaoManager {
 
 ---
 
-**Total Estimado:** 6-8 semanas para refatoração completa 🎯
+**Total Estimado:** 5-7 semanas para refatoração completa 🎯
+
+## 📌 **ARQUIVOS REMOVIDOS DA ANÁLISE (NÃO USADOS)**
+
+Os seguintes arquivos existem em `pb_public/js/` mas **NÃO são importados/usados** pelos HTMLs atuais:
+
+1. ❌ **`pb-instance.js`** - Substituído por `window.pb = new PocketBase()` inline
+2. ❌ **`dashboard-auth.js`** - Duplicado/não usado (usa protecao-dashboard.js)
+3. ❌ **`accounts-service.js`** - Não importado (lógica inline nos managers)
+4. ❌ **`categories-service.js`** - Não importado (lógica inline nos managers)
+5. ❌ **`components/config-verificator.js`** - Não importado
+6. ❌ **`components/orcamento-date-init.js`** - Não importado
+7. ❌ **`components/top-categories-chart.js`** - Não importado
+8. ❌ **`components/lancamentos-patch.js`** - Não importado
+9. ❌ **`pwa/sw.js`** - PWA não ativo no pb_public
+10. ❌ **`pwa/registerSW.js`** - PWA não ativo no pb_public
+
+> **Nota**: Estes arquivos podem ser mantidos no repositório como referência, mas não precisam ser priorizados na refatoração pois não estão em uso ativo.
+
