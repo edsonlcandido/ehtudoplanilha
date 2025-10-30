@@ -63,6 +63,10 @@ const CATEGORIAS_PADRAO = [
 
 /**
  * Cria planilha programaticamente usando Sheets API v4
+ * @param {string} accessToken - Token de acesso do Google OAuth
+ * @param {string} userName - Nome do usuário para personalizar o título da planilha
+ * @returns {Object} Resposta HTTP do Google Sheets API contendo spreadsheetId, spreadsheetUrl e properties
+ *                   Status 200: Sucesso, 401: Token inválido/expirado, 403: Sem permissões
  */
 function createSpreadsheet(accessToken, userName) {
     const spreadsheetTitle = `Planilha Eh Tudo - ${userName}`;
@@ -127,6 +131,10 @@ function createSpreadsheet(accessToken, userName) {
 
 /**
  * Popula aba Categorias com dados padrão
+ * @param {string} spreadsheetId - ID da planilha criada
+ * @param {string} accessToken - Token de acesso do Google OAuth
+ * @returns {Object} Resposta HTTP do Google Sheets API
+ *                   Status 200: Sucesso, 401: Token inválido/expirado, 400: ID inválido
  */
 function populateCategorias(spreadsheetId, accessToken) {
     const requestBody = {
@@ -148,6 +156,9 @@ function populateCategorias(spreadsheetId, accessToken) {
 
 /**
  * Renova access token usando refresh token
+ * @param {string} refreshToken - Refresh token do Google OAuth
+ * @returns {Object} Resposta HTTP contendo novo access_token, expires_in e token_type
+ *                   Status 200: Sucesso com novo token, 400: Refresh token inválido/expirado
  */
 function refreshAccessToken(refreshToken) {
     const clientId = $os.getenv("GOOGLE_CLIENT_ID");
@@ -265,8 +276,7 @@ routerAdd("POST", "/provision-sheet", (c) => {
         // Popula aba Categorias
         const populateResponse = populateCategorias(newSheetId, accessToken);
         if (populateResponse.statusCode !== 200) {
-            console.log("Aviso: Erro ao popular categorias:", populateResponse.json);
-            // Não falha o processo, apenas loga
+            console.log("Aviso: Falha ao popular categorias padrão. Planilha criada mas categorias devem ser adicionadas manualmente:", populateResponse.json);
         }
 
         // Salvar informações da planilha
