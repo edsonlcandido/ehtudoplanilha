@@ -117,7 +117,7 @@ function updateSheetInfo(): void {
 function showSuccessMessage(message: string): void {
   const alertDiv = document.createElement('div');
   alertDiv.className = 'alert success';
-  alertDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+  alertDiv.style.cssText = 'position: fixed; top: 80px; right: 20px; z-index: 99999; min-width: 300px; max-width: 500px;';
   alertDiv.innerHTML = `
     <strong>✅ Sucesso!</strong>
     <p>${message}</p>
@@ -136,7 +136,7 @@ function showSuccessMessage(message: string): void {
 function showErrorMessage(message: string): void {
   const alertDiv = document.createElement('div');
   alertDiv.className = 'alert error';
-  alertDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+  alertDiv.style.cssText = 'position: fixed; top: 80px; right: 20px; z-index: 99999; min-width: 300px; max-width: 500px;';
   alertDiv.innerHTML = `
     <strong>❌ Erro!</strong>
     <p>${message}</p>
@@ -209,14 +209,18 @@ async function createSheetAutomatically(): Promise<void> {
     
     console.log('✅ Planilha criada:', result);
     
+    // Backend retorna sheet_name (snake_case), converter para sheetName (camelCase)
+    const sheetName = (result as any).sheet_name || result.sheetName || 'Planilha Eh Tudo';
+    const sheetId = (result as any).sheet_id || result.sheetId;
+    
     // Atualizar estado local
     pageState.hasSheetId = true;
-    pageState.sheetId = result.sheetId;
-    pageState.sheetName = result.sheetName;
+    pageState.sheetId = sheetId;
+    pageState.sheetName = sheetName;
     
     updateSheetInfo();
     
-    showSuccessMessage(`Planilha "${result.sheetName}" criada com sucesso! Você já pode começar a usar.`);
+    showSuccessMessage(`Planilha "${sheetName}" criada com sucesso! Você já pode começar a usar.`);
     
   } catch (error: any) {
     console.error('❌ Erro ao criar planilha automaticamente:', error);

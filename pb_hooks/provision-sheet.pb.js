@@ -5,192 +5,173 @@
  * Usando escopo drive.file (sem necessidade de validação do Google)
  */
 
-// Estrutura de categorias padrão
-const CATEGORIAS_PADRAO = [
-    ["Categoria", "Tipo"], // Header
-    ["ALIMENTAÇÃO", "PRECISO"],
-    ["SUPERMERCADO", "PRECISO"],
-    ["MERCADO", "PRECISO"],
-    ["RESTAURANTE", "QUERO"],
-    ["DELIVERY", "QUERO"],
-    ["PADARIA", "PRECISO"],
-    ["AÇOUGUE", "PRECISO"],
-    ["FEIRA", "PRECISO"],
-    ["SAÚDE", "PRECISO"],
-    ["FARMÁCIA", "PRECISO"],
-    ["MÉDICO", "PRECISO"],
-    ["DENTISTA", "PRECISO"],
-    ["ACADEMIA", "QUERO"],
-    ["TERAPIA", "PRECISO"],
-    ["TRANSPORTE", "PRECISO"],
-    ["COMBUSTÍVEL", "PRECISO"],
-    ["ESTACIONAMENTO", "PRECISO"],
-    ["PEDÁGIO", "PRECISO"],
-    ["TRANSPORTE PÚBLICO", "PRECISO"],
-    ["APLICATIVO", "PRECISO"],
-    ["MORADIA", "PRECISO"],
-    ["ALUGUEL", "PRECISO"],
-    ["CONDOMÍNIO", "PRECISO"],
-    ["ÁGUA", "PRECISO"],
-    ["LUZ", "PRECISO"],
-    ["GÁS", "PRECISO"],
-    ["INTERNET", "PRECISO"],
-    ["TELEFONE", "PRECISO"],
-    ["EDUCAÇÃO", "PRECISO"],
-    ["ESCOLA", "PRECISO"],
-    ["CURSO", "QUERO"],
-    ["LIVROS", "QUERO"],
-    ["MATERIAL ESCOLAR", "PRECISO"],
-    ["LAZER", "QUERO"],
-    ["CINEMA", "QUERO"],
-    ["STREAMING", "QUERO"],
-    ["VIAGEM", "QUERO"],
-    ["PRESENTE", "QUERO"],
-    ["VESTUÁRIO", "QUERO"],
-    ["ROUPAS", "QUERO"],
-    ["CALÇADOS", "QUERO"],
-    ["BELEZA", "QUERO"],
-    ["INVESTIMENTOS", "INVESTIMENTOS"],
-    ["POUPANÇA", "INVESTIMENTOS"],
-    ["PREVIDÊNCIA", "INVESTIMENTOS"],
-    ["RENDA", "RENDA"],
-    ["SALÁRIO", "RENDA"],
-    ["FREELANCE", "RENDA"],
-    ["OUTROS", "QUERO"],
-    ["TRANSFERÊNCIA", "TRANSFERÊNCIA"],
-    ["SALDO INICIAL", "SALDO"]
-];
+routerAdd("POST", "/provision-sheet", (c) => {
+    // Estrutura de categorias padrão
+    const CATEGORIAS_PADRAO = [
+        ["Categoria", "Tipo"], // Header
+        ["Salário", "RENDA"],
+        ["13º salário", "RENDA"],
+        ["Férias", "RENDA"],
+        ["Horas extras", "RENDA"],
+        ["Pensão", "RENDA"],
+        ["Aluguel recebido", "RENDA"],
+        ["Outros rendimentos", "RENDA"],
+        ["Aluguel", "PRECISO"],
+        ["Prestação da casa", "PRECISO"],
+        ["Condomínio", "PRECISO"],
+        ["Seguro da casa", "PRECISO"],
+        ["IPTU", "PRECISO"],
+        ["Luz", "PRECISO"],
+        ["Água", "PRECISO"],
+        ["Gás", "PRECISO"],
+        ["Internet", "PRECISO"],
+        ["Telefone celular", "PRECISO"],
+        ["Supermercado", "PRECISO"],
+        ["Plano de saúde", "PRECISO"],
+        ["Medicamentos", "PRECISO"],
+        ["Médico / Dentista / Hospital", "PRECISO"],
+        ["Transporte", "PRECISO"],
+        ["Prestação do carro", "PRECISO"],
+        ["Seguro do carro", "PRECISO"],
+        ["Seguro de vida", "PRECISO"],
+        ["Empréstimos", "PRECISO"],
+        ["Diarista", "PRECISO"],
+        ["Colégio / Faculdade / Curso", "PRECISO"],
+        ["Material escolar", "PRECISO"],
+        ["Roupas / Calçados / Acessórios", "QUERO"],
+        ["Cabeleireiro / Manicure / Esteticista", "QUERO"],
+        ["Delivery", "QUERO"],
+        ["Restaurantes / Bares", "QUERO"],
+        ["Lazer (Cinema, Teatro, Shows, Clube)", "QUERO"],
+        ["Academia", "QUERO"],
+        ["Presentes", "QUERO"],
+        ["TV e Streaming", "QUERO"],
+        ["Doações", "QUERO"],
+        ["Serviços diversos", "QUERO"],
+        ["Viagens", "QUERO"],
+        ["Imprevistos", "QUERO"],
+        ["Outras", "QUERO"],
+        ["Aposentadoria", "INVESTIMENTOS"],
+        ["Fundo de emergência", "INVESTIMENTOS"],
+        ["Investimentos", "INVESTIMENTOS"],
+        ["Patrimônio", "INVESTIMENTOS"],
+        ["Transferência", "TRANSFERÊNCIA"],
+        ["Saldo", "SALDO"]
+    ];
 
-/**
- * Cria planilha programaticamente usando Sheets API v4
- * @param {string} accessToken - Token de acesso do Google OAuth
- * @param {string} userName - Nome do usuário para personalizar o título da planilha
- * @returns {Object} Resposta HTTP do Google Sheets API contendo spreadsheetId, spreadsheetUrl e properties
- *                   Status 200: Sucesso, 401: Token inválido/expirado, 403: Sem permissões
- */
-function createSpreadsheet(accessToken, userName) {
-    const spreadsheetTitle = `Planilha Eh Tudo - ${userName}`;
-    
-    const requestBody = {
-        properties: {
-            title: spreadsheetTitle,
-            locale: "pt_BR",
-            timeZone: "America/Sao_Paulo"
-        },
-        sheets: [
-            {
-                properties: {
-                    title: "Lançamentos",
-                    gridProperties: {
-                        rowCount: 1000,
-                        columnCount: 7,
-                        frozenRowCount: 1
+    /**
+     * Cria planilha programaticamente usando Sheets API v4
+     */
+    const createSpreadsheet = (accessToken) => {
+        const spreadsheetTitle = `Planilha Eh Tudo`;
+        
+        const requestBody = {
+            properties: {
+                title: spreadsheetTitle,
+                locale: "pt_BR",
+                timeZone: "America/Sao_Paulo"
+            },
+            sheets: [
+                {
+                    properties: {
+                        title: "Lançamentos"
                     }
                 },
-                data: [{
-                    startRow: 0,
-                    startColumn: 0,
-                    rowData: [{
-                        values: [
-                            { userEnteredValue: { stringValue: "Data" }, userEnteredFormat: { textFormat: { bold: true } } },
-                            { userEnteredValue: { stringValue: "Conta" }, userEnteredFormat: { textFormat: { bold: true } } },
-                            { userEnteredValue: { stringValue: "Valor" }, userEnteredFormat: { textFormat: { bold: true } } },
-                            { userEnteredValue: { stringValue: "Descrição" }, userEnteredFormat: { textFormat: { bold: true } } },
-                            { userEnteredValue: { stringValue: "Categoria" }, userEnteredFormat: { textFormat: { bold: true } } },
-                            { userEnteredValue: { stringValue: "Orçamento" }, userEnteredFormat: { textFormat: { bold: true } } },
-                            { userEnteredValue: { stringValue: "Observação" }, userEnteredFormat: { textFormat: { bold: true } } }
-                        ]
-                    }]
-                }]
-            },
-            {
-                properties: {
-                    title: "Categorias",
-                    gridProperties: {
-                        rowCount: 100,
-                        columnCount: 2,
-                        frozenRowCount: 1
+                {
+                    properties: {
+                        title: "Categorias"
                     }
                 }
-            }
-        ]
+            ]
+        };
+
+        const createResponse = $http.send({
+            url: "https://sheets.googleapis.com/v4/spreadsheets",
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${accessToken}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(requestBody)
+        });
+
+        return createResponse;
     };
 
-    const createResponse = $http.send({
-        url: "https://sheets.googleapis.com/v4/spreadsheets",
-        method: "POST",
-        headers: {
-            "Authorization": `Bearer ${accessToken}`,
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(requestBody)
-    });
+    /**
+     * Popula aba Lançamentos com cabeçalho
+     */
+    const populateLancamentos = (spreadsheetId, accessToken) => {
+        const requestBody = {
+            values: [["data", "conta", "valor", "descrição", "categoria", "orçamento", "observação"]]
+        };
 
-    return createResponse;
-}
+        const populateResponse = $http.send({
+            url: `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Lançamentos!A1:G1?valueInputOption=RAW`,
+            method: "PUT",
+            headers: {
+                "Authorization": `Bearer ${accessToken}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(requestBody)
+        });
 
-/**
- * Popula aba Categorias com dados padrão
- * @param {string} spreadsheetId - ID da planilha criada
- * @param {string} accessToken - Token de acesso do Google OAuth
- * @returns {Object} Resposta HTTP do Google Sheets API
- *                   Status 200: Sucesso, 401: Token inválido/expirado, 400: ID inválido
- */
-function populateCategorias(spreadsheetId, accessToken) {
-    const requestBody = {
-        values: CATEGORIAS_PADRAO
+        return populateResponse;
     };
 
-    const populateResponse = $http.send({
-        url: `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Categorias!A1:B${CATEGORIAS_PADRAO.length}?valueInputOption=RAW`,
-        method: "PUT",
-        headers: {
-            "Authorization": `Bearer ${accessToken}`,
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(requestBody)
-    });
+    /**
+     * Popula aba Categorias com dados padrão
+     */
+    const populateCategorias = (spreadsheetId, accessToken) => {
+        const requestBody = {
+            values: CATEGORIAS_PADRAO
+        };
 
-    return populateResponse;
-}
+        const populateResponse = $http.send({
+            url: `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Categorias!A1:B${CATEGORIAS_PADRAO.length}?valueInputOption=RAW`,
+            method: "PUT",
+            headers: {
+                "Authorization": `Bearer ${accessToken}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(requestBody)
+        });
 
-/**
- * Renova access token usando refresh token
- * @param {string} refreshToken - Refresh token do Google OAuth
- * @returns {Object} Resposta HTTP contendo novo access_token, expires_in e token_type
- *                   Status 200: Sucesso com novo token, 400: Refresh token inválido/expirado
- */
-function refreshAccessToken(refreshToken) {
-    const clientId = $os.getenv("GOOGLE_CLIENT_ID");
-    const clientSecret = $os.getenv("GOOGLE_CLIENT_SECRET");
+        return populateResponse;
+    };
 
-    const refreshRequestBody = [
-        `refresh_token=${encodeURIComponent(refreshToken)}`,
-        `client_id=${encodeURIComponent(clientId)}`,
-        `client_secret=${encodeURIComponent(clientSecret)}`,
-        `grant_type=refresh_token`
-    ].join('&');
+    /**
+     * Renova access token usando refresh token
+     */
+    const refreshAccessToken = (refreshToken) => {
+        const clientId = $os.getenv("GOOGLE_CLIENT_ID");
+        const clientSecret = $os.getenv("GOOGLE_CLIENT_SECRET");
 
-    const tokenResponse = $http.send({
-        url: "https://oauth2.googleapis.com/token",
-        method: "POST",
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: refreshRequestBody
-    });
+        const refreshRequestBody = [
+            `refresh_token=${encodeURIComponent(refreshToken)}`,
+            `client_id=${encodeURIComponent(clientId)}`,
+            `client_secret=${encodeURIComponent(clientSecret)}`,
+            `grant_type=refresh_token`
+        ].join('&');
 
-    return tokenResponse;
-}
+        const tokenResponse = $http.send({
+            url: "https://oauth2.googleapis.com/token",
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: refreshRequestBody
+        });
 
-routerAdd("POST", "/provision-sheet", (c) => {
+        return tokenResponse;
+    };
+
     const authUser = c.auth;
     if (!authUser || !authUser.id) {
         return c.json(401, { "error": "Usuário não autenticado" });
     }
 
     const userId = authUser.id;
-    const userName = authUser.get("name") || "Usuário";
 
     try {
         // Buscar informações do Google para o usuário
@@ -235,7 +216,7 @@ routerAdd("POST", "/provision-sheet", (c) => {
         console.log(`🔄 [provision-sheet] Criando nova planilha para usuário ${userId}`);
 
         // Criar planilha
-        let createResponse = createSpreadsheet(accessToken, userName);
+        let createResponse = createSpreadsheet(accessToken);
 
         console.log(`📊 [provision-sheet] Resposta da criação: status ${createResponse.statusCode}`);
 
@@ -273,7 +254,7 @@ routerAdd("POST", "/provision-sheet", (c) => {
             console.log(`✅ [provision-sheet] Token renovado com sucesso, tentando criar planilha novamente...`);
 
             // Tentar criar planilha novamente
-            createResponse = createSpreadsheet(accessToken, userName);
+            createResponse = createSpreadsheet(accessToken);
             console.log(`📊 [provision-sheet] Resposta da segunda tentativa: status ${createResponse.statusCode}`);
         }
 
@@ -293,6 +274,16 @@ routerAdd("POST", "/provision-sheet", (c) => {
 
         console.log(`✅ [provision-sheet] Planilha criada com sucesso: ${newSheetId}`);
 
+        // Popula aba Lançamentos com cabeçalho
+        console.log(`📋 [provision-sheet] Populando cabeçalho de Lançamentos...`);
+        const populateLancamentosResponse = populateLancamentos(newSheetId, accessToken);
+        if (populateLancamentosResponse.statusCode !== 200) {
+            console.log(`⚠️ [provision-sheet] Aviso: Falha ao popular Lançamentos. Status: ${populateLancamentosResponse.statusCode}`);
+            console.log(`⚠️ [provision-sheet] Resposta:`, populateLancamentosResponse.json);
+        } else {
+            console.log(`✅ [provision-sheet] Cabeçalho de Lançamentos populado com sucesso`);
+        }
+
         // Popula aba Categorias
         console.log(`📋 [provision-sheet] Populando categorias...`);
         const populateResponse = populateCategorias(newSheetId, accessToken);
@@ -305,7 +296,7 @@ routerAdd("POST", "/provision-sheet", (c) => {
 
         // Salvar informações da planilha
         googleInfo.set("sheet_id", newSheetId);
-        googleInfo.set("sheet_name", createData.properties?.title || `Planilha Eh Tudo - ${userName}`);
+        googleInfo.set("sheet_name", createData.properties?.title || `Planilha Eh Tudo`);
         $app.save(googleInfo);
 
         console.log(`✅ [provision-sheet] Planilha provisionada com sucesso para usuário ${userId}`);
@@ -316,7 +307,7 @@ routerAdd("POST", "/provision-sheet", (c) => {
             "success": true,
             "message": "Planilha criada com sucesso no seu Google Drive!",
             "sheet_id": newSheetId,
-            "sheet_name": createData.properties?.title || `Planilha Eh Tudo - ${userName}`,
+            "sheet_name": createData.properties?.title || `Planilha Eh Tudo`,
             "sheet_url": sheetUrl,
             "action": "created"
         });
