@@ -87,7 +87,7 @@ function updateSheetInfo(): void {
     elements.currentSheetName.style.color = '#27ae60';
     
     elements.currentSheetDescription.textContent = 
-      'Sua planilha está pronta para uso. Clique no botão abaixo para abrir no Google Drive.';
+      'Sua planilha está pronta para uso. Clique no botão abaixo para abrir no Google Drive ou alterar a planilha vinculada.';
     
     // Mostrar link para abrir planilha
     if (elements.openSheetLink && pageState.sheetId) {
@@ -95,12 +95,12 @@ function updateSheetInfo(): void {
       elements.openSheetLink.style.display = 'block';
     }
     
-    // Esconder botões de criar/selecionar
+    // Esconder botão de criar, MAS MOSTRAR botão de carregar planilhas
     if (elements.createSheetButton) {
       elements.createSheetButton.style.display = 'none';
     }
     if (elements.loadSheetsButton) {
-      elements.loadSheetsButton.style.display = 'none';
+      elements.loadSheetsButton.style.display = 'block'; // SEMPRE MOSTRAR para permitir trocar
     }
     if (elements.sheetsList) {
       elements.sheetsList.style.display = 'none';
@@ -268,7 +268,8 @@ async function handleListSheets(): Promise<void> {
     if (sheets.length === 0) {
       showErrorMessage('Nenhuma planilha encontrada no seu Google Drive.');
       if (elements.sheetsList) {
-        elements.sheetsList.innerHTML = '<p style="color: #999; text-align: center; padding: 1rem;">Nenhuma planilha encontrada.</p>';
+        elements.sheetsList.innerHTML = '<p style="color: #999; text-align: center; padding: 1rem;">Nenhuma planilha encontrada. Crie uma nova ou verifique suas permissões no Google Drive.</p>';
+        elements.sheetsList.style.display = 'block';
       }
     } else {
       // Renderizar lista de planilhas
@@ -322,9 +323,25 @@ async function handleListSheets(): Promise<void> {
     
   } catch (error: any) {
     console.error('❌ Erro ao listar planilhas:', error);
-    showErrorMessage(
-      error?.message || 'Erro ao listar planilhas. Tente novamente.'
-    );
+    
+    let errorMessage = 'Erro ao listar planilhas. ';
+    
+    // Tentar extrair mensagem de erro mais específica
+    if (error?.data?.error) {
+      errorMessage += error.data.error;
+    } else if (error?.message) {
+      errorMessage += error.message;
+    } else if (error?.status === 401) {
+      errorMessage += 'Token de acesso expirado. Tente revogar e autorizar novamente.';
+    } else if (error?.status === 404) {
+      errorMessage += 'Autorização com Google Drive não encontrada. Autorize primeiro.';
+    } else if (error?.status === 400) {
+      errorMessage += 'Falha ao acessar Google Drive. Verifique se você autorizou corretamente e tente revogar e autorizar novamente se necessário.';
+    } else {
+      errorMessage += 'Tente novamente.';
+    }
+    
+    showErrorMessage(errorMessage);
     
     // Reabilitar botão em caso de erro
     if (elements.loadSheetsButton) {
@@ -423,7 +440,15 @@ async function handleRevokeAuth(): Promise<void> {
     updateGoogleAuthButton();
     updateSheetInfo();
     
-    showSuccessMessage('Autorização revogada com sucesso! Você pode autorizar novamente quando quiser.');
+    showSuccessMessage(
+      'Autorização revogada com sucesso!\n\n' +
+      'Para usar o sistema novamente, clique em "🔑 Autorizar com Google" e faça login com sua conta Google.'
+    );
+    
+    // Recarregar a página após 3 segundos para limpar tudo
+    setTimeout(() => {
+      window.location.reload();
+    }, 3000);
     
   } catch (error: any) {
     console.error('❌ Erro ao revogar autorização:', error);

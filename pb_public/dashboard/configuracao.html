@@ -86,14 +86,29 @@
                             <div>
                                 <h3>Planilha</h3>
                                 <p id="current-sheet-name" style="font-weight: bold; color: #e74c3c;">Nenhuma planilha configurada</p>
-                                <p id="current-sheet-description">Autorize o Google Drive para criar sua planilha automaticamente.</p>
+                                <p id="current-sheet-description">Autorize o Google Drive para gerenciar suas planilhas.</p>
                             </div>
                             <div class="sheet-actions"
-                                style="margin-top: auto; padding-top: 1.5rem;">
+                                style="margin-top: auto; padding-top: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem;">
+                                <!-- Botão para abrir planilha configurada -->
                                 <a id="openSheetLink" href="#" target="_blank" class="button primary large" 
                                    style="width: 100%; display: none; text-align: center; text-decoration: none;">
                                     🔗 Abrir Planilha no Google Drive
                                 </a>
+                                
+                                <!-- Botões para criar ou selecionar planilha -->
+                                <button id="create-sheet-button" class="button success" 
+                                        style="width: 100%; display: none;">
+                                    ➕ Criar Nova Planilha
+                                </button>
+                                
+                                <button id="load-sheets-button" class="button" 
+                                        style="width: 100%; display: none;">
+                                    📋 Carregar Minhas Planilhas
+                                </button>
+                                
+                                <!-- Container para lista de planilhas -->
+                                <div id="sheets-list" style="display: none; margin-top: 1rem;"></div>
                             </div>
                         </div>
 

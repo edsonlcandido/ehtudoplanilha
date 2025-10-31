@@ -8,11 +8,12 @@
     <title>Lançamentos - Seu App Financeiro</title>
   <script type="module" crossorigin src="/assets/lancamentos.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/auth.js">
+  <link rel="modulepreload" crossorigin href="/assets/entry-modal.js">
   <link rel="modulepreload" crossorigin href="/assets/user-menu.js">
   <link rel="stylesheet" crossorigin href="/assets/auth2.css">
+  <link rel="stylesheet" crossorigin href="/assets/entry-modal.css">
   <link rel="stylesheet" crossorigin href="/assets/lancamentos.css">
   <link rel="stylesheet" crossorigin href="/assets/dashboard2.css">
-  <link rel="stylesheet" crossorigin href="/assets/modal-entry.css">
 </head>
 
 <body>
@@ -118,6 +119,11 @@
             </section>
         </main>
     </div>
+
+    <!-- Botão flutuante de adicionar lançamento -->
+    <button id="openEntryModal" class="fab-button" aria-label="Adicionar lançamento">
+        +
+    </button>
 
     <!-- Modal de divisão de parcelas -->
     <div id="splitModal" class="modal" style="display:none; align-items:center; justify-content:center;">
