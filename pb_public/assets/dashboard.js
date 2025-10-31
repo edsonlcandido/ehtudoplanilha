@@ -1,0 +1,1 @@
+import"./auth.js";/* empty css          *//* empty css           */import{r as o}from"./user-menu.js";function e(){o(),console.log("✅ Dashboard inicializado")}document.readyState==="loading"?document.addEventListener("DOMContentLoaded",e):e();

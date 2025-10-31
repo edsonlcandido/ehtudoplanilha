@@ -9,10 +9,11 @@
 routerAdd("GET", "/env-variables", (c) => {
   const authUser = c.auth;
   console.log("Auth User:", authUser.id);
+  // IMPORTANTE: Não retornar CLIENT_SECRET para o frontend!
   return c.json(200, {
     GOOGLE_CLIENT_ID: $os.getenv("GOOGLE_CLIENT_ID"),
-    GOOGLE_CLIENT_SECRET: $os.getenv("GOOGLE_CLIENT_SECRET"),
     GOOGLE_REDIRECT_URI: $os.getenv("GOOGLE_REDIRECT_URI")
+    // CLIENT_SECRET é usado APENAS no backend
   })
 }, $apis.requireAuth())
 
@@ -378,18 +379,38 @@ routerAdd("GET", "/config-status", (c) => {
       { userId }
     );
 
-    const missing = [];
-    if (!googleInfo.get("access_token") || googleInfo.get("access_token").trim() === "") missing.push("access_token");
-    if (!googleInfo.get("refresh_token") || googleInfo.get("refresh_token").trim() === "") missing.push("refresh_token");
-    if (!googleInfo.get("sheet_id") || googleInfo.get("sheet_id").trim() === "") missing.push("sheet_id");
-    if (!googleInfo.get("sheet_name") || googleInfo.get("sheet_name").trim() === "") missing.push("sheet_name");
+    const hasRefreshToken = googleInfo && 
+                           googleInfo.get("refresh_token") && 
+                           googleInfo.get("refresh_token").trim() !== "";
+    
+    const hasSheetId = googleInfo && 
+                      googleInfo.get("sheet_id") && 
+                      googleInfo.get("sheet_id").trim() !== "";
+    
+    const sheetId = hasSheetId ? googleInfo.get("sheet_id") : undefined;
+    const sheetName = hasSheetId ? googleInfo.get("sheet_name") : undefined;
 
-    const validConfig = missing.length === 0;
-    return c.json(200, { validConfig: validConfig, missing: missing });
+    console.log("📊 [config-status] Status do usuário:", {
+      userId,
+      hasRefreshToken,
+      hasSheetId,
+      sheetId: sheetId ? "✓" : "✗",
+      sheetName: sheetName || "N/A"
+    });
+
+    return c.json(200, {
+      hasRefreshToken,
+      hasSheetId,
+      sheetId,
+      sheetName
+    });
   } catch (error) {
-    console.log("Erro ao verificar configuração:", error);
-    // Em caso de erro, considera configuração incompleta
-    return c.json(200, { validConfig: false, missing: ["registro_nao_encontrado"] });
+    console.log("❌ [config-status] Erro ou registro não encontrado:", error);
+    // Registro não encontrado - usuário ainda não autorizou
+    return c.json(200, {
+      hasRefreshToken: false,
+      hasSheetId: false
+    });
   }
 }, $apis.requireAuth());
 

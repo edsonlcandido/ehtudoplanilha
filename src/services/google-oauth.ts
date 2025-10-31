@@ -2,7 +2,15 @@ import { pb } from '../main';
 import { config, API_ENDPOINTS } from '../config/env';
 
 /**
- * Interface para variáveis de ambiente OAuth
+ * Interface para variáveis de ambiente OAuth (resposta do backend)
+ */
+interface OAuthEnvVariablesResponse {
+  GOOGLE_CLIENT_ID: string;
+  GOOGLE_REDIRECT_URI: string;
+}
+
+/**
+ * Interface para variáveis de ambiente OAuth (formato interno)
  */
 export interface OAuthEnvVariables {
   clientId: string;
@@ -19,11 +27,17 @@ export class GoogleOAuthService {
    */
   static async getEnvVariables(): Promise<OAuthEnvVariables> {
     try {
-      const response = await pb.send<OAuthEnvVariables>(
+      const response = await pb.send<OAuthEnvVariablesResponse>(
         API_ENDPOINTS.envVariables,
         { method: 'GET' }
       );
-      return response;
+      
+      // Mapear resposta do backend para formato esperado
+      return {
+        clientId: response.GOOGLE_CLIENT_ID,
+        redirectUri: response.GOOGLE_REDIRECT_URI,
+        scopes: config.googleOAuthScopes,
+      };
     } catch (error) {
       console.error('[GoogleOAuth] Erro ao obter variáveis de ambiente:', error);
       throw error;
@@ -34,19 +48,33 @@ export class GoogleOAuthService {
    * Constrói a URL de autorização do Google OAuth
    */
   static async buildAuthUrl(userId: string): Promise<string> {
+    console.log('[GoogleOAuth] Obtendo variáveis de ambiente...');
     const envVars = await this.getEnvVariables();
+    
+    console.log('[GoogleOAuth] Variáveis obtidas:', {
+      clientId: envVars.clientId ? '✓ OK' : '✗ UNDEFINED',
+      redirectUri: envVars.redirectUri ? '✓ OK' : '✗ UNDEFINED',
+      scopes: envVars.scopes,
+    });
+    
+    if (!envVars.clientId || !envVars.redirectUri) {
+      throw new Error('Client ID ou Redirect URI não configurados no backend');
+    }
     
     const params = new URLSearchParams({
       client_id: envVars.clientId,
       redirect_uri: envVars.redirectUri,
       response_type: 'code',
-      scope: envVars.scopes || config.googleOAuthScopes,
+      scope: envVars.scopes,
       access_type: 'offline',
       prompt: 'consent',
       state: userId, // Passa o user_id como state para recuperar no callback
     });
 
-    return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+    console.log('[GoogleOAuth] URL de autorização construída:', authUrl);
+    
+    return authUrl;
   }
 
   /**
