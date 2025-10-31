@@ -27,6 +27,51 @@ export interface GoogleInfo extends RecordModel {
 }
 
 /**
+ * Modelo de lançamento financeiro
+ */
+export interface SheetEntry {
+  data: string | number;
+  conta: string;
+  valor: number;
+  descricao: string;
+  categoria: string;
+  orcamento: string | number;
+  obs?: string;
+  rowIndex?: number;
+}
+
+/**
+ * Dados do formulário de lançamento
+ */
+export interface EntryFormData {
+  data: string;
+  conta: string;
+  valor: number;
+  descricao: string;
+  categoria: string;
+  orcamento: string;
+  obs?: string;
+}
+
+/**
+ * Payload para enviar ao backend
+ */
+export interface EntryPayload {
+  data: string;
+  conta: string;
+  valor: number;
+  descricao: string;
+  categoria: string;
+  orcamento: string | number;
+  obs?: string;
+}
+
+/**
+ * Callback quando lançamento é adicionado
+ */
+export type OnEntryAddedCallback = (result: any) => void;
+
+/**
  * Instância global do PocketBase
  */
 export type PocketBaseInstance = PocketBase;
