@@ -54,7 +54,7 @@ export function toExcelSerial(date: Date, dataHora: boolean = false): number {
 
 /**
  * Converte Date JavaScript para Excel Serial INTEIRO (somente dia, sem hora)
- * USA MEIO-DIA (12:00) para evitar que variações de timezone mudem o dia
+ * Usa UTC 00:00 para garantir consistência (IGUAL ao código original pb_public_)
  * 
  * Esta função é ESSENCIAL para o campo 'orcamento' que deve ser sempre
  * um número inteiro representando apenas o dia.
@@ -70,13 +70,12 @@ export function toExcelSerialDia(date: Date): number {
   if (!(date instanceof Date)) return NaN;
   
   // Usa UTC para garantir consistência independente do timezone local
-  // Meio-dia (12:00) garante que mesmo com +/- 12h de timezone, o dia não muda
   const y = date.getFullYear();
   const m = date.getMonth();
   const d = date.getDate();
   
-  // Cria data às 12:00 UTC para estabilidade
-  const target = Date.UTC(y, m, d, 12, 0, 0);
+  // Cria data às 00:00 UTC (igual ao código original pb_public_)
+  const target = Date.UTC(y, m, d);
   const base = Date.UTC(1899, 11, 31);
   
   let days = Math.round((target - base) / 86400000);

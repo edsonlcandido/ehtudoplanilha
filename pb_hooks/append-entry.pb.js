@@ -53,7 +53,7 @@ routerAdd("POST", "/append-entry", (c) => {
                 requestData.valor,
                 requestData.descricao,
                 requestData.categoria || '',
-                (Number.isFinite(requestData.orcamento) ? Math.trunc(requestData.orcamento) : ''), // garante inteiro
+                requestData.orcamento || '', // aceita string ou número
                 ''
             ]
         ];

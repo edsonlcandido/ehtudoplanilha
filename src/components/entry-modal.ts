@@ -5,7 +5,6 @@
 
 import config from '../config/env';
 import { pb } from '../main';
-import { toExcelSerialDia } from '../utils/date-helpers';
 import type { EntryFormData, EntryPayload, OnEntryAddedCallback, SheetEntry } from '../types';
 
 // Singleton instance
@@ -459,6 +458,31 @@ class EntryModal {
   }
 
   /**
+   * Formata datetime-local "2025-10-31T14:41" para "31/10/2025 14:41"
+   */
+  private formatDateTimeLocal(datetimeStr: string): string {
+    // "2025-10-31T14:41" -> ["2025-10-31", "14:41"]
+    const [datePart, timePart] = datetimeStr.split('T');
+    
+    // "2025-10-31" -> ["2025", "10", "31"]
+    const [year, month, day] = datePart.split('-');
+    
+    // Retorna no formato brasileiro: "31/10/2025 14:41"
+    return `${day}/${month}/${year} ${timePart}`;
+  }
+
+  /**
+   * Formata date "2025-10-31" para "31/10/2025"
+   */
+  private formatDate(dateStr: string): string {
+    // "2025-10-31" -> ["2025", "10", "31"]
+    const [year, month, day] = dateStr.split('-');
+    
+    // Retorna no formato brasileiro: "31/10/2025"
+    return `${day}/${month}/${year}`;
+  }
+
+  /**
    * Define o estado do sinal (despesa ou receita)
    */
   private setSignState(isExpense: boolean): void {
@@ -495,18 +519,19 @@ class EntryModal {
     const orcamentoStr = formData.get('orcamento') as string; // "2025-10-31"
     const valorStr = formData.get('valor') as string;
     
-    // Converte orçamento para serial INTEIRO (igual ao original)
-    const [ano, mes, dia] = orcamentoStr.split('-').map(n => parseInt(n, 10));
-    const dataSimples = new Date(ano, mes - 1, dia); // 00:00 local
-    const orcamentoSerial = toExcelSerialDia(dataSimples); // sempre inteiro
+    // Formata data de "2025-10-31T14:41" para "31/10/2025 14:41"
+    const dataFormatada = this.formatDateTimeLocal(dataStr);
+    
+    // Formata orçamento de "2025-10-31" para "31/10/2025"
+    const orcamentoFormatado = this.formatDate(orcamentoStr);
     
     const data: EntryFormData = {
-      data: dataStr, // Mantém como string
+      data: dataFormatada,           // Formato brasileiro DD/MM/YYYY HH:mm
       conta: formData.get('conta') as string,
       valor: parseFloat(valorStr),
       descricao: formData.get('descricao') as string,
       categoria: formData.get('categoria') as string,
-      orcamento: orcamentoStr,
+      orcamento: orcamentoFormatado, // Formato brasileiro DD/MM/YYYY
     };
 
     // Aplica o sinal ao valor
@@ -514,24 +539,24 @@ class EntryModal {
     const sinal = (sign === '−' || sign === '-') ? -1 : 1;
     data.valor = sinal * Math.abs(data.valor);
 
-    await this.submitEntry(data, orcamentoSerial);
+    await this.submitEntry(data);
   }
 
   /**
    * Envia o lançamento para o backend
    */
-  private async submitEntry(data: EntryFormData, orcamentoSerial: number): Promise<void> {
+  private async submitEntry(data: EntryFormData): Promise<void> {
     this.showFeedback('Enviando...', 'info');
     this.setFormDisabled(true);
 
     try {
       const payload: EntryPayload = {
-        data: data.data,           // String datetime-local "2025-10-31T14:41"
+        data: data.data,           // String formatada "31/10/2025 14:41"
         conta: data.conta,
         valor: data.valor,
         descricao: data.descricao,
         categoria: data.categoria,
-        orcamento: orcamentoSerial, // Número inteiro
+        orcamento: data.orcamento, // String formatada "31/10/2025"
       };
 
       console.log('[EntryModal] 📤 Enviando:', payload);

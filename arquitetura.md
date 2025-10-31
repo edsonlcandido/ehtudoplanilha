@@ -61,18 +61,16 @@ excelSerialToDate(serial, dataHora = false)
 
 **4. Preparação para Envio (Frontend → Backend)**
 ```javascript
-// Campo DATA - mantém string datetime-local
-payload.data = "2025-10-20T16:52"  // enviado como string
+// Campo DATA - formata string para formato brasileiro DD/MM/YYYY HH:mm
+// Converte "2025-10-31T14:41" → "31/10/2025 14:41"
+const [datePart, timePart] = datetimeInput.value.split('T')
+const [year, month, day] = datePart.split('-')
+payload.data = `${day}/${month}/${year} ${timePart}`  // "31/10/2025 14:41"
 
-// Campo ORÇAMENTO - converte para Excel Serial INTEIRO (sem parte fracionária)
-// IMPORTANTE: Usa meio-dia (12:00) para evitar problemas de timezone
-const [ano, mes, dia] = budgetInput.value.split('-').map(n => parseInt(n, 10))
-const dataSimples = new Date(ano, mes - 1, dia, 12, 0, 0)  // meio-dia!
-payload.orcamento = toExcelSerialDia(dataSimples)  // retorna inteiro, ex.: 45581
-
-// PROBLEMA DE TIMEZONE RESOLVIDO:
-// Sem meio-dia: new Date(2025, 9, 31, 0, 0, 0) em GMT-3 → pode virar 30/10 em UTC
-// Com meio-dia: new Date(2025, 9, 31, 12, 0, 0) → sempre 31/10 mesmo com +/-12h timezone
+// Campo ORÇAMENTO - formata string para formato brasileiro DD/MM/YYYY
+// Converte "2025-10-31" → "31/10/2025"
+const [ano, mes, dia] = budgetInput.value.split('-')
+payload.orcamento = `${dia}/${mes}/${ano}`  // "31/10/2025"
 ```
 
 **5. Backend - Recebe e Envia para Sheets API**
@@ -80,12 +78,12 @@ payload.orcamento = toExcelSerialDia(dataSimples)  // retorna inteiro, ex.: 4558
 // append-entry.pb.js
 const values = [
   [
-    requestData.data,           // string "2025-10-20T16:52" → Sheets API interpreta automaticamente
+    requestData.data,           // string "31/10/2025 14:41" → Sheets API interpreta automaticamente
     requestData.conta,          // string
     requestData.valor,          // number (positivo ou negativo)
     requestData.descricao,      // string
     requestData.categoria,      // string
-    Math.trunc(requestData.orcamento),  // inteiro (ex.: 45581) → Sheets reconhece como data
+    requestData.orcamento,      // string "31/10/2025" → Sheets API interpreta automaticamente
     ''                          // observação (vazio por padrão)
   ]
 ]
@@ -93,20 +91,25 @@ const values = [
 
 **6. Google Sheets API - Processamento**
 - Quando `valueInputOption=USER_ENTERED`:
-  - String datetime `"2025-10-20T16:52"` → convertida automaticamente para serial Excel com horário
-  - Inteiro `45581` → interpretado como data (31/10/2025 00:00)
+  - String datetime `"31/10/2025 14:41"` → interpretada como data/hora e convertida para serial Excel internamente
+  - String date `"31/10/2025"` → interpretada como data (sem hora) e convertida para serial Excel internamente
   - A célula fica formatada como "Data/Hora" (coluna A) ou "Data" (coluna F)
+  - **IMPORTANTE**: O Sheets armazena SEMPRE no formato Excel Serial (número), mas o `valueInputOption=USER_ENTERED` permite enviar strings formatadas que são automaticamente convertidas
 
 #### Resumo dos Formatos por Camada
 | Camada | Campo DATA | Campo ORÇAMENTO |
 |--------|-----------|-----------------|
-| **Planilha Google** | Excel Serial com fração (45581.703) | Excel Serial inteiro (45581) |
-| **Sheets API → Backend** | Serial number (45581.703) | Serial number (45581) |
-| **Backend → Frontend** | Serial number (45581.703) | Serial number (45581) |
-| **Frontend (exibição)** | Convertido via `excelSerialToDate(s, true)` → "20/10/2025 16:52" | Convertido via `excelSerialToDate(s, false)` → "31/10/2025" |
-| **Formulário (input)** | `datetime-local`: "2025-10-20T16:52" | `date`: "2025-10-31" |
-| **Frontend → Backend (POST)** | String: "2025-10-20T16:52" | Inteiro Excel Serial: 45581 |
-| **Backend → Sheets API** | String enviada como está | Inteiro Math.trunc(orcamento) |
+| **Planilha Google (armazenamento interno)** | Excel Serial com fração (45581.703) | Excel Serial inteiro (45581) |
+| **Sheets API → Backend (leitura)** | Serial number unformatted (45581.703) | Serial number unformatted (45581) |
+| **Backend → Frontend (GET)** | Serial number (45581.703) - SEM conversão | Serial number (45581) - SEM conversão |
+| **Frontend (exibição/leitura)** | Convertido via `excelSerialToDate(s, true)` → "20/10/2025 16:52" | Convertido via `excelSerialToDate(s, false)` → "31/10/2025" |
+| **Formulário (input HTML5)** | `datetime-local`: "2025-10-20T16:52" | `date`: "2025-10-31" |
+| **Frontend → Backend (POST)** | String formatada: "31/10/2025 14:41" | String formatada: "31/10/2025" |
+| **Backend → Sheets API (escrita)** | String enviada como está (Sheets converte internamente) | String enviada como está (Sheets converte internamente) |
+
+**IMPORTANTE**: 
+- **Leitura**: O Google Sheets retorna valores `unformatted` (Excel Serial numbers). O frontend usa helpers para converter para Date/String legível.
+- **Escrita**: O frontend pode enviar strings formatadas (ex: "31/10/2025 14:41") e o Google Sheets com `valueInputOption=USER_ENTERED` interpreta e converte automaticamente para Excel Serial internamente.
 
 #### Funções Auxiliares (Frontend)
 ```javascript
@@ -162,30 +165,33 @@ Regras recomendadas:
    - **Orçamento**: campo `date` coleta apenas data (ex.: `2025-10-31`)
    - **Valor**: número (positivo=receita, negativo=despesa)
    - **Conta, Descrição, Categoria**: texto
-2. Frontend converte orçamento para Excel Serial inteiro usando `toExcelSerialDia()`
+2. Frontend formata ambos os campos de data para formato brasileiro (DD/MM/YYYY ou DD/MM/YYYY HH:mm)
 3. Frontend envia `POST /append-entry` com payload:
    ```json
    {
-     "data": "2025-10-20T16:52",
+     "data": "31/10/2025 14:41",
      "conta": "Banco",
      "valor": -150.50,
      "descricao": "Supermercado",
      "categoria": "Alimentação",
-     "orcamento": 45581
+     "orcamento": "31/10/2025"
    }
    ```
 4. Hook resolve `userId` via `request.auth`, obtém `google_infos`
 5. Hook valida `expires_at`; se expirado → refresh automático
 6. Hook monta array de valores:
    ```javascript
-   [["2025-10-20T16:52", "Banco", -150.50, "Supermercado", "Alimentação", 45581, ""]]
+   [["31/10/2025 14:41", "Banco", -150.50, "Supermercado", "Alimentação", "31/10/2025", ""]]
    ```
 7. Chama Sheets API `values:append` em `LANCAMENTOS!A:G` com `valueInputOption=USER_ENTERED`
 8. Google Sheets interpreta automaticamente:
-   - String datetime → Excel Serial com hora
-   - Inteiro → Data sem hora
+   - String datetime "31/10/2025 14:41" → Converte internamente para Excel Serial com hora
+   - String date "31/10/2025" → Converte internamente para Excel Serial sem hora
 9. Hook atualiza `last_success_append_at`
 10. Retorna sucesso ao frontend
+11. Frontend recebe confirmação e atualiza UI (ou recarrega dados)
+
+**Importante sobre leitura posterior**: Quando o frontend busca lançamentos via `GET /get-sheet-entries`, o Google Sheets retorna valores `unformatted` (Excel Serial numbers). O frontend então usa os helpers de conversão (`excelSerialToDate`) para exibir as datas de forma legível.
 
 (Validação futura: antes do append, opcionalmente ler `CATEGORIAS!A:A` para garantir que a categoria informada existe; em caso de ausência, retornar erro padronizado.)
 
