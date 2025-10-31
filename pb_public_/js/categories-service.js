@@ -2,14 +2,18 @@
  * Serviço centralizado para gerenciamento de categorias
  * 
  * FONTE PRIMÁRIA: Aba "Categorias" da planilha Google Sheets do usuário
+ * FONTE MOCK (DEV): Categorias de getSheetCategoriesResponse.json
  * FALLBACK: Categorias padrão (apenas quando planilha indisponível/vazia/erro)
  * 
  * Responsabilidades:
  * - Buscar categorias da aba "Categorias" da planilha
+ * - Em modo dev, usar dados mockados de getSheetCategoriesResponse.json
  * - Fornecer fallbacks consistentes quando necessário
  * - Gerenciar cache para otimizar performance
  * - Padronizar comportamento entre formulários
  */
+
+import mockDataService from './mock-data-service.js';
 
 class CategoriesService {
     constructor() {
@@ -23,7 +27,7 @@ class CategoriesService {
     }
 
     /**
-     * Obtém categorias da aba "Categorias" da planilha do usuário
+     * Obtém categorias da aba "Categorias" da planilha do usuário (ou dados mockados em dev)
      * Usa categorias padrão apenas como fallback em caso de erro ou planilha vazia
      * @param {boolean} forceRefresh - Força busca da planilha ignorando cache
      * @returns {Promise<Array<string>>} Lista de categorias
@@ -37,6 +41,23 @@ class CategoriesService {
         }
 
         try {
+            // PRIORIDADE 0: Se estiver em modo dev, usar dados mockados
+            if (mockDataService.shouldUseMockData()) {
+                console.log('[CategoriesService] 🔧 Modo dev: usando categorias mockadas');
+                const mockCategories = await mockDataService.getCategories();
+                
+                if (mockCategories.length > 0) {
+                    // Atualiza cache
+                    this.cache = mockCategories;
+                    this.cacheTimestamp = Date.now();
+                    console.log(`[CategoriesService] ✅ ${mockCategories.length} categorias mockadas carregadas`);
+                    return mockCategories;
+                } else {
+                    console.log('[CategoriesService] ⚠️ Nenhuma categoria mockada, usando padrão');
+                    return this.defaultCategories;
+                }
+            }
+
             // PRIORIDADE 1: Buscar categorias da aba "Categorias" da planilha
             if (window.googleSheetsService && typeof window.googleSheetsService.getCategories === 'function') {
                 console.log('[CategoriesService] Buscando categorias da aba "Categorias" da planilha...');

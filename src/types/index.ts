@@ -39,3 +39,19 @@ declare global {
     pb: PocketBaseInstance;
   }
 }
+
+/**
+ * Re-exporta utilitários de conversão de data
+ * Funções para converter entre JavaScript Date e Excel Serial
+ */
+export {
+  toExcelSerial,
+  toExcelSerialDia,
+  excelSerialToDate,
+  excelSerialToMonthLabel,
+  excelSerialToDateTimeLabel,
+  dateTimeLocalToDate,
+  dateInputToDate,
+  getIntervalSerials,
+  filterEntriesByInterval
+} from '../utils/date-helpers';

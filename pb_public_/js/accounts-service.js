@@ -2,14 +2,18 @@
  * Serviço centralizado para gerenciamento de contas
  * 
  * FONTE PRIMÁRIA: Contas extraídas da planilha Google Sheets do usuário
+ * FONTE MOCK (DEV): Contas extraídas de sheetEntriesResponse.json
  * FALLBACK: Contas padrão (apenas quando planilha indisponível/vazia/erro)
  * 
  * Responsabilidades:
  * - Buscar contas utilizadas na planilha do usuário
+ * - Em modo dev, usar dados mockados de sheetEntriesResponse.json
  * - Fornecer fallbacks consistentes quando necessário
  * - Gerenciar cache para otimizar performance
  * - Padronizar comportamento entre formulários
  */
+
+import mockDataService from './mock-data-service.js';
 
 class AccountsService {
     constructor() {
@@ -23,7 +27,7 @@ class AccountsService {
     }
 
     /**
-     * Obtém contas da planilha do usuário
+     * Obtém contas da planilha do usuário (ou dados mockados em dev)
      * Usa contas padrão apenas como fallback em caso de erro ou planilha vazia
      * @param {boolean} forceRefresh - Força busca da planilha ignorando cache
      * @returns {Promise<Array<string>>} Lista de contas
@@ -37,6 +41,23 @@ class AccountsService {
         }
 
         try {
+            // PRIORIDADE 0: Se estiver em modo dev, usar dados mockados
+            if (mockDataService.shouldUseMockData()) {
+                console.log('[AccountsService] 🔧 Modo dev: usando contas mockadas');
+                const mockAccounts = await mockDataService.getUniqueAccounts();
+                
+                if (mockAccounts.length > 0) {
+                    // Atualiza cache
+                    this.cache = mockAccounts;
+                    this.cacheTimestamp = Date.now();
+                    console.log(`[AccountsService] ✅ ${mockAccounts.length} contas mockadas carregadas`);
+                    return mockAccounts;
+                } else {
+                    console.log('[AccountsService] ⚠️ Nenhuma conta mockada, usando padrão');
+                    return this.defaultAccounts;
+                }
+            }
+
             // PRIORIDADE 1: Buscar contas da planilha via getFinancialSummary
             if (window.googleSheetsService && typeof window.googleSheetsService.getFinancialSummary === 'function') {
                 console.log('[AccountsService] Buscando contas da planilha...');
