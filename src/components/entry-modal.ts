@@ -643,6 +643,21 @@ class EntryModal {
     this.modal.style.display = 'flex';
     this.modal.setAttribute('aria-hidden', 'false');
     
+    // Adiciona classe ao botão FAB
+    const fabBtn = document.getElementById('openEntryModal');
+    if (fabBtn) {
+      fabBtn.classList.add('modal-open');
+      console.log('[EntryModal] ✅ Classe modal-open adicionada ao botão FAB');
+    } else {
+      console.warn('[EntryModal] ⚠️ Botão FAB não encontrado');
+    }
+    
+    // Preenche data atual
+    this.fillCurrentDateTime();
+    
+    // Preenche próximo orçamento
+    this.fillNextBudget();
+    
     // Foca no primeiro campo
     const firstInput = this.form?.querySelector('input');
     firstInput?.focus();
@@ -661,10 +676,92 @@ class EntryModal {
     this.modal.style.display = 'none';
     this.modal.setAttribute('aria-hidden', 'true');
     
+    // Remove classe do botão FAB
+    const fabBtn = document.getElementById('openEntryModal');
+    if (fabBtn) {
+      fabBtn.classList.remove('modal-open');
+      console.log('[EntryModal] ✅ Classe modal-open removida do botão FAB');
+    } else {
+      console.warn('[EntryModal] ⚠️ Botão FAB não encontrado');
+    }
+    
     // Limpa feedback
     const feedback = document.getElementById('modalFeedback');
     if (feedback) {
       feedback.style.display = 'none';
+    }
+  }
+
+  /**
+   * Preenche campo de data com data/hora atual
+   */
+  private fillCurrentDateTime(): void {
+    const dateInput = document.getElementById('expenseDate') as HTMLInputElement;
+    if (!dateInput) return;
+    
+    const now = new Date();
+    // Formato: YYYY-MM-DDTHH:mm
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    
+    dateInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
+
+  /**
+   * Preenche campo de orçamento com a próxima data disponível
+   */
+  private fillNextBudget(): void {
+    const budgetInput = document.getElementById('expenseBudget') as HTMLInputElement;
+    if (!budgetInput) return;
+    
+    // Extrai datas de orçamento únicas dos entries
+    const budgetDates = [...new Set(
+      this.entries
+        .map(e => e.orcamento)
+        .filter(o => o !== null && o !== undefined && !isNaN(Number(o)))
+        .map(o => Number(o))
+    )].sort((a, b) => a - b); // Ordena do menor para o maior
+    
+    if (budgetDates.length === 0) {
+      // Se não houver datas, usa o primeiro dia do mês atual
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      budgetInput.value = `${year}-${month}-01`;
+      return;
+    }
+    
+    // Converte data atual para Excel Serial para comparar
+    const now = new Date();
+    const todaySerial = Math.floor((now.getTime() - new Date(1899, 11, 31).getTime()) / 86400000) + 1;
+    
+    // Busca a próxima data maior ou igual a hoje
+    const nextBudget = budgetDates.find(d => d >= todaySerial);
+    
+    if (nextBudget) {
+      // Converte de volta para Date
+      const date = new Date(1899, 11, 31);
+      date.setDate(date.getDate() + nextBudget - 1);
+      
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      
+      budgetInput.value = `${year}-${month}-${day}`;
+    } else {
+      // Se não houver próxima data, usa a última disponível
+      const lastBudget = budgetDates[budgetDates.length - 1];
+      const date = new Date(1899, 11, 31);
+      date.setDate(date.getDate() + lastBudget - 1);
+      
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      
+      budgetInput.value = `${year}-${month}-${day}`;
     }
   }
 }

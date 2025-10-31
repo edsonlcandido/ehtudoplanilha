@@ -4,7 +4,7 @@
  */
 
 import { renderUserMenu } from '../components/user-menu';
-import { initEntryModal, openEntryModal } from '../components/entry-modal';
+import { initEntryModal, openEntryModal, closeEntryModal } from '../components/entry-modal';
 
 // ============================================================================
 // Inicialização
@@ -20,10 +20,17 @@ async function init(): Promise<void> {
     // TODO: Implementar reload automático dos cards
   });
 
-  // Botão de adicionar lançamento
+  // Botão de adicionar lançamento (toggle: abre/fecha)
   const addBtn = document.getElementById('openEntryModal');
   addBtn?.addEventListener('click', () => {
-    openEntryModal();
+    const modal = document.getElementById('entryModal');
+    const isOpen = modal?.style.display === 'flex';
+    
+    if (isOpen) {
+      closeEntryModal();
+    } else {
+      openEntryModal();
+    }
   });
 
   console.log('✅ Dashboard inicializado');

@@ -587,7 +587,7 @@ nav {
     justify-content: center !important;
     font-size: 1.8rem !important;
     font-weight: bold !important;
-    z-index: 1001 !important;
+    z-index: 10000 !important; /* Acima de tudo, incluindo modal */
     box-shadow: 0 4px 12px rgba(0,0,0,0.25) !important;
     transition: all 0.3s ease !important;
     background-color: #28a745 !important; /* Verde quando fechado */
@@ -615,10 +615,12 @@ nav {
 /* Estado do botão quando modal está aberto */
 #openEntryModal.modal-open {
     background-color: #dc3545 !important; /* Vermelho quando aberto */
+    transform: rotate(45deg) !important; /* Gira 45 graus (+ vira ×) */
 }
 
 #openEntryModal.modal-open:hover {
     background-color: #c82333 !important; /* Vermelho mais escuro no hover */
+    transform: rotate(45deg) scale(1.1) !important; /* Mantém rotação e aplica scale */
 }
 
 #openEntryModal.modal-open:active,
@@ -629,11 +631,12 @@ nav {
 /* Ajustes para mobile */
 @media (max-width: 768px) {
     #openEntryModal {
-        bottom: 90px !important; /* Acima do footer mobile */
+        bottom: 100px !important; /* Bem acima do footer mobile */
         right: 15px !important;
-        width: 3rem !important;
-        height: 3rem !important;
+        width: 3.2rem !important;
+        height: 3.2rem !important;
         font-size: 1.6rem !important;
+        z-index: 10000 !important; /* Acima de tudo */
         background-color: #28a745 !important; /* Verde quando fechado */
         color: white !important;
     }
@@ -651,10 +654,12 @@ nav {
     /* Estado do botão quando modal está aberto - mobile */
     #openEntryModal.modal-open {
         background-color: #dc3545 !important; /* Vermelho quando aberto */
+        transform: rotate(45deg) !important; /* Gira 45 graus (+ vira ×) */
     }
     
     #openEntryModal.modal-open:hover {
         background-color: #c82333 !important; /* Vermelho mais escuro no hover */
+        transform: rotate(45deg) scale(1.05) !important; /* Mantém rotação com scale menor no mobile */
     }
     
     #openEntryModal.modal-open:active,

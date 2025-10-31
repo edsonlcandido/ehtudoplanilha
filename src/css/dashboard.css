@@ -29,7 +29,7 @@
   color: white;
   border: none;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  z-index: 999;
+  z-index: 10000;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -47,13 +47,25 @@
   transform: scale(0.95);
 }
 
+/* Estado quando modal está aberto */
+.fab-button.modal-open {
+  background: #dc3545;
+  transform: rotate(45deg);
+}
+
+.fab-button.modal-open:hover {
+  background: #c82333;
+  transform: rotate(45deg) scale(1.1);
+}
+
 /* Ajuste responsivo para mobile */
 @media (max-width: 768px) {
   .fab-button {
-    bottom: 1.5rem;
+    bottom: 6.5rem; /* Bem acima da barra de navegação */
     right: 1.5rem;
     width: 56px;
     height: 56px;
     font-size: 1.75rem;
+    z-index: 10000;
   }
 }

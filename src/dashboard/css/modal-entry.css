@@ -20,6 +20,19 @@
     box-sizing: border-box;
 }
 
+/* Mobile: Modal acima do menu */
+@media (max-width: 768px) {
+    #entryModal {
+        z-index: 9999; /* Acima do menu mobile */
+        inset: 0; /* Cobre toda a tela incluindo o header */
+    }
+    
+    .entry-modal__content {
+        max-height: 95vh !important;
+        overflow-y: auto !important;
+    }
+}
+
 /* Botão de fechar (× no canto) - estilos originais do HTML */
 #closeEntryModal {
     position: absolute;

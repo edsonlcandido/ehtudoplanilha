@@ -4,7 +4,7 @@
  */
 
 import { renderUserMenu } from '../components/user-menu';
-import { initEntryModal, openEntryModal } from '../components/entry-modal';
+import { initEntryModal, openEntryModal, closeEntryModal } from '../components/entry-modal';
 
 // ============================================================================
 // Inicialização
@@ -34,8 +34,15 @@ async function init(): Promise<void> {
   
   if (fabBtn) {
     fabBtn.addEventListener('click', () => {
-      console.log('🔓 Abrindo modal de adicionar lançamento (FAB)...');
-      openEntryModal();
+      console.log('🔓 Toggle modal de adicionar lançamento (FAB)...');
+      const modal = document.getElementById('entryModal');
+      const isOpen = modal?.style.display === 'flex';
+      
+      if (isOpen) {
+        closeEntryModal();
+      } else {
+        openEntryModal();
+      }
     });
   }
 
