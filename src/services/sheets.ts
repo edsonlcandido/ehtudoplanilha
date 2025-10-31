@@ -72,11 +72,11 @@ export class SheetsService {
    */
   static async listGoogleSheets(): Promise<GoogleSheet[]> {
     try {
-      const response = await pb.send<{ files: GoogleSheet[] }>(
+      const response = await pb.send<{ sheets: GoogleSheet[] }>(
         API_ENDPOINTS.listGoogleSheets,
         { method: 'GET' }
       );
-      return response.files || [];
+      return response.sheets || [];
     } catch (error) {
       console.error('[SheetsService] Erro ao listar planilhas:', error);
       throw error;
@@ -90,7 +90,10 @@ export class SheetsService {
     try {
       await pb.send(API_ENDPOINTS.saveSheetId, {
         method: 'POST',
-        body: { sheetId, sheetName },
+        body: { 
+          sheet_id: sheetId, 
+          sheet_name: sheetName 
+        },
       });
     } catch (error) {
       console.error('[SheetsService] Erro ao salvar sheet ID:', error);

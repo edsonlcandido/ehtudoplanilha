@@ -74,9 +74,9 @@ routerAdd("GET", "/list-google-sheets", (c) => {
       return c.json(404, { "error": "Token de acesso não encontrado" })
     }
 
-    // Tentar listar planilhas com o token atual
+    // Tentar listar planilhas com o token atual (excluindo planilhas na lixeira)
     let driveResponse = $http.send({
-      url: "https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet'&fields=files(id,name,modifiedTime,createdTime)&orderBy=modifiedTime%20desc",
+      url: "https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet' and trashed=false&fields=files(id,name,modifiedTime,createdTime)&orderBy=modifiedTime%20desc",
       method: "GET",
       headers: {
         "Authorization": `Bearer ${accessToken}`,
@@ -125,7 +125,7 @@ routerAdd("GET", "/list-google-sheets", (c) => {
 
       // Tentar novamente com o novo token
       driveResponse = $http.send({
-        url: "https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet'&fields=files(id,name,modifiedTime,createdTime)&orderBy=modifiedTime%20desc",
+        url: "https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet' and trashed=false&fields=files(id,name,modifiedTime,createdTime)&orderBy=modifiedTime%20desc",
         method: "GET",
         headers: {
           "Authorization": `Bearer ${accessToken}`,
