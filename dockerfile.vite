@@ -63,7 +63,12 @@ COPY --chown=pocketbase:pocketbase pb_public/pwa/ /app/pb_public/pwa/ 2>/dev/nul
 
 # Variáveis de ambiente
 ENV TZ=America/Sao_Paulo \
-    PB_PORT=8090
+    PB_PORT=8090 \
+    # Variáveis de ambiente para configuração do Google OAuth
+    GOOGLE_CLIENT_ID=SEU_CLIENT_ID.apps.googleusercontent.com \
+    GOOGLE_CLIENT_SECRET=SEU_CLIENT_SECRET \
+    GOOGLE_REDIRECT_URI=http://localhost:8090/google-oauth-callback \
+    SHEET_TEMPLATE_ID=SHEET_TEMPLATE_ID
 
 # Expor porta
 EXPOSE 8090
