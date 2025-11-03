@@ -1,16 +1,16 @@
 # ============================================================================
-# Dockerfile.vite - Build e Deploy para EasyPanel VPS
+# Dockerfile.vite - Build e Deploy para EasyPanel VPS (Otimizado)
 # ============================================================================
 # Este Dockerfile:
 # 1. Builda o frontend Vite/TypeScript da pasta /src
 # 2. Copia os arquivos buildados para pb_public
-# 3. Configura o PocketBase para servir a aplicação
+# 3. Usa PocketBase pré-compilado (sem download)
 # ============================================================================
 
 # ----------------------------------------------------------------------------
 # Estágio 1: BUILD FRONTEND (Node.js)
 # ----------------------------------------------------------------------------
-FROM node:20-alpine AS frontend-builder
+FROM node:22-alpine AS frontend-builder
 
 WORKDIR /build
 
@@ -29,24 +29,7 @@ RUN npm run build
 # O resultado estará em /build/dist/
 
 # ----------------------------------------------------------------------------
-# Estágio 2: PREPARAR PocketBase
-# ----------------------------------------------------------------------------
-FROM alpine:3.22.1 AS pocketbase-builder
-
-# Instalar ferramentas necessárias
-RUN apk add --no-cache ca-certificates curl unzip
-
-# Definir versão do PocketBase
-ARG PB_VERSION=0.30.0
-
-# Baixar e descompactar PocketBase
-RUN curl -fsSL -o /tmp/pocketbase.zip \
-    https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_linux_amd64.zip \
-    && unzip /tmp/pocketbase.zip -d /tmp/ \
-    && rm /tmp/pocketbase.zip
-
-# ----------------------------------------------------------------------------
-# Estágio 3: IMAGEM FINAL
+# Estágio 2: IMAGEM FINAL COM PocketBase PRÉ-COMPILADO
 # ----------------------------------------------------------------------------
 FROM alpine:3.22.1
 
@@ -60,8 +43,8 @@ RUN addgroup -g 1001 pocketbase \
 # Diretório de trabalho
 WORKDIR /app
 
-# Copiar executável do PocketBase
-COPY --from=pocketbase-builder /tmp/pocketbase /app/pocketbase
+# Copiar executável do PocketBase pré-compilado do projeto
+COPY pocketbase /app/pocketbase
 RUN chmod +x /app/pocketbase
 
 # Criar estrutura de diretórios
@@ -77,7 +60,6 @@ COPY --chown=pocketbase:pocketbase pb_migrations/ /app/pb_migrations/
 
 # Copiar PWA se existir (preservar estrutura)
 COPY --chown=pocketbase:pocketbase pb_public/pwa/ /app/pb_public/pwa/ 2>/dev/null || true
-COPY --chown=pocketbase:pocketbase pb_public/js/pocketbase.umd.js /app/pb_public/js/pocketbase.umd.js 2>/dev/null || true
 
 # Variáveis de ambiente
 ENV TZ=America/Sao_Paulo \
@@ -91,10 +73,6 @@ VOLUME ["/app/pb_data"]
 
 # Usar usuário não-root
 USER pocketbase
-
-# Healthcheck
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:8090/api/health || exit 1
 
 # Comando de inicialização
 CMD ["/app/pocketbase", "serve", "--http=0.0.0.0:8090"]

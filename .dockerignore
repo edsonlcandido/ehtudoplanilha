@@ -48,8 +48,6 @@ build-and-deploy.sh
 iniciar-pb.sh
 
 # Executáveis locais do PocketBase
-pocketbase
-pocketbase.exe
 
 # Package lock files (npm ci usará o que existe)
 # src/package-lock.json será copiado
