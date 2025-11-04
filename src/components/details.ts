@@ -13,7 +13,6 @@ import { formatarMoeda } from './financial-cards';
 const detailsTemplate = `
   <div class="details__aggregates">
     <h3 class="details__title">Saldo e contas</h3>
-    <h4 class="details__subtitle" id="detail-budget-label"></h4>
     <h3><span class="details__saldo" id="detail-saldo">R$ 0,00</span></h3>
     <div class="details__cards" id="detail-accounts-cards">
       <!-- Cartões de contas serão renderizados aqui -->
@@ -112,7 +111,6 @@ export function inicializarDetalhes(entries: Entry[], budgetsInInterval: BudgetI
     const elSaldo = container.querySelector('#detail-saldo') as HTMLElement;
     const elAccounts = container.querySelector('#detail-accounts-cards') as HTMLElement;
     const elCategories = container.querySelector('#detail-categories-list') as HTMLElement;
-    const elLabel = container.querySelector('#detail-budget-label') as HTMLElement;
     
     // Filtra lançamentos dos orçamentos selecionados
     const detalhe = currentEntries.filter(e => orcNums.includes(e.orcamento));
@@ -130,7 +128,6 @@ export function inicializarDetalhes(entries: Entry[], budgetsInInterval: BudgetI
       .map(b => b.label)
       .join(', ');
     
-    if (elLabel) elLabel.textContent = labels;
     if (elSaldo) elSaldo.textContent = formatarMoeda(saldoTotal);
 
     // Atualiza cartões de contas
