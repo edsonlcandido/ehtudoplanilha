@@ -199,9 +199,9 @@ function handleCloseClick(this: HTMLElement, e: Event): void {
   
   const card = this.closest('.financial-card') as HTMLElement;
   const budget = card.dataset.budget!;
-  const sum = card.dataset.sum || this.dataset.sum!;
-  const incomes = card.dataset.incomes || this.dataset.incomes!;
-  const expenses = card.dataset.expenses || this.dataset.expenses!;
+  const sum = card.dataset.sum!;
+  const incomes = card.dataset.incomes!;
+  const expenses = card.dataset.expenses!;
   const orcamento = card.dataset.orcamento!;
   
   // Volta para o estado inativo

@@ -180,12 +180,12 @@ export function budgetsInEntries(
     const raw = e && e[orcamentoField];
     const serial = normalizeToSerial(raw);
     
-    if (!Number.isFinite(serial)) return;
+    if (serial === null || !Number.isFinite(serial)) return;
     
-    if (!map.has(serial!)) {
-      map.set(serial!, {
-        orcamento: serial!,
-        label: excelSerialToMonthLabel(serial!)
+    if (!map.has(serial)) {
+      map.set(serial, {
+        orcamento: serial,
+        label: excelSerialToMonthLabel(serial)
       });
     }
   });

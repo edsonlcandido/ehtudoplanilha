@@ -18,7 +18,9 @@ import {
   aggregateByBudget, 
   filterEntriesByInterval, 
   budgetsInEntries,
-  type Entry 
+  type Entry,
+  type BudgetSummary,
+  type BudgetInfo
 } from '../utils/sheet-entries';
 
 // ============================================================================
@@ -28,9 +30,9 @@ declare global {
   interface Window {
     allEntries: Entry[];
     filteredEntries: Entry[];
-    summaryByBudget: any[];
-    budgetsInInterval: any[];
-    allBudgets: any[];
+    summaryByBudget: BudgetSummary[];
+    budgetsInInterval: BudgetInfo[];
+    allBudgets: BudgetInfo[];
   }
 }
 

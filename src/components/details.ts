@@ -75,8 +75,8 @@ export function inicializarDetalhes(entries: Entry[], budgetsInInterval: BudgetI
     const mapa: Record<string, number> = {};
     
     list.forEach(e => {
-      // Ignora lançamentos sem conta definida
-      if (!e.conta) return;
+      // Ignora lançamentos sem conta definida ou com conta vazia
+      if (!e.conta || e.conta.trim() === '') return;
       mapa[e.conta] = (mapa[e.conta] || 0) + (e.valor || 0);
     });
     
