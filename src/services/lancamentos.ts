@@ -113,9 +113,10 @@ class LancamentosService {
    */
   isBlankEntry(entry: SheetEntry): boolean {
     if (!entry) return true;
-    const campos = ['data', 'conta', 'valor', 'descricao', 'categoria', 'orcamento', 'obs'];
+    // Campos relevantes da interface SheetEntry
+    const campos: (keyof SheetEntry)[] = ['data', 'conta', 'valor', 'descricao', 'categoria', 'orcamento', 'obs'];
     return campos.every(campo => {
-      const valor = entry[campo as keyof SheetEntry];
+      const valor = entry[campo];
       if (valor === null || valor === undefined) return true;
       if (typeof valor === 'number') {
         return false;
@@ -185,12 +186,13 @@ class LancamentosService {
 
   /**
    * Obtém valor numérico de uma data para ordenação
+   * Retorna Number.MAX_SAFE_INTEGER para datas inválidas (coloca no final)
    */
   private getDateValue(date: string | number | undefined): number {
-    if (!date) return 0;
+    if (!date) return Number.MAX_SAFE_INTEGER;
     if (typeof date === 'number') return date;
     const parsed = new Date(date);
-    return isNaN(parsed.getTime()) ? 0 : parsed.getTime();
+    return isNaN(parsed.getTime()) ? Number.MAX_SAFE_INTEGER : parsed.getTime();
   }
 
   /**

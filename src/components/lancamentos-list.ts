@@ -17,9 +17,9 @@ function formatCurrency(value: number): string {
 }
 
 /**
- * Formata data para exibição
+ * Formata data e hora para exibição
  */
-function formatDate(date: string | number | undefined): string {
+function formatDateTime(date: string | number | undefined): string {
   if (!date) return '-';
 
   let dateObj: Date | null = null;
@@ -100,7 +100,7 @@ export function renderTable(entries: SheetEntry[]): string {
     return `
       <div class="lancamentos__table-row">
         <div class="lancamentos__table-cell">${entry.rowIndex || '-'}</div>
-        <div class="lancamentos__table-cell">${formatDate(entry.data)}</div>
+        <div class="lancamentos__table-cell">${formatDateTime(entry.data)}</div>
         <div class="lancamentos__table-cell">${entry.conta || '-'}</div>
         <div class="lancamentos__table-cell lancamentos__table-cell--number ${valorClass}">
           ${formatCurrency(entry.valor)}
@@ -163,7 +163,7 @@ export function renderList(entries: SheetEntry[]): string {
             </div>
             <div class="lancamentos__item-row">
               <span class="lancamentos__item-label">Data:</span>
-              <span class="lancamentos__item-value">${formatDate(entry.data)}</span>
+              <span class="lancamentos__item-value">${formatDateTime(entry.data)}</span>
             </div>
             <div class="lancamentos__item-row">
               <span class="lancamentos__item-label">Conta:</span>

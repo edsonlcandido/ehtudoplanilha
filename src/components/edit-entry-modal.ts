@@ -425,15 +425,27 @@ class EditEntryModal {
       const valueInput = parseFloat(formData.get('valor') as string);
       const signValue = formData.get('sinal') as string;
 
+      // Valida datas
+      const dateObj = new Date(dateInput);
+      const budgetObj = new Date(budgetInput);
+      
+      if (isNaN(dateObj.getTime())) {
+        throw new Error('Data inválida');
+      }
+      
+      if (isNaN(budgetObj.getTime())) {
+        throw new Error('Data de orçamento inválida');
+      }
+
       const value = signValue === '-' ? -Math.abs(valueInput) : Math.abs(valueInput);
 
       const payload: Partial<SheetEntry> = {
-        data: toExcelSerial(new Date(dateInput)),
+        data: toExcelSerial(dateObj),
         conta: formData.get('conta') as string,
         valor: value,
         descricao: formData.get('descricao') as string,
         categoria: formData.get('categoria') as string,
-        orcamento: toExcelSerialDia(new Date(budgetInput)),
+        orcamento: toExcelSerialDia(budgetObj),
         obs: formData.get('observacoes') as string || ''
       };
 
