@@ -1,0 +1,184 @@
+/**
+ * User Menu Component - BEM Structure
+ * Base: .user-menu
+ * Elements: __item, __button, __email, __separator
+ * Modifiers: --authenticated, --guest
+ * States: .is-loading, .is-open
+ */
+
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 0.5rem);
+  flex-wrap: wrap;
+}
+
+/* ============================================================================
+   User Menu Items
+   ============================================================================ */
+
+.user-menu__item {
+  display: flex;
+  align-items: center;
+}
+
+.user-menu__email {
+  padding: var(--spacing-sm, 0.5rem) var(--spacing-md, 1rem);
+  font-size: 0.875rem;
+  color: var(--color-text-secondary, #6b7280);
+  background: var(--color-neutral-100, #f3f4f6);
+  border-radius: var(--radius-sm, 0.375rem);
+  font-weight: 500;
+  word-break: break-word;
+  border: 1px solid var(--color-border, #e5e7eb);
+  white-space: nowrap;
+}
+
+.user-menu__email:hover {
+  color: var(--color-text-secondary, #6b7280);
+  background: var(--color-neutral-100, #f3f4f6);
+  cursor: default;
+}
+
+.user-menu__separator {
+  width: 1px;
+  height: 24px;
+  background: var(--color-border, #e5e7eb);
+  margin: 0 var(--spacing-xs, 0.25rem);
+}
+
+/* ============================================================================
+   User Menu Buttons
+   ============================================================================ */
+
+.user-menu__button {
+  padding: var(--spacing-sm, 0.5rem) var(--spacing-md, 1rem);
+  font-size: 0.875rem;
+  border-radius: var(--radius-sm, 0.375rem);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  text-decoration: none !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs, 0.25rem);
+  font-weight: 500;
+  font-family: inherit;
+}
+
+/* Button Variants */
+
+.user-menu__button--primary {
+  background: var(--color-primary, #4299e1);
+  color: white;
+}
+
+.user-menu__button--primary:hover:not(:disabled) {
+  background: rgba(66, 153, 225, 0.8);
+  color: white;
+}
+
+.user-menu__button--secondary {
+  background: var(--color-neutral-200, #e5e7eb);
+  color: var(--color-text, #1f2937);
+  border: 1px solid var(--color-border, #d1d5db);
+}
+
+.user-menu__button--secondary:hover:not(:disabled) {
+  background: rgba(229, 231, 235, 0.7);
+  color: var(--color-text, #1f2937);
+}
+
+.user-menu__button--danger {
+  background: var(--color-danger, #dc2626);
+  color: white;
+}
+
+.user-menu__button--danger:hover:not(:disabled) {
+  background: rgba(220, 38, 38, 0.8);
+  color: white;
+}
+
+/* Button with Icon */
+
+.user-menu__button--icon {
+  gap: var(--spacing-sm, 0.5rem);
+}
+
+.user-menu__button--icon span:first-child {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* Loading State */
+
+.user-menu__button.is-loading {
+  opacity: 0.7;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.user-menu__button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Focus State (Accessibility) */
+
+.user-menu__button:focus {
+  outline: 2px solid var(--color-primary, #4299e1);
+  outline-offset: 2px;
+}
+
+/* ============================================================================
+   Responsive Design
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  .user-menu {
+    gap: var(--spacing-xs, 0.25rem);
+  }
+
+  .user-menu__email {
+    max-width: 120px;
+    padding: var(--spacing-xs, 0.25rem) var(--spacing-sm, 0.5rem);
+    font-size: 0.75rem;
+  }
+
+  .user-menu__button {
+    padding: var(--spacing-xs, 0.25rem) var(--spacing-sm, 0.5rem);
+    font-size: 0.75rem;
+  }
+
+  .user-menu__button--icon span:first-child {
+    font-size: 0.875rem;
+  }
+
+  .user-menu__separator {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-menu {
+    flex-direction: column;
+    width: 100%;
+    gap: var(--spacing-xs, 0.25rem);
+  }
+
+  .user-menu__item {
+    width: 100%;
+  }
+
+  .user-menu__button {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .user-menu__email {
+    width: 100%;
+    text-align: center;
+  }
+}
