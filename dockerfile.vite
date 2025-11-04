@@ -58,12 +58,8 @@ COPY --from=frontend-builder --chown=pocketbase:pocketbase /build/dist/ /app/pb_
 COPY --chown=pocketbase:pocketbase pb_hooks/ /app/pb_hooks/
 COPY --chown=pocketbase:pocketbase pb_migrations/ /app/pb_migrations/
 
-# Copiar PWA se existir (preservar estrutura)
-# Usar RUN com shell para verificar existência
-RUN if [ -d "pb_public/pwa" ]; then \
-      cp -r pb_public/pwa /app/pb_public/pwa && \
-      chown -R pocketbase:pocketbase /app/pb_public/pwa; \
-    fi
+# Copiar pasta PWA (manifesto, service worker, etc)
+COPY --chown=pocketbase:pocketbase pb_public/pwa/ /app/pb_public/pwa/
 
 # Variáveis de ambiente
 ENV TZ=America/Sao_Paulo \
