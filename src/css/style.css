@@ -52,7 +52,7 @@
     font-size: 3em;
     font-weight: bold;
     line-height: 1.2;
-}
+    z-index: 20000 !important; /* Acima do overlay do modal */
 
 .header-hero p {
     font-size: 1.25em;
@@ -101,7 +101,7 @@
     max-width: 800px;
     margin: 0 auto 2rem;
     font-size: 1.1em;
-    text-align: center;
+        z-index: 20000 !important; /* Acima do overlay do modal */
 }
 
 /* Grids e Cards */
