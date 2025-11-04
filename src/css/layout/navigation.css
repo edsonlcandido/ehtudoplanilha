@@ -9,6 +9,8 @@ nav {
   background-color: var(--white-color);
   border-bottom: 1px solid var(--border-light);
   box-shadow: var(--shadow-sm);
+  /* z-index maior que o FAB para o menu dropdown ficar acima */
+  z-index: 30000 !important;
 }
 
 /* Remove estilos de link do brand/logo */

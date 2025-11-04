@@ -40,8 +40,6 @@ function renderAuthenticatedMenu(menuElement: HTMLElement): void {
       </span>
     </div>
     
-    <div class="user-menu__separator"></div>
-    
     <div class="user-menu__item">
       <a 
         href="/dashboard/index.html" 
