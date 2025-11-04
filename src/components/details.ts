@@ -121,13 +121,7 @@ export function inicializarDetalhes(entries: Entry[], budgetsInInterval: BudgetI
     }
     
     const saldoTotal = detalhe.reduce((acc, e) => acc + (e.valor || 0), 0);
-
-    // Atualiza label com todos orçamentos
-    const labels = budgetsInInterval
-      .filter(b => orcNums.includes(b.orcamento))
-      .map(b => b.label)
-      .join(', ');
-    
+   
     if (elSaldo) elSaldo.textContent = formatarMoeda(saldoTotal);
 
     // Atualiza cartões de contas
