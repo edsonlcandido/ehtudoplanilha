@@ -693,8 +693,16 @@ class LancamentosManager {
         const dateSpan = document.getElementById('deleteDate');
         const valueSpan = document.getElementById('deleteValue');
         
-        if (rowSpan) rowSpan.textContent = entry.rowIndex;
-        if (descSpan) descSpan.textContent = entry.descricao || '(sem descrição)';
+        if (rowSpan) {
+            rowSpan.textContent = entry.rowIndex;
+        } else {
+            console.warn('openDeleteModal: Elemento deleteRowNumber não encontrado no DOM');
+        }
+        if (descSpan) {
+            descSpan.textContent = entry.descricao || '(sem descrição)';
+        } else {
+            console.warn('openDeleteModal: Elemento deleteDescription não encontrado no DOM');
+        }
         if (dateSpan) {
             dateSpan.textContent = this.formatDate(entry.data) || '-';
         } else {
