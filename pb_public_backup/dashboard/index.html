@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <title>Dashboard - Seu App Financeiro</title>
+  <script type="module" crossorigin src="/assets/dashboard.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/auth.js">
+  <link rel="modulepreload" crossorigin href="/assets/user-menu.js">
+  <link rel="modulepreload" crossorigin href="/assets/date-helpers.js">
+  <link rel="stylesheet" crossorigin href="/assets/auth2.css">
+  <link rel="stylesheet" crossorigin href="/assets/dashboard.css">
+  <link rel="stylesheet" crossorigin href="/assets/dashboard2.css">
+</head>
+
+<body>
+    <!-- NAV: menu dinâmico -->
+    <nav>
+        <a href="/" class="brand">
+            <span>Planilha Eh Tudo</span>
+        </a>
+        <input id="bmenub" type="checkbox" class="show">
+        <label for="bmenub" class="burger pseudo button">menu</label>
+        <div class="menu user-menu" id="menu-user" role="menubar" aria-label="Menu do usuário"></div>
+    </nav>
+
+    <!-- Container principal com menu lateral -->
+    <div class="app-container">
+        <!-- Menu lateral fixo -->
+        <aside class="sidebar-menu">
+            <a href="index.html" class="active" title="Dashboard">
+                <span class="menu-icon">🏠</span>
+                <span class="menu-text">Dashboard</span>
+            </a>
+            <a id="sidebarLinkLancamentos" href="lancamentos.html" title="Lançamentos">
+                <span class="menu-icon">📋</span>
+                <span class="menu-text">Lançamentos</span>
+            </a>
+            <a id="sidebarLinkCelular" href="/pwa" title="Celular">
+                <span class="menu-icon">📱</span>
+                <span class="menu-text">Celular</span>
+            </a>
+        </aside>
+
+        <!-- Conteúdo principal rolável -->
+        <main class="main-content">
+            <section class="section section-light dashboard-main"
+                style="min-height:100vh; display:flex; align-items:flex-start; justify-content:flex-start;">
+                <div class="container dashboard__content" style="align-items:flex-start; text-align:left;">
+                    
+                    <!-- Cabeçalho de boas-vindas -->
+                    <header class="dashboard__header">
+                        <h2 class="dashboard__title">Bem-vindo ao seu Dashboard!</h2>
+                        <p class="dashboard__subtitle">Aqui você pode visualizar resumos e inserir lançamentos de forma
+                            simples e rápida.</p>
+
+                        <div style="margin-top: 1.25rem;">
+                            <a href="configuracao.html" id="configBtn" class="button primary" style="display: none;">⚙️
+                                Configurar Integração</a>
+                        </div>
+                    </header>
+
+                    <!-- Row dividida em 2 colunas -->
+                    <div class="dashboard__row">
+                        <!-- Coluna esquerda: cards de resumo -->
+                        <div class="dashboard__col dashboard__col--left">
+                            <div id="summaryCards" class="financial-cards">
+                                <!-- Card de exemplo / placeholder -->
+                                <div class="financial-card financial-card--loading">
+                                    <div class="financial-card__header">
+                                        <h3 class="financial-card__title financial-card__title--loading">31/08/2025</h3>
+                                    </div>
+
+                                    <div class="financial-card__value financial-card__value--loading" data-card="orcamento1">R$&nbsp;100,00</div>
+                                    <div class="financial-card__actions">
+                                        <button class="button pseudo financial-card__toggle" aria-expanded="false">Mostrar
+                                            detalhes</button>
+                                    </div>
+                                    <div class="financial-card__details financial-card__details--hidden">
+                                        <div class="financial-card__detail financial-card__detail--loading" data-card="orcamento1">Receitas: R$&nbsp;100,00</div>
+                                        <div class="financial-card__detail financial-card__detail--loading" data-card="orcamento1">Despesas: R$&nbsp;100,00</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Botão flutuante de adicionar lançamento -->
+                            <button id="openEntryModal" class="fab-button" aria-label="Adicionar lançamento">
+                                +
+                            </button>
+                        </div>
+
+                        <!-- Coluna direita: detalhes -->
+                        <aside class="dashboard__col dashboard__col--right details">
+                            <!-- Area de cartões agregados -->
+                            <div class="details__aggregates loading">
+                                <h3 class="details__title">Saldo e contas</h3>
+                                <h3><span class="details__saldo">R$ -129,77</span></h3>
+                                <div class="details__cards">
+                                    <div class="details__card">
+                                        <div class="details__card-title">Nubank</div>
+                                        <div class="details__card-value">R$ 0,00</div>
+                                    </div>
+                                    <div class="details__card">
+                                        <div class="details__card-title">Nuconta</div>
+                                        <div class="details__card-value">R$ 0,00</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tabela dos 10 maiores gastos por categoria -->
+                            <div class="details__top-categories" style="margin-top:1rem;">
+                                <h3 class="details__title">Top 10 Gastos por Categoria</h3>
+                                <div class="tabela-rolavel loading">
+                                    <table class="details__table primary">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Categoria</th>
+                                                <th>Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>1</td>
+                                                <td>Transporte</td>
+                                                <td>R$ -1.234,56</td>
+                                            </tr>
+                                            <tr>
+                                                <td>2</td>
+                                                <td>Alimentação</td>
+                                                <td>R$ -980,00</td>
+                                            </tr>
+                                            <tr>
+                                                <td>3</td>
+                                                <td>Moradia</td>
+                                                <td>R$ -750,00</td>
+                                            </tr>
+                                            <tr>
+                                                <td>4</td>
+                                                <td>Saúde</td>
+                                                <td>R$ -520,00</td>
+                                            </tr>
+                                            <tr>
+                                                <td>5</td>
+                                                <td>Lazer</td>
+                                                <td>R$ -410,00</td>
+                                            </tr>
+                                            <tr>
+                                                <td>6</td>
+                                                <td>Educação</td>
+                                                <td>R$ -320,00</td>
+                                            </tr>
+                                            <tr>
+                                                <td>7</td>
+                                                <td>Assinaturas</td>
+                                                <td>R$ -290,00</td>
+                                            </tr>
+                                            <tr>
+                                                <td>8</td>
+                                                <td>Compras</td>
+                                                <td>R$ -250,00</td>
+                                            </tr>
+                                            <tr>
+                                                <td>9</td>
+                                                <td>Pets</td>
+                                                <td>R$ -180,00</td>
+                                            </tr>
+                                            <tr>
+                                                <td>10</td>
+                                                <td>Outros</td>
+                                                <td>R$ -150,00</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Planilha Eh Tudo. Simplificando suas finanças.</p>
+        </div>
+        <p>
+            <small>Produzido por
+                <a href="https://www.ehtudo.app">Eh!Tudo.app</a></small>
+        </p>
+    </footer>
+
+</body>
+
+</html>

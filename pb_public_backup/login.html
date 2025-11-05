@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <title>Login - Planilha Eh Tudo</title>
+  <script type="module" crossorigin src="/assets/login.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/auth.js">
+  <link rel="stylesheet" crossorigin href="/assets/auth2.css">
+  <link rel="stylesheet" crossorigin href="/assets/auth.css">
+</head>
+
+<body>
+    <nav>
+        <a href="/" class="brand">
+            <span>Planilha Eh Tudo</span>
+        </a>
+
+        <input id="bmenub" type="checkbox" class="show">
+        <label for="bmenub" class="burger pseudo button">menu</label>
+        <div class="menu user-menu" id="menu-user" role="menubar" aria-label="Menu do usuário"></div>
+    </nav>
+
+    <section class="section section-light">
+        <div class="container text-center">
+            <h2>Login</h2>
+            <form id="login-form" class="form" style="max-width: 400px; margin: 0 auto;">
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" name="email" placeholder="Seu e-mail" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" name="password" placeholder="Sua senha" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="button primary" id="login-btn">Entrar</button>
+                <p id="errorMsg" class="error-message" style="color: red; margin-top: 1em; display: none;"></p>
+                <p id="successMsg" class="success-message" style="color: green; margin-top: 1em; display: none;"></p>
+            </form>
+            <p style="margin-top: 1em;">
+                <a href="registro.html">Não tem conta? Registre-se</a>
+            </p>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-nav" role="navigation" aria-label="Links institucionais">
+                <ul class="footer-links">
+                    <li><a href="prints.html">Prints & Recursos</a></li>
+                    <li><a href="privacidade.html">Política de Privacidade</a></li>
+                    <li><a href="termos.html">Termos de Uso</a></li>
+                    <li><a href="mailto:planilha@ehtudo.app">Contato</a></li>
+                </ul>
+            </div>
+            <p>&copy; 2025 Planilha Eh Tudo. Flexibilidade com velocidade.</p>
+            <p><small>Produzido por <a href="https://www.ehtudo.app">Eh!Tudo.app</a></small></p>
+        </div>
+    </footer>
+
+</body>
+
+</html>
