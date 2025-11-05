@@ -7,8 +7,8 @@ Verificar que a funcionalidade de exclusão de lançamentos está funcionando co
 
 ### Frontend
 - **`pb_public/js/lancamentos-manager.js`**
-  - `deleteEntry(rowIndex)` - Inicia o processo de exclusão (linha 658)
-  - `openDeleteModal(entry)` - Abre modal de confirmação (linha 674)
+  - `deleteEntry(rowIndex)` - Inicia o processo de exclusão (linha 659)
+  - `openDeleteModal(entry)` - Abre modal de confirmação (linha 678)
   - `closeDeleteModal()` - Fecha o modal (linha 715)
   - `confirmDelete()` - Executa a exclusão (linha 725)
 
@@ -55,8 +55,9 @@ Verificar que a funcionalidade de exclusão de lançamentos está funcionando co
    b) Busca informações do Google (tokens, sheet_id)
    c) Faz requisição para Google Sheets API:
       - URL: https://sheets.googleapis.com/v4/spreadsheets/{sheetId}/values/Lançamentos!A{row}:G{row}:clear
-      - Method: POST
+      - Method: POST (método do Google Sheets API para limpar valores)
       - Headers: Authorization com access_token
+      - Nota: O backend do app usa DELETE, mas o Google Sheets API usa POST para o endpoint :clear
    d) Se token expirado (401), renova automaticamente e tenta novamente
    e) Retorna sucesso ou erro
 

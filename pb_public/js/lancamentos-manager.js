@@ -695,8 +695,16 @@ class LancamentosManager {
         
         if (rowSpan) rowSpan.textContent = entry.rowIndex;
         if (descSpan) descSpan.textContent = entry.descricao || '(sem descrição)';
-        if (dateSpan) dateSpan.textContent = this.formatDate(entry.data) || '-';
-        if (valueSpan) valueSpan.textContent = this.formatCurrency(entry.valor || 0);
+        if (dateSpan) {
+            dateSpan.textContent = this.formatDate(entry.data) || '-';
+        } else {
+            console.warn('openDeleteModal: Elemento deleteDate não encontrado no DOM');
+        }
+        if (valueSpan) {
+            valueSpan.textContent = this.formatCurrency(entry.valor || 0);
+        } else {
+            console.warn('openDeleteModal: Elemento deleteValue não encontrado no DOM');
+        }
         
         // Garante que o botão de confirmar está habilitado e com texto correto
         const confirmBtn = document.getElementById('deleteConfirmBtn');
