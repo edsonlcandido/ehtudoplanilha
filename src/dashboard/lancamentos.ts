@@ -232,32 +232,96 @@ function editEntry(rowIndex: number): void {
 }
 
 /**
- * Deleta um lançamento
+ * Variável para armazenar o rowIndex a ser deletado
  */
-async function deleteEntry(rowIndex: number): Promise<void> {
+let pendingDeleteRowIndex: number | null = null;
+
+/**
+ * Abre modal de confirmação de exclusão
+ */
+function openDeleteModal(rowIndex: number): void {
   const entry = state.entries.find(e => e.rowIndex === rowIndex);
   if (!entry) {
     console.error('Lançamento não encontrado:', rowIndex);
     return;
   }
 
-  if (!confirm(`Tem certeza que deseja excluir o lançamento?\n\nDescrição: ${entry.descricao}\nValor: R$ ${entry.valor}`)) {
+  // Armazena o rowIndex para uso posterior
+  pendingDeleteRowIndex = rowIndex;
+
+  // Preenche os dados do modal
+  const deleteRowNumber = document.getElementById('deleteRowNumber');
+  const deleteDate = document.getElementById('deleteDate');
+  const deleteValue = document.getElementById('deleteValue');
+  const deleteDescription = document.getElementById('deleteDescription');
+
+  if (deleteRowNumber) deleteRowNumber.textContent = String(entry.rowIndex || '-');
+  if (deleteDate) deleteDate.textContent = String(entry.data || '-');
+  if (deleteValue) deleteValue.textContent = `R$ ${entry.valor?.toFixed(2) || '0.00'}`;
+  if (deleteDescription) deleteDescription.textContent = entry.descricao || '-';
+
+  // Exibe o modal
+  const modal = document.getElementById('deleteModal');
+  if (modal) {
+    modal.style.display = 'flex';
+  }
+}
+
+/**
+ * Fecha modal de confirmação de exclusão
+ */
+function closeDeleteModal(): void {
+  const modal = document.getElementById('deleteModal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+  pendingDeleteRowIndex = null;
+}
+
+/**
+ * Confirma e executa a exclusão
+ */
+async function confirmDelete(): Promise<void> {
+  if (pendingDeleteRowIndex === null) {
+    console.error('Nenhum lançamento selecionado para exclusão');
     return;
   }
 
+  const deleteConfirmBtn = document.getElementById('deleteConfirmBtn') as HTMLButtonElement;
+  if (deleteConfirmBtn) {
+    deleteConfirmBtn.disabled = true;
+    deleteConfirmBtn.textContent = 'Excluindo...';
+  }
+
   try {
-    await lancamentosService.deleteEntry(rowIndex);
+    await lancamentosService.deleteEntry(pendingDeleteRowIndex);
+    closeDeleteModal();
     showMessage('Lançamento excluído com sucesso', 'success');
     await loadEntries();
   } catch (error: any) {
     console.error('Erro ao deletar lançamento:', error);
     showMessage('Erro ao deletar lançamento: ' + error.message, 'error');
+  } finally {
+    if (deleteConfirmBtn) {
+      deleteConfirmBtn.disabled = false;
+      deleteConfirmBtn.textContent = 'Excluir';
+    }
   }
+}
+
+/**
+ * Deleta um lançamento (mantida para compatibilidade)
+ */
+function deleteEntry(rowIndex: number): void {
+  openDeleteModal(rowIndex);
 }
 
 // Expõe funções globalmente para uso nos botões
 (window as any).editEntry = editEntry;
 (window as any).deleteEntry = deleteEntry;
+(window as any).openDeleteModal = openDeleteModal;
+(window as any).closeDeleteModal = closeDeleteModal;
+(window as any).confirmDelete = confirmDelete;
 
 // ============================================================================
 // Inicialização

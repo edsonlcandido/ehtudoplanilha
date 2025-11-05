@@ -162,7 +162,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Confirmar Exclusão</h3>
-                <button class="modal-close" onclick="lancamentosManager.closeDeleteModal()">×</button>
+                <button class="modal-close" onclick="window.closeDeleteModal()">×</button>
             </div>
             <div class="modal-body">
                 <p style="margin-top:0;">Tem certeza que deseja excluir o lançamento abaixo?</p>
@@ -176,9 +176,9 @@
                     planilha Google Sheets. Não há como desfazer.</p>
             </div>
             <div class="modal-footer">
-                <button class="button" onclick="lancamentosManager.closeDeleteModal()">Cancelar</button>
+                <button class="button" onclick="window.closeDeleteModal()">Cancelar</button>
                 <button id="deleteConfirmBtn" class="button danger"
-                    onclick="lancamentosManager.confirmDelete()">Excluir</button>
+                    onclick="window.confirmDelete()">Excluir</button>
             </div>
         </div>
     </div>

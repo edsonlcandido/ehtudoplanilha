@@ -87,7 +87,7 @@ class LancamentosService {
 
     try {
       const response = await fetch(`${pb.baseUrl}/delete-sheet-entry`, {
-        method: 'POST',
+        method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${pb.authStore.token}`,
           'Content-Type': 'application/json'
