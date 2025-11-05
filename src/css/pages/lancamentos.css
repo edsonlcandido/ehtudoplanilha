@@ -486,64 +486,52 @@ body {
   backdrop-filter: blur(2px);
 }
 
-#deleteModal .modal-content,
-#splitModal .modal-content {
-  background: white;
-  border-radius: 12px;
-  max-width: 500px;
-  width: 90%;
-  position: relative;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  max-height: 90vh;
-  overflow-y: auto;
+/* Adiciona suporte para form-actions no deleteModal */
+.entry-modal__form-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 2px solid #f0f0f0;
+  gap: 1rem;
 }
 
-#deleteModal .modal-header,
-#splitModal .modal-header {
-  padding: 1.5rem 1.5rem 1rem;
+/* Estilo para botão danger */
+.button.danger {
+  background-color: #e53935;
+  color: white;
+  border-color: #e53935;
 }
 
-#deleteModal .modal-body,
-#splitModal .modal-body {
-  padding: 0 1.5rem 1rem;
+.button.danger:hover {
+  background-color: #d32f2f;
+  border-color: #d32f2f;
 }
 
-#deleteModal .modal-footer,
-#splitModal .modal-footer {
-  padding: 1rem 1.5rem 1.5rem;
+.button.danger:disabled {
+  background-color: #ffcdd2;
+  border-color: #ffcdd2;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 @media (max-width: 768px) {
   #deleteModal,
   #splitModal {
     padding: 0.5rem;
+    align-items: flex-start;
+    padding: calc(env(safe-area-inset-top, 0) + 0.75rem) 0.5rem 5rem 0.5rem;
+    overflow-y: auto;
   }
 
-  #deleteModal .modal-content,
-  #splitModal .modal-content {
-    width: 95%;
-    max-width: 100%;
+  .entry-modal__form-actions {
+    flex-direction: row;
+    gap: 0.75rem;
+    justify-content: space-between;
   }
 
-  #deleteModal .modal-header,
-  #splitModal .modal-header {
-    padding: 1rem 1rem 0.75rem;
-  }
-
-  #deleteModal .modal-body,
-  #splitModal .modal-body {
-    padding: 0 1rem 0.75rem;
-  }
-
-  #deleteModal .modal-footer,
-  #splitModal .modal-footer {
-    padding: 0.75rem 1rem 1rem;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  #deleteModal .modal-footer .button,
-  #splitModal .modal-footer .button {
-    width: 100%;
+  .entry-modal__form-actions .button {
+    flex: 1;
   }
 }

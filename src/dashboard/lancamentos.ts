@@ -9,6 +9,7 @@ import { initEditEntryModal, openEditEntryModal, setEditModalEntries } from '../
 import { renderEntries } from '../components/lancamentos-list';
 import lancamentosService from '../services/lancamentos';
 import type { SortType, LancamentosState } from '../types';
+import { excelSerialToDateTimeLabel } from '../utils/date-helpers';
 
 // ============================================================================
 // Estado da aplicação
@@ -256,7 +257,22 @@ function openDeleteModal(rowIndex: number): void {
   const deleteDescription = document.getElementById('deleteDescription');
 
   if (deleteRowNumber) deleteRowNumber.textContent = String(entry.rowIndex || '-');
-  if (deleteDate) deleteDate.textContent = String(entry.data || '-');
+  
+  // Formata a data corretamente
+  if (deleteDate) {
+    let formattedDate = '-';
+    if (entry.data) {
+      if (typeof entry.data === 'number') {
+        // Se for número Excel serial, converte para formato brasileiro
+        formattedDate = excelSerialToDateTimeLabel(entry.data);
+      } else if (typeof entry.data === 'string') {
+        // Se já for string, usa como está (já está formatado)
+        formattedDate = entry.data;
+      }
+    }
+    deleteDate.textContent = formattedDate;
+  }
+  
   if (deleteValue) deleteValue.textContent = new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL'
