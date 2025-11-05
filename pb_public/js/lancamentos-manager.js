@@ -690,13 +690,13 @@ class LancamentosManager {
         // Preenche os dados da entrada no modal
         const rowSpan = document.getElementById('deleteRowNumber');
         const descSpan = document.getElementById('deleteDescription');
-    const dateSpan = document.getElementById('deleteDate');
-    const valueSpan = document.getElementById('deleteValue');
+        const dateSpan = document.getElementById('deleteDate');
+        const valueSpan = document.getElementById('deleteValue');
         
         if (rowSpan) rowSpan.textContent = entry.rowIndex;
         if (descSpan) descSpan.textContent = entry.descricao || '(sem descrição)';
-    if (dateSpan) dateSpan.textContent = this.formatDate(entry.data) || '-';
-    if (valueSpan) valueSpan.textContent = this.formatCurrency(entry.valor || 0);
+        if (dateSpan) dateSpan.textContent = this.formatDate(entry.data) || '-';
+        if (valueSpan) valueSpan.textContent = this.formatCurrency(entry.valor || 0);
         
         // Garante que o botão de confirmar está habilitado e com texto correto
         const confirmBtn = document.getElementById('deleteConfirmBtn');
@@ -738,14 +738,14 @@ class LancamentosManager {
         }
 
         // Remoção otimista - salva estado atual para possível rollback
-    const originalEntries = [...this.entries];
-    const originalFiltered = [...this.filteredEntries];
-    const originalOriginal = [...this.originalEntries];
-    
-    // Remove a entrada das listas localmente (UI otimista)
-    this.entries = this.entries.filter(e => e.rowIndex !== rowIndex);
-    this.filteredEntries = this.filteredEntries.filter(e => e.rowIndex !== rowIndex);
-    this.originalEntries = this.originalEntries.filter(e => e.rowIndex !== rowIndex);
+        const originalEntries = [...this.entries];
+        const originalFiltered = [...this.filteredEntries];
+        const originalOriginal = [...this.originalEntries];
+        
+        // Remove a entrada das listas localmente (UI otimista)
+        this.entries = this.entries.filter(e => e.rowIndex !== rowIndex);
+        this.filteredEntries = this.filteredEntries.filter(e => e.rowIndex !== rowIndex);
+        this.originalEntries = this.originalEntries.filter(e => e.rowIndex !== rowIndex);
         this.renderEntries();
         this.updateSearchUI();
 
