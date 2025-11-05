@@ -617,6 +617,11 @@ class EditEntryModal {
       // Valida data apenas se preenchida
       let dataFormatada = '';
       if (dateValue && dateValue.trim() !== '') {
+        // Valida formato datetime-local (YYYY-MM-DDTHH:MM)
+        if (!dateValue.includes('T')) {
+          throw new Error('Formato de data/hora inválido');
+        }
+        
         const dateObj = new Date(dateValue);
         if (isNaN(dateObj.getTime())) {
           throw new Error('Data inválida');
