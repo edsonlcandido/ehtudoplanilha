@@ -4,8 +4,11 @@
  */
 
 import { renderUserMenu } from '../components/user-menu';
-import { initEntryModal, openEntryModal, closeEntryModal } from '../components/entry-modal';
+import { initEntryModal, openEntryModal } from '../components/entry-modal';
 import { initEditEntryModal, openEditEntryModal, setEditModalEntries } from '../components/edit-entry-modal';
+import { initFutureEntryModal, openFutureEntryModal } from '../components/future-entry-modal';
+import { initTransferEntryModal, openTransferEntryModal } from '../components/transfer-entry-modal';
+import { initFabMenu } from '../components/fab-menu';
 import { renderEntries } from '../components/lancamentos-list';
 import lancamentosService from '../services/lancamentos';
 import type { SortType, LancamentosState } from '../types';
@@ -372,28 +375,31 @@ async function init(): Promise<void> {
     loadEntries();
   });
 
-  // Configura botões de adicionar (header e FAB)
+  // Inicializa modal de lançamento futuro
+  await initFutureEntryModal((result) => {
+    console.log('✅ Lançamento futuro adicionado:', result);
+    loadEntries();
+  });
+
+  // Inicializa modal de transferência
+  await initTransferEntryModal((result) => {
+    console.log('✅ Transferência realizada:', result);
+    loadEntries();
+  });
+
+  // Inicializa o menu FAB com as 3 opções
+  initFabMenu(
+    () => openEntryModal(),         // Receita/despesa
+    () => openFutureEntryModal(),   // Lançamento futuro
+    () => openTransferEntryModal()  // Transferência
+  );
+
+  // Configura botão de adicionar do header (se existir)
   const addBtn = document.getElementById('openAddEntryModalBtn');
-  const fabBtn = document.getElementById('openEntryModal');
-  
   if (addBtn) {
     addBtn.addEventListener('click', () => {
       console.log('🔓 Abrindo modal de adicionar lançamento...');
       openEntryModal();
-    });
-  }
-  
-  if (fabBtn) {
-    fabBtn.addEventListener('click', () => {
-      console.log('🔓 Toggle modal de adicionar lançamento (FAB)...');
-      const modal = document.getElementById('entryModal');
-      const isOpen = modal?.style.display === 'flex';
-      
-      if (isOpen) {
-        closeEntryModal();
-      } else {
-        openEntryModal();
-      }
     });
   }
 

@@ -6,7 +6,10 @@
 import { pb } from '../main';
 import { API_ENDPOINTS } from '../config/env';
 import { renderUserMenu } from '../components/user-menu';
-import { initEntryModal, openEntryModal, closeEntryModal } from '../components/entry-modal';
+import { initEntryModal, openEntryModal } from '../components/entry-modal';
+import { initFutureEntryModal, openFutureEntryModal } from '../components/future-entry-modal';
+import { initTransferEntryModal, openTransferEntryModal } from '../components/transfer-entry-modal';
+import { initFabMenu } from '../components/fab-menu';
 import { 
   renderizarCards, 
   inicializarEventos, 
@@ -50,22 +53,27 @@ async function init(): Promise<void> {
   // Inicializa modal de lançamento
   await initEntryModal(() => {
     console.log('✅ Lançamento adicionado! Recarregue a página para ver as mudanças.');
-    // TODO: Implementar atualização automática dos cards
     window.location.reload();
   });
 
-  // Botão de adicionar lançamento (toggle: abre/fecha)
-  const addBtn = document.getElementById('openEntryModal');
-  addBtn?.addEventListener('click', () => {
-    const modal = document.getElementById('entryModal');
-    const isOpen = modal?.style.display === 'flex';
-    
-    if (isOpen) {
-      closeEntryModal();
-    } else {
-      openEntryModal();
-    }
+  // Inicializa modal de lançamento futuro
+  await initFutureEntryModal(() => {
+    console.log('✅ Lançamento futuro adicionado! Recarregue a página para ver as mudanças.');
+    window.location.reload();
   });
+
+  // Inicializa modal de transferência
+  await initTransferEntryModal(() => {
+    console.log('✅ Transferência realizada! Recarregue a página para ver as mudanças.');
+    window.location.reload();
+  });
+
+  // Inicializa o menu FAB com as 3 opções
+  initFabMenu(
+    () => openEntryModal(),         // Receita/despesa
+    () => openFutureEntryModal(),   // Lançamento futuro
+    () => openTransferEntryModal()  // Transferência
+  );
 
   // Verifica autenticação
   if (!pb.authStore.isValid) {
