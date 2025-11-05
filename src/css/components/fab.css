@@ -12,7 +12,7 @@
   border-radius: 50%;
   font-size: 2rem;
   line-height: 1;
-  background: #28a745;
+  background: var(--success-color);
   color: white;
   border: none;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -25,7 +25,7 @@
 }
 
 .fab-button:hover {
-  background: #218838;
+  background: var(--success-hover);
   transform: scale(1.1);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
@@ -36,12 +36,12 @@
 
 /* Estado quando modal está aberto */
 .fab-button.modal-open {
-  background: #dc3545;
+  background: var(--danger-color);
   transform: rotate(45deg);
 }
 
 .fab-button.modal-open:hover {
-  background: #c82333;
+  background: var(--danger-hover);
   transform: rotate(45deg) scale(1.1);
 }
 

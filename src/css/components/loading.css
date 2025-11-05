@@ -43,29 +43,30 @@
 }
 
 .error-message {
-  background-color: #fee;
-  color: #c33;
-  border: 1px solid #fcc;
+  background-color: var(--danger-bg);
+  color: var(--danger-text-dark);
+  border: 1px solid var(--danger-color);
 }
 
 .success-message {
-  background-color: #efe;
-  color: #3a3;
-  border: 1px solid #cfc;
+  background-color: var(--success-bg);
+  color: var(--success-text-dark);
+  border: 1px solid var(--success-color);
 }
 
 .info-message {
-  background-color: #e7f3ff;
-  color: #0066cc;
-  border: 1px solid #b3d9ff;
+  background-color: var(--info-bg-light);
+  color: var(--info-text-dark);
+  border: 1px solid var(--info-color);
+}
 }
 
 /* ========== Notice ========== */
 .notice {
   padding: var(--spacing-md);
-  background-color: #fff3cd;
-  border: 1px solid #ffc107;
+  background-color: var(--warning-bg);
+  border: 1px solid var(--warning-color);
   border-radius: var(--border-radius-sm);
-  color: #856404;
+  color: var(--warning-text);
   margin: var(--spacing-md) 0;
 }
