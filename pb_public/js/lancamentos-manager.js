@@ -653,45 +653,67 @@ class LancamentosManager {
     }
 
     /**
-     * Deleta uma entrada
+     * Deleta uma entrada - abre modal de confirmação
+     * @param {number} rowIndex - Índice da linha na planilha a ser excluída
      */
     async deleteEntry(rowIndex) {
+        console.log(`deleteEntry: Solicitação de exclusão para linha ${rowIndex}`);
+        
         // Procura nas entradas originais, não filtradas
         const entry = this.entries.find(e => e.rowIndex === rowIndex);
         if (!entry) {
+            console.warn(`deleteEntry: Entrada não encontrada para rowIndex ${rowIndex}`);
             this.showMessage('Entrada não encontrada', 'error');
             return;
         }
+        
+        // Abre modal de confirmação com os dados da entrada
         this.openDeleteModal(entry);
     }
 
     /**
      * Abre modal de confirmação de exclusão
+     * @param {Object} entry - Entrada a ser excluída
      */
     openDeleteModal(entry) {
+        console.log(`openDeleteModal: Abrindo modal para linha ${entry.rowIndex}`);
+        
         const modal = document.getElementById('deleteModal');
-        if (!modal) return;
+        if (!modal) {
+            console.error('openDeleteModal: Modal de exclusão não encontrado no DOM');
+            return;
+        }
+        
+        // Armazena o rowIndex para uso posterior na confirmação
         this.pendingDeleteRowIndex = entry.rowIndex;
+        
+        // Preenche os dados da entrada no modal
         const rowSpan = document.getElementById('deleteRowNumber');
         const descSpan = document.getElementById('deleteDescription');
     const dateSpan = document.getElementById('deleteDate');
     const valueSpan = document.getElementById('deleteValue');
+        
         if (rowSpan) rowSpan.textContent = entry.rowIndex;
         if (descSpan) descSpan.textContent = entry.descricao || '(sem descrição)';
     if (dateSpan) dateSpan.textContent = this.formatDate(entry.data) || '-';
     if (valueSpan) valueSpan.textContent = this.formatCurrency(entry.valor || 0);
+        
+        // Garante que o botão de confirmar está habilitado e com texto correto
         const confirmBtn = document.getElementById('deleteConfirmBtn');
         if (confirmBtn) {
             confirmBtn.disabled = false;
             confirmBtn.textContent = 'Excluir';
         }
+        
+        // Exibe o modal
         modal.style.display = 'flex';
     }
 
     /**
-     * Fecha modal de exclusão
+     * Fecha modal de exclusão e limpa o estado
      */
     closeDeleteModal() {
+        console.log('closeDeleteModal: Fechando modal de exclusão');
         const modal = document.getElementById('deleteModal');
         if (modal) modal.style.display = 'none';
         this.pendingDeleteRowIndex = null;
@@ -702,20 +724,25 @@ class LancamentosManager {
      */
     async confirmDelete() {
         if (!this.pendingDeleteRowIndex) {
+            console.warn('confirmDelete: Nenhum lançamento pendente para exclusão');
             this.closeDeleteModal();
             return;
         }
         const rowIndex = this.pendingDeleteRowIndex;
+        console.log(`confirmDelete: Iniciando exclusão do lançamento na linha ${rowIndex}`);
+        
         const confirmBtn = document.getElementById('deleteConfirmBtn');
         if (confirmBtn) {
             confirmBtn.disabled = true;
             confirmBtn.textContent = 'Excluindo...';
         }
 
-        // Remoção otimista
+        // Remoção otimista - salva estado atual para possível rollback
     const originalEntries = [...this.entries];
     const originalFiltered = [...this.filteredEntries];
     const originalOriginal = [...this.originalEntries];
+    
+    // Remove a entrada das listas localmente (UI otimista)
     this.entries = this.entries.filter(e => e.rowIndex !== rowIndex);
     this.filteredEntries = this.filteredEntries.filter(e => e.rowIndex !== rowIndex);
     this.originalEntries = this.originalEntries.filter(e => e.rowIndex !== rowIndex);
@@ -723,18 +750,31 @@ class LancamentosManager {
         this.updateSearchUI();
 
         try {
+            // Chama o serviço para deletar a entrada na planilha
+            console.log(`confirmDelete: Chamando googleSheetsService.deleteSheetEntry(${rowIndex})`);
             await googleSheetsService.deleteSheetEntry(rowIndex);
+            console.log(`confirmDelete: Lançamento linha ${rowIndex} excluído com sucesso`);
+            
             this.showMessage('Lançamento excluído com sucesso', 'success');
             this.closeDeleteModal();
+            
+            // Recarrega as entradas para sincronizar com a planilha
             await this.loadEntries();
         } catch (error) {
-            console.error('Erro ao excluir lançamento:', error);
+            console.error(`confirmDelete: Erro ao excluir lançamento linha ${rowIndex}:`, error);
+            
+            // Rollback: restaura estado anterior
             this.entries = originalEntries;
             this.filteredEntries = originalFiltered;
             this.originalEntries = originalOriginal;
             this.renderEntries();
             this.updateSearchUI();
-            this.showMessage('Erro ao excluir lançamento: ' + error.message, 'error');
+            
+            // Exibe mensagem de erro ao usuário
+            const errorMsg = error.message || 'Erro desconhecido ao excluir lançamento';
+            this.showMessage(`Erro ao excluir lançamento: ${errorMsg}`, 'error');
+            
+            // Re-habilita o botão para tentar novamente
             if (confirmBtn) {
                 confirmBtn.disabled = false;
                 confirmBtn.textContent = 'Excluir';
