@@ -17,8 +17,9 @@ routerAdd("POST", "/append-entry", (c) => {
     const requestData = c.requestInfo().body;
     
     // Validação básica dos dados
-    if (!requestData.data || !requestData.conta || requestData.valor === undefined || requestData.descricao === undefined) {
-        return c.json(400, { "error": "Campos obrigatórios faltando" });
+    // data e conta são opcionais (para lançamentos futuros)
+    if (requestData.valor === undefined || requestData.descricao === undefined) {
+        return c.json(400, { "error": "Campos obrigatórios faltando (valor e descrição)" });
     }
 
     try {
@@ -46,10 +47,11 @@ routerAdd("POST", "/append-entry", (c) => {
         }
 
         // Preparar linha para inserir na planilha
+        // data e conta podem ser vazias (para lançamentos futuros)
         const values = [
             [
-                requestData.data,
-                requestData.conta,
+                requestData.data || '',
+                requestData.conta || '',
                 requestData.valor,
                 requestData.descricao,
                 requestData.categoria || '',
