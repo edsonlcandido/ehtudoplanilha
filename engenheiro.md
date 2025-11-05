@@ -342,17 +342,3 @@ Formato sugerido (stdout):
 - **Logs**: execute `./pocketbase serve --dev` via `iniciar-pb.sh` e observe stdout; hooks usam `console.log` em pontos-chave.
 - **Erros de token/Sheets**: ver `pb_hooks/google-endpoints.pb.js` para padrões de retry e refresh automático (busca refresh_token e re-tenta 401).
 
----
-
-## 14. Roadmap Futuro
-- Login e cadastro OAuth google
-- Novos tipos de lançamentos (lançamento futuro, transferência, pagamento parcelado)
-- Ver lançamentos da categoria selecionada
-- Melhorar a IA para processamento da imagem e geração de lançamentos
-
----
-
-## 15. Os detalhes
-- Mensagens via toast, converter para um componente user base da pagina de configuração
-- Alert para revogar o token google, configuar para alinhar para um modal com aparencia do modal delete e utros entry-form edit-entry-form
-- Botão de adicionar na página de lançamentos ao editar uma transação o simbolo "+" se desloca um pouco para a direita
