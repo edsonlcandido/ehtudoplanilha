@@ -170,12 +170,6 @@ export function renderList(entries: SheetEntry[]): string {
               <span class="lancamentos__item-label">Orçamento:</span>
               <span class="lancamentos__item-value">${formatDateSimple(entry.orcamento)}</span>
             </div>
-            ${entry.obs ? `
-            <div class="lancamentos__item-row">
-              <span class="lancamentos__item-label">Obs:</span>
-              <span class="lancamentos__item-value">${entry.obs}</span>
-            </div>
-            ` : ''}
           </div>
         </div>
         <div class="lancamentos__item-actions">
