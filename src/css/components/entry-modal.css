@@ -15,7 +15,7 @@
     align-items: center;
     justify-content: center;
     background: rgba(0, 0, 0, 0.6);
-    z-index: 10001;
+    z-index: 99999;
     padding: 1rem;
     box-sizing: border-box;
     backdrop-filter: blur(2px);
@@ -29,7 +29,7 @@
         align-items: flex-start;
         padding: calc(env(safe-area-inset-top, 0) + 0.75rem) 0.5rem 5rem 0.5rem;
         overflow-y: auto;
-        overscroll-behavior: contain;
+        overscroll-behavior: contain;        
     }
 }
 
@@ -45,14 +45,13 @@
     color: #666;
     font-size: 1.75rem;
     cursor: pointer;
-    z-index: 10003;
+    z-index: 100001;
     width: 40px;
     height: 40px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    transition: all .2s ease;
     font-weight: 300;
     line-height: 1;
 }
@@ -61,7 +60,6 @@
 .entry-modal__close:hover { 
     background: #f5f5f5;
     color: #e53935;
-    transform: rotate(90deg);
 }
 
 #closeEntryModal:focus,
@@ -84,7 +82,8 @@
     overflow: auto;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
     border: 1px solid rgba(0, 0, 0, 0.06);
-    z-index: 10002;
+    z-index: 100000;
+    margin-top: 0.5rem;
 }
 
 .entry-modal__content::-webkit-scrollbar {
@@ -366,6 +365,7 @@
 @media (max-width: 640px) {
     .modal-content.solution-card,
     .entry-modal__content {
+        margin-top: 3rem;
         padding: 1.25rem;
         max-width: 100%;
         width: 95%;

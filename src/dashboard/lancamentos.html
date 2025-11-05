@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/dashboard.css">
     <link rel="stylesheet" href="../css/pages/lancamentos.css">
-    <link rel="stylesheet" href="css/edit-entry-form.css">
+    <link rel="stylesheet" href="../css/components/entry-modal.css">
 </head>
 
 <body>
@@ -45,11 +45,11 @@
         <main class="main-content">
             <section class="section section-light dashboard-main">
                 <div class="container">
-                    <div class="lancamentos-header">
-                        <h2>Lançamentos</h2>
-                        <p>Visualize e gerencie todos os seus lançamentos financeiros.</p>
+                    <div class="lancamentos__header lancamentos-header">
+                        <h2 class="lancamentos__title">Lançamentos</h2>
+                        <p class="lancamentos__description">Visualize e gerencie todos os seus lançamentos financeiros.</p>
 
-                        <div class="lancamentos-actions">
+                        <div class="lancamentos__actions lancamentos-actions">
                             <button id="refreshEntriesBtn" class="button">
                                 🔄 Atualizar
                             </button>
@@ -57,45 +57,43 @@
                     </div>
 
                     <!-- Indicador de loading -->
-                    <div id="loadingIndicator" class="loading-indicator" style="display: none;">
-                        <div class="loading-spinner"></div>
+                    <div id="loadingIndicator" class="lancamentos__loading loading-indicator" style="display: none;">
+                        <div class="lancamentos__spinner loading-spinner"></div>
                         <p>Carregando lançamentos...</p>
                     </div>
 
                     <!-- Container de mensagens -->
-                    <div id="messageContainer" class="message-container"></div>
+                    <div id="messageContainer" class="lancamentos__messages message-container"></div>
 
                     <!-- Barra de pesquisa -->
-                    <div class="search-container" style="margin-bottom: 1.5rem;">
-                        <div class="search-input-wrapper">
+                    <div class="lancamentos__search search-container">
+                        <div class="lancamentos__search-wrapper search-input-wrapper">
                             <input type="text" id="searchInput"
                                 placeholder="Pesquisar lançamentos por data, valor, descrição, categoria ou conta..."
-                                class="search-input" autocomplete="off">
-                            <button id="clearSearchBtn" class="clear-search-btn" style="display: none;"
+                                class="lancamentos__search-input search-input" autocomplete="off">
+                            <button id="clearSearchBtn" class="lancamentos__search-clear clear-search-btn" style="display: none;"
                                 title="Limpar pesquisa">
                                 ✕
                             </button>
                         </div>
-                        <div id="searchResults" class="search-results" style="display: none;">
+                        <div id="searchResults" class="lancamentos__search-results search-results">
                             <span id="searchCount"></span>
                         </div>
                     </div>
 
                     <!-- Controles de ordenação -->
-                    <div class="sorting-controls"
-                        style="margin-bottom: 1.5rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
-                        <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;">
-                            <div class="form-group" style="margin: 0;">
-                                <label for="sortSelect" style="margin-right: 0.5rem; font-weight: 600;">Ordenar
-                                    por:</label>
-                                <select id="sortSelect" style="min-width: 180px;">
+                    <div class="lancamentos__sorting sorting-controls">
+                        <div class="lancamentos__sorting-controls">
+                            <div class="lancamentos__sorting-group form-group">
+                                <label for="sortSelect" class="lancamentos__sorting-label">Ordenar por:</label>
+                                <select id="sortSelect" class="lancamentos__sorting-select">
                                     <option value="original" selected>Linhas da Planilha</option>
                                     <option value="budget_date">Orçamento > Data</option>
                                     <option value="date">Data</option>
                                 </select>
                             </div>
-                            <div class="form-group" style="margin: 0;">
-                                <label class="checkable" style="display: flex; align-items: center; gap: 0.5rem;">
+                            <div class="lancamentos__sorting-group form-group">
+                                <label class="lancamentos__sorting-checkbox checkable">
                                     <input type="checkbox" id="hideBlankDatesCheck">
                                     <span class="checkable">Ocultar datas em branco</span>
                                 </label>
@@ -104,7 +102,7 @@
                     </div>
 
                     <!-- Container principal dos lançamentos -->
-                    <div id="entriesContainer" class="entries-container">
+                    <div id="entriesContainer" class="lancamentos__container entries-container">
                         <!-- Conteúdo será carregado via JavaScript -->
                     </div>
                 </div>

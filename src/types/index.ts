@@ -72,6 +72,37 @@ export interface EntryPayload {
 export type OnEntryAddedCallback = (result: any) => void;
 
 /**
+ * Callback quando lançamento é editado
+ */
+export type OnEntryEditedCallback = (result: any) => void;
+
+/**
+ * Tipos de ordenação de lançamentos
+ */
+export type SortType = 'original' | 'budget_date' | 'date';
+
+/**
+ * Estado de filtros e ordenação
+ */
+export interface LancamentosState {
+  entries: SheetEntry[];
+  filteredEntries: SheetEntry[];
+  originalEntries: SheetEntry[];
+  searchTerm: string;
+  sortBy: SortType;
+  hideBlankDates: boolean;
+  isLoading: boolean;
+}
+
+/**
+ * Resposta da API de lançamentos
+ */
+export interface SheetEntriesResponse {
+  entries: SheetEntry[];
+  total?: number;
+}
+
+/**
  * Instância global do PocketBase
  */
 export type PocketBaseInstance = PocketBase;
