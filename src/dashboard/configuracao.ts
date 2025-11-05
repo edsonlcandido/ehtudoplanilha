@@ -7,6 +7,7 @@ import { renderUserMenu } from '../components/user-menu';
 import { GoogleOAuthService } from '../services/google-oauth';
 import { SheetsService } from '../services/sheets';
 import { pb } from '../main';
+import { showSuccessToast, showErrorToast } from '../components/toast';
 
 // ============================================================================
 // Estado da Página
@@ -141,43 +142,8 @@ function updateSheetInfo(): void {
   }
 }
 
-/**
- * Mostra mensagem de sucesso temporária
- */
-function showSuccessMessage(message: string): void {
-  const alertDiv = document.createElement('div');
-  alertDiv.className = 'alert success';
-  alertDiv.style.cssText = 'position: fixed; top: 80px; right: 20px; z-index: 99999; min-width: 300px; max-width: 500px;';
-  alertDiv.innerHTML = `
-    <strong>✅ Sucesso!</strong>
-    <p>${message}</p>
-  `;
-  
-  document.body.appendChild(alertDiv);
-  
-  setTimeout(() => {
-    alertDiv.remove();
-  }, 4000);
-}
-
-/**
- * Mostra mensagem de erro temporária
- */
-function showErrorMessage(message: string): void {
-  const alertDiv = document.createElement('div');
-  alertDiv.className = 'alert error';
-  alertDiv.style.cssText = 'position: fixed; top: 80px; right: 20px; z-index: 99999; min-width: 300px; max-width: 500px;';
-  alertDiv.innerHTML = `
-    <strong>❌ Erro!</strong>
-    <p>${message}</p>
-  `;
-  
-  document.body.appendChild(alertDiv);
-  
-  setTimeout(() => {
-    alertDiv.remove();
-  }, 5000);
-}
+// Funções de mensagem descontinuadas - agora usamos o componente toast importado
+// showSuccessMessage e showErrorMessage foram substituídas por showSuccessToast e showErrorToast
 
 // ============================================================================
 // Funções de Negócio
@@ -208,7 +174,7 @@ async function loadConfigStatus(): Promise<void> {
     console.log('✅ Status carregado:', pageState);
   } catch (error) {
     console.error('❌ Erro ao carregar status:', error);
-    showErrorMessage('Erro ao carregar configurações. Tente recarregar a página.');
+    showErrorToast('Erro ao carregar configurações. Tente recarregar a página.');
   }
 }
 
@@ -238,11 +204,11 @@ async function handleCreateNewSheet(): Promise<void> {
     
     updateSheetInfo();
     
-    showSuccessMessage(`Planilha "${sheetName}" criada com sucesso! Você já pode começar a usar.`);
+    showSuccessToast(`Planilha "${sheetName}" criada com sucesso! Você já pode começar a usar.`);
     
   } catch (error: any) {
     console.error('❌ Erro ao criar nova planilha:', error);
-    showErrorMessage(
+    showErrorToast(
       error?.message || 'Erro ao criar planilha. Tente novamente.'
     );
   }
@@ -266,7 +232,7 @@ async function handleListSheets(): Promise<void> {
     console.log('✅ Planilhas encontradas:', sheets);
     
     if (sheets.length === 0) {
-      showErrorMessage('Nenhuma planilha encontrada no seu Google Drive.');
+      showErrorToast('Nenhuma planilha encontrada no seu Google Drive.');
       if (elements.sheetsList) {
         elements.sheetsList.innerHTML = '<p style="color: #999; text-align: center; padding: 1rem;">Nenhuma planilha encontrada. Crie uma nova ou verifique suas permissões no Google Drive.</p>';
         elements.sheetsList.style.display = 'block';
@@ -341,7 +307,7 @@ async function handleListSheets(): Promise<void> {
       errorMessage += 'Tente novamente.';
     }
     
-    showErrorMessage(errorMessage);
+    showErrorToast(errorMessage);
     
     // Reabilitar botão em caso de erro
     if (elements.loadSheetsButton) {
@@ -369,11 +335,11 @@ async function handleSelectSheet(sheetId: string, sheetName: string): Promise<vo
     
     updateSheetInfo();
     
-    showSuccessMessage(`Planilha "${sheetName}" selecionada com sucesso!`);
+    showSuccessToast(`Planilha "${sheetName}" selecionada com sucesso!`);
     
   } catch (error: any) {
     console.error('❌ Erro ao selecionar planilha:', error);
-    showErrorMessage(
+    showErrorToast(
       error?.message || 'Erro ao selecionar planilha. Tente novamente.'
     );
   }
@@ -386,7 +352,7 @@ async function handleGoogleAuth(): Promise<void> {
   try {
     const user = pb.authStore.record;
     if (!user?.id) {
-      showErrorMessage('Usuário não autenticado.');
+      showErrorToast('Usuário não autenticado.');
       return;
     }
     
@@ -394,7 +360,7 @@ async function handleGoogleAuth(): Promise<void> {
     await GoogleOAuthService.startAuthFlow(user.id);
   } catch (error) {
     console.error('❌ Erro ao iniciar OAuth:', error);
-    showErrorMessage('Erro ao iniciar autorização com Google.');
+    showErrorToast('Erro ao iniciar autorização com Google.');
   }
 }
 
@@ -440,7 +406,7 @@ async function handleRevokeAuth(): Promise<void> {
     updateGoogleAuthButton();
     updateSheetInfo();
     
-    showSuccessMessage(
+    showSuccessToast(
       'Autorização revogada com sucesso!\n\n' +
       'Para usar o sistema novamente, clique em "🔑 Autorizar com Google" e faça login com sua conta Google.'
     );
@@ -452,7 +418,7 @@ async function handleRevokeAuth(): Promise<void> {
     
   } catch (error: any) {
     console.error('❌ Erro ao revogar autorização:', error);
-    showErrorMessage(
+    showErrorToast(
       error?.message || 'Erro ao revogar autorização. Tente novamente.'
     );
     

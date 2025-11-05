@@ -10,6 +10,7 @@ import { renderEntries } from '../components/lancamentos-list';
 import lancamentosService from '../services/lancamentos';
 import type { SortType, LancamentosState } from '../types';
 import { excelSerialToDateTimeLabel } from '../utils/date-helpers';
+import { showSuccessToast, showErrorToast, showInfoToast } from '../components/toast';
 
 // ============================================================================
 // Estado da aplicação
@@ -50,22 +51,16 @@ function hideLoading(): void {
 }
 
 /**
- * Mostra mensagem de feedback
+ * Mostra mensagem de feedback usando toast
  */
 function showMessage(message: string, type: 'success' | 'error' | 'info' = 'info'): void {
-  const container = document.getElementById('messageContainer');
-  if (!container) return;
-
-  const messageEl = document.createElement('div');
-  messageEl.className = `lancamentos__message lancamentos__message--${type}`;
-  messageEl.textContent = message;
-
-  container.innerHTML = '';
-  container.appendChild(messageEl);
-
-  setTimeout(() => {
-    messageEl.remove();
-  }, 5000);
+  if (type === 'success') {
+    showSuccessToast(message);
+  } else if (type === 'error') {
+    showErrorToast(message);
+  } else {
+    showInfoToast(message, 'Info');
+  }
 }
 
 /**
