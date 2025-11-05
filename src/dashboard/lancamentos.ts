@@ -295,8 +295,8 @@ async function confirmDelete(): Promise<void> {
 
   try {
     await lancamentosService.deleteEntry(pendingDeleteRowIndex);
-    closeDeleteModal();
     showMessage('Lançamento excluído com sucesso', 'success');
+    closeDeleteModal();
     await loadEntries();
   } catch (error: any) {
     console.error('Erro ao deletar lançamento:', error);
