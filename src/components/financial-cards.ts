@@ -41,6 +41,7 @@ export function renderizarCards(
   // Ordena por orcamento (data) decrescente (mais recente primeiro)
   const sorted = _summaryData.slice().sort((a, b) => b.orcamento - a.orcamento);
 
+  container.className = 'financial-cards';
   container.innerHTML = '';
 
   sorted.forEach(item => {
@@ -57,7 +58,7 @@ export function renderizarCards(
   });
 
   // Adicionar event listeners para os cartões inativos
-  const inactiveCards = container.querySelectorAll('.financial-card.inactive');
+  const inactiveCards = container.querySelectorAll('.financial-card--inactive');
   inactiveCards.forEach(card => {
     const htmlCard = card as HTMLElement;
     htmlCard.style.cursor = 'pointer';
@@ -65,7 +66,7 @@ export function renderizarCards(
   });
 
   // Adicionar event listeners para os botões de fechar dos cartões ativos
-  const closeButtons = container.querySelectorAll('.card-close');
+  const closeButtons = container.querySelectorAll('.financial-card__close');
   closeButtons.forEach(btn => {
     btn.addEventListener('click', handleCloseClick);
   });
@@ -76,8 +77,8 @@ export function renderizarCards(
  */
 function criarCardAtivo(item: BudgetSummary): HTMLElement {
   const card = document.createElement('div');
-  const cardClass = `financial-card ${item.sum >= 0 ? 'receitas' : 'despesas'} compacto`;
-  card.className = cardClass;
+  const typeClass = item.sum >= 0 ? 'financial-card--incomes' : 'financial-card--expenses';
+  card.className = `financial-card ${typeClass}`;
   
   // Armazenar dados para uso posterior
   card.dataset.budget = item.label;
@@ -87,19 +88,19 @@ function criarCardAtivo(item: BudgetSummary): HTMLElement {
   card.dataset.orcamento = String(item.orcamento);
   
   card.innerHTML = `
-    <button class="card-close" aria-label="Fechar cartão" data-budget="${item.label}">✕</button>
-    <div class="card-header">
-      <h3 class="card-title">${item.label}</h3>
+    <button class="financial-card__close" aria-label="Fechar cartão" data-budget="${item.label}">✕</button>
+    <div class="financial-card__header">
+      <h3 class="financial-card__title">${item.label}</h3>
     </div>
-    <div class="card-value" data-card="${item.label}">${formatarMoeda(item.sum)}</div>
+    <div class="financial-card__value">${formatarMoeda(item.sum)}</div>
 
-    <div class="card-actions">
-      <button class="button pseudo card-toggle" aria-expanded="false">Mostrar detalhes</button>
+    <div class="financial-card__actions">
+      <button class="financial-card__toggle button pseudo" aria-expanded="false">Mostrar detalhes</button>
     </div>
 
-    <div class="card-details">
-      <div class="card-muted">Receitas: ${formatarMoeda(item.incomes)}</div>
-      <div class="card-muted">Despesas: ${formatarMoeda(item.expenses)}</div>
+    <div class="financial-card__details financial-card__details--hidden">
+      <div class="financial-card__detail">Receitas: ${formatarMoeda(item.incomes)}</div>
+      <div class="financial-card__detail">Despesas: ${formatarMoeda(item.expenses)}</div>
     </div>
   `;
   
@@ -111,7 +112,7 @@ function criarCardAtivo(item: BudgetSummary): HTMLElement {
  */
 function criarCardInativo(item: BudgetSummary): HTMLElement {
   const card = document.createElement('div');
-  card.className = 'financial-card inactive';
+  card.className = 'financial-card financial-card--inactive';
   
   // Armazenar dados para uso posterior
   card.dataset.budget = item.label;
@@ -121,8 +122,8 @@ function criarCardInativo(item: BudgetSummary): HTMLElement {
   card.dataset.orcamento = String(item.orcamento);
 
   card.innerHTML = `
-    <div class="card-title">${item.label}</div>
-    <div class="card-value">...</div>
+    <div class="financial-card__title">${item.label}</div>
+    <div class="financial-card__value">...</div>
   `;
   
   return card;
@@ -138,29 +139,31 @@ function cardClickHandler(this: HTMLElement): void {
   const expenses = parseFloat(this.dataset.expenses!);
   const orc = Number(this.dataset.orcamento!);
 
-  // Adiciona classe clicked para remover hover após ser clicado
-  this.classList.add('clicked');
+  // Remove classe inativa
+  this.classList.remove('financial-card--inactive');
+  
+  // Adiciona classe de tipo apropriada
+  const typeClass = sum >= 0 ? 'financial-card--incomes' : 'financial-card--expenses';
+  this.classList.add(typeClass);
   
   // Remove o cursor pointer
   this.style.cursor = 'default';
 
   // Substitui o cartão inativo por um cartão detalhado
-  const cardClass = `financial-card ${sum >= 0 ? 'receitas' : 'despesas'} compacto`;
-  this.className = cardClass + ' clicked';
   this.innerHTML = `
-    <button class="card-close" aria-label="Fechar cartão" data-budget="${budget}">✕</button>
-    <div class="card-header">
-      <h3 class="card-title">${budget}</h3>
+    <button class="financial-card__close" aria-label="Fechar cartão" data-budget="${budget}">✕</button>
+    <div class="financial-card__header">
+      <h3 class="financial-card__title">${budget}</h3>
     </div>
-    <div class="card-value" data-card="${budget}">${formatarMoeda(sum)}</div>
+    <div class="financial-card__value">${formatarMoeda(sum)}</div>
 
-    <div class="card-actions">
-      <button class="button pseudo card-toggle" aria-expanded="false">Mostrar detalhes</button>
+    <div class="financial-card__actions">
+      <button class="financial-card__toggle button pseudo" aria-expanded="false">Mostrar detalhes</button>
     </div>
 
-    <div class="card-details">
-      <div class="card-muted">Receitas: ${formatarMoeda(incomes)}</div>
-      <div class="card-muted">Despesas: ${formatarMoeda(expenses)}</div>
+    <div class="financial-card__details financial-card__details--hidden">
+      <div class="financial-card__detail">Receitas: ${formatarMoeda(incomes)}</div>
+      <div class="financial-card__detail">Despesas: ${formatarMoeda(expenses)}</div>
     </div>
   `;
 
@@ -168,19 +171,19 @@ function cardClickHandler(this: HTMLElement): void {
   this.removeEventListener('click', cardClickHandler);
 
   // Adiciona event listener para o botão de toggle
-  const toggleBtn = this.querySelector('.card-toggle');
+  const toggleBtn = this.querySelector('.financial-card__toggle');
   if (toggleBtn) {
     toggleBtn.addEventListener('click', function(this: HTMLElement, e: Event) {
       e.stopPropagation();
       const card = this.closest('.financial-card') as HTMLElement;
-      const isCompact = card.classList.toggle('compacto');
+      const isCompact = card.classList.toggle('financial-card__details--hidden');
       this.setAttribute('aria-expanded', String(!isCompact));
       this.textContent = isCompact ? 'Mostrar detalhes' : 'Ocultar detalhes';
     });
   }
 
   // Adiciona event listener para o botão de fechar
-  const closeBtn = this.querySelector('.card-close');
+  const closeBtn = this.querySelector('.financial-card__close');
   if (closeBtn) {
     closeBtn.addEventListener('click', handleCloseClick);
   }
@@ -205,11 +208,11 @@ function handleCloseClick(this: HTMLElement, e: Event): void {
   const orcamento = card.dataset.orcamento!;
   
   // Volta para o estado inativo
-  card.className = 'financial-card inactive';
+  card.className = 'financial-card financial-card--inactive';
   card.style.cursor = 'pointer';
   card.innerHTML = `
-    <div class="card-title">${budget}</div>
-    <div class="card-value">...</div>
+    <div class="financial-card__title">${budget}</div>
+    <div class="financial-card__value">...</div>
   `;
 
   // Certifica-se de que os atributos de dados estão preservados
@@ -225,7 +228,7 @@ function handleCloseClick(this: HTMLElement, e: Event): void {
   
   // Recupera a referência após o cloneNode e reativa listener
   const reactivatedCard = document.querySelector(
-    `.financial-card.inactive[data-budget="${budget}"]`
+    `.financial-card--inactive[data-budget="${budget}"]`
   ) as HTMLElement;
   
   if (reactivatedCard) {
@@ -249,41 +252,26 @@ export function inicializarEventos(): void {
   
   summaryCards?.addEventListener('click', (e) => {
     const target = e.target as HTMLElement;
-    const btn = target.closest('.card-toggle');
+    const btn = target.closest('.financial-card__toggle');
     if (!btn) return;
 
     const card = btn.closest('.financial-card') as HTMLElement;
-    const isCompact = card.classList.toggle('compacto');
+    const details = card.querySelector('.financial-card__details') as HTMLElement;
+    const isHidden = details?.classList.toggle('financial-card__details--hidden');
 
     // Atualiza estado acessível e rótulo
-    btn.setAttribute('aria-expanded', String(!isCompact));
-    btn.textContent = isCompact ? 'Mostrar detalhes' : 'Ocultar detalhes';
+    btn.setAttribute('aria-expanded', String(!isHidden));
+    btn.textContent = isHidden ? 'Mostrar detalhes' : 'Ocultar detalhes';
   });
 }
 
 /**
- * Mostra um card de carregamento enquanto os dados são buscados
+ * Mostra animação de carregamento
+ * Não renderiza nada - apenas garante que o HTML inicial com classe 'loading' está visível
  */
 export function mostrarCardCarregamento(): void {
-  const container = document.getElementById('summaryCards');
-  if (!container) return;
-  
-  container.innerHTML = `
-    <div class="financial-card loading saldo">
-      <div class="card-header">
-        <h3 class="card-title">dd/mm/yyyy</h3>
-      </div>
-
-      <div class="card-value" data-card="orcamento1">R$&nbsp;100,00</div>
-      <div class="card-actions">
-        <button class="button pseudo card-toggle" aria-expanded="false">Mostrar detalhes</button>
-      </div>
-      <div class="card-details">
-        <div class="card-muted" data-card="orcamento1">Receitas: R$&nbsp;100,00</div>
-        <div class="card-muted" data-card="orcamento1">Despesas: R$&nbsp;100,00</div>
-      </div>
-    </div>
-  `;
+  // Não faz nada - deixa o HTML inicial da página com o efeito de loading
+  // O card já tem class="loading" no HTML
 }
 
 /**
@@ -293,12 +281,13 @@ export function mostrarErro(mensagem: string = 'Verifique sua conexão e tente n
   const container = document.getElementById('summaryCards');
   if (!container) return;
   
+  container.className = 'financial-cards';
   container.innerHTML = `
-    <div class="financial-card">
-      <div class="card-header">
-        <h3 class="card-title">Erro ao carregar dados</h3>
+    <div class="financial-card financial-card--saldo">
+      <div class="financial-card__header">
+        <h3 class="financial-card__title">Erro ao carregar dados</h3>
       </div>
-      <div class="card-value">${mensagem}</div>
+      <div class="financial-card__value">${mensagem}</div>
     </div>
   `;
 }
