@@ -473,24 +473,25 @@ class EditEntryModal {
   private populateForm(entry: SheetEntry): void {
     // Data
     const dateInput = document.getElementById('editEntryDate') as HTMLInputElement;
-    if (dateInput) {
+    if (dateInput && entry.data) {
       let dateValue = '';
-      if (entry.data) {
-        if (typeof entry.data === 'number') {
-          // Converte Excel serial para Date com hora
-          const dateObj = excelSerialToDate(entry.data, true);
-          if (dateObj) {
-            dateValue = dateObj.toISOString().slice(0, 16);
-          }
-        } else if (typeof entry.data === 'string') {
-          // Se for string, tenta parsear
-          const dateObj = dateTimeLocalToDate(entry.data);
-          if (dateObj) {
-            dateValue = dateObj.toISOString().slice(0, 16);
-          }
+      if (typeof entry.data === 'number') {
+        // Converte Excel serial para Date com hora
+        const dateObj = excelSerialToDate(entry.data, true);
+        if (dateObj) {
+          dateValue = dateObj.toISOString().slice(0, 16);
+        }
+      } else if (typeof entry.data === 'string') {
+        // Se for string, tenta parsear
+        const dateObj = dateTimeLocalToDate(entry.data);
+        if (dateObj) {
+          dateValue = dateObj.toISOString().slice(0, 16);
         }
       }
       dateInput.value = dateValue;
+    } else if (dateInput) {
+      // Limpa o campo se não houver data
+      dateInput.value = '';
     }
 
     // Conta
@@ -615,7 +616,7 @@ class EditEntryModal {
 
       // Valida data apenas se preenchida
       let dataFormatada = '';
-      if (dateValue && typeof dateValue === 'string' && dateValue.trim() !== '') {
+      if (dateValue && dateValue.trim() !== '') {
         const dateObj = new Date(dateValue);
         if (isNaN(dateObj.getTime())) {
           throw new Error('Data inválida');
