@@ -211,7 +211,7 @@ function showNoEntriesMessage(): void {
     div.id = 'firstEntryMessage';
     div.style.marginTop = '1rem';
     div.className = 'notice';
-    div.textContent = 'Você ainda não tem lançamentos. Insira o primeiro lançamento — ex. "Saldo inicial Banco Laraninha" ou "Fatura cartão roxinho atual". Após inserir recarregue a página.';
+    div.textContent = 'Você ainda não tem lançamentos. Insira o primeiro lançamento — ex. "Saldo inicial Banco Laranjinha" ou "Fatura cartão roxinho atual". Após inserir recarregue a página.';
     header.appendChild(div);
   }
 }

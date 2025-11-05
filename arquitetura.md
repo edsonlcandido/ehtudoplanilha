@@ -219,5 +219,6 @@ GOOGLE_REDIRECT_URI=https://seu-dominio.com/google-oauth-callback
 ```
 
 ## 9. Roadmap Futuro
-- Leitura agregada (dashboards analíticos)
-- Relatórios por tipo (despesa/receita) usando aba CATEGORIAS
+- Login e cadastro OAuth google
+- Novos tipos de lançamentos (lançamento futuro, transferência, pagamento parcelado)
+- Ver lançamentos da categoria selecionada
