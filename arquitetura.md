@@ -225,7 +225,6 @@ GOOGLE_REDIRECT_URI=https://seu-dominio.com/google-oauth-callback
 - Melhorar a IA para processamento da imagem e geração de lançamentos
 
 ## 10. Os detalhes
-- Mensagens via toast, converter para um componente user base da pagina de configuração
 - Alert para revogar o token google, configuar para alinhar para um modal com aparencia do modal delete e utros entry-form edit-entry-form
 - Botão de adicionar na página de lançamentos ao editar uma transação o simbolo "+" se desloca um pouco para a direita
 - Ao clicar no botão de sair ser redirecionado para a pagina home
