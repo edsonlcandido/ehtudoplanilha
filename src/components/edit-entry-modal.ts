@@ -40,7 +40,7 @@ class EditEntryModal {
             <fieldset>
               <div class="form-group">
                 <label for="editEntryDate">Data:</label>
-                <input type="datetime-local" id="editEntryDate" name="data" class="form-control" required>
+                <input type="datetime-local" id="editEntryDate" name="data" class="form-control">
               </div>
               
               <div class="form-group">
@@ -473,19 +473,21 @@ class EditEntryModal {
   private populateForm(entry: SheetEntry): void {
     // Data
     const dateInput = document.getElementById('editEntryDate') as HTMLInputElement;
-    if (dateInput && entry.data) {
+    if (dateInput) {
       let dateValue = '';
-      if (typeof entry.data === 'number') {
-        // Converte Excel serial para Date com hora
-        const dateObj = excelSerialToDate(entry.data, true);
-        if (dateObj) {
-          dateValue = dateObj.toISOString().slice(0, 16);
-        }
-      } else if (typeof entry.data === 'string') {
-        // Se for string, tenta parsear
-        const dateObj = dateTimeLocalToDate(entry.data);
-        if (dateObj) {
-          dateValue = dateObj.toISOString().slice(0, 16);
+      if (entry.data) {
+        if (typeof entry.data === 'number') {
+          // Converte Excel serial para Date com hora
+          const dateObj = excelSerialToDate(entry.data, true);
+          if (dateObj) {
+            dateValue = dateObj.toISOString().slice(0, 16);
+          }
+        } else if (typeof entry.data === 'string' && entry.data.trim() !== '') {
+          // Se for string não vazia, tenta parsear
+          const dateObj = dateTimeLocalToDate(entry.data);
+          if (dateObj) {
+            dateValue = dateObj.toISOString().slice(0, 16);
+          }
         }
       }
       dateInput.value = dateValue;
@@ -604,22 +606,27 @@ class EditEntryModal {
       const valueInput = parseFloat(formData.get('valor') as string);
       const signValue = formData.get('sinal') as string;
 
-      // Valida datas
-      const dateObj = new Date(dateInput);
+      // Valida orçamento (obrigatório)
       const budgetObj = new Date(budgetInput);
-      
-      if (isNaN(dateObj.getTime())) {
-        throw new Error('Data inválida');
-      }
       
       if (isNaN(budgetObj.getTime())) {
         throw new Error('Data de orçamento inválida');
       }
 
+      // Valida data apenas se preenchida
+      let dataFormatada = '';
+      if (dateInput && dateInput.trim() !== '') {
+        const dateObj = new Date(dateInput);
+        if (isNaN(dateObj.getTime())) {
+          throw new Error('Data inválida');
+        }
+        // Formata data em formato brasileiro (como no entry-modal.ts)
+        dataFormatada = this.formatDateTimeLocal(dateInput);
+      }
+
       const value = (signValue === '−' || signValue === '-') ? -Math.abs(valueInput) : Math.abs(valueInput);
 
-      // Formata data e orçamento em formato brasileiro (como no entry-modal.ts)
-      const dataFormatada = this.formatDateTimeLocal(dateInput);
+      // Formata orçamento em formato brasileiro
       const orcamentoFormatado = this.formatDate(budgetInput);
 
       const payload: Partial<SheetEntry> = {
