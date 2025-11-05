@@ -466,3 +466,72 @@ body {
     display: block;
   }
 }
+
+/* ===================================
+   MODAIS - Delete e Split
+   =================================== */
+#deleteModal,
+#splitModal {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 99999;
+  padding: 1rem;
+  box-sizing: border-box;
+  backdrop-filter: blur(2px);
+}
+
+/* Adiciona suporte para form-actions no deleteModal */
+.entry-modal__form-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 2px solid #f0f0f0;
+  gap: 1rem;
+}
+
+/* Estilo para botão danger */
+.button.danger {
+  background-color: #e53935;
+  color: white;
+  border-color: #e53935;
+}
+
+.button.danger:hover {
+  background-color: #d32f2f;
+  border-color: #d32f2f;
+}
+
+.button.danger:disabled {
+  background-color: #ffcdd2;
+  border-color: #ffcdd2;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+@media (max-width: 768px) {
+  #deleteModal,
+  #splitModal {
+    padding: 0.5rem;
+    align-items: flex-start;
+    padding: calc(env(safe-area-inset-top, 0) + 0.75rem) 0.5rem 5rem 0.5rem;
+    overflow-y: auto;
+  }
+
+  .entry-modal__form-actions {
+    flex-direction: row;
+    gap: 0.75rem;
+    justify-content: space-between;
+  }
+
+  .entry-modal__form-actions .button {
+    flex: 1;
+  }
+}

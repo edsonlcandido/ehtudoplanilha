@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-    <title>Lançamentos - Seu App Financeiro</title>
+    <title>Lançamentos - Seu App Financeiro</title>
   <script type="module" crossorigin src="/assets/lancamentos.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/auth.js">
   <link rel="modulepreload" crossorigin href="/assets/user-menu.js">
@@ -161,27 +161,44 @@
     </div>
 
     <!-- Modal de confirmação de exclusão -->
-    <div id="deleteModal" class="modal" style="display:none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Confirmar Exclusão</h3>
-                <button class="modal-close" onclick="lancamentosManager.closeDeleteModal()">×</button>
-            </div>
+    <div id="deleteModal" class="entry-modal" style="display:none;">
+        <div class="entry-modal__content">
+            <button class="entry-modal__close" onclick="lancamentosManager.closeDeleteModal()">×</button>
+            <h3 class="entry-modal__title">Confirmar Exclusão</h3>
+            
             <div class="modal-body">
-                <p style="margin-top:0;">Tem certeza que deseja excluir o lançamento abaixo?</p>
-                <ul style="list-style:none; padding:0; margin:.5rem 0 0;">
-                    <li><strong>#</strong> <span id="deleteRowNumber"></span></li>
-                    <li><strong>Data:</strong> <span id="deleteDate"></span></li>
-                    <li><strong>Valor:</strong> <span id="deleteValue"></span></li>
-                    <li><strong>Descrição:</strong> <span id="deleteDescription"></span></li>
-                </ul>
-                <p style="font-size:.8rem; color:#666; margin-top:.75rem;">A operação limpa a linha correspondente na
-                    planilha Google Sheets. Não há como desfazer.</p>
+                <p style="margin-top:0; margin-bottom:1rem; color: var(--text-color, #333);">Tem certeza que deseja excluir o lançamento abaixo?</p>
+                
+                <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                    <div style="display: grid; gap: 0.5rem;">
+                        <div style="display: flex; gap: 0.5rem;">
+                            <strong style="color: #666; min-width: 80px;">#:</strong>
+                            <span id="deleteRowNumber" style="color: var(--text-color, #333);"></span>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <strong style="color: #666; min-width: 80px;">Data:</strong>
+                            <span id="deleteDate" style="color: var(--text-color, #333);"></span>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <strong style="color: #666; min-width: 80px;">Valor:</strong>
+                            <span id="deleteValue" style="color: var(--text-color, #333); font-weight: 600;"></span>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <strong style="color: #666; min-width: 80px;">Descrição:</strong>
+                            <span id="deleteDescription" style="color: var(--text-color, #333);"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <p style="font-size: 0.85rem; color: #999; margin: 0; padding: 0.75rem; background: #fff3cd; border-left: 3px solid #ffc107; border-radius: 4px;">
+                    ⚠️ A operação limpa a linha correspondente na planilha Google Sheets. Não há como desfazer.
+                </p>
             </div>
-            <div class="modal-footer">
-                <button class="button" onclick="lancamentosManager.closeDeleteModal()">Cancelar</button>
-                <button id="deleteConfirmBtn" class="button danger"
-                    onclick="lancamentosManager.confirmDelete()">Excluir</button>
+            
+            <div class="entry-modal__form-actions">
+                <button type="button" class="button" onclick="lancamentosManager.closeDeleteModal()">Cancelar</button>
+                <button type="button" id="deleteConfirmBtn" class="button danger"
+                    onclick="lancamentosManager.confirmDelete()">🗑️ Excluir</button>
             </div>
         </div>
     </div>
@@ -196,7 +213,7 @@
                 <a href="https://www.ehtudo.app">Eh!Tudo.app</a></small>
         </p>
     </footer>
-
+
 </body>
 
 </html>
