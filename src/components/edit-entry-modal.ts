@@ -482,8 +482,8 @@ class EditEntryModal {
           if (dateObj) {
             dateValue = dateObj.toISOString().slice(0, 16);
           }
-        } else if (typeof entry.data === 'string' && entry.data.trim() !== '') {
-          // Se for string não vazia, tenta parsear
+        } else if (typeof entry.data === 'string') {
+          // Se for string, tenta parsear
           const dateObj = dateTimeLocalToDate(entry.data);
           if (dateObj) {
             dateValue = dateObj.toISOString().slice(0, 16);
@@ -615,7 +615,7 @@ class EditEntryModal {
 
       // Valida data apenas se preenchida
       let dataFormatada = '';
-      if (dateInput && dateInput.trim() !== '') {
+      if (dateInput && typeof dateInput === 'string' && dateInput.trim() !== '') {
         const dateObj = new Date(dateInput);
         if (isNaN(dateObj.getTime())) {
           throw new Error('Data inválida');
