@@ -4,35 +4,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
     <title>Lançamentos - Seu App Financeiro</title>
-    <link rel="stylesheet" href="../css/picnic.css">
-    <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/responsive-tables.css">
-    <link rel="stylesheet" href="css/modal-entry.css">
-    <link rel="stylesheet" href="css/edit-entry-form.css">
-    <script src="../js/pocketbase/dist/pocketbase.umd.js"></script>
-    <style>
-        body {
-            max-width: 100vw;
-            overflow-x: hidden;
-        }
-    </style>
+  <script type="module" crossorigin src="/assets/lancamentos.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/auth.js">
+  <link rel="modulepreload" crossorigin href="/assets/user-menu.js">
+  <link rel="modulepreload" crossorigin href="/assets/date-helpers.js">
+  <link rel="stylesheet" crossorigin href="/assets/auth2.css">
+  <link rel="stylesheet" crossorigin href="/assets/lancamentos.css">
+  <link rel="stylesheet" crossorigin href="/assets/dashboard2.css">
 </head>
 
 <body>
-    <!-- NAV: menu dinâmico igual ao index.html -->
+    <!-- NAV: menu dinâmico -->
     <nav>
         <a href="/" class="brand">
             <span>Planilha Eh Tudo</span>
         </a>
         <input id="bmenub" type="checkbox" class="show">
         <label for="bmenub" class="burger pseudo button">menu</label>
-        <div class="menu" id="menu-user">
-            <a href="#" class="pseudo button icon-picture">Demo</a>
-            <a href="../login.html" class="button icon-puzzle" id="loginBtn">Login</a>
-            <a href="../registro.html" class="button icon-user" id="registerBtn">Registrar</a>
-        </div>
+        <div class="menu user-menu" id="menu-user" role="menubar" aria-label="Menu do usuário"></div>
     </nav>
 
     <!-- Container principal com menu lateral -->
@@ -57,11 +48,11 @@
         <main class="main-content">
             <section class="section section-light dashboard-main">
                 <div class="container">
-                    <div class="lancamentos-header">
-                        <h2>Lançamentos</h2>
-                        <p>Visualize e gerencie todos os seus lançamentos financeiros.</p>
+                    <div class="lancamentos__header lancamentos-header">
+                        <h2 class="lancamentos__title">Lançamentos</h2>
+                        <p class="lancamentos__description">Visualize e gerencie todos os seus lançamentos financeiros.</p>
 
-                        <div class="lancamentos-actions">
+                        <div class="lancamentos__actions lancamentos-actions">
                             <button id="refreshEntriesBtn" class="button">
                                 🔄 Atualizar
                             </button>
@@ -69,45 +60,43 @@
                     </div>
 
                     <!-- Indicador de loading -->
-                    <div id="loadingIndicator" class="loading-indicator" style="display: none;">
-                        <div class="loading-spinner"></div>
+                    <div id="loadingIndicator" class="lancamentos__loading loading-indicator" style="display: none;">
+                        <div class="lancamentos__spinner loading-spinner"></div>
                         <p>Carregando lançamentos...</p>
                     </div>
 
                     <!-- Container de mensagens -->
-                    <div id="messageContainer" class="message-container"></div>
+                    <div id="messageContainer" class="lancamentos__messages message-container"></div>
 
                     <!-- Barra de pesquisa -->
-                    <div class="search-container" style="margin-bottom: 1.5rem;">
-                        <div class="search-input-wrapper">
+                    <div class="lancamentos__search search-container">
+                        <div class="lancamentos__search-wrapper search-input-wrapper">
                             <input type="text" id="searchInput"
                                 placeholder="Pesquisar lançamentos por data, valor, descrição, categoria ou conta..."
-                                class="search-input" autocomplete="off">
-                            <button id="clearSearchBtn" class="clear-search-btn" style="display: none;"
+                                class="lancamentos__search-input search-input" autocomplete="off">
+                            <button id="clearSearchBtn" class="lancamentos__search-clear clear-search-btn" style="display: none;"
                                 title="Limpar pesquisa">
                                 ✕
                             </button>
                         </div>
-                        <div id="searchResults" class="search-results" style="display: none;">
+                        <div id="searchResults" class="lancamentos__search-results search-results">
                             <span id="searchCount"></span>
                         </div>
                     </div>
 
                     <!-- Controles de ordenação -->
-                    <div class="sorting-controls"
-                        style="margin-bottom: 1.5rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
-                        <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;">
-                            <div class="form-group" style="margin: 0;">
-                                <label for="sortSelect" style="margin-right: 0.5rem; font-weight: 600;">Ordenar
-                                    por:</label>
-                                <select id="sortSelect" style="min-width: 180px;">
+                    <div class="lancamentos__sorting sorting-controls">
+                        <div class="lancamentos__sorting-controls">
+                            <div class="lancamentos__sorting-group form-group">
+                                <label for="sortSelect" class="lancamentos__sorting-label">Ordenar por:</label>
+                                <select id="sortSelect" class="lancamentos__sorting-select">
                                     <option value="original" selected>Linhas da Planilha</option>
                                     <option value="budget_date">Orçamento > Data</option>
                                     <option value="date">Data</option>
                                 </select>
                             </div>
-                            <div class="form-group" style="margin: 0;">
-                                <label class="checkable" style="display: flex; align-items: center; gap: 0.5rem;">
+                            <div class="lancamentos__sorting-group form-group">
+                                <label class="lancamentos__sorting-checkbox checkable">
                                     <input type="checkbox" id="hideBlankDatesCheck">
                                     <span class="checkable">Ocultar datas em branco</span>
                                 </label>
@@ -116,13 +105,18 @@
                     </div>
 
                     <!-- Container principal dos lançamentos -->
-                    <div id="entriesContainer" class="entries-container">
+                    <div id="entriesContainer" class="lancamentos__container entries-container">
                         <!-- Conteúdo será carregado via JavaScript -->
                     </div>
                 </div>
             </section>
         </main>
     </div>
+
+    <!-- Botão flutuante de adicionar lançamento -->
+    <button id="openEntryModal" class="fab-button" aria-label="Adicionar lançamento">
+        +
+    </button>
 
     <!-- Modal de divisão de parcelas -->
     <div id="splitModal" class="modal" style="display:none; align-items:center; justify-content:center;">
@@ -167,27 +161,44 @@
     </div>
 
     <!-- Modal de confirmação de exclusão -->
-    <div id="deleteModal" class="modal" style="display:none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Confirmar Exclusão</h3>
-                <button class="modal-close" onclick="lancamentosManager.closeDeleteModal()">×</button>
-            </div>
+    <div id="deleteModal" class="entry-modal" style="display:none;">
+        <div class="entry-modal__content">
+            <button class="entry-modal__close" onclick="lancamentosManager.closeDeleteModal()">×</button>
+            <h3 class="entry-modal__title">Confirmar Exclusão</h3>
+            
             <div class="modal-body">
-                <p style="margin-top:0;">Tem certeza que deseja excluir o lançamento abaixo?</p>
-                <ul style="list-style:none; padding:0; margin:.5rem 0 0;">
-                    <li><strong>#</strong> <span id="deleteRowNumber"></span></li>
-                    <li><strong>Data:</strong> <span id="deleteDate"></span></li>
-                    <li><strong>Valor:</strong> <span id="deleteValue"></span></li>
-                    <li><strong>Descrição:</strong> <span id="deleteDescription"></span></li>
-                </ul>
-                <p style="font-size:.8rem; color:#666; margin-top:.75rem;">A operação limpa a linha correspondente na
-                    planilha Google Sheets. Não há como desfazer.</p>
+                <p style="margin-top:0; margin-bottom:1rem; color: var(--text-color, #333);">Tem certeza que deseja excluir o lançamento abaixo?</p>
+                
+                <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                    <div style="display: grid; gap: 0.5rem;">
+                        <div style="display: flex; gap: 0.5rem;">
+                            <strong style="color: #666; min-width: 80px;">#:</strong>
+                            <span id="deleteRowNumber" style="color: var(--text-color, #333);"></span>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <strong style="color: #666; min-width: 80px;">Data:</strong>
+                            <span id="deleteDate" style="color: var(--text-color, #333);"></span>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <strong style="color: #666; min-width: 80px;">Valor:</strong>
+                            <span id="deleteValue" style="color: var(--text-color, #333); font-weight: 600;"></span>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <strong style="color: #666; min-width: 80px;">Descrição:</strong>
+                            <span id="deleteDescription" style="color: var(--text-color, #333);"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <p style="font-size: 0.85rem; color: #999; margin: 0; padding: 0.75rem; background: #fff3cd; border-left: 3px solid #ffc107; border-radius: 4px;">
+                    ⚠️ A operação limpa a linha correspondente na planilha Google Sheets. Não há como desfazer.
+                </p>
             </div>
-            <div class="modal-footer">
-                <button class="button" onclick="lancamentosManager.closeDeleteModal()">Cancelar</button>
-                <button id="deleteConfirmBtn" class="button danger"
-                    onclick="lancamentosManager.confirmDelete()">Excluir</button>
+            
+            <div class="entry-modal__form-actions">
+                <button type="button" class="button" onclick="lancamentosManager.closeDeleteModal()">Cancelar</button>
+                <button type="button" id="deleteConfirmBtn" class="button danger"
+                    onclick="lancamentosManager.confirmDelete()">🗑️ Excluir</button>
             </div>
         </div>
     </div>
@@ -203,157 +214,6 @@
         </p>
     </footer>
 
-    <!-- Script PocketBase e verificação imediata de autenticação -->
-    <script type="module">
-        import apiConfig from '../js/config/api-config.js';
-        import { estaAutenticado } from '../js/auth-service.js';
-        import { exibirMenuUsuario } from '../js/menu-usuario.js';
-        import lancamentosManager from '../js/lancamentos-manager.js';
-        import categoriesService from '../js/categories-service.js';
-        import accountsService from '../js/accounts-service.js';
-        import googleSheetsService from '../js/google/sheets-api.js';
-        import '../js/utils/sheet-entries.js'; // Importa utilitários de conversão de datas
-        import '../js/components/lancamentos-patch.js';
-        import '../js/components/orcamento-date-init.js';
-        import { editEntryModalTemplate } from '../js/components/edit-entry-modal-template.js';
-        import { inicializarModalDeEdicao } from '../js/components/edit-entry-modal.js';
-
-        // Inicializa PocketBase
-        window.pb = new PocketBase(apiConfig.getBaseURL());
-
-        // Disponibiliza serviços globalmente
-        window.categoriesService = categoriesService;
-        window.accountsService = accountsService;
-        window.googleSheetsService = googleSheetsService;
-        googleSheetsService.init(window.pb);
-
-        // Injeta o template do modal de edição no body
-        try {
-            const wrapper = document.createElement('div');
-            wrapper.innerHTML = editEntryModalTemplate;
-            document.body.appendChild(wrapper.firstElementChild);
-        } catch (e) {
-            console.error('Falha ao injetar modal de edição:', e);
-        }
-
-        // Verifica autenticação imediatamente (antes de carregar demais módulos)
-        if (!estaAutenticado()) {
-            // Redireciona rapidamente para evitar piscar conteúdo protegido
-            window.location.href = '../login.html';
-        } else {
-            // Inicializa menu do usuário
-            exibirMenuUsuario();
-
-            // Carrega módulos adicionais somente se autenticado
-            Promise.all([
-                import('../js/protecao-dashboard.js')
-            ]).then(() => {
-                // Inicializa o gerenciador de lançamentos após todos os módulos carregarem
-                lancamentosManager.init();
-
-                // Inicializa o modal de edição e expõe uma função global para uso nos botões de cada item
-                const editModal = inicializarModalDeEdicao();
-
-                // Disponibiliza para outros scripts
-                window.editEntryModal = editModal;
-                window.openEditEntry = (entry) => {
-                    if (editModal && entry) {
-                        editModal.open(entry);
-                    }
-                };
-
-                // Função para abrir modal através do rowIndex
-                window.openEditEntryByRowIndex = (rowIndex) => {
-                    // Primeiro tenta buscar no cache
-                    let entries = window.lastLoadedEntries || [];
-                    let entry = entries.find(e => e.rowIndex === rowIndex);
-
-                    // Se não encontrou no cache, tenta buscar no lancamentosManager
-                    if (!entry && window.lancamentosManager && window.lancamentosManager.entries) {
-                        entries = window.lancamentosManager.entries;
-                        entry = entries.find(e => e.rowIndex === rowIndex);
-
-                        // Atualiza o cache do modal se encontrou
-                        if (entry && editModal) {
-                            editModal.setEntries(entries);
-                            window.lastLoadedEntries = entries;
-                        }
-                    }
-
-                    if (entry && editModal) {
-                        editModal.open(entry);
-                    } else {
-                        console.warn('Entrada não encontrada para rowIndex:', rowIndex);
-                        console.log('Entries disponíveis:', entries.map(e => e.rowIndex));
-
-                        // Como fallback, recarrega as entradas e tenta novamente
-                        if (window.lancamentosManager && typeof window.lancamentosManager.loadEntries === 'function') {
-                            window.lancamentosManager.loadEntries().then(() => {
-                                const refreshedEntries = window.lancamentosManager.entries || [];
-                                const refreshedEntry = refreshedEntries.find(e => e.rowIndex === rowIndex);
-                                if (refreshedEntry && editModal) {
-                                    editModal.setEntries(refreshedEntries);
-                                    window.lastLoadedEntries = refreshedEntries;
-                                    editModal.open(refreshedEntry);
-                                } else {
-                                    console.error('Entrada ainda não encontrada após recarregar:', rowIndex);
-                                }
-                            });
-                        }
-                    }
-                };
-
-                // Atualiza cache de entries no modal quando a planilha é carregada
-                document.addEventListener('sheet:loaded', (ev) => {
-                    const entries = ev?.detail?.entries || ev?.detail || [];
-                    if (Array.isArray(entries) && editModal) {
-                        editModal.setEntries(entries);
-                        // Armazena globalmente para uso das funções de edição
-                        window.lastLoadedEntries = entries;
-                    }
-                });
-
-                // Intercepta as chamadas do lancamentosManager para usar o modal autônomo
-                // Aguarda um pouco para garantir que o lancamentosManager esteja disponível
-                setTimeout(() => {
-                    if (window.lancamentosManager) {
-                        // Substitui a função editEntry para usar o modal autônomo
-                        const originalEditEntry = window.lancamentosManager.editEntry;
-                        window.lancamentosManager.editEntry = function (rowIndex) {
-                            window.openEditEntryByRowIndex(rowIndex);
-                        };
-
-                        // Intercepta o método loadEntries para atualizar o cache do modal
-                        const originalLoadEntries = window.lancamentosManager.loadEntries;
-                        window.lancamentosManager.loadEntries = async function () {
-                            const result = await originalLoadEntries.call(this);
-
-                            // Atualiza o cache do modal com as entradas carregadas
-                            if (this.entries && Array.isArray(this.entries) && editModal) {
-                                editModal.setEntries(this.entries);
-                                window.lastLoadedEntries = this.entries;
-                            }
-
-                            return result;
-                        };
-
-                        console.log('Modal de edição configurado e integrado com lancamentosManager');
-                    } else {
-                        console.warn('lancamentosManager não disponível para interceptação');
-                    }
-                }, 100);
-
-                // Escuta eventos de edição para recarregar a lista
-                document.addEventListener('entry:edited', () => {
-                    if (window.lancamentosManager && typeof window.lancamentosManager.loadEntries === 'function') {
-                        setTimeout(() => {
-                            window.lancamentosManager.loadEntries();
-                        }, 300);
-                    }
-                });
-            }).catch(err => console.error('Erro ao carregar módulos do dashboard:', err));
-        }
-    </script>
 </body>
 
 </html>

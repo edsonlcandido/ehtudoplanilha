@@ -1,0 +1,153 @@
+/* ===================================
+   CONFIGURAÇÃO PAGE
+   Estilos específicos da página de configuração
+   =================================== */
+
+/* Prevenir overflow horizontal no mobile */
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* Wrapper para permitir padding lateral no mobile sem afetar outros .container globais */
+.config-page-wrapper {
+  width: 100%;
+}
+
+/* ===================================
+   MODAL DE SELEÇÃO DE PLANILHAS
+   =================================== */
+.sheet-item {
+  padding: 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 0.5rem;
+  background-color: white;
+}
+
+.sheet-item:hover {
+  border-color: #2196f3;
+  background-color: #f5f5f5;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.sheet-item strong {
+  display: block;
+  color: #333;
+  margin-bottom: 0.25rem;
+}
+
+.sheet-item small {
+  color: #777;
+  font-size: 0.85em;
+}
+
+/* Estado selecionado */
+.sheet-item.selected {
+  border-color: #2196f3;
+  background-color: #e3f2fd;
+}
+
+/* Scrollbar customizada para lista de planilhas */
+#sheetsList::-webkit-scrollbar {
+  width: 8px;
+}
+
+#sheetsList::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+#sheetsList::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+#sheetsList::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* ===================================
+   BOTÕES DE AÇÃO
+   =================================== */
+.button.large {
+  padding: 0.875rem 1.5rem;
+  font-size: 1.05em;
+  font-weight: 600;
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.button.success {
+  background-color: #28a745;
+  border-color: #28a745;
+  color: white;
+}
+
+.button.success:hover:not(:disabled) {
+  background-color: #218838;
+  border-color: #1e7e34;
+}
+
+.button.warning {
+  background-color: #ffc107;
+  border-color: #ffc107;
+  color: #333;
+}
+
+.button.warning:hover:not(:disabled) {
+  background-color: #e0a800;
+  border-color: #d39e00;
+}
+
+.button.error {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
+
+.button.error:hover:not(:disabled) {
+  background-color: #c82333;
+  border-color: #bd2130;
+}
+
+/* ===================================
+   RESPONSIVE - MOBILE
+   =================================== */
+
+/* Ações da planilha: desktop permanece como antes (linha única). Apenas mobile empilha. */
+@media (max-width: 680px) {
+  .sheet-actions {
+    flex-direction: column;
+    gap: 0.75rem !important;
+  }
+
+  .sheet-actions button {
+    width: 100%;
+    white-space: normal;
+    word-break: break-word;
+  }
+}
+
+@media (max-width: 768px) {
+  .config-page-wrapper {
+    padding: 0 1rem;
+    box-sizing: border-box;
+  }
+
+  .config-page-wrapper .solution-card {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  /* Garante que nenhum elemento interno force overflow */
+  .config-page-wrapper * {
+    max-width: 100%;
+  }
+}

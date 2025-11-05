@@ -1,0 +1,81 @@
+/**
+ * Cards
+ * Cards reutilizáveis para conteúdo
+ */
+
+/* ========== Base Card Styles ========== */
+.solution-card,
+.feature-card {
+  background-color: var(--white-color);
+  padding: var(--spacing-xl);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  text-align: center;
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.solution-card:hover,
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ========== Feature Card ========== */
+.feature-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.feature-card p {
+  flex-grow: 1;
+}
+
+/* ========== Card Headings ========== */
+.solution-card h3,
+.feature-card h3 {
+  color: var(--secondary-color);
+  font-size: var(--font-size-xl);
+  margin-bottom: var(--spacing-md);
+}
+
+.solution-card h3 {
+  margin-bottom: var(--spacing-lg);
+}
+
+/* ========== Icon ========== */
+.icon {
+  font-size: var(--font-size-5xl);
+  color: var(--primary-color);
+  margin-bottom: var(--spacing-md);
+}
+
+/* ========== Grids ========== */
+.solutions-grid,
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-xl);
+}
+
+/* Específico para features-grid no desktop */
+@media (min-width: 768px) {
+  .features-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+/* ========== Sheet Item (para seleção de planilhas) ========== */
+.sheet-item {
+  padding: var(--spacing-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  margin-bottom: var(--spacing-sm);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.sheet-item:hover {
+  background-color: #f0f8ff !important;
+  border-color: #90caf9 !important;
+}

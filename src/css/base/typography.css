@@ -1,0 +1,76 @@
+/**
+ * Typography
+ * Estilos de tipografia e headings
+ */
+
+/* ========== Headings ========== */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0 0 var(--spacing-md);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.2;
+  color: var(--secondary-color);
+}
+
+h1 {
+  font-size: var(--font-size-5xl);
+}
+
+h2 {
+  font-size: var(--font-size-3xl);
+}
+
+h3 {
+  font-size: var(--font-size-2xl);
+}
+
+h4 {
+  font-size: var(--font-size-xl);
+}
+
+h5 {
+  font-size: var(--font-size-lg);
+}
+
+h6 {
+  font-size: var(--font-size-base);
+}
+
+/* ========== Paragraph ========== */
+p {
+  margin: 0 0 var(--spacing-md);
+  line-height: 1.6;
+}
+
+/* ========== Links ========== */
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: color var(--transition-base);
+}
+
+a:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+/* ========== Small Text ========== */
+small {
+  font-size: var(--font-size-sm);
+  color: var(--text-light);
+}
+
+/* ========== Section Headings ========== */
+.section h2 {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--secondary-color);
+  margin-bottom: var(--spacing-md);
+  text-align: center;
+}
+
+.section > .container > p {
+  max-width: 800px;
+  margin: 0 auto var(--spacing-xl);
+  font-size: var(--font-size-lg);
+  text-align: center;
+}

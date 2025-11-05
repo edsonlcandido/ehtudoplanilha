@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <title>Lançamentos - Seu App Financeiro</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/pages/lancamentos.css">
+    <link rel="stylesheet" href="../css/components/entry-modal.css">
+</head>
+
+<body>
+    <!-- NAV: menu dinâmico -->
+    <nav>
+        <a href="/" class="brand">
+            <span>Planilha Eh Tudo</span>
+        </a>
+        <input id="bmenub" type="checkbox" class="show">
+        <label for="bmenub" class="burger pseudo button">menu</label>
+        <div class="menu user-menu" id="menu-user" role="menubar" aria-label="Menu do usuário"></div>
+    </nav>
+
+    <!-- Container principal com menu lateral -->
+    <div class="app-container">
+        <!-- Menu lateral fixo -->
+        <aside class="sidebar-menu">
+            <a href="index.html" title="Dashboard">
+                <span class="menu-icon">🏠</span>
+                <span class="menu-text">Dashboard</span>
+            </a>
+            <a href="lancamentos.html" class="active" title="Lançamentos">
+                <span class="menu-icon">📋</span>
+                <span class="menu-text">Lançamentos</span>
+            </a>
+            <a href="/pwa" title="Celular">
+                <span class="menu-icon">📱</span>
+                <span class="menu-text">Celular</span>
+            </a>
+        </aside>
+
+        <!-- Conteúdo principal rolável -->
+        <main class="main-content">
+            <section class="section section-light dashboard-main">
+                <div class="container">
+                    <div class="lancamentos__header lancamentos-header">
+                        <h2 class="lancamentos__title">Lançamentos</h2>
+                        <p class="lancamentos__description">Visualize e gerencie todos os seus lançamentos financeiros.</p>
+
+                        <div class="lancamentos__actions lancamentos-actions">
+                            <button id="refreshEntriesBtn" class="button">
+                                🔄 Atualizar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Indicador de loading -->
+                    <div id="loadingIndicator" class="lancamentos__loading loading-indicator" style="display: none;">
+                        <div class="lancamentos__spinner loading-spinner"></div>
+                        <p>Carregando lançamentos...</p>
+                    </div>
+
+                    <!-- Barra de pesquisa -->
+                    <div class="lancamentos__search search-container">
+                        <div class="lancamentos__search-wrapper search-input-wrapper">
+                            <input type="text" id="searchInput"
+                                placeholder="Pesquisar lançamentos por data, valor, descrição, categoria ou conta..."
+                                class="lancamentos__search-input search-input" autocomplete="off">
+                            <button id="clearSearchBtn" class="lancamentos__search-clear clear-search-btn" style="display: none;"
+                                title="Limpar pesquisa">
+                                ✕
+                            </button>
+                        </div>
+                        <div id="searchResults" class="lancamentos__search-results search-results">
+                            <span id="searchCount"></span>
+                        </div>
+                    </div>
+
+                    <!-- Controles de ordenação -->
+                    <div class="lancamentos__sorting sorting-controls">
+                        <div class="lancamentos__sorting-controls">
+                            <div class="lancamentos__sorting-group form-group">
+                                <label for="sortSelect" class="lancamentos__sorting-label">Ordenar por:</label>
+                                <select id="sortSelect" class="lancamentos__sorting-select">
+                                    <option value="original" selected>Linhas da Planilha</option>
+                                    <option value="budget_date">Orçamento > Data</option>
+                                    <option value="date">Data</option>
+                                </select>
+                            </div>
+                            <div class="lancamentos__sorting-group form-group">
+                                <label class="lancamentos__sorting-checkbox checkable">
+                                    <input type="checkbox" id="hideBlankDatesCheck">
+                                    <span class="checkable">Ocultar datas em branco</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Container principal dos lançamentos -->
+                    <div id="entriesContainer" class="lancamentos__container entries-container">
+                        <!-- Conteúdo será carregado via JavaScript -->
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Botão flutuante de adicionar lançamento -->
+    <button id="openEntryModal" class="fab-button" aria-label="Adicionar lançamento">
+        +
+    </button>
+
+    <!-- Modal de divisão de parcelas -->
+    <div id="splitModal" class="modal" style="display:none; align-items:center; justify-content:center;">
+        <div class="modal-content solution-card"
+            style="max-width:500px; width:95%; position:relative; text-align:left;">
+            <button class="modal-close" onclick="lancamentosManager.closeSplitModal()"
+                style="position:absolute; top:10px; right:10px; background:transparent; border:none; font-size:1.5rem; cursor:pointer;">×</button>
+            <h3 style="margin-top:0; text-align:center;">Dividir em Parcelas</h3>
+
+            <div style="margin-bottom:1rem; padding:1rem; background:#f8f9fa; border-radius:4px;">
+                <h4 style="margin:0 0 0.5rem;">Lançamento atual:</h4>
+                <div><strong>Descrição:</strong> <span id="splitDescription"></span></div>
+                <div><strong>Valor:</strong> <span id="splitValue"></span></div>
+                <div><strong>Data:</strong> <span id="splitDate"></span></div>
+            </div>
+
+            <form id="splitForm" onsubmit="return false;" style="margin-top:1rem;">
+                <div class="form-group">
+                    <label for="splitInstallments">Número de parcelas *</label>
+                    <input type="number" id="splitInstallments" min="2" max="99" value="2" required>
+                    <small style="color:#666;">Entre 2 e 99 parcelas</small>
+                </div>
+
+                <div id="splitPreview"
+                    style="margin:1rem 0; padding:1rem; background:#e8f5e8; border-radius:4px; display:none;">
+                    <h4 style="margin:0 0 0.5rem;">Resultado da divisão:</h4>
+                    <div><strong>Valor por parcela:</strong> <span id="splitInstallmentValue"></span></div>
+                    <div style="margin-top:0.5rem;">
+                        <strong>Parcelas:</strong>
+                        <ul id="splitInstallmentsList" style="margin:0.5rem 0 0; padding-left:1rem;"></ul>
+                    </div>
+                </div>
+
+                <div class="form-actions" style="margin-top:1.5rem; gap:1rem;">
+                    <button type="button" class="button"
+                        onclick="lancamentosManager.closeSplitModal()">Cancelar</button>
+                    <button type="button" class="button primary" onclick="lancamentosManager.confirmSplit()"
+                        id="splitConfirmBtn">Dividir Lançamento</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de confirmação de exclusão -->
+    <div id="deleteModal" class="entry-modal" style="display:none;">
+        <div class="entry-modal__content">
+            <button class="entry-modal__close" onclick="lancamentosManager.closeDeleteModal()">×</button>
+            <h3 class="entry-modal__title">Confirmar Exclusão</h3>
+            
+            <div class="modal-body">
+                <p style="margin-top:0; margin-bottom:1rem; color: var(--text-color, #333);">Tem certeza que deseja excluir o lançamento abaixo?</p>
+                
+                <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                    <div style="display: grid; gap: 0.5rem;">
+                        <div style="display: flex; gap: 0.5rem;">
+                            <strong style="color: #666; min-width: 80px;">#:</strong>
+                            <span id="deleteRowNumber" style="color: var(--text-color, #333);"></span>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <strong style="color: #666; min-width: 80px;">Data:</strong>
+                            <span id="deleteDate" style="color: var(--text-color, #333);"></span>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <strong style="color: #666; min-width: 80px;">Valor:</strong>
+                            <span id="deleteValue" style="color: var(--text-color, #333); font-weight: 600;"></span>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <strong style="color: #666; min-width: 80px;">Descrição:</strong>
+                            <span id="deleteDescription" style="color: var(--text-color, #333);"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <p style="font-size: 0.85rem; color: #999; margin: 0; padding: 0.75rem; background: #fff3cd; border-left: 3px solid #ffc107; border-radius: 4px;">
+                    ⚠️ A operação limpa a linha correspondente na planilha Google Sheets. Não há como desfazer.
+                </p>
+            </div>
+            
+            <div class="entry-modal__form-actions">
+                <button type="button" class="button" onclick="lancamentosManager.closeDeleteModal()">Cancelar</button>
+                <button type="button" id="deleteConfirmBtn" class="button danger"
+                    onclick="lancamentosManager.confirmDelete()">🗑️ Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Planilha Eh Tudo. Simplificando suas finanças.</p>
+        </div>
+        <p>
+            <small>Produzido por
+                <a href="https://www.ehtudo.app">Eh!Tudo.app</a></small>
+        </p>
+    </footer>
+
+    <script type="module" src="../main.ts"></script>
+    <script type="module" src="./lancamentos.ts"></script>
+</body>
+
+</html>

@@ -1,0 +1,28 @@
+/**
+ * Main CSS Bundle
+ * Base styles para todas as páginas
+ * 
+ * Use este arquivo como base em todas as páginas HTML
+ * Adicione bundles específicos conforme necessário (auth, dashboard, etc.)
+ */
+
+/* ========== Vendor (Framework) ========== */
+@import './picnic.css';
+
+/* ========== Base Styles ========== */
+@import './base/variables.css';
+@import './base/reset.css';
+@import './base/typography.css';
+
+/* ========== Layout ========== */
+@import './layout/navigation.css';
+@import './layout/footer.css';
+
+/* ========== Components (Global) ========== */
+@import './components/buttons.css';
+@import './components/forms.css';
+@import './components/cards.css';
+@import './components/loading.css';
+@import './components/user-menu.css';
+@import './components/entry-modal.css';
+@import './components/toast.css';

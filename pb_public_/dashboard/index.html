@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <title>Dashboard - Seu App Financeiro</title>
+    <link rel="stylesheet" href="../css/picnic.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/financial-cards.css">
+    <link rel="stylesheet" href="./css/modal-entry.css">
+    <!-- Estilos específicos da seção de detalhes -->
+    <link rel="stylesheet" href="./css/details.css">
+    <script src="../js/pocketbase/dist/pocketbase.umd.js"></script>
+    <script src="../js/jsonquery.bundle.js"></script> <!-- Adicione esta linha -->
+
+</head>
+
+<body>
+    <!-- NAV: menu dinâmico igual ao index.html -->
+    <nav>
+        <a href="/" class="brand">
+            <span>Planilha Eh Tudo</span>
+        </a>
+        <input id="bmenub" type="checkbox" class="show">
+        <label for="bmenub" class="burger pseudo button">menu</label>
+        <div class="menu" id="menu-user">
+            <a href="#" class="pseudo button icon-picture">Demo</a>
+            <a href="../login.html" class="button icon-puzzle" id="loginBtn">Login</a>
+            <a href="../registro.html" class="button icon-user" id="registerBtn">Registrar</a>
+        </div>
+    </nav>
+
+    <!-- Container principal com menu lateral -->
+    <div class="app-container">
+        <!-- Menu lateral fixo -->
+        <aside class="sidebar-menu">
+            <a href="index.html" class="active" title="Dashboard">
+                <span class="menu-icon">🏠</span>
+                <span class="menu-text">Dashboard</span>
+            </a>
+            <a id="sidebarLinkLancamentos" href="lancamentos.html" title="Lançamentos">
+                <span class="menu-icon">📋</span>
+                <span class="menu-text">Lançamentos</span>
+            </a>
+            <a id="sidebarLinkCelular" href="/pwa" title="Celular">
+                <span class="menu-icon">📱</span>
+                <span class="menu-text">Celular</span>
+            </a>
+        </aside>
+
+        <!-- Conteúdo principal rolável -->
+        <main class="main-content">
+            <!-- SECTION MAIN: conteúdo principal ocupando toda tela -->
+            <section class="section section-light dashboard-main"
+                style="min-height:100vh; display:flex; align-items:flex-start; justify-content:flex-start;">
+                <div class="container dashboard__content" style="align-items:flex-start; text-align:left;">
+                    <!-- Cabeçalho de boas-vindas alinhado à esquerda -->
+                    <header class="dashboard__header">
+                        <h2 class="dashboard__title">Bem-vindo ao seu Dashboard!</h2>
+                        <p class="dashboard__subtitle">Aqui você pode visualizar resumos e inserir lançamentos de forma
+                            simples e rápida.</p>
+
+                        <div style="margin-top: 1.25rem;">
+                            <a href="configuracao.html" id="configBtn" class="button primary" style="display: none;">⚙️
+                                Configurar Integração</a>
+                        </div>
+                    </header>
+
+                    <!-- Nova row dividida em 2 colunas: esquerda (cards) e direita (detalhes) -->
+                    <div class="dashboard__row">
+                        <!-- Coluna esquerda: cards de resumo (menor) -->
+                        <div class="dashboard__col dashboard__col--left">
+                            <div id="summaryCards" class="summary-cards">
+                                <!-- cartão de exemplo / placeholder (preservado) -->
+                                <div class="financial-card loading saldo">
+                                    <div class="card-header">
+                                        <h3 class="card-title">31/08/2025</h3>
+                                    </div>
+
+                                    <div class="card-value" data-card="orcamento1">R$&nbsp;100,00</div>
+                                    <div class="card-actions">
+                                        <button class="button pseudo card-toggle" aria-expanded="false">Mostrar
+                                            detalhes</button>
+                                    </div>
+                                    <div class="card-details">
+                                        <div class="card-muted" data-card="orcamento1">Receitas: R$&nbsp;100,00</div>
+                                        <div class="card-muted" data-card="orcamento1">Despesas: R$&nbsp;100,00</div>
+                                    </div>
+                                </div>
+                                <!-- novos cards serão renderizados aqui dinamicamente -->
+                            </div>
+
+                            <!-- Botão de adicionar lançamento (mantido) -->
+                            <div style="margin-top:1rem;">
+                                <button id="openEntryModal" class="button" aria-label="Adicionar lançamento">+</button>
+                            </div>
+                        </div>
+
+                        <!-- Coluna direita: seção de detalhes com agregados e tabela (maior) -->
+                        <aside class="dashboard__col dashboard__col--right details">
+                            <!-- Area de cartões agregados -->
+                            <div class="details__aggregates loading">
+                                <h3 class="details__title">Saldo e contas</h3>
+                                <h3><span class="details__saldo">R$ -129,77</span></h3>
+                                <div class="details__cards">
+                                    <div class="details__card">
+                                        <div class="details__card-title">Nubank</div>
+                                        <div class="details__card-value">R$ 0,00</div>
+                                    </div>
+                                    <div class="details__card">
+                                        <div class="details__card-title">Nuconta</div>
+                                        <div class="details__card-value">R$ 0,00</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tabela dos 10 maiores gastos por categoria (marcação apenas) -->
+                            <div class="details__top-categories" style="margin-top:1rem;">
+                                <h3 class="details__title">Top 10 Gastos por Categoria</h3>
+                                <div class="tabela-rolavel loading">
+                                    <table class="details__table primary">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Categoria</th>
+                                                <th>Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>1</td>
+                                                <td>Transporte</td>
+                                                <td>R$ -1.234,56</td>
+                                            </tr>
+                                            <tr>
+                                                <td>2</td>
+                                                <td>Alimentação</td>
+                                                <td>R$ -980,00</td>
+                                            </tr>
+                                            <tr>
+                                                <td>3</td>
+                                                <td><span>Moradia</span></td>
+                                                <td>R$ -750,00</td>
+                                            </tr>
+                                            <tr>
+                                                <td>4</td>
+                                                <td>Saúde</td>
+                                                <td>R$ -520,00</td>
+                                            </tr>
+                                            <tr>
+                                                <td>5</td>
+                                                <td>Lazer</td>
+                                                <td>R$ -410,00</td>
+                                            </tr>
+                                            <tr>
+                                                <td>6</td>
+                                                <td>Educação</td>
+                                                <td>R$ -320,00</td>
+                                            </tr>
+                                            <tr>
+                                                <td>7</td>
+                                                <td>Assinaturas</td>
+                                                <td>R$ -290,00</td>
+                                            </tr>
+                                            <tr>
+                                                <td>8</td>
+                                                <td>Compras</td>
+                                                <td>R$ -250,00</td>
+                                            </tr>
+                                            <tr>
+                                                <td>9</td>
+                                                <td>Pets</td>
+                                                <td>R$ -180,00</td>
+                                            </tr>
+                                            <tr>
+                                                <td>10</td>
+                                                <td>Outros</td>
+                                                <td>R$ -150,00</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Planilha Eh Tudo. Simplificando suas finanças.</p>
+        </div>
+        <p>
+            <small>Produzido por
+                <a href="https://www.ehtudo.app">Eh!Tudo.app</a></small>
+        </p>
+    </footer>
+    <script type="module">
+        import apiConfig from '../js/config/api-config.js';
+        import { inicializarMenuUsuario } from '../js/menu-usuario.js';
+        import { entryModalTemplate } from '../js/components/entry-modal-template.js';
+        import { filterEntriesByInterval, aggregateByBudget, budgetsInEntries } from '../js/utils/sheet-entries.js';
+        import {
+            renderizarCards,
+            mostrarCardCarregamento,
+            mostrarErro,
+            inicializarEventos,
+            atualizarCardsComNovoLancamento
+        } from './js/components/financial-cards.js';
+        import { inicializarModalDeLancamento } from '../js/components/entry-modal.js';
+        import { inicializarDetalhes } from './js/components/details.js';
+        import ConfigVerificator from '../js/components/config-verificator.js';
+
+        const sidebarLinks = {
+            lancamentos: document.getElementById('sidebarLinkLancamentos'),
+            celular: document.getElementById('sidebarLinkCelular')
+        };
+
+        function setSidebarLinksEnabled(enabled) {
+            Object.values(sidebarLinks).forEach(link => {
+                if (!link) return;
+                link.classList.toggle('sidebar-link--disabled', !enabled);
+                link.setAttribute('aria-disabled', String(!enabled));
+                if (enabled) {
+                    link.removeAttribute('tabindex');
+                } else {
+                    link.setAttribute('tabindex', '-1');
+                }
+            });
+        }
+
+
+        // insere o modal no body
+        document.body.insertAdjacentHTML('beforeend', entryModalTemplate);
+
+        // Inicializa o PocketBase globalmente antes dos módulos
+        window.pb = new PocketBase(apiConfig.getBaseURL());
+
+        inicializarMenuUsuario();
+        inicializarEventos();
+        inicializarModalDeLancamento();
+
+
+        // Verifica se a configuração do Google (google_infos) está completa antes de carregar dados
+        const configVerificator = new ConfigVerificator({ configBtnId: 'configBtn' }).init();
+        const cfgResult = await configVerificator.verificarConfiguracao(pb);
+        const isConfigValid = cfgResult && cfgResult.validConfig === true;
+
+        setSidebarLinksEnabled(isConfigValid);
+
+        if (!isConfigValid) {
+            // Mostrar botão de configuração (o componente também faz isso) e esconder áreas dependentes
+            const configBtn = document.getElementById('configBtn');
+            if (configBtn) configBtn.style.display = '';
+
+            const summaryCards = document.getElementById('summaryCards');
+            if (summaryCards) summaryCards.style.display = 'none';
+
+            const rightCol = document.querySelector('.dashboard__col--right.details');
+            if (rightCol) rightCol.style.display = 'none';
+
+            const addBtn = document.getElementById('openEntryModal');
+            if (addBtn) addBtn.style.display = 'none';
+
+            // Mensagem auxiliar de orientação (não intrusiva)
+            const header = document.querySelector('.dashboard__header');
+            if (header && !document.getElementById('configMessage')) {
+                const p = document.createElement('p');
+                p.id = 'configMessage';
+                p.style.marginTop = '1rem';
+                p.textContent = 'Integração com Google não configurada. Clique em "Configurar Integração" para continuar.';
+                header.appendChild(p);
+            }
+        } else {
+            // Mostra card de carregamento inicial
+            //mostrarCardCarregamento();
+
+            try {
+                // Busca os entries
+                const responseEntries = await fetch(`${apiConfig.getBaseURL()}/get-sheet-entries?limit=0`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${pb.authStore.token}`
+                    }
+                });
+                const sheetEntriesData = await responseEntries.json();
+                window.allEntries = sheetEntriesData?.entries ?? [];
+                const entries = sheetEntriesData?.entries ?? [];
+
+                // Busca as categorias
+                const responseCat = await fetch(`${apiConfig.getBaseURL()}/get-sheet-categories`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${pb.authStore.token}`
+                    }
+                });
+                const catData = await responseCat.json();
+                const categories = catData?.success && Array.isArray(catData.categories) ? catData.categories : [];
+
+                // Dispara evento para os módulos que precisam dos entries e das categorias
+                document.dispatchEvent(new CustomEvent('sheet:loaded', {
+                    detail: {
+                        allentries: entries,
+                        entries: entries.slice(0, 200),
+                        categories
+                    }
+                }));
+
+                // Exporta funções de utilidades para a janela global para uso em componentes
+                window.sheetEntriesUtils = {
+                    filterEntriesByInterval,
+                    aggregateByBudget,
+                    budgetsInEntries
+                };
+
+                // Se não houver lançamentos, não mostrar os financial cards nem os details
+                if (!entries || entries.length === 0) {
+                    const summaryCards = document.getElementById('summaryCards');
+                    if (summaryCards) summaryCards.style.display = 'none';
+
+                    const rightCol = document.querySelector('.dashboard__col--right.details');
+                    if (rightCol) rightCol.style.display = 'none';
+
+                    const addBtn = document.getElementById('openEntryModal');
+                    if (addBtn) addBtn.style.display = '';
+
+                    // Insere mensagem convidando o usuário a inserir o primeiro lançamento
+                    const header = document.querySelector('.dashboard__header');
+                    if (header && !document.getElementById('firstEntryMessage')) {
+                        const div = document.createElement('div');
+                        div.id = 'firstEntryMessage';
+                        div.style.marginTop = '1rem';
+                        div.className = 'notice';
+                        div.textContent = 'Você ainda não tem lançamentos. Insira o primeiro lançamento — ex. "Saldo inicial Banco Laraninha" ou "Fatura cartão roxinho atual". Após inserir recarregue a página.';
+                        header.appendChild(div);
+                    }
+                } else {
+                    // Processamento dos orçamentos e renderização
+                    const allSummaries = aggregateByBudget(entries);
+                    window.allBudgets = budgetsInEntries(entries);
+                    const entriesInInterval = filterEntriesByInterval(entries);
+                    const currentSummary = aggregateByBudget(entriesInInterval);
+                    window.filteredEntries = entriesInInterval;
+                    window.summaryByBudget = currentSummary;
+                    window.budgetsInInterval = budgetsInEntries(entriesInInterval);
+                    const budgetsInIntervalMap = {};
+                    currentSummary.forEach(budget => {
+                        budgetsInIntervalMap[budget.label] = true;
+                    });
+                    renderizarCards(allSummaries, budgetsInIntervalMap);
+                    inicializarDetalhes(entries, budgetsInInterval);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                mostrarErro('Não foi possível carregar os dados. Verifique sua conexão e tente novamente.');
+            }
+        }
+        // Soma total dos valores (só se entries estiverem carregadas)
+        if (Array.isArray(window.allEntries) && window.allEntries.length >= 0) {
+            try {
+                const somaTotal = query(window.allEntries, ['pipe', ['map', ['get', 'valor']], ['sum']]);
+                console.log('Soma total:', somaTotal);
+
+                // Soma total dos valores apenas dos orçamentos do intervalo atual
+                const orcamentosValidos = window.budgetsInInterval || [];
+                window.orcamentoArrayInt = query(orcamentosValidos, `map(.orcamento)`);
+                const orcamentoArrayInt2 = window.orcamentoArrayInt;
+                const somaTotalFiltrada = query(
+                    window.allEntries,
+                    [
+                        "pipe",
+                        [
+                            "filter",
+                            entry => orcamentoArrayInt2.includes(entry.orcamento)
+                        ],
+                        ["map", ["get", "valor"]],
+                        ["sum"]
+                    ]
+                );
+                console.log('Soma total (filtrada por orçamento no intervalo):', somaTotalFiltrada);
+            } catch (err) {
+                console.warn('Não foi possível calcular somas (dados ausentes ou formato inválido):', err);
+            }
+        } else {
+            console.log('Nenhum lançamento carregado; pulando cálculos agregados.');
+        }
+
+        // Adiciona listener para evento de novo lançamento
+        document.addEventListener('entry:created', (ev) => {
+            const newEntry = ev.detail?.entry;
+            if (!newEntry) return;
+
+            // Adiciona a entrada à lista global
+            const updatedEntries = [...window.allEntries, newEntry];
+
+            // Atualiza cards financeiros
+            atualizarCardsComNovoLancamento(newEntry, updatedEntries);
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,118 @@
+/**
+ * Sidebar Menu
+ * Menu lateral fixo (desktop) e inferior (mobile)
+ */
+
+/* ========== Sidebar Container ========== */
+.sidebar-menu {
+  position: fixed;
+  left: 0;
+  top: var(--nav-height);
+  bottom: 0;
+  width: var(--sidebar-width);
+  background: var(--white-color);
+  border-right: 1px solid var(--border-light);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: var(--spacing-md) 0;
+  gap: var(--spacing-md);
+  z-index: var(--z-fixed);
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ========== Sidebar Links ========== */
+.sidebar-menu a {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: auto;
+  height: 40px;
+  border-radius: var(--border-radius);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  transition: background-color var(--transition-base), color var(--transition-base);
+  color: var(--text-color);
+  padding: 0 var(--spacing-sm);
+  margin: 0 var(--spacing-sm);
+  gap: var(--spacing-sm);
+}
+
+.sidebar-menu a .menu-icon {
+  font-size: var(--font-size-lg);
+  flex-shrink: 0;
+}
+
+.sidebar-menu a .menu-text {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+/* ========== States ========== */
+.sidebar-menu a:hover {
+  background-color: var(--light-gray);
+  color: var(--text-color);
+}
+
+.sidebar-menu a.active {
+  background-color: var(--primary-color);
+  color: var(--white-color);
+}
+
+.sidebar-menu a.active .menu-icon,
+.sidebar-menu a.active .menu-text {
+  color: var(--white-color);
+}
+
+.sidebar-menu a.sidebar-link--disabled {
+  pointer-events: none;
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.sidebar-menu a.sidebar-link--disabled .menu-icon,
+.sidebar-menu a.sidebar-link--disabled .menu-text {
+  color: var(--text-muted);
+}
+
+/* ========== Mobile - Bottom Navigation ========== */
+@media (max-width: 768px) {
+  .sidebar-menu {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: auto;
+    bottom: 0;
+    width: auto;
+    height: var(--sidebar-mobile-height);
+    flex-direction: row;
+    justify-content: center;
+    border-right: none;
+    border-top: 1px solid var(--border-light);
+    padding: var(--spacing-sm) var(--spacing-md);
+    gap: var(--spacing-xl);
+    align-items: stretch;
+  }
+
+  .sidebar-menu a {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: auto;
+    height: auto;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    margin: 0;
+    gap: var(--spacing-xs);
+    min-width: 60px;
+  }
+
+  .sidebar-menu a .menu-icon {
+    font-size: var(--font-size-lg);
+  }
+
+  .sidebar-menu a .menu-text {
+    font-size: var(--font-size-xs);
+    line-height: 1;
+  }
+}

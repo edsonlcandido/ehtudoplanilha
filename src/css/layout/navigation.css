@@ -1,0 +1,63 @@
+/**
+ * Navigation (Top Bar)
+ * Menu superior com logo e links
+ */
+
+/* ========== Nav ========== */
+nav {
+  flex-shrink: 0;
+  background-color: var(--white-color);
+  border-bottom: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+  /* z-index maior que o FAB para o menu dropdown ficar acima */
+  z-index: 30000 !important;
+}
+
+/* Remove estilos de link do brand/logo */
+nav .brand,
+nav a.brand,
+nav a.brand:hover,
+nav a.brand:focus,
+nav a.brand:active {
+  text-decoration: none;
+  color: var(--text-color);
+}
+
+/* Botões do menu sem classe específica (Login, Registrar, Configuração) */
+nav .menu a.button:not(.pseudo):not(.success):not(.error):not(.warning) {
+  color: var(--white-color);
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+nav .menu a.button:not(.pseudo):not(.success):not(.error):not(.warning):hover,
+nav .menu a.button:not(.pseudo):not(.success):not(.error):not(.warning):focus {
+  color: var(--white-color);
+}
+
+/* Botão Success (Dashboard) com cor branca */
+nav .menu a.button.success {
+  color: var(--white-color);
+}
+
+nav .menu a.button.success:hover,
+nav .menu a.button.success:focus {
+  color: var(--white-color);
+}
+
+/* Botão Error (Sair) com cor branca */
+nav .menu button.button.error,
+nav .menu a.button.error {
+  color: var(--white-color);
+}
+
+nav .menu button.button.error:hover,
+nav .menu button.button.error:focus,
+nav .menu a.button.error:hover,
+nav .menu a.button.error:focus {
+  color: var(--white-color);
+}
+
+/* Picnic CSS já gerencia a maior parte do nav */
+/* Aqui só customizações específicas se necessário */
+

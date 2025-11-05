@@ -1,0 +1,85 @@
+/**
+ * Modals
+ * Estilos base para modais (Picnic CSS + customizações)
+ */
+
+/* Picnic CSS já gerencia a maior parte dos modais */
+/* Aqui apenas customizações específicas */
+
+/* ========== Modal Content ========== */
+.modal-content {
+  background: var(--white-color);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-xl);
+  max-width: 600px;
+  width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* ========== Modal Header ========== */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: var(--font-size-2xl);
+}
+
+/* ========== Modal Close Button ========== */
+.modal-close {
+  background: transparent;
+  border: none;
+  font-size: var(--font-size-3xl);
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-base);
+}
+
+.modal-close:hover {
+  color: var(--text-color);
+}
+
+/* ========== Modal Body ========== */
+.modal-body {
+  margin-bottom: var(--spacing-lg);
+}
+
+/* ========== Modal Footer ========== */
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-md);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--border-light);
+}
+
+/* ========== Loading State ========== */
+#loadingState,
+#errorState,
+#sheetsListState {
+  padding: var(--spacing-xl);
+}
+
+/* ========== Sheet List ========== */
+#sheetsList {
+  max-height: 300px;
+  overflow-y: auto;
+  margin: var(--spacing-md) 0;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--border-light);
+  border-radius: var(--border-radius-sm);
+}

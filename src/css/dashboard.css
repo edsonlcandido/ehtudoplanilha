@@ -1,0 +1,17 @@
+/**
+ * Dashboard Bundle
+ * Estilos específicos para páginas do dashboard
+ * 
+ * Usar junto com main.css:
+ * <link rel="stylesheet" href="../css/main.css">
+ * <link rel="stylesheet" href="../css/dashboard.css">
+ */
+
+/* ========== Layout (Dashboard) ========== */
+@import './layout/sidebar.css';
+@import './layout/containers.css';
+
+/* ========== Components (Dashboard) ========== */
+@import './components/modals.css';
+@import './components/tables.css';
+@import './components/fab.css';
