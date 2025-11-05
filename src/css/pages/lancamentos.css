@@ -466,3 +466,84 @@ body {
     display: block;
   }
 }
+
+/* ===================================
+   MODAIS - Delete e Split
+   =================================== */
+#deleteModal,
+#splitModal {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 99999;
+  padding: 1rem;
+  box-sizing: border-box;
+  backdrop-filter: blur(2px);
+}
+
+#deleteModal .modal-content,
+#splitModal .modal-content {
+  background: white;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 90%;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+#deleteModal .modal-header,
+#splitModal .modal-header {
+  padding: 1.5rem 1.5rem 1rem;
+}
+
+#deleteModal .modal-body,
+#splitModal .modal-body {
+  padding: 0 1.5rem 1rem;
+}
+
+#deleteModal .modal-footer,
+#splitModal .modal-footer {
+  padding: 1rem 1.5rem 1.5rem;
+}
+
+@media (max-width: 768px) {
+  #deleteModal,
+  #splitModal {
+    padding: 0.5rem;
+  }
+
+  #deleteModal .modal-content,
+  #splitModal .modal-content {
+    width: 95%;
+    max-width: 100%;
+  }
+
+  #deleteModal .modal-header,
+  #splitModal .modal-header {
+    padding: 1rem 1rem 0.75rem;
+  }
+
+  #deleteModal .modal-body,
+  #splitModal .modal-body {
+    padding: 0 1rem 0.75rem;
+  }
+
+  #deleteModal .modal-footer,
+  #splitModal .modal-footer {
+    padding: 0.75rem 1rem 1rem;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  #deleteModal .modal-footer .button,
+  #splitModal .modal-footer .button {
+    width: 100%;
+  }
+}

@@ -231,33 +231,105 @@ function editEntry(rowIndex: number): void {
   }
 }
 
+// ============================================================================
+// Gerenciamento do Modal de Exclusão
+// ============================================================================
+
+let pendingDeleteRowIndex: number | null = null;
+
 /**
- * Deleta um lançamento
+ * Abre o modal de confirmação de exclusão
  */
-async function deleteEntry(rowIndex: number): Promise<void> {
+function openDeleteModal(rowIndex: number): void {
   const entry = state.entries.find(e => e.rowIndex === rowIndex);
   if (!entry) {
     console.error('Lançamento não encontrado:', rowIndex);
     return;
   }
 
-  if (!confirm(`Tem certeza que deseja excluir o lançamento?\n\nDescrição: ${entry.descricao}\nValor: R$ ${entry.valor}`)) {
+  pendingDeleteRowIndex = rowIndex;
+
+  // Preenche os dados no modal
+  const deleteRowNumber = document.getElementById('deleteRowNumber');
+  const deleteDate = document.getElementById('deleteDate');
+  const deleteValue = document.getElementById('deleteValue');
+  const deleteDescription = document.getElementById('deleteDescription');
+
+  if (deleteRowNumber) deleteRowNumber.textContent = String(entry.rowIndex || '-');
+  if (deleteDate) deleteDate.textContent = String(entry.data || '-');
+  if (deleteValue) deleteValue.textContent = new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  }).format(entry.valor);
+  if (deleteDescription) deleteDescription.textContent = entry.descricao || '-';
+
+  // Exibe o modal
+  const deleteModal = document.getElementById('deleteModal');
+  if (deleteModal) {
+    deleteModal.style.display = 'flex';
+  }
+}
+
+/**
+ * Fecha o modal de confirmação de exclusão
+ */
+function closeDeleteModal(): void {
+  pendingDeleteRowIndex = null;
+  const deleteModal = document.getElementById('deleteModal');
+  if (deleteModal) {
+    deleteModal.style.display = 'none';
+  }
+}
+
+/**
+ * Confirma e executa a exclusão do lançamento
+ */
+async function confirmDelete(): Promise<void> {
+  if (pendingDeleteRowIndex === null) {
+    console.error('Nenhum lançamento pendente para exclusão');
     return;
+  }
+
+  const rowIndex = pendingDeleteRowIndex;
+  const deleteConfirmBtn = document.getElementById('deleteConfirmBtn') as HTMLButtonElement;
+
+  // Desabilita o botão durante o processo
+  if (deleteConfirmBtn) {
+    deleteConfirmBtn.disabled = true;
+    deleteConfirmBtn.textContent = 'Excluindo...';
   }
 
   try {
     await lancamentosService.deleteEntry(rowIndex);
     showMessage('Lançamento excluído com sucesso', 'success');
+    closeDeleteModal();
     await loadEntries();
   } catch (error: any) {
     console.error('Erro ao deletar lançamento:', error);
     showMessage('Erro ao deletar lançamento: ' + error.message, 'error');
+  } finally {
+    // Reabilita o botão
+    if (deleteConfirmBtn) {
+      deleteConfirmBtn.disabled = false;
+      deleteConfirmBtn.textContent = 'Excluir';
+    }
   }
+}
+
+/**
+ * Deleta um lançamento (abre o modal de confirmação)
+ */
+function deleteEntry(rowIndex: number): void {
+  openDeleteModal(rowIndex);
 }
 
 // Expõe funções globalmente para uso nos botões
 (window as any).editEntry = editEntry;
 (window as any).deleteEntry = deleteEntry;
+(window as any).lancamentosManager = {
+  closeDeleteModal,
+  confirmDelete
+};
 
 // ============================================================================
 // Inicialização
