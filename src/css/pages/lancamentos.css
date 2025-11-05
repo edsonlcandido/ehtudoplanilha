@@ -339,31 +339,6 @@ body {
   100% { transform: rotate(360deg); }
 }
 
-.lancamentos__message {
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  font-size: 0.95rem;
-}
-
-.lancamentos__message--success {
-  background-color: #e8f5e9;
-  color: #2e7d32;
-  border-left: 4px solid #4caf50;
-}
-
-.lancamentos__message--error {
-  background-color: #ffebee;
-  color: #c62828;
-  border-left: 4px solid #ef5350;
-}
-
-.lancamentos__message--info {
-  background-color: #e3f2fd;
-  color: #1565c0;
-  border-left: 4px solid #42a5f5;
-}
-
 .lancamentos__empty {
   text-align: center;
   padding: 3rem 1rem;
