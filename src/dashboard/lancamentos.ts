@@ -109,8 +109,9 @@ async function loadEntries(): Promise<void> {
     // Filtra entradas em branco
     const cleaned = rawEntries.filter(e => !lancamentosService.isBlankEntry(e));
     
-    // Normaliza entradas
-    state.originalEntries = cleaned.map(e => lancamentosService.normalizeEntry({ ...e }));
+    // Backend retorna dados já no formato correto
+    // lancamentos-list.ts encarrega de exibir corretamente
+    state.originalEntries = cleaned;
     state.entries = [...state.originalEntries];
 
     applySortingAndFilters();

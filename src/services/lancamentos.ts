@@ -53,7 +53,7 @@ class LancamentosService {
 
     try {
       const response = await fetch(`${pb.baseUrl}/edit-sheet-entry`, {
-        method: 'POST',
+        method: 'PUT',
         headers: {
           'Authorization': `Bearer ${pb.authStore.token}`,
           'Content-Type': 'application/json'
@@ -157,7 +157,7 @@ class LancamentosService {
     const sorted = [...entries];
 
     if (sortBy === 'original') {
-      return sorted.sort((a, b) => (a.rowIndex || 0) - (b.rowIndex || 0));
+      return sorted.sort((a, b) => (b.rowIndex || 0) - (a.rowIndex || 0));
     }
 
     if (sortBy === 'date') {

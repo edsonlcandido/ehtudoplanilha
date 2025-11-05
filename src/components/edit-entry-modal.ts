@@ -1,15 +1,14 @@
 /**
  * Componente de Modal para Editar Lançamento
- * Migrado de pb_public_/js/components/edit-entry-modal.js
- * Mantém mesma estrutura do entry-modal.ts
+ * Baseado em entry-modal.ts - Mesma estrutura e styling para consistência
  */
 
 import lancamentosService from '../services/lancamentos';
 import type { SheetEntry, OnEntryEditedCallback } from '../types';
 import {
-  toExcelSerial,
-  toExcelSerialDia,
-  excelSerialToDate
+  excelSerialToDate,
+  dateTimeLocalToDate,
+  dateInputToDate
 } from '../utils/date-helpers';
 
 // Singleton instance
@@ -26,18 +25,19 @@ class EditEntryModal {
   private accounts: string[] = [];
   private categories: string[] = [];
   private descriptions: string[] = [];
+  private entries: SheetEntry[] = [];
 
   /**
-   * Template HTML do modal
+   * Template HTML do modal (idêntico ao entry-modal.ts para consistência)
    */
   private getTemplate(): string {
     return `
-      <div id="editEntryModal" class="edit-entry-modal" aria-hidden="true">
-        <div class="edit-entry-modal__content">
-          <button id="closeEditEntryModal" class="edit-entry-modal__close" aria-label="Fechar modal">×</button>
-          <h3 class="edit-entry-modal__title">Editar Lançamento</h3>
-          <form id="editEntryForm" class="edit-entry-modal__form">
-            <fieldset style="border: none; padding: 0; margin: 0;">
+      <div id="editEntryModal" class="entry-modal" aria-hidden="true" style="display: none;">
+        <div class="entry-modal__content">
+          <button id="closeEditEntryModal" class="entry-modal__close" aria-label="Fechar modal">×</button>
+          <h3 class="entry-modal__title">Editar Lançamento</h3>
+          <form id="editEntryForm" class="entry-modal__form">
+            <fieldset>
               <div class="form-group">
                 <label for="editEntryDate">Data:</label>
                 <input type="datetime-local" id="editEntryDate" name="data" class="form-control" required>
@@ -45,35 +45,26 @@ class EditEntryModal {
               
               <div class="form-group">
                 <label for="editEntryAccount">Conta:</label>
-                <div class="edit-entry-modal__input-container">
-                  <input type="text" id="editEntryAccount" name="conta" class="form-control" placeholder="Ex: Conta Corrente" required>
-                  <div id="editAccountSuggestions" class="edit-entry-modal__suggestions"></div>
-                </div>
+                <input type="text" id="editEntryAccount" name="conta" class="form-control" placeholder="Ex: Conta Corrente" autocomplete="off" required>
               </div>
               
-              <div class="form-group">
+              <div class="form-group valor-toggle-group">
                 <label for="editEntryValue">Valor:</label>
-                <div class="edit-entry-modal__valor-toggle">
-                  <button type="button" id="editEntrySignBtn" class="edit-entry-modal__sign-btn" aria-label="Alternar sinal">−</button>
-                  <input type="number" id="editEntryValue" name="valor" class="form-control edit-entry-modal__valor-input" step="0.01" min="0" placeholder="0,00" required>
-                  <input type="hidden" id="editEntrySignValue" name="sinal" value="-">
+                <div class="valor-toggle-container">
+                  <button type="button" id="editEntrySignBtn" class="button outline entry-toggle entry-toggle--expense" aria-label="Alternar sinal">−</button>
+                  <input type="number" id="editEntryValue" name="valor" class="form-control" step="0.01" min="0" placeholder="0,00" required>
+                  <input type="hidden" id="editEntrySignValue" name="sinal" value="−">
                 </div>
               </div>
               
               <div class="form-group">
                 <label for="editEntryDescription">Descrição:</label>
-                <div class="edit-entry-modal__input-container">
-                  <input type="text" id="editEntryDescription" name="descricao" class="form-control" placeholder="Descrição" required>
-                  <div id="editDescriptionSuggestions" class="edit-entry-modal__suggestions"></div>
-                </div>
+                <input type="text" id="editEntryDescription" name="descricao" class="form-control" placeholder="Descrição da despesa" autocomplete="off" required>
               </div>
               
               <div class="form-group">
                 <label for="editEntryCategory">Categoria:</label>
-                <div class="edit-entry-modal__input-container">
-                  <input type="text" id="editEntryCategory" name="categoria" class="form-control" placeholder="Digite uma categoria" required>
-                  <div id="editCategorySuggestions" class="edit-entry-modal__suggestions"></div>
-                </div>
+                <input type="text" id="editEntryCategory" name="categoria" class="form-control" placeholder="Digite uma categoria" autocomplete="off" required>
               </div>
               
               <div class="form-group">
@@ -86,10 +77,10 @@ class EditEntryModal {
                 <textarea id="editEntryObs" name="observacoes" rows="3" class="form-control" placeholder="Notas adicionais..."></textarea>
               </div>
               
-              <div id="editEntryFeedback" class="edit-entry-modal__feedback"></div>
+              <div id="editEntryFeedback" class="modal-feedback" style="display: none;"></div>
               
-              <div class="edit-entry-modal__actions">
-                <button type="button" id="cancelEditEntryBtn" class="button">Cancelar</button>
+              <div class="form-actions">
+                <button type="button" id="cancelEditEntryBtn" class="button warning">Cancelar</button>
                 <button type="submit" id="saveEditEntryBtn" class="button success">Salvar</button>
               </div>
             </fieldset>
@@ -119,9 +110,8 @@ class EditEntryModal {
     }
 
     this.setupEventListeners();
-    this.setupAutocomplete();
 
-    console.log('[EditEntryModal] Inicializado com sucesso');
+    console.log('[EditEntryModal] ✅ Inicializado com sucesso');
   }
 
   /**
@@ -130,17 +120,13 @@ class EditEntryModal {
   private setupEventListeners(): void {
     // Botão de fechar
     const closeBtn = document.getElementById('closeEditEntryModal');
-    if (closeBtn) {
-      closeBtn.addEventListener('click', () => this.close());
-    }
+    closeBtn?.addEventListener('click', () => this.close());
 
     // Botão de cancelar
     const cancelBtn = document.getElementById('cancelEditEntryBtn');
-    if (cancelBtn) {
-      cancelBtn.addEventListener('click', () => this.close());
-    }
+    cancelBtn?.addEventListener('click', () => this.close());
 
-    // Fechar ao clicar fora do modal
+    // Fechar ao clicar fora do conteúdo
     this.modal?.addEventListener('click', (e) => {
       if (e.target === this.modal) {
         this.close();
@@ -149,128 +135,272 @@ class EditEntryModal {
 
     // Fechar com ESC
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && this.isOpen()) {
+      if (e.key === 'Escape' && this.modal?.style.display === 'flex') {
         this.close();
       }
     });
 
-    // Toggle de sinal
+    // Toggle de sinal (+/-)
     const signBtn = document.getElementById('editEntrySignBtn');
-    if (signBtn) {
-      signBtn.addEventListener('click', () => this.toggleSign());
-    }
+    signBtn?.addEventListener('click', () => this.toggleSign());
 
     // Submit do formulário
-    if (this.form) {
-      this.form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        this.handleSubmit();
-      });
-    }
+    this.form?.addEventListener('submit', (e) => this.handleSubmit(e));
+
+    // Autocomplete para categoria
+    this.setupCategoryAutocomplete();
+
+    // Autocomplete para descrição
+    this.setupDescriptionAutocomplete();
+
+    // Autocomplete para conta
+    this.setupAccountAutocomplete();
   }
 
   /**
-   * Configura autocomplete para campos
+   * Configura autocomplete para categoria
    */
-  private setupAutocomplete(): void {
-    const accountInput = document.getElementById('editEntryAccount') as HTMLInputElement;
-    const descriptionInput = document.getElementById('editEntryDescription') as HTMLInputElement;
-    const categoryInput = document.getElementById('editEntryCategory') as HTMLInputElement;
+  private setupCategoryAutocomplete(): void {
+    const input = document.getElementById('editEntryCategory') as HTMLInputElement;
+    if (!input) return;
 
-    if (accountInput) {
-      this.setupFieldAutocomplete(accountInput, 'editAccountSuggestions', () => this.accounts);
-    }
+    let container = this.ensureSuggestionsContainer('editCatSuggestions', input);
 
-    if (descriptionInput) {
-      this.setupFieldAutocomplete(descriptionInput, 'editDescriptionSuggestions', () => this.descriptions);
-    }
-
-    if (categoryInput) {
-      this.setupFieldAutocomplete(categoryInput, 'editCategorySuggestions', () => this.categories);
-    }
-  }
-
-  /**
-   * Configura autocomplete para um campo específico
-   */
-  private setupFieldAutocomplete(
-    input: HTMLInputElement,
-    suggestionsId: string,
-    getSuggestions: () => string[]
-  ): void {
-    const suggestionsEl = document.getElementById(suggestionsId);
-    if (!suggestionsEl) return;
+    // Mostra todas as categorias ao focar (antes de digitar)
+    input.addEventListener('focus', () => {
+      if (this.categories.length > 0) {
+        this.showAllSuggestions(input, container, this.categories);
+      }
+    });
 
     input.addEventListener('input', () => {
-      const value = input.value.trim().toLowerCase();
-      if (value.length < 1) {
-        suggestionsEl.classList.remove('edit-entry-modal__suggestions--visible');
-        return;
-      }
-
-      const suggestions = getSuggestions();
-      const filtered = suggestions
-        .filter(s => s.toLowerCase().includes(value))
-        .slice(0, 8);
-
-      if (filtered.length === 0) {
-        suggestionsEl.classList.remove('edit-entry-modal__suggestions--visible');
-        return;
-      }
-
-      suggestionsEl.innerHTML = filtered
-        .map(s => `<div class="edit-entry-modal__suggestion" data-value="${s}">${s}</div>`)
-        .join('');
-
-      suggestionsEl.classList.add('edit-entry-modal__suggestions--visible');
-
-      // Event listener para cada sugestão
-      suggestionsEl.querySelectorAll('.edit-entry-modal__suggestion').forEach(el => {
-        el.addEventListener('click', () => {
-          const value = el.getAttribute('data-value');
-          if (value) {
-            input.value = value;
-            suggestionsEl.classList.remove('edit-entry-modal__suggestions--visible');
-            input.focus();
-          }
-        });
-      });
+      this.showSuggestions(input, container, this.categories);
     });
 
-    // Fecha sugestões ao clicar fora
-    document.addEventListener('click', (e) => {
-      if (e.target !== input && e.target !== suggestionsEl) {
-        suggestionsEl.classList.remove('edit-entry-modal__suggestions--visible');
-      }
+    input.addEventListener('blur', () => {
+      setTimeout(() => container.style.display = 'none', 200);
     });
   }
 
   /**
-   * Alterna sinal do valor
+   * Configura autocomplete para descrição
+   */
+  private setupDescriptionAutocomplete(): void {
+    const input = document.getElementById('editEntryDescription') as HTMLInputElement;
+    if (!input) return;
+
+    let container = this.ensureSuggestionsContainer('editDescSuggestions', input);
+
+    // Mostra sugestões ao focar
+    input.addEventListener('focus', () => {
+      if (this.descriptions.length > 0) {
+        const query = input.value.trim().toLowerCase();
+        if (!query) {
+          this.showAllSuggestions(input, container, this.descriptions, (value) => {
+            this.autoFillCategoryFromDescription(value);
+          });
+        }
+      }
+    });
+
+    input.addEventListener('input', () => {
+      this.showSuggestions(input, container, this.descriptions, (value) => {
+        this.autoFillCategoryFromDescription(value);
+      });
+    });
+
+    input.addEventListener('blur', () => {
+      setTimeout(() => container.style.display = 'none', 200);
+    });
+  }
+
+  /**
+   * Auto-preenche categoria baseado na descrição
+   */
+  private autoFillCategoryFromDescription(description: string): void {
+    const entry = this.entries.find(e => 
+      e.descricao && e.descricao.trim().toLowerCase() === description.toLowerCase()
+    );
+    if (entry && entry.categoria) {
+      const categoryInput = document.getElementById('editEntryCategory') as HTMLInputElement;
+      if (categoryInput) {
+        categoryInput.value = entry.categoria;
+      }
+    }
+  }
+
+  /**
+   * Configura autocomplete para conta
+   */
+  private setupAccountAutocomplete(): void {
+    const input = document.getElementById('editEntryAccount') as HTMLInputElement;
+    if (!input) return;
+
+    let container = this.ensureSuggestionsContainer('editAccountSuggestions', input);
+
+    // Mostra sugestões ao focar
+    input.addEventListener('focus', () => {
+      if (this.accounts.length > 0) {
+        const query = input.value.trim().toLowerCase();
+        if (!query) {
+          this.showAllSuggestions(input, container, this.accounts);
+        }
+      }
+    });
+
+    input.addEventListener('input', () => {
+      this.showSuggestions(input, container, this.accounts);
+    });
+
+    input.addEventListener('blur', () => {
+      setTimeout(() => container.style.display = 'none', 200);
+    });
+  }
+
+  /**
+   * Garante que existe um container de sugestões
+   */
+  private ensureSuggestionsContainer(id: string, input: HTMLInputElement): HTMLDivElement {
+    let container = document.getElementById(id) as HTMLDivElement;
+    if (!container) {
+      container = document.createElement('div');
+      container.id = id;
+      container.classList.add('entry-modal__suggestions');
+      container.setAttribute('role', 'listbox');
+      const parent = input.parentElement;
+      if (parent) {
+        parent.style.position = parent.style.position || 'relative';
+        parent.appendChild(container);
+      }
+    }
+    return container;
+  }
+
+  /**
+   * Mostra todas as sugestões (sem filtrar)
+   */
+  private showAllSuggestions(
+    input: HTMLInputElement,
+    container: HTMLDivElement,
+    suggestions: string[],
+    onSelect?: (value: string) => void
+  ): void {
+    container.innerHTML = '';
+
+    if (suggestions.length === 0) {
+      container.style.display = 'none';
+      return;
+    }
+
+    // Limita a 20 itens iniciais para não sobrecarregar
+    const itemsToShow = suggestions.slice(0, 20);
+
+    itemsToShow.forEach(s => {
+      const item = document.createElement('div');
+      item.setAttribute('role', 'option');
+      item.classList.add('entry-modal__suggestion');
+      item.textContent = s;
+      item.addEventListener('click', () => {
+        input.value = s;
+        container.style.display = 'none';
+        input.focus();
+        if (onSelect) {
+          onSelect(s);
+        }
+      });
+      container.appendChild(item);
+    });
+
+    container.style.display = 'block';
+  }
+
+  /**
+   * Mostra sugestões de autocomplete (filtradas)
+   */
+  private showSuggestions(
+    input: HTMLInputElement, 
+    container: HTMLDivElement, 
+    suggestions: string[],
+    onSelect?: (value: string) => void
+  ): void {
+    container.innerHTML = '';
+    const query = input.value.trim().toLowerCase();
+
+    // Se não tem query, mostra todas
+    if (!query || query.length < 1) {
+      this.showAllSuggestions(input, container, suggestions, onSelect);
+      return;
+    }
+
+    if (suggestions.length === 0) {
+      container.style.display = 'none';
+      return;
+    }
+
+    const filtered = suggestions.filter(s => s.toLowerCase().includes(query));
+
+    if (filtered.length === 0) {
+      container.style.display = 'none';
+      return;
+    }
+
+    filtered.forEach(s => {
+      const item = document.createElement('div');
+      item.setAttribute('role', 'option');
+      item.classList.add('entry-modal__suggestion');
+      item.textContent = s;
+      item.addEventListener('click', () => {
+        input.value = s;
+        container.style.display = 'none';
+        input.focus();
+        if (onSelect) {
+          onSelect(s);
+        }
+      });
+      container.appendChild(item);
+    });
+
+    container.style.display = 'block';
+  }
+
+  /**
+   * Formata datetime-local "2025-10-31T14:41" para "31/10/2025 14:41"
+   */
+  private formatDateTimeLocal(datetimeStr: string): string {
+    // "2025-10-31T14:41" -> ["2025-10-31", "14:41"]
+    const [datePart, timePart] = datetimeStr.split('T');
+    
+    // "2025-10-31" -> ["2025", "10", "31"]
+    const [year, month, day] = datePart.split('-');
+    
+    // Retorna no formato brasileiro: "31/10/2025 14:41"
+    return `${day}/${month}/${year} ${timePart}`;
+  }
+
+  /**
+   * Formata date "2025-10-31" para "31/10/2025"
+   */
+  private formatDate(dateStr: string): string {
+    // "2025-10-31" -> ["2025", "10", "31"]
+    const [year, month, day] = dateStr.split('-');
+    
+    // Retorna no formato brasileiro: "31/10/2025"
+    return `${day}/${month}/${year}`;
+  }
+
+  /**
+   * Alterna o sinal entre + e -
    */
   private toggleSign(): void {
     const signBtn = document.getElementById('editEntrySignBtn');
-    const signValue = document.getElementById('editEntrySignValue') as HTMLInputElement;
-    
-    if (!signBtn || !signValue) return;
-
-    const isExpense = signBtn.textContent?.trim() === '−';
-    
-    if (isExpense) {
-      signBtn.textContent = '+';
-      signBtn.className = 'edit-entry-modal__sign-btn edit-entry-modal__sign-btn--income';
-      signValue.value = '+';
-    } else {
-      signBtn.textContent = '−';
-      signBtn.className = 'edit-entry-modal__sign-btn edit-entry-modal__sign-btn--expense';
-      signValue.value = '-';
-    }
+    const isExpense = signBtn?.textContent?.trim() === '−';
+    this.setSignState(!isExpense);
   }
 
   /**
-   * Aplica estado do sinal
+   * Define o estado do sinal (despesa ou receita)
    */
-  private applySignState(isExpense: boolean): void {
+  private setSignState(isExpense: boolean): void {
     const signBtn = document.getElementById('editEntrySignBtn');
     const signValue = document.getElementById('editEntrySignValue') as HTMLInputElement;
     
@@ -278,11 +408,13 @@ class EditEntryModal {
 
     if (isExpense) {
       signBtn.textContent = '−';
-      signBtn.className = 'edit-entry-modal__sign-btn edit-entry-modal__sign-btn--expense';
-      signValue.value = '-';
+      signBtn.classList.add('entry-toggle--expense');
+      signBtn.classList.remove('entry-toggle--income');
+      signValue.value = '−';
     } else {
       signBtn.textContent = '+';
-      signBtn.className = 'edit-entry-modal__sign-btn edit-entry-modal__sign-btn--income';
+      signBtn.classList.remove('entry-toggle--expense');
+      signBtn.classList.add('entry-toggle--income');
       signValue.value = '+';
     }
   }
@@ -299,12 +431,44 @@ class EditEntryModal {
     this.populateForm(entry);
     
     this.modal.style.display = 'flex';
-    this.modal.classList.add('edit-entry-modal--visible');
     this.modal.setAttribute('aria-hidden', 'false');
+
+    // Oculta o botão FAB
+    const fabBtn = document.getElementById('openEntryModal');
+    if (fabBtn) {
+      fabBtn.style.display = 'none';
+      console.log('[EditEntryModal] ✅ Botão FAB oculto');
+    }
+
+    // Foca no primeiro campo
+    const firstInput = this.form?.querySelector('input');
+    firstInput?.focus();
   }
 
   /**
-   * Preenche o formulário com dados do lançamento
+   * Aplica estado do sinal (para preenchimento do formulário)
+   */
+  private applySignState(isExpense: boolean): void {
+    const signBtn = document.getElementById('editEntrySignBtn');
+    const signValue = document.getElementById('editEntrySignValue') as HTMLInputElement;
+    
+    if (!signBtn || !signValue) return;
+
+    if (isExpense) {
+      signBtn.textContent = '−';
+      signBtn.classList.add('entry-toggle--expense');
+      signBtn.classList.remove('entry-toggle--income');
+      signValue.value = '−';
+    } else {
+      signBtn.textContent = '+';
+      signBtn.classList.remove('entry-toggle--expense');
+      signBtn.classList.add('entry-toggle--income');
+      signValue.value = '+';
+    }
+  }
+
+  /**
+   * Define o estado do sinal (despesa ou receita)
    */
   private populateForm(entry: SheetEntry): void {
     // Data
@@ -312,13 +476,15 @@ class EditEntryModal {
     if (dateInput && entry.data) {
       let dateValue = '';
       if (typeof entry.data === 'number') {
-        const dateObj = excelSerialToDate(entry.data);
+        // Converte Excel serial para Date com hora
+        const dateObj = excelSerialToDate(entry.data, true);
         if (dateObj) {
           dateValue = dateObj.toISOString().slice(0, 16);
         }
-      } else {
-        const dateObj = new Date(entry.data);
-        if (!isNaN(dateObj.getTime())) {
+      } else if (typeof entry.data === 'string') {
+        // Se for string, tenta parsear
+        const dateObj = dateTimeLocalToDate(entry.data);
+        if (dateObj) {
           dateValue = dateObj.toISOString().slice(0, 16);
         }
       }
@@ -356,12 +522,17 @@ class EditEntryModal {
     if (budgetInput && entry.orcamento) {
       let budgetValue = '';
       if (typeof entry.orcamento === 'number') {
-        const dateObj = excelSerialToDate(entry.orcamento);
+        // Converte Excel serial para Date sem hora
+        const dateObj = excelSerialToDate(entry.orcamento, false);
         if (dateObj) {
           budgetValue = dateObj.toISOString().split('T')[0];
         }
-      } else {
-        budgetValue = entry.orcamento.split('T')[0];
+      } else if (typeof entry.orcamento === 'string') {
+        // Se for string, tenta parsear
+        const dateObj = dateInputToDate(entry.orcamento);
+        if (dateObj) {
+          budgetValue = dateObj.toISOString().split('T')[0];
+        }
       }
       budgetInput.value = budgetValue;
     }
@@ -380,9 +551,15 @@ class EditEntryModal {
     if (!this.modal) return;
 
     this.modal.style.display = 'none';
-    this.modal.classList.remove('edit-entry-modal--visible');
     this.modal.setAttribute('aria-hidden', 'true');
     this.currentEntry = null;
+
+    // Mostra o botão FAB novamente
+    const fabBtn = document.getElementById('openEntryModal');
+    if (fabBtn) {
+      fabBtn.style.display = 'block';
+      console.log('[EditEntryModal] ✅ Botão FAB visível');
+    }
 
     // Limpa o formulário
     if (this.form) {
@@ -403,7 +580,9 @@ class EditEntryModal {
   /**
    * Processa o envio do formulário
    */
-  private async handleSubmit(): Promise<void> {
+  private async handleSubmit(e: Event): Promise<void> {
+    e.preventDefault();
+
     if (!this.form || !this.currentEntry || !this.currentEntry.rowIndex) {
       console.error('[EditEntryModal] Dados insuficientes para edição');
       return;
@@ -437,24 +616,28 @@ class EditEntryModal {
         throw new Error('Data de orçamento inválida');
       }
 
-      const value = signValue === '-' ? -Math.abs(valueInput) : Math.abs(valueInput);
+      const value = (signValue === '−' || signValue === '-') ? -Math.abs(valueInput) : Math.abs(valueInput);
+
+      // Formata data e orçamento em formato brasileiro (como no entry-modal.ts)
+      const dataFormatada = this.formatDateTimeLocal(dateInput);
+      const orcamentoFormatado = this.formatDate(budgetInput);
 
       const payload: Partial<SheetEntry> = {
-        data: toExcelSerial(dateObj),
+        data: dataFormatada,
         conta: formData.get('conta') as string,
         valor: value,
         descricao: formData.get('descricao') as string,
         categoria: formData.get('categoria') as string,
-        orcamento: toExcelSerialDia(budgetObj),
+        orcamento: orcamentoFormatado,
         obs: formData.get('observacoes') as string || ''
       };
 
-      console.log('[EditEntryModal] Enviando edição:', payload);
+      console.log('[EditEntryModal] 📤 Enviando edição:', payload);
 
       // Envia para o serviço
       await lancamentosService.editEntry(this.currentEntry.rowIndex, payload);
 
-      this.showFeedback('Lançamento editado com sucesso!', 'success');
+      this.showFeedback('✅ Lançamento editado com sucesso!', 'success');
 
       // Aguarda um pouco e fecha
       setTimeout(() => {
@@ -473,8 +656,11 @@ class EditEntryModal {
       }, 500);
 
     } catch (error: any) {
-      console.error('[EditEntryModal] Erro ao editar:', error);
-      this.showFeedback(error.message || 'Erro ao editar lançamento', 'error');
+      console.error('[EditEntryModal] ❌ Erro ao editar:', error);
+      this.showFeedback(
+        `❌ Erro: ${error instanceof Error ? error.message : 'Erro desconhecido'}`,
+        'error'
+      );
     } finally {
       if (saveBtn) {
         saveBtn.disabled = false;
@@ -484,19 +670,20 @@ class EditEntryModal {
   }
 
   /**
-   * Mostra feedback no modal
+   * Mostra mensagem de feedback
    */
-  private showFeedback(message: string, type: 'success' | 'error' | 'info' = 'info', duration = 3000): void {
+  private showFeedback(message: string, type: 'info' | 'success' | 'error'): void {
     const feedback = document.getElementById('editEntryFeedback');
     if (!feedback) return;
 
-    feedback.className = `edit-entry-modal__feedback edit-entry-modal__feedback--${type} edit-entry-modal__feedback--visible`;
     feedback.textContent = message;
+    feedback.className = `modal-feedback modal-feedback--${type}`;
+    feedback.style.display = 'block';
 
-    if (duration > 0) {
+    if (type === 'success' || type === 'error') {
       setTimeout(() => {
         this.clearFeedback();
-      }, duration);
+      }, 5000);
     }
   }
 
@@ -506,8 +693,9 @@ class EditEntryModal {
   private clearFeedback(): void {
     const feedback = document.getElementById('editEntryFeedback');
     if (feedback) {
-      feedback.className = 'edit-entry-modal__feedback';
+      feedback.className = 'modal-feedback';
       feedback.textContent = '';
+      feedback.style.display = 'none';
     }
   }
 
@@ -515,6 +703,7 @@ class EditEntryModal {
    * Define lista de lançamentos (para autocomplete)
    */
   setEntries(entries: SheetEntry[]): void {
+    this.entries = entries;
     this.accounts = lancamentosService.getUniqueAccounts(entries);
     this.categories = lancamentosService.getUniqueCategories(entries);
     this.descriptions = lancamentosService.getUniqueDescriptions(entries);

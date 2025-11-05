@@ -4,7 +4,10 @@
  */
 
 import type { SheetEntry } from '../types';
-import { excelSerialToDate } from '../utils/date-helpers';
+import {
+  excelSerialToDateTimeLabel,
+  excelSerialToMonthLabel
+} from '../utils/date-helpers';
 
 /**
  * Formata valor monetário
@@ -17,51 +20,31 @@ function formatCurrency(value: number): string {
 }
 
 /**
- * Formata data e hora para exibição
+ * Wrapper para exibição de data com hora
  */
 function formatDateTime(date: string | number | undefined): string {
   if (!date) return '-';
-
-  let dateObj: Date | null = null;
-
+  
   if (typeof date === 'number') {
-    dateObj = excelSerialToDate(date);
-  } else {
-    dateObj = new Date(date);
+    return excelSerialToDateTimeLabel(date);
   }
-
-  if (!dateObj || isNaN(dateObj.getTime())) return '-';
-
-  const day = String(dateObj.getDate()).padStart(2, '0');
-  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-  const year = dateObj.getFullYear();
-  const hours = String(dateObj.getHours()).padStart(2, '0');
-  const minutes = String(dateObj.getMinutes()).padStart(2, '0');
-
-  return `${day}/${month}/${year} ${hours}:${minutes}`;
+  
+  // Se for string em português, retorna como está (já formatado pelo backend)
+  return String(date);
 }
 
 /**
- * Formata data simples (sem hora)
+ * Wrapper para exibição de apenas data (orçamento)
  */
 function formatDateSimple(date: string | number | undefined): string {
   if (!date) return '-';
-
-  let dateObj: Date | null = null;
-
+  
   if (typeof date === 'number') {
-    dateObj = excelSerialToDate(date);
-  } else {
-    dateObj = new Date(date);
+    return excelSerialToMonthLabel(date);
   }
-
-  if (!dateObj || isNaN(dateObj.getTime())) return '-';
-
-  const day = String(dateObj.getDate()).padStart(2, '0');
-  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-  const year = dateObj.getFullYear();
-
-  return `${day}/${month}/${year}`;
+  
+  // Se for string em português, retorna como está (já formatado pelo backend)
+  return String(date);
 }
 
 /**
