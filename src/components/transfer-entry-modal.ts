@@ -470,6 +470,13 @@ class TransferEntryModal {
     this.modal.style.display = 'flex';
     this.modal.setAttribute('aria-hidden', 'false');
     
+    // Adiciona classe ao botão FAB
+    const fabBtn = document.getElementById('openEntryModal');
+    if (fabBtn) {
+      fabBtn.classList.add('modal-open');
+      console.log('[TransferEntryModal] ✅ Classe modal-open adicionada ao botão FAB');
+    }
+    
     // Preenche data atual
     this.fillCurrentDateTime();
     
@@ -490,6 +497,13 @@ class TransferEntryModal {
     console.log('[TransferEntryModal] Modal fechado');
     this.modal.style.display = 'none';
     this.modal.setAttribute('aria-hidden', 'true');
+    
+    // Remove classe do botão FAB
+    const fabBtn = document.getElementById('openEntryModal');
+    if (fabBtn) {
+      fabBtn.classList.remove('modal-open');
+      console.log('[TransferEntryModal] ✅ Classe modal-open removida do botão FAB');
+    }
     
     // Limpa feedback
     const feedback = document.getElementById('transferModalFeedback');

@@ -14,14 +14,12 @@
   pointer-events: none;
 }
 
-/* Estado expandido do botão FAB */
+/* Estado expandido do botão FAB - apenas rotação, sem mudança de cor */
 .fab-button--expanded {
-  background: #dc3545 !important;
   transform: rotate(45deg);
 }
 
 .fab-button--expanded:hover {
-  background: #c82333 !important;
   transform: rotate(45deg) scale(1.1);
 }
 
