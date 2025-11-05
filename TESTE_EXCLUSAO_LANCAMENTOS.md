@@ -9,8 +9,8 @@ Verificar que a funcionalidade de exclusão de lançamentos está funcionando co
 - **`pb_public/js/lancamentos-manager.js`**
   - `deleteEntry(rowIndex)` - Inicia o processo de exclusão (linha 658)
   - `openDeleteModal(entry)` - Abre modal de confirmação (linha 674)
-  - `closeDeleteModal()` - Fecha o modal (linha 709)
-  - `confirmDelete()` - Executa a exclusão (linha 715)
+  - `closeDeleteModal()` - Fecha o modal (linha 715)
+  - `confirmDelete()` - Executa a exclusão (linha 725)
 
 - **`pb_public/js/google/sheets-api.js`**
   - `deleteSheetEntry(rowIndex)` - Serviço que chama o backend (linha 555)
@@ -47,7 +47,7 @@ Verificar que a funcionalidade de exclusão de lançamentos está funcionando co
    c) Chama: googleSheetsService.deleteSheetEntry(rowIndex)
    
 6. deleteSheetEntry faz requisição DELETE para backend
-   └─> POST ${pb.baseUrl}/delete-sheet-entry
+   └─> DELETE ${pb.baseUrl}/delete-sheet-entry
        Body: { rowIndex: number }
 
 7. Backend (delete-sheet-entry.pb.js):
