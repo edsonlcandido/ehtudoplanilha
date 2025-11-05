@@ -93,6 +93,13 @@ class FabMenu {
     // Toggle do menu ao clicar no FAB
     this.fabButton.addEventListener('click', (e) => {
       e.stopPropagation();
+      
+      // Verifica se há um modal aberto e fecha
+      if (this.hasOpenModal()) {
+        this.closeOpenModals();
+        return;
+      }
+      
       this.toggle();
     });
 
@@ -135,6 +142,44 @@ class FabMenu {
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && this.isExpanded) {
         this.collapse();
+      }
+    });
+  }
+
+  /**
+   * Verifica se há algum modal aberto
+   */
+  private hasOpenModal(): boolean {
+    const modals = [
+      document.getElementById('entryModal'),
+      document.getElementById('futureEntryModal'),
+      document.getElementById('transferEntryModal'),
+      document.getElementById('editEntryModal')
+    ];
+    
+    return modals.some(modal => modal && modal.style.display === 'flex');
+  }
+
+  /**
+   * Fecha todos os modais abertos
+   */
+  private closeOpenModals(): void {
+    const modals = [
+      { id: 'entryModal', closeBtn: 'closeEntryModal' },
+      { id: 'futureEntryModal', closeBtn: 'closeFutureEntryModal' },
+      { id: 'transferEntryModal', closeBtn: 'closeTransferEntryModal' },
+      { id: 'editEntryModal', closeBtn: 'closeEditEntryModal' }
+    ];
+    
+    modals.forEach(({ id, closeBtn }) => {
+      const modal = document.getElementById(id);
+      if (modal && modal.style.display === 'flex') {
+        // Tenta clicar no botão de fechar
+        const closeBtnEl = document.getElementById(closeBtn);
+        if (closeBtnEl) {
+          closeBtnEl.click();
+          console.log(`[FabMenu] Modal ${id} fechado`);
+        }
       }
     });
   }
