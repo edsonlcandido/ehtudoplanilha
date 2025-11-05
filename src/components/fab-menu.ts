@@ -34,7 +34,7 @@ class FabMenu {
           class="fab-menu__option" 
           aria-label="Lançamento futuro"
           title="Lançamento futuro">
-          <span class="fab-menu__icon">💲</span>
+          <span class="fab-menu__icon">📅</span>
           <span class="fab-menu__label">Lançamento futuro</span>
         </button>
         

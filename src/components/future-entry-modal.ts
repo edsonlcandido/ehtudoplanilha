@@ -449,7 +449,7 @@ class FutureEntryModal {
 
   /**
    * Envia o lançamento para o backend
-   * Usa data e conta vazias para lançamento futuro
+   * Usa data e conta vazias para lançamento futuro (conforme especificação)
    */
   private async submitEntry(data: FutureEntryFormData): Promise<void> {
     this.showFeedback('Enviando...', 'info');
@@ -457,8 +457,8 @@ class FutureEntryModal {
 
     try {
       const payload = {
-        data: '',  // Data vazia para lançamento futuro
-        conta: '', // Conta vazia para lançamento futuro
+        data: '',  // Data vazia para lançamento futuro (será preenchida posteriormente)
+        conta: '', // Conta vazia para lançamento futuro (será preenchida posteriormente)
         valor: data.valor,
         descricao: data.descricao,
         categoria: data.categoria,

@@ -354,7 +354,7 @@ class TransferEntryModal {
       const payloadSaida = {
         data: data.data,
         conta: data.contaSaida,
-        valor: -Math.abs(data.valor), // Garante valor negativo
+        valor: -Math.abs(data.valor), // Garante que seja sempre negativo
         descricao: `Transferência para ${data.contaEntrada}`,
         categoria: 'Transferência',
         orcamento: data.orcamento,
@@ -381,7 +381,7 @@ class TransferEntryModal {
       const payloadEntrada = {
         data: data.data,
         conta: data.contaEntrada,
-        valor: Math.abs(data.valor), // Garante valor positivo
+        valor: Math.abs(data.valor), // Garante que seja sempre positivo
         descricao: `Transferência de ${data.contaSaida}`,
         categoria: 'Transferência',
         orcamento: data.orcamento,
