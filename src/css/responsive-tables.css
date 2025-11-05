@@ -10,29 +10,29 @@
     position: relative;
     display: block;
     border-radius: 4px;
-    background: #fff;
+    background: var(--white-color);
 
     /* Safari e iOS */
     -webkit-overflow-scrolling: touch;
     /* Firefox */
     scrollbar-width: thin;
-    scrollbar-color: #999 #eee;
+    scrollbar-color: var(--text-muted-light) var(--dark-gray);
     font-size: 0.95rem;
 }
 
 /* Estilo específico da barra de rolagem para navegadores Webkit */
 .table-responsive::-webkit-scrollbar {
     height: 8px;
-    background-color: #f5f5f5;
+    background-color: var(--light-gray-alt);
 }
 
 .table-responsive::-webkit-scrollbar-thumb {
-    background-color: #999;
+    background-color: var(--text-muted-light);
     border-radius: 4px;
 }
 
 .table-responsive::-webkit-scrollbar-track {
-    background-color: #f5f5f5;
+    background-color: var(--light-gray-alt);
     border-radius: 4px;
 }
 
@@ -47,7 +47,7 @@
 /* Telas pequenas (mobile) */
 @media (max-width: 768px) {
     .table-responsive {
-        border: 1px solid #ddd;
+        border: 1px solid var(--border-color);
         box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
         font-size: 0.95rem;
     }
@@ -99,7 +99,7 @@
     }
 
     .entries-table .actions button {
-        background-color: #ecf0f1;
+        background-color: var(--dark-gray);
     }
 }
 
@@ -137,8 +137,8 @@
 .loading-spinner {
     width: 40px;
     height: 40px;
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #007bff;
+    border: 4px solid var(--dark-gray);
+    border-top: 4px solid var(--primary-color);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -166,28 +166,28 @@
     padding: 12px 16px;
     margin-bottom: 8px;
     border-radius: 4px;
-    background: #f8f9fa;
-    border-left: 4px solid #007bff;
+    background: var(--light-gray);
+    border-left: 4px solid var(--primary-color);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     animation: slideIn 0.3s ease-out;
 }
 
 .message-success {
-    background: #d4edda;
-    border-left-color: #28a745;
-    color: #155724;
+    background: var(--success-bg);
+    border-left-color: var(--success-color);
+    color: var(--success-text);
 }
 
 .message-error {
-    background: #f8d7da;
-    border-left-color: #dc3545;
-    color: #721c24;
+    background: var(--danger-bg);
+    border-left-color: var(--danger-color);
+    color: var(--danger-text);
 }
 
 .message-info {
-    background: #d1ecf1;
-    border-left-color: #17a2b8;
-    color: #0c5460;
+    background: var(--info-bg);
+    border-left-color: var(--info-color);
+    color: var(--info-text);
 }
 
 @keyframes slideIn {
@@ -263,28 +263,28 @@
 .entries-table td {
     padding: 12px;
     text-align: left;
-    border-bottom: 1px solid #dee2e6;
+    border-bottom: 1px solid var(--border-light);
     word-wrap: break-word;
     overflow-wrap: anywhere;
 }
 
 .entries-table th {
-    background: #f8f9fa;
+    background: var(--light-gray);
     font-weight: 600;
-    color: #495057;
+    color: var(--text-light);
 }
 
 .entries-table tr:hover {
-    background: #f8f9fa;
+    background: var(--light-gray);
 }
 
 .entries-table .positive {
-    color: #28a745;
+    color: var(--income-color);
     font-weight: 600;
 }
 
 .entries-table .negative {
-    color: #dc3545;
+    color: var(--expense-color);
     font-weight: 600;
 }
 
@@ -311,7 +311,7 @@
 }
 
 .entries-table .actions button {
-    background-color: #ecf0f1;
+    background-color: var(--dark-gray);
 }
 
 .entries-table .actions button:hover,
@@ -322,8 +322,8 @@
 
 .entries-table .actions button.danger:hover,
 .entry-card-actions button.danger:hover {
-    background-color: #dc3545;
-    border-color: #dc3545;
+    background-color: var(--danger-color);
+    border-color: var(--danger-color);
     color: white;
 }
 
@@ -339,7 +339,7 @@
     border-radius: 8px;
     padding: 1rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    border-left: 4px solid #007bff;
+    border-left: 4px solid var(--primary-color);
 }
 
 .entry-card-header {
@@ -351,16 +351,16 @@
 }
 
 .entry-date {
-    color: #6c757d;
+    color: var(--text-light);
     font-size: 0.875rem;
 }
 
 .entry-value.positive {
-    color: #28a745;
+    color: var(--income-color);
 }
 
 .entry-value.negative {
-    color: #dc3545;
+    color: var(--expense-color);
 }
 
 .entry-card-body {
@@ -370,7 +370,7 @@
 .entry-description {
     font-weight: 600;
     margin-bottom: 0.5rem;
-    color: #212529;
+    color: var(--text-color);
 }
 
 .entry-details {
@@ -381,15 +381,15 @@
 }
 
 .entry-account {
-    background: #e9ecef;
-    color: #495057;
+    background: var(--dark-gray);
+    color: var(--text-light);
     padding: 2px 6px;
     border-radius: 4px;
     font-size: 0.75rem;
 }
 
 .entry-category {
-    background: #007bff;
+    background: var(--primary-color);
     color: white;
     padding: 2px 6px;
     border-radius: 4px;
@@ -397,7 +397,7 @@
 }
 
 .entry-budget {
-    background: #28a745;
+    background: var(--success-color);
     color: white;
     padding: 2px 6px;
     border-radius: 4px;
@@ -405,7 +405,7 @@
 }
 
 .entry-obs {
-    color: #6c757d;
+    color: var(--text-light);
     font-size: 0.875rem;
     font-style: italic;
 }
@@ -445,26 +445,26 @@
     justify-content: space-between;
     align-items: center;
     padding: 1rem 1.5rem;
-    border-bottom: 1px solid #dee2e6;
+    border-bottom: 1px solid var(--border-light);
 }
 
 .modal-header h3 {
     margin: 0;
-    color: #212529;
+    color: var(--text-color);
 }
 
 .modal-close {
     background: none;
     border: none;
     font-size: 1.5rem;
-    color: #6c757d;
+    color: var(--text-light);
     cursor: pointer;
     padding: 0;
     line-height: 1;
 }
 
 .modal-close:hover {
-    color: #dc3545;
+    color: var(--danger-color);
 }
 
 .modal-body {
@@ -476,7 +476,7 @@
     justify-content: flex-end;
     gap: 0.5rem;
     padding: 1rem 1.5rem;
-    border-top: 1px solid #dee2e6;
+    border-top: 1px solid var(--border-light);
 }
 
 /* Form styles inside modal */
@@ -494,14 +494,14 @@
     display: block;
     margin-bottom: 0.25rem;
     font-weight: 600;
-    color: #495057;
+    color: var(--text-light);
 }
 
 .form-group input,
 .form-group textarea {
     width: 100%;
     padding: 0.5rem;
-    border: 1px solid #ced4da;
+    border: 1px solid var(--border-light);
     border-radius: 4px;
     font-size: 1rem;
 }
@@ -509,8 +509,8 @@
 .form-group input:focus,
 .form-group textarea:focus {
     outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
 }
 
 /* Mobile adaptations */
