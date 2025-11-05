@@ -7,14 +7,39 @@
   /* ========== Cores Principais ========== */
   --primary-color: #3498db;
   --primary-hover: #2980b9;
+  --primary-light: #90caf9;
   --secondary-color: #2c3e50;
   --success-color: #28a745;
+  --success-hover: #218838;
   --warning-color: #ffc107;
+  --warning-hover: #e0a800;
   --danger-color: #dc3545;
+  --danger-hover: #c82333;
   --info-color: #17a2b8;
+  
+  /* ========== Cores Financeiras ========== */
+  --income-color: #4caf50;
+  --expense-color: #e53935;
+  
+  /* ========== Cores de Fundo para Alertas/Toast ========== */
+  --success-bg: #d4edda;
+  --success-bg-light: #e8f5e9;
+  --success-text: #155724;
+  --success-text-dark: #2e7d32;
+  --danger-bg: #f8d7da;
+  --danger-bg-light: #ffebee;
+  --danger-text: #721c24;
+  --danger-text-dark: #c62828;
+  --info-bg: #d1ecf1;
+  --info-bg-light: #e3f2fd;
+  --info-text: #0c5460;
+  --info-text-dark: #1565c0;
+  --warning-bg: #fff3cd;
+  --warning-text: #856404;
 
   /* ========== Cores de Fundo ========== */
   --light-gray: #f8f9fa;
+  --light-gray-alt: #f5f5f5;
   --dark-gray: #ecf0f1;
   --white-color: #fff;
   --black-color: #000;
@@ -23,10 +48,12 @@
   --text-color: #333;
   --text-light: #666;
   --text-muted: #888;
+  --text-muted-light: #999;
   --text-white: #fff;
 
   /* ========== Cores de Borda ========== */
   --border-color: #ddd;
+  --border-color-alt: #dcdcdc;
   --border-light: #e0e0e0;
 
   /* ========== Espaçamentos ========== */

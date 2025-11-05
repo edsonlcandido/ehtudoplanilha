@@ -40,9 +40,9 @@
     position: absolute;
     top: 1rem;
     right: 1rem;
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    color: #666;
+    background: var(--white-color);
+    border: 1px solid var(--border-light);
+    color: var(--text-light);
     font-size: 1.75rem;
     cursor: pointer;
     z-index: 100001;
@@ -58,8 +58,8 @@
 
 #closeEntryModal:hover,
 .entry-modal__close:hover { 
-    background: #f5f5f5;
-    color: #e53935;
+    background: var(--light-gray-alt);
+    color: var(--expense-color);
 }
 
 #closeEntryModal:focus,
@@ -95,12 +95,12 @@
 }
 
 .entry-modal__content::-webkit-scrollbar-thumb {
-    background-color: #d1d5da;
+    background-color: var(--border-light);
     border-radius: 3px;
 }
 
 .entry-modal__content::-webkit-scrollbar-thumb:hover {
-    background-color: #959da5;
+    background-color: var(--text-muted);
 }
 
 @media (max-width: 768px) {
@@ -120,7 +120,7 @@
     color: var(--secondary-color, #2c3e50);
     text-align: left;
     padding-bottom: 0.75rem;
-    border-bottom: 2px solid #f0f0f0;
+    border-bottom: 2px solid var(--dark-gray);
 }
 
 /* === ELEMENTO: ENTRY-MODAL__FORM === */
@@ -162,7 +162,7 @@
 .modal-content textarea.form-control {
     width: 100%;
     padding: 0.75rem;
-    border: 2px solid #e8e8e8;
+    border: 2px solid var(--border-light);
     border-radius: 8px;
     background: var(--white-color, #fff);
     font-size: 1rem;
@@ -173,14 +173,14 @@
 
 #expenseForm .form-control:hover,
 .entry-modal__form .form-control:hover {
-    border-color: #d0d0d0;
+    border-color: var(--border-color);
 }
 
 #expenseForm .form-control:focus,
 .entry-modal__form .form-control:focus {
     outline: none;
     border-color: var(--primary-color, #3498db);
-    background: #fafbfc;
+    background: var(--light-gray);
 }
 
 /* === ELEMENTO: VALOR-TOGGLE-GROUP === */
@@ -228,36 +228,36 @@
 }
 
 .entry-toggle:hover {
-    background: #f8f8f8;
-    border-color: #c0c0c0;
+    background: var(--light-gray);
+    border-color: var(--border-light);
     transform: translateY(-1px);
 }
 
 /* MODIFIER: --expense (Despesa - Negativo) */
 .entry-toggle--expense,
 #expenseSignBtn.entry-toggle--expense {
-    background-color: #e53935;
-    color: #ffffff;
-    border-color: #e53935;
+    background-color: var(--expense-color);
+    color: var(--white-color);
+    border-color: var(--expense-color);
 }
 
 .entry-toggle--expense:hover {
-    background-color: #d32f2f;
-    border-color: #d32f2f;
+    background-color: var(--danger-hover);
+    border-color: var(--danger-hover);
     transform: translateY(-1px);
 }
 
 /* MODIFIER: --income (Receita - Positivo) */
 .entry-toggle--income,
 #expenseSignBtn.entry-toggle--income {
-    background-color: #4caf50;
-    color: #ffffff;
-    border-color: #4caf50;
+    background-color: var(--income-color);
+    color: var(--white-color);
+    border-color: var(--income-color);
 }
 
 .entry-toggle--income:hover {
-    background-color: #43a047;
-    border-color: #43a047;
+    background-color: var(--success-hover);
+    border-color: var(--success-hover);
     transform: translateY(-1px);
 }
 
@@ -319,7 +319,7 @@
 
 .entry-modal__suggestion:hover,
 .entry-modal__suggestion--highlighted {
-    background: #f0f7ff;
+    background: var(--info-bg-light);
     color: var(--primary-color, #3498db);
 }
 
@@ -336,28 +336,28 @@
 }
 
 .modal-feedback--success {
-    background-color: #e8f5e9;
-    color: #2e7d32;
-    border: 2px solid #4caf50;
+    background-color: var(--success-bg-light);
+    color: var(--success-text-dark);
+    border: 2px solid var(--income-color);
 }
 
 .modal-feedback--error {
-    background-color: #ffebee;
-    color: #c62828;
-    border: 2px solid #ef5350;
+    background-color: var(--danger-bg-light);
+    color: var(--danger-text-dark);
+    border: 2px solid var(--expense-color);
 }
 
 .modal-feedback--info {
-    background-color: #e3f2fd;
-    color: #1565c0;
-    border: 2px solid #42a5f5;
+    background-color: var(--info-bg-light);
+    color: var(--info-text-dark);
+    border: 2px solid var(--info-color);
 }
 
 /* === Acessibilidade === */
 
 .modal-content .form-control[aria-invalid='true'] {
-    border-color: #ef5350;
-    background-color: #fff5f5;
+    border-color: var(--expense-color);
+    background-color: var(--danger-bg-light);
 }
 
 /* === Responsividade === */

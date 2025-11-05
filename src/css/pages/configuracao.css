@@ -19,7 +19,7 @@ body {
    =================================== */
 .sheet-item {
   padding: 1rem;
-  border: 2px solid #e0e0e0;
+  border: 2px solid var(--border-light);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -28,27 +28,27 @@ body {
 }
 
 .sheet-item:hover {
-  border-color: #2196f3;
-  background-color: #f5f5f5;
+  border-color: var(--primary-color);
+  background-color: var(--light-gray-alt);
   transform: translateY(-2px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .sheet-item strong {
   display: block;
-  color: #333;
+  color: var(--text-color);
   margin-bottom: 0.25rem;
 }
 
 .sheet-item small {
-  color: #777;
+  color: var(--text-light);
   font-size: 0.85em;
 }
 
 /* Estado selecionado */
 .sheet-item.selected {
-  border-color: #2196f3;
-  background-color: #e3f2fd;
+  border-color: var(--primary-color);
+  background-color: var(--info-bg-light);
 }
 
 /* Scrollbar customizada para lista de planilhas */
@@ -57,17 +57,17 @@ body {
 }
 
 #sheetsList::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--light-gray-alt);
   border-radius: 4px;
 }
 
 #sheetsList::-webkit-scrollbar-thumb {
-  background: #888;
+  background: var(--text-muted);
   border-radius: 4px;
 }
 
 #sheetsList::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: var(--text-light);
 }
 
 /* ===================================
@@ -85,36 +85,36 @@ body {
 }
 
 .button.success {
-  background-color: #28a745;
-  border-color: #28a745;
+  background-color: var(--success-color);
+  border-color: var(--success-color);
   color: white;
 }
 
 .button.success:hover:not(:disabled) {
-  background-color: #218838;
-  border-color: #1e7e34;
+  background-color: var(--success-hover);
+  border-color: var(--success-hover);
 }
 
 .button.warning {
-  background-color: #ffc107;
-  border-color: #ffc107;
-  color: #333;
+  background-color: var(--warning-color);
+  border-color: var(--warning-color);
+  color: var(--text-color);
 }
 
 .button.warning:hover:not(:disabled) {
-  background-color: #e0a800;
-  border-color: #d39e00;
+  background-color: var(--warning-hover);
+  border-color: var(--warning-hover);
 }
 
 .button.error {
-  background-color: #dc3545;
-  border-color: #dc3545;
+  background-color: var(--danger-color);
+  border-color: var(--danger-color);
   color: white;
 }
 
 .button.error:hover:not(:disabled) {
-  background-color: #c82333;
-  border-color: #bd2130;
+  background-color: var(--danger-hover);
+  border-color: var(--danger-hover);
 }
 
 /* ===================================

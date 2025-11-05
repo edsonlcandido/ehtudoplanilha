@@ -76,12 +76,12 @@
 
 .details__card-title {
     font-size: 0.9rem;
-    color: #444;
+    color: var(--text-light);
 }
 
 .details__card-value {
     font-weight: 700;
-    color: #222;
+    color: var(--text-color);
 }
 
 /* Tabela de top categorias (marcação local do componente) */
@@ -110,7 +110,7 @@
 
 /* Valor negativo visual (classe a ser aplicada dinamicamente se necessário) */
 .details__table td.negative {
-    color: #b00020;
+    color: var(--expense-color);
 }
 
 /* Animação de carregamento */
@@ -138,7 +138,7 @@
 .details__aggregates.loading .details__card-title,
 .details__aggregates.loading .details__card-value{
     color: transparent;
-    background-color: #e0e0e0;
+    background-color: var(--border-light);
     border-radius: 4px;
     animation: pulse 1.5s infinite;
 }
@@ -163,7 +163,7 @@
 
 .tabela-rolavel.loading tr {
   color: transparent;
-  background-color: #e0e0e0;
+  background-color: var(--border-light);
   border-radius: 4px;
   animation: pulse 1.5s infinite;
 }

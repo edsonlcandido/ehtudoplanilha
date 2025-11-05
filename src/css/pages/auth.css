@@ -31,15 +31,15 @@
 }
 
 .error-message {
-  background-color: #fee;
-  color: #c33;
-  border: 1px solid #fcc;
+  background-color: var(--danger-bg);
+  color: var(--danger-text-dark);
+  border: 1px solid var(--danger-color);
 }
 
 .success-message {
-  background-color: #efe;
-  color: #3a3;
-  border: 1px solid #cfc;
+  background-color: var(--success-bg);
+  color: var(--success-text-dark);
+  border: 1px solid var(--success-color);
 }
 
 /* ========== Loading State ========== */

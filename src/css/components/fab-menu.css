@@ -29,8 +29,8 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1.25rem;
-  background: #ffffff;
-  color: #333;
+  background: var(--white-color);
+  color: var(--text-color);
   border: none;
   border-radius: 28px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -76,12 +76,12 @@
 .fab-menu__label {
   font-size: 0.95rem;
   font-weight: 500;
-  color: #333;
+  color: var(--text-color);
 }
 
 /* Hover nas opções */
 .fab-menu__option:hover {
-  background: #f8f9fa;
+  background: var(--light-gray);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
   transform: translateX(-5px);
 }
@@ -118,6 +118,6 @@
 
 /* Acessibilidade: Foco visível */
 .fab-menu__option:focus-visible {
-  outline: 2px solid #28a745;
+  outline: 2px solid var(--success-color);
   outline-offset: 2px;
 }

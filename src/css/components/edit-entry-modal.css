@@ -100,7 +100,7 @@
 .edit-entry-modal__form textarea.form-control {
   width: 100%;
   padding: 0.6rem 0.75rem;
-  border: 1px solid #dcdcdc;
+  border: 1px solid var(--border-color-alt);
   border-radius: 6px;
   background: var(--white-color, #fff);
   font-size: 0.98rem;
@@ -126,7 +126,7 @@
 .edit-entry-modal__sign-btn {
   background-color: white;
   color: inherit;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-light);
   width: 2.5rem;
   text-align: center;
   display: inline-flex;
@@ -142,15 +142,15 @@
 }
 
 .edit-entry-modal__sign-btn--expense {
-  background-color: #e53935;
-  color: #ffffff;
-  border-color: #e53935;
+  background-color: var(--expense-color);
+  color: var(--white-color);
+  border-color: var(--expense-color);
 }
 
 .edit-entry-modal__sign-btn--income {
-  background-color: #4caf50;
-  color: #ffffff;
-  border-color: #4caf50;
+  background-color: var(--income-color);
+  color: var(--white-color);
+  border-color: var(--income-color);
 }
 
 .edit-entry-modal__sign-btn:hover {
@@ -190,21 +190,21 @@
 }
 
 .edit-entry-modal__feedback--success {
-  background-color: #e8f5e9;
-  color: #2e7d32;
-  border-left: 4px solid #4caf50;
+  background-color: var(--success-bg-light);
+  color: var(--success-text-dark);
+  border-left: 4px solid var(--income-color);
 }
 
 .edit-entry-modal__feedback--error {
-  background-color: #ffebee;
-  color: #c62828;
-  border-left: 4px solid #ef5350;
+  background-color: var(--danger-bg-light);
+  color: var(--danger-text-dark);
+  border-left: 4px solid var(--expense-color);
 }
 
 .edit-entry-modal__feedback--info {
-  background-color: #e3f2fd;
-  color: #1565c0;
-  border-left: 4px solid #42a5f5;
+  background-color: var(--info-bg-light);
+  color: var(--info-text-dark);
+  border-left: 4px solid var(--info-color);
 }
 
 /* Autocomplete suggestions */

@@ -45,27 +45,27 @@
 
 /* Tipos de toast */
 .toast--success {
-  background-color: #d4edda;
-  border: 2px solid #28a745;
-  color: #155724;
+  background-color: var(--success-bg);
+  border: 2px solid var(--success-color);
+  color: var(--success-text);
 }
 
 .toast--error {
-  background-color: #f8d7da;
-  border: 2px solid #dc3545;
-  color: #721c24;
+  background-color: var(--danger-bg);
+  border: 2px solid var(--danger-color);
+  color: var(--danger-text);
 }
 
 .toast--info {
-  background-color: #d1ecf1;
-  border: 2px solid #17a2b8;
-  color: #0c5460;
+  background-color: var(--info-bg);
+  border: 2px solid var(--info-color);
+  color: var(--info-text);
 }
 
 .toast--warning {
-  background-color: #fff3cd;
-  border: 2px solid #ffc107;
-  color: #856404;
+  background-color: var(--warning-bg);
+  border: 2px solid var(--warning-color);
+  color: var(--warning-text);
 }
 
 /* Elementos do toast */

@@ -13,7 +13,7 @@
   border-radius: var(--border-radius-sm);
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
-  scrollbar-color: #ccc transparent;
+  scrollbar-color: var(--border-light) transparent;
 }
 
 /* ========== Table Styles ========== */

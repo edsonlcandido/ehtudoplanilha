@@ -25,24 +25,24 @@
 
 /* Modificadores de tipo/status */
 .financial-card--saldo {
-  border-left-color: #007bff;
+  border-left-color: var(--primary-color);
 }
 
 .financial-card--expenses {
-  border-left-color: #dc3545;
+  border-left-color: var(--danger-color);
 }
 
 .financial-card--incomes {
-  border-left-color: #28a745;
+  border-left-color: var(--success-color);
 }
 
 .financial-card--inactive {
-  border-left-color: #ccc;
+  border-left-color: var(--border-light);
   opacity: 0.7;
 }
 
 .financial-card--loading {
-  border-left-color: #333;
+  border-left-color: var(--text-color);
   overflow: hidden;
 }
 
@@ -77,7 +77,7 @@
 
 .financial-card__title--loading {
   color: transparent;
-  background-color: #e0e0e0;
+  background-color: var(--border-light);
   border-radius: 4px;
   animation: financial-card-pulse 1.5s infinite;
   display: inline-block;
@@ -91,12 +91,12 @@
 }
 
 .financial-card__value--inactive {
-  color: #999;
+  color: var(--text-muted-light);
 }
 
 .financial-card__value--loading {
   color: transparent;
-  background-color: #e0e0e0;
+  background-color: var(--border-light);
   border-radius: 4px;
   animation: financial-card-pulse 1.5s infinite;
   display: inline-block;
@@ -109,12 +109,12 @@
 }
 
 .financial-card__detail--inactive {
-  color: #999;
+  color: var(--text-muted-light);
 }
 
 .financial-card__detail--loading {
   color: transparent;
-  background-color: #e0e0e0;
+  background-color: var(--border-light);
   border-radius: 4px;
   animation: financial-card-pulse 1.5s infinite;
   display: inline-block;
@@ -149,7 +149,7 @@
   width: 1.5rem;
   height: 1.5rem;
   border-radius: 50%;
-  background-color: #f1f1f1;
+  background-color: var(--light-gray-alt);
   border: none;
   display: flex;
   align-items: center;
@@ -160,7 +160,7 @@
 
 .financial-card__close:hover {
   opacity: 1;
-  background-color: #e5e5e5;
+  background-color: var(--border-light);
 }
 
 /* Animações */

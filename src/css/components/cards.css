@@ -76,6 +76,6 @@
 }
 
 .sheet-item:hover {
-  background-color: #f0f8ff !important;
-  border-color: #90caf9 !important;
+  background-color: var(--info-bg-light) !important;
+  border-color: var(--primary-light) !important;
 }
