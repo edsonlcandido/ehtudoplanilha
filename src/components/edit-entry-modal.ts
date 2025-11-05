@@ -40,12 +40,12 @@ class EditEntryModal {
             <fieldset>
               <div class="form-group">
                 <label for="editEntryDate">Data:</label>
-                <input type="datetime-local" id="editEntryDate" name="data" class="form-control" required>
+                <input type="datetime-local" id="editEntryDate" name="data" class="form-control">
               </div>
               
               <div class="form-group">
                 <label for="editEntryAccount">Conta:</label>
-                <input type="text" id="editEntryAccount" name="conta" class="form-control" placeholder="Ex: Conta Corrente" autocomplete="off" required>
+                <input type="text" id="editEntryAccount" name="conta" class="form-control" placeholder="Ex: Conta Corrente" autocomplete="off">
               </div>
               
               <div class="form-group valor-toggle-group">
@@ -489,6 +489,9 @@ class EditEntryModal {
         }
       }
       dateInput.value = dateValue;
+    } else if (dateInput) {
+      // Limpa o campo se não houver data
+      dateInput.value = '';
     }
 
     // Conta
@@ -599,27 +602,37 @@ class EditEntryModal {
 
     try {
       // Prepara dados
-      const dateInput = formData.get('data') as string;
+      const dateValue = formData.get('data') as string;
       const budgetInput = formData.get('orcamento') as string;
       const valueInput = parseFloat(formData.get('valor') as string);
       const signValue = formData.get('sinal') as string;
 
-      // Valida datas
-      const dateObj = new Date(dateInput);
+      // Valida orçamento (obrigatório)
       const budgetObj = new Date(budgetInput);
-      
-      if (isNaN(dateObj.getTime())) {
-        throw new Error('Data inválida');
-      }
       
       if (isNaN(budgetObj.getTime())) {
         throw new Error('Data de orçamento inválida');
       }
 
+      // Valida data apenas se preenchida
+      let dataFormatada = '';
+      if (dateValue && dateValue.trim() !== '') {
+        // Valida formato datetime-local (YYYY-MM-DDTHH:MM)
+        if (!dateValue.includes('T')) {
+          throw new Error('Formato de data/hora inválido');
+        }
+        
+        const dateObj = new Date(dateValue);
+        if (isNaN(dateObj.getTime())) {
+          throw new Error('Data inválida');
+        }
+        // Formata data em formato brasileiro (como no entry-modal.ts)
+        dataFormatada = this.formatDateTimeLocal(dateValue);
+      }
+
       const value = (signValue === '−' || signValue === '-') ? -Math.abs(valueInput) : Math.abs(valueInput);
 
-      // Formata data e orçamento em formato brasileiro (como no entry-modal.ts)
-      const dataFormatada = this.formatDateTimeLocal(dateInput);
+      // Formata orçamento em formato brasileiro
       const orcamentoFormatado = this.formatDate(budgetInput);
 
       const payload: Partial<SheetEntry> = {
