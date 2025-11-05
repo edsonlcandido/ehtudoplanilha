@@ -328,7 +328,15 @@ function deleteEntry(rowIndex: number): void {
 (window as any).deleteEntry = deleteEntry;
 (window as any).lancamentosManager = {
   closeDeleteModal,
-  confirmDelete
+  confirmDelete,
+  // Stubs para funções do split modal (funcionalidade futura)
+  closeSplitModal: () => {
+    const modal = document.getElementById('splitModal');
+    if (modal) modal.style.display = 'none';
+  },
+  confirmSplit: () => {
+    console.warn('Funcionalidade de divisão de parcelas não implementada');
+  }
 };
 
 // ============================================================================
