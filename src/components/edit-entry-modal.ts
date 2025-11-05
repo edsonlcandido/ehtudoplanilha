@@ -601,7 +601,7 @@ class EditEntryModal {
 
     try {
       // Prepara dados
-      const dateInput = formData.get('data') as string;
+      const dateValue = formData.get('data') as string;
       const budgetInput = formData.get('orcamento') as string;
       const valueInput = parseFloat(formData.get('valor') as string);
       const signValue = formData.get('sinal') as string;
@@ -615,13 +615,13 @@ class EditEntryModal {
 
       // Valida data apenas se preenchida
       let dataFormatada = '';
-      if (dateInput && typeof dateInput === 'string' && dateInput.trim() !== '') {
-        const dateObj = new Date(dateInput);
+      if (dateValue && typeof dateValue === 'string' && dateValue.trim() !== '') {
+        const dateObj = new Date(dateValue);
         if (isNaN(dateObj.getTime())) {
           throw new Error('Data inválida');
         }
         // Formata data em formato brasileiro (como no entry-modal.ts)
-        dataFormatada = this.formatDateTimeLocal(dateInput);
+        dataFormatada = this.formatDateTimeLocal(dateValue);
       }
 
       const value = (signValue === '−' || signValue === '-') ? -Math.abs(valueInput) : Math.abs(valueInput);
