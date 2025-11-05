@@ -51,22 +51,22 @@ export function showToast(options: ToastOptions): void {
 /**
  * Exibe uma mensagem de sucesso
  */
-export function showSuccessToast(message: string, title: string = 'Sucesso!'): void {
+export function showSuccessToast(message: string, title?: string): void {
   showToast({
     message,
     type: 'success',
-    title
+    title: title || 'Sucesso!'
   });
 }
 
 /**
  * Exibe uma mensagem de erro
  */
-export function showErrorToast(message: string, title: string = 'Erro!'): void {
+export function showErrorToast(message: string, title?: string): void {
   showToast({
     message,
     type: 'error',
-    title,
+    title: title || 'Erro!',
     duration: 5000
   });
 }
@@ -85,11 +85,11 @@ export function showInfoToast(message: string, title?: string): void {
 /**
  * Exibe uma mensagem de aviso
  */
-export function showWarningToast(message: string, title: string = 'Aviso!'): void {
+export function showWarningToast(message: string, title?: string): void {
   showToast({
     message,
     type: 'warning',
-    title,
+    title: title || 'Aviso!',
     duration: 5000
   });
 }

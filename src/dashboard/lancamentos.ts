@@ -10,7 +10,7 @@ import { renderEntries } from '../components/lancamentos-list';
 import lancamentosService from '../services/lancamentos';
 import type { SortType, LancamentosState } from '../types';
 import { excelSerialToDateTimeLabel } from '../utils/date-helpers';
-import { showSuccessToast, showErrorToast } from '../components/toast';
+import { showSuccessToast, showErrorToast, showInfoToast } from '../components/toast';
 
 // ============================================================================
 // Estado da aplicação
@@ -59,7 +59,7 @@ function showMessage(message: string, type: 'success' | 'error' | 'info' = 'info
   } else if (type === 'error') {
     showErrorToast(message);
   } else {
-    showSuccessToast(message, 'Info');
+    showInfoToast(message, 'Info');
   }
 }
 
