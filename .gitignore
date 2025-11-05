@@ -6,3 +6,6 @@ pb_hooks/config.json
 node_modules
 dist
 package-lock.json
+pb_public_backup/
+src/node_modules/
+src/dist/
