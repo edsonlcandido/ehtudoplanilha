@@ -5,13 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-    <title>Dashboard - Seu App Financeiro</title>
+    <title>Dashboard - Seu App Financeiro</title>
   <script type="module" crossorigin src="/assets/dashboard.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/auth.js">
-  <link rel="modulepreload" crossorigin href="/assets/entry-modal.js">
   <link rel="modulepreload" crossorigin href="/assets/user-menu.js">
+  <link rel="modulepreload" crossorigin href="/assets/date-helpers.js">
   <link rel="stylesheet" crossorigin href="/assets/auth2.css">
-  <link rel="stylesheet" crossorigin href="/assets/entry-modal.css">
   <link rel="stylesheet" crossorigin href="/assets/dashboard.css">
   <link rel="stylesheet" crossorigin href="/assets/dashboard2.css">
 </head>
@@ -24,11 +23,7 @@
         </a>
         <input id="bmenub" type="checkbox" class="show">
         <label for="bmenub" class="burger pseudo button">menu</label>
-        <div class="menu" id="menu-user">
-            <a href="#" class="pseudo button icon-picture">Demo</a>
-            <a href="../login.html" class="button icon-puzzle" id="loginBtn">Login</a>
-            <a href="../registro.html" class="button icon-user" id="registerBtn">Registrar</a>
-        </div>
+        <div class="menu user-menu" id="menu-user" role="menubar" aria-label="Menu do usuário"></div>
     </nav>
 
     <!-- Container principal com menu lateral -->
@@ -71,21 +66,21 @@
                     <div class="dashboard__row">
                         <!-- Coluna esquerda: cards de resumo -->
                         <div class="dashboard__col dashboard__col--left">
-                            <div id="summaryCards" class="summary-cards">
+                            <div id="summaryCards" class="financial-cards">
                                 <!-- Card de exemplo / placeholder -->
-                                <div class="financial-card loading saldo">
-                                    <div class="card-header">
-                                        <h3 class="card-title">31/08/2025</h3>
+                                <div class="financial-card financial-card--loading">
+                                    <div class="financial-card__header">
+                                        <h3 class="financial-card__title financial-card__title--loading">31/08/2025</h3>
                                     </div>
 
-                                    <div class="card-value" data-card="orcamento1">R$&nbsp;100,00</div>
-                                    <div class="card-actions">
-                                        <button class="button pseudo card-toggle" aria-expanded="false">Mostrar
+                                    <div class="financial-card__value financial-card__value--loading" data-card="orcamento1">R$&nbsp;100,00</div>
+                                    <div class="financial-card__actions">
+                                        <button class="button pseudo financial-card__toggle" aria-expanded="false">Mostrar
                                             detalhes</button>
                                     </div>
-                                    <div class="card-details">
-                                        <div class="card-muted" data-card="orcamento1">Receitas: R$&nbsp;100,00</div>
-                                        <div class="card-muted" data-card="orcamento1">Despesas: R$&nbsp;100,00</div>
+                                    <div class="financial-card__details financial-card__details--hidden">
+                                        <div class="financial-card__detail financial-card__detail--loading" data-card="orcamento1">Receitas: R$&nbsp;100,00</div>
+                                        <div class="financial-card__detail financial-card__detail--loading" data-card="orcamento1">Despesas: R$&nbsp;100,00</div>
                                     </div>
                                 </div>
                             </div>
