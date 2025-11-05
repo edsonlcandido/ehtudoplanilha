@@ -425,26 +425,48 @@ class FutureEntryModal {
     
     if (!this.form) return;
 
-    const formData = new FormData(this.form);
-    
-    const orcamentoStr = formData.get('orcamento') as string;
-    const valorStr = formData.get('valor') as string;
-    
-    const orcamentoFormatado = this.formatDate(orcamentoStr);
-    
-    const data: FutureEntryFormData = {
-      valor: parseFloat(valorStr),
-      descricao: formData.get('descricao') as string,
-      categoria: formData.get('categoria') as string,
-      orcamento: orcamentoFormatado,
-    };
+    try {
+      const formData = new FormData(this.form);
+      
+      const orcamentoStr = formData.get('orcamento') as string;
+      const valorStr = formData.get('valor') as string;
+      const descricao = formData.get('descricao') as string;
+      const categoria = formData.get('categoria') as string;
+      
+      // Validação dos campos
+      if (!orcamentoStr || !valorStr || !descricao || !categoria) {
+        this.showFeedback('❌ Todos os campos são obrigatórios', 'error');
+        return;
+      }
+      
+      const valor = parseFloat(valorStr);
+      if (isNaN(valor) || valor <= 0) {
+        this.showFeedback('❌ Valor inválido', 'error');
+        return;
+      }
+      
+      const orcamentoFormatado = this.formatDate(orcamentoStr);
+      
+      const data: FutureEntryFormData = {
+        valor: valor,
+        descricao: descricao,
+        categoria: categoria,
+        orcamento: orcamentoFormatado,
+      };
 
-    // Aplica o sinal ao valor
-    const sign = (document.getElementById('futureExpenseSignValue') as HTMLInputElement)?.value;
-    const sinal = (sign === '−' || sign === '-') ? -1 : 1;
-    data.valor = sinal * Math.abs(data.valor);
+      // Aplica o sinal ao valor
+      const sign = (document.getElementById('futureExpenseSignValue') as HTMLInputElement)?.value;
+      const sinal = (sign === '−' || sign === '-') ? -1 : 1;
+      data.valor = sinal * Math.abs(data.valor);
 
-    await this.submitEntry(data);
+      await this.submitEntry(data);
+    } catch (error) {
+      console.error('[FutureEntryModal] ❌ Erro no handleSubmit:', error);
+      this.showFeedback(
+        `❌ Erro ao processar formulário: ${error instanceof Error ? error.message : 'Erro desconhecido'}`,
+        'error'
+      );
+    }
   }
 
   /**
@@ -466,6 +488,8 @@ class FutureEntryModal {
       };
 
       console.log('[FutureEntryModal] 📤 Enviando:', payload);
+      console.log('[FutureEntryModal] 📍 URL:', `${config.pocketbaseUrl}/append-entry`);
+      console.log('[FutureEntryModal] 🔑 Token presente:', !!pb.authStore.token);
 
       const response = await fetch(`${config.pocketbaseUrl}/append-entry`, {
         method: 'POST',
@@ -476,7 +500,10 @@ class FutureEntryModal {
         body: JSON.stringify(payload),
       });
 
+      console.log('[FutureEntryModal] 📡 Response status:', response.status);
+
       const result = await response.json();
+      console.log('[FutureEntryModal] 📦 Response data:', result);
 
       if (!response.ok) {
         throw new Error(result.message || 'Erro ao adicionar lançamento futuro');
@@ -499,7 +526,8 @@ class FutureEntryModal {
       setTimeout(() => this.close(), 1500);
 
     } catch (error) {
-      console.error('[FutureEntryModal] ❌ Erro:', error);
+      console.error('[FutureEntryModal] ❌ Erro completo:', error);
+      console.error('[FutureEntryModal] ❌ Stack trace:', error instanceof Error ? error.stack : 'N/A');
       this.showFeedback(
         `❌ Erro: ${error instanceof Error ? error.message : 'Erro desconhecido'}`,
         'error'
