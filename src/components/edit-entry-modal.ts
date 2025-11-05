@@ -45,7 +45,7 @@ class EditEntryModal {
               
               <div class="form-group">
                 <label for="editEntryAccount">Conta:</label>
-                <input type="text" id="editEntryAccount" name="conta" class="form-control" placeholder="Ex: Conta Corrente" autocomplete="off" required>
+                <input type="text" id="editEntryAccount" name="conta" class="form-control" placeholder="Ex: Conta Corrente" autocomplete="off">
               </div>
               
               <div class="form-group valor-toggle-group">
