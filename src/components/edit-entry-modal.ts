@@ -436,7 +436,7 @@ class EditEntryModal {
     // Oculta o botão FAB
     const fabBtn = document.getElementById('openEntryModal');
     if (fabBtn) {
-      fabBtn.style.display = 'none';
+      fabBtn.style.visibility = 'hidden';
       console.log('[EditEntryModal] ✅ Botão FAB oculto');
     }
 
@@ -560,7 +560,7 @@ class EditEntryModal {
     // Mostra o botão FAB novamente
     const fabBtn = document.getElementById('openEntryModal');
     if (fabBtn) {
-      fabBtn.style.display = 'block';
+      fabBtn.style.visibility = 'visible';
       console.log('[EditEntryModal] ✅ Botão FAB visível');
     }
 
