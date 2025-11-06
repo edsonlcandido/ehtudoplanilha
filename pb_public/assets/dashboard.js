@@ -50,9 +50,7 @@ import{p as x,A as $}from"./auth.js";import"./sheets.js";import{t as b,e as B,g 
     </div>
   </div>
 
-  <!-- Espaço reservado para futura seção de lançamentos filtrados por conta -->
-
-  <div class="details__top-categories" style="margin-top:2rem;">
+  <div class="details__top-categories" style="margin-top:1rem;">
     <h3 class="details__title">Top 10 Gastos por Categoria</h3>
     <div class="category-cards" id="detail-categories-cards">
       <!-- Cards de categorias serão renderizados aqui -->
