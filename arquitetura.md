@@ -446,11 +446,9 @@ const data = await lancamentosService.fetchEntries(0, false);
 
 ## 10. Roadmap Futuro
 - Login e cadastro OAuth google
-- Novos tipos de lançamentos (lançamento futuro, transferência, pagamento parcelado)
 - Ver lançamentos da categoria selecionada
 - Melhorar a IA para processamento da imagem e geração de lançamentos
 
 ## 11. Os detalhes
 - Alert para revogar o token google, configuar para alinhar para um modal com aparencia do modal delete e utros entry-form edit-entry-form
-- Botão de adicionar na página de lançamentos ao editar uma transação o simbolo "+" se desloca um pouco para a direita
 - Ao clicar no botão de sair ser redirecionado para a pagina home
