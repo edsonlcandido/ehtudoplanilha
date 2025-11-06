@@ -110,8 +110,19 @@ export function inicializarDetalhes(entries: Entry[], budgetsInInterval: BudgetI
     
     // Ordena por data (mais recente primeiro)
     lancamentos.sort((a, b) => {
-      const dateA = a.data ? new Date(a.data).getTime() : 0;
-      const dateB = b.data ? new Date(b.data).getTime() : 0;
+      // Entradas sem data vão para o final
+      if (!a.data && !b.data) return 0;
+      if (!a.data) return 1;
+      if (!b.data) return -1;
+      
+      const dateA = new Date(a.data).getTime();
+      const dateB = new Date(b.data).getTime();
+      
+      // Se alguma data for inválida, coloca no final
+      if (isNaN(dateA) && isNaN(dateB)) return 0;
+      if (isNaN(dateA)) return 1;
+      if (isNaN(dateB)) return -1;
+      
       return dateB - dateA;
     });
     
@@ -129,9 +140,13 @@ export function inicializarDetalhes(entries: Entry[], budgetsInInterval: BudgetI
       entryCard.className = 'category-entry-card';
       
       // Formata a data para exibição
-      const dataFormatada = lancamento.data 
-        ? new Date(lancamento.data).toLocaleDateString('pt-BR')
-        : 'Data não informada';
+      let dataFormatada = 'Data não informada';
+      if (lancamento.data) {
+        const date = new Date(lancamento.data);
+        if (!isNaN(date.getTime())) {
+          dataFormatada = date.toLocaleDateString('pt-BR');
+        }
+      }
       
       entryCard.innerHTML = `
         <div class="category-entry-card__date">${dataFormatada}</div>
