@@ -3,9 +3,9 @@
  * Form simplificado com: valor, descrição, categoria, orçamento
  */
 
-import config from '../config/env';
-import { pb } from '../main';
 import type { OnEntryAddedCallback, SheetEntry } from '../types';
+import { SheetsService } from '../services/sheets';
+import lancamentosService from '../services/lancamentos';
 
 // Singleton instance
 let modalInstance: FutureEntryModal | null = null;
@@ -330,46 +330,19 @@ class FutureEntryModal {
     console.log('[FutureEntryModal] 📦 Carregando dados para autocomplete...');
     
     try {
-      // Busca entries do backend
-      const entriesUrl = `${config.pocketbaseUrl}/get-sheet-entries?limit=0`;
+      // Busca entries usando LancamentosService (com cache)
+      const response = await lancamentosService.fetchEntries(0, false);
+      this.entries = response?.entries ?? [];
       
-      const responseEntries = await fetch(entriesUrl, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': pb.authStore.token ? `Bearer ${pb.authStore.token}` : '',
-        },
-      });
-      
-      if (responseEntries.ok) {
-        const data = await responseEntries.json();
-        this.entries = data?.entries ?? [];
-        
-        // Extrai descrições únicas
-        this.descriptions = [...new Set(
-          this.entries
-            .map(e => e.descricao)
-            .filter(d => d && d.trim())
-        )].sort();
-      }
+      // Extrai descrições únicas
+      this.descriptions = [...new Set(
+        this.entries
+          .map(e => e.descricao)
+          .filter(d => d && d.trim())
+      )].sort();
 
-      // Busca categorias do backend
-      const categoriesUrl = `${config.pocketbaseUrl}/get-sheet-categories`;
-      
-      const responseCat = await fetch(categoriesUrl, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': pb.authStore.token ? `Bearer ${pb.authStore.token}` : '',
-        },
-      });
-      
-      if (responseCat.ok) {
-        const catData = await responseCat.json();
-        this.categories = catData?.success && Array.isArray(catData.categories) 
-          ? catData.categories 
-          : [];
-      }
+      // Busca categorias usando SheetsService (com cache)
+      this.categories = await SheetsService.getSheetCategories();
 
       console.log('[FutureEntryModal] ✅ Dados carregados');
 
@@ -488,28 +461,11 @@ class FutureEntryModal {
       };
 
       console.log('[FutureEntryModal] 📤 Enviando:', payload);
-      console.log('[FutureEntryModal] 📍 URL:', `${config.pocketbaseUrl}/append-entry`);
-      console.log('[FutureEntryModal] 🔑 Token presente:', !!pb.authStore.token);
 
-      const response = await fetch(`${config.pocketbaseUrl}/append-entry`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': pb.authStore.token ? `Bearer ${pb.authStore.token}` : '',
-        },
-        body: JSON.stringify(payload),
-      });
+      // Usa SheetsService que invalida o cache automaticamente
+      await SheetsService.appendEntry(payload as any);
 
-      console.log('[FutureEntryModal] 📡 Response status:', response.status);
-
-      const result = await response.json();
-      console.log('[FutureEntryModal] 📦 Response data:', result);
-
-      if (!response.ok) {
-        throw new Error(result.message || 'Erro ao adicionar lançamento futuro');
-      }
-
-      console.log('[FutureEntryModal] ✅ Sucesso:', result);
+      console.log('[FutureEntryModal] ✅ Lançamento futuro adicionado com sucesso');
       
       this.showFeedback('✅ Lançamento futuro adicionado com sucesso!', 'success');
       
@@ -519,7 +475,7 @@ class FutureEntryModal {
 
       // Chama callback se fornecido
       if (this.callback) {
-        this.callback(result);
+        this.callback({ success: true });
       }
 
       // Fecha o modal após 1.5s

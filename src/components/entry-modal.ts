@@ -3,9 +3,10 @@
  * Baseado em pb_public_/js/components/entry-modal.js
  */
 
-import config from '../config/env';
 import { pb } from '../main';
 import type { EntryFormData, EntryPayload, OnEntryAddedCallback, SheetEntry } from '../types';
+import { SheetsService } from '../services/sheets';
+import lancamentosService from '../services/lancamentos';
 
 // Singleton instance
 let modalInstance: EntryModal | null = null;
@@ -370,71 +371,35 @@ class EntryModal {
     console.log('[EntryModal] Auth token:', pb.authStore.token ? 'Presente' : 'Ausente');
     
     try {
-      // Busca entries do backend
-      const entriesUrl = `${config.pocketbaseUrl}/get-sheet-entries?limit=0`;
-      console.log('[EntryModal] Buscando entries de:', entriesUrl);
+      // Busca entries usando LancamentosService (com cache)
+      console.log('[EntryModal] Buscando entries com cache (limit=0)...');
+      const response = await lancamentosService.fetchEntries(0, false);
+      this.entries = response?.entries ?? [];
       
-      const responseEntries = await fetch(entriesUrl, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': pb.authStore.token ? `Bearer ${pb.authStore.token}` : '',
-        },
-      });
+      console.log('[EntryModal] Entries recebidos:', this.entries.length);
       
-      if (responseEntries.ok) {
-        const data = await responseEntries.json();
-        this.entries = data?.entries ?? [];
-        
-        console.log('[EntryModal] Entries recebidos:', this.entries.length);
-        
-        // Extrai contas únicas
-        this.accounts = [...new Set(
-          this.entries
-            .map(e => e.conta)
-            .filter(c => c && c.trim())
-        )].sort();
-        
-        console.log('[EntryModal] Contas extraídas:', this.accounts);
-        
-        // Extrai descrições únicas
-        this.descriptions = [...new Set(
-          this.entries
-            .map(e => e.descricao)
-            .filter(d => d && d.trim())
-        )].sort();
-        
-        console.log('[EntryModal] Descrições extraídas:', this.descriptions.length);
-      } else {
-        console.warn('[EntryModal] ⚠️ Erro ao buscar entries:', responseEntries.status, responseEntries.statusText);
-        const errorText = await responseEntries.text();
-        console.warn('[EntryModal] Resposta:', errorText);
-      }
+      // Extrai contas únicas
+      this.accounts = [...new Set(
+        this.entries
+          .map(e => e.conta)
+          .filter(c => c && c.trim())
+      )].sort();
+      
+      console.log('[EntryModal] Contas extraídas:', this.accounts);
+      
+      // Extrai descrições únicas
+      this.descriptions = [...new Set(
+        this.entries
+          .map(e => e.descricao)
+          .filter(d => d && d.trim())
+      )].sort();
+      
+      console.log('[EntryModal] Descrições extraídas:', this.descriptions.length);
 
-      // Busca categorias do backend
-      const categoriesUrl = `${config.pocketbaseUrl}/get-sheet-categories`;
-      console.log('[EntryModal] Buscando categorias de:', categoriesUrl);
-      
-      const responseCat = await fetch(categoriesUrl, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': pb.authStore.token ? `Bearer ${pb.authStore.token}` : '',
-        },
-      });
-      
-      if (responseCat.ok) {
-        const catData = await responseCat.json();
-        this.categories = catData?.success && Array.isArray(catData.categories) 
-          ? catData.categories 
-          : [];
-        
-        console.log('[EntryModal] Categorias recebidas:', this.categories);
-      } else {
-        console.warn('[EntryModal] ⚠️ Erro ao buscar categorias:', responseCat.status, responseCat.statusText);
-        const errorText = await responseCat.text();
-        console.warn('[EntryModal] Resposta:', errorText);
-      }
+      // Busca categorias usando SheetsService (com cache)
+      console.log('[EntryModal] Buscando categorias com cache...');
+      this.categories = await SheetsService.getSheetCategories();
+      console.log('[EntryModal] Categorias recebidas:', this.categories);
 
       console.log('[EntryModal] ✅ Dados carregados:', {
         accounts: this.accounts.length,
@@ -561,22 +526,10 @@ class EntryModal {
 
       console.log('[EntryModal] 📤 Enviando:', payload);
 
-      const response = await fetch(`${config.pocketbaseUrl}/append-entry`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': pb.authStore.token ? `Bearer ${pb.authStore.token}` : '',
-        },
-        body: JSON.stringify(payload),
-      });
+      // Usa SheetsService que invalida o cache automaticamente
+      await SheetsService.appendEntry(payload as any);
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.message || 'Erro ao adicionar lançamento');
-      }
-
-      console.log('[EntryModal] ✅ Sucesso:', result);
+      console.log('[EntryModal] ✅ Lançamento adicionado com sucesso');
       
       this.showFeedback('✅ Lançamento adicionado com sucesso!', 'success');
       
@@ -586,7 +539,7 @@ class EntryModal {
 
       // Chama callback se fornecido
       if (this.callback) {
-        this.callback(result);
+        this.callback({ success: true });
       }
 
       // Fecha o modal após 1.5s

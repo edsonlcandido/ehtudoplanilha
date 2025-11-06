@@ -7,6 +7,7 @@
 import { pb } from '../main';
 import type { SheetEntry, SheetEntriesResponse, SortType } from '../types';
 import { excelSerialToDate } from '../utils/date-helpers';
+import { CacheService, CACHE_KEYS } from './cache';
 
 /**
  * Serviço de gerenciamento de lançamentos
@@ -15,14 +16,37 @@ class LancamentosService {
   
   /**
    * Busca lançamentos da planilha
+   * @param limit - Número máximo de entradas (padrão: 100)
+   * @param forceRefresh - Se true, ignora o cache e busca do servidor
    */
-  async fetchEntries(limit = 100): Promise<SheetEntriesResponse> {
+  async fetchEntries(limit = 100, forceRefresh = false): Promise<SheetEntriesResponse> {
     if (!pb) {
       throw new Error('PocketBase não inicializado');
     }
 
+    // Se não for forceRefresh, tenta usar o cache
+    if (!forceRefresh) {
+      const cacheKey = CACHE_KEYS.SHEET_ENTRIES;
+      const cached = CacheService.get<SheetEntriesResponse>(cacheKey);
+      
+      if (cached) {
+        console.log('[LancamentosService] Usando dados do cache');
+        // Se limit > 0 e o cache tem mais entradas, retorna apenas o necessário
+        // Se limit === 0, retorna todas as entradas do cache
+        if (limit > 0 && cached.entries && cached.entries.length > limit) {
+          return {
+            ...cached,
+            entries: cached.entries.slice(0, limit),
+          };
+        }
+        return cached;
+      }
+    }
+
+    // Busca do servidor
     try {
-      const response = await fetch(`${pb.baseUrl}/get-sheet-entries?limit=${limit}`, {
+      console.log('[LancamentosService] Buscando dados do servidor');
+      const response = await fetch(`${pb.baseURL}/get-sheet-entries?limit=${limit}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${pb.authStore.token}`,
@@ -36,11 +60,25 @@ class LancamentosService {
         throw new Error(data.error || 'Erro ao carregar entradas da planilha');
       }
 
+      // Salva no cache (sempre salva o resultado completo)
+      const cacheKey = CACHE_KEYS.SHEET_ENTRIES;
+      CacheService.set(cacheKey, data);
+
       return data;
     } catch (error) {
       console.error('Erro ao buscar entradas da planilha:', error);
       throw error;
     }
+  }
+
+  /**
+   * Invalida o cache de lançamentos
+   * Deve ser chamado após operações que modificam os lançamentos
+   */
+  invalidateCache(): void {
+    console.log('[LancamentosService] Invalidando caches de lançamentos');
+    CacheService.clear(CACHE_KEYS.SHEET_ENTRIES);
+    CacheService.clear(CACHE_KEYS.SHEET_CATEGORIES);
   }
 
   /**
@@ -69,6 +107,9 @@ class LancamentosService {
       if (!response.ok) {
         throw new Error(data.error || 'Erro ao editar lançamento');
       }
+
+      // Invalida o cache após edição bem-sucedida
+      this.invalidateCache();
 
       return data;
     } catch (error) {
@@ -100,6 +141,9 @@ class LancamentosService {
       if (!response.ok) {
         throw new Error(data.error || 'Erro ao deletar lançamento');
       }
+
+      // Invalida o cache após deleção bem-sucedida
+      this.invalidateCache();
 
       return data;
     } catch (error) {

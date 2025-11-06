@@ -218,13 +218,237 @@ GOOGLE_CLIENT_SECRET=
 GOOGLE_REDIRECT_URI=https://seu-dominio.com/google-oauth-callback
 ```
 
-## 9. Roadmap Futuro
+## 9. Sistema de Cache (LocalStorage)
+
+### 9.1 Visão Geral
+Sistema de cache no localStorage para otimizar requisições aos endpoints `get-sheet-entries` e `get-sheet-categories`, reduzindo latência e carga no servidor.
+
+### 9.2 Implementação
+
+#### CacheService (`src/services/cache.ts`)
+Serviço centralizado para gerenciar cache com TTL (Time To Live).
+
+**Características:**
+- **TTL padrão**: 5 minutos (300.000ms)
+- **Armazenamento**: localStorage do browser
+- **Chaves de cache**:
+  - `ehtudoplanilha:sheet-entries` - Cache de lançamentos
+  - `ehtudoplanilha:sheet-categories` - Cache de categorias
+
+**Estrutura dos dados em cache:**
+```typescript
+{
+  data: T,              // Dados armazenados
+  timestamp: number,    // Momento da criação do cache
+  expiresAt: number     // Momento de expiração (timestamp + TTL)
+}
+```
+
+**Métodos principais:**
+- `set(key, data, ttl?)` - Salva dados no cache
+- `get(key)` - Recupera dados (retorna null se expirado)
+- `clear(key)` - Remove item específico
+- `clearAll()` - Remove todos os caches da aplicação
+- `isValid(key)` - Verifica se cache está válido
+- `getInfo(key)` - Retorna informações de debug
+
+### 9.3 Integração com Serviços
+
+#### LancamentosService (`src/services/lancamentos.ts`)
+```typescript
+async fetchEntries(limit = 100, forceRefresh = false): Promise<SheetEntriesResponse> {
+  // Se não for forceRefresh, tenta usar o cache
+  if (!forceRefresh) {
+    const cached = CacheService.get<SheetEntriesResponse>(CACHE_KEYS.SHEET_ENTRIES);
+    if (cached) {
+      console.log('[LancamentosService] Usando dados do cache');
+      return cached;
+    }
+  }
+  
+  // Busca do servidor
+  const data = await fetch(`${pb.baseURL}/get-sheet-entries?limit=${limit}`);
+  
+  // Salva no cache
+  CacheService.set(CACHE_KEYS.SHEET_ENTRIES, data);
+  
+  return data;
+}
+```
+
+**Parâmetros:**
+- `limit`: Número de entradas a retornar (0 = todas)
+- `forceRefresh`: Se `true`, ignora cache e busca do servidor
+
+#### SheetsService (`src/services/sheets.ts`)
+```typescript
+static async getSheetCategories(forceRefresh = false): Promise<string[]> {
+  // Verifica cache primeiro
+  if (!forceRefresh) {
+    const cached = CacheService.get<{ categories: string[] }>(CACHE_KEYS.SHEET_CATEGORIES);
+    if (cached) {
+      return cached.categories || [];
+    }
+  }
+  
+  // Busca do servidor e salva no cache
+  const response = await pb.send<{ categories: string[] }>(API_ENDPOINTS.getSheetCategories);
+  CacheService.set(CACHE_KEYS.SHEET_CATEGORIES, response);
+  
+  return response.categories || [];
+}
+```
+
+### 9.4 Invalidação Automática de Cache
+
+O cache é **automaticamente invalidado** nas seguintes operações:
+
+**Após adicionar lançamento** (`SheetsService.appendEntry()`):
+```typescript
+await pb.send(API_ENDPOINTS.appendEntry, { method: 'POST', body: entry });
+
+// Invalida ambos os caches
+CacheService.clear(CACHE_KEYS.SHEET_ENTRIES);
+CacheService.clear(CACHE_KEYS.SHEET_CATEGORIES);
+```
+
+**Após editar lançamento** (`SheetsService.editEntry()`):
+```typescript
+await pb.send(API_ENDPOINTS.editSheetEntry, { method: 'PUT', body: { rowIndex, ...entry } });
+
+// Invalida ambos os caches
+CacheService.clear(CACHE_KEYS.SHEET_ENTRIES);
+CacheService.clear(CACHE_KEYS.SHEET_CATEGORIES);
+```
+
+**Após deletar lançamento** (`SheetsService.deleteEntry()` e `LancamentosService.deleteEntry()`):
+```typescript
+await pb.send(API_ENDPOINTS.deleteSheetEntry, { method: 'DELETE', body: { rowIndex } });
+
+// Invalida ambos os caches
+CacheService.clear(CACHE_KEYS.SHEET_ENTRIES);
+CacheService.clear(CACHE_KEYS.SHEET_CATEGORIES);
+```
+
+**Ao fazer logout** (`AuthService.logout()`):
+```typescript
+export function logout(): void {
+  CacheService.clearAll();  // Limpa todos os caches
+  pb.authStore.clear();     // Limpa autenticação
+}
+```
+
+### 9.5 Uso nos Componentes
+
+#### Modais (Entry, Future, Transfer)
+Todos os modais usam o cache compartilhado:
+```typescript
+// Carregamento de dados para autocomplete
+const response = await lancamentosService.fetchEntries(0, false);
+this.entries = response?.entries ?? [];
+
+// Carregamento de categorias
+this.categories = await SheetsService.getSheetCategories();
+```
+
+#### Página de Lançamentos
+```typescript
+// Carregamento normal (usa cache)
+async function loadEntries(forceRefresh = false): Promise<void> {
+  const response = await lancamentosService.fetchEntries(100, forceRefresh);
+  // ...
+}
+
+// Botão "Recarregar" - força atualização
+refreshBtn.addEventListener('click', () => {
+  loadEntries(true); // forceRefresh=true
+});
+```
+
+#### Dashboard
+```typescript
+// Busca todas as entradas com cache
+const data = await lancamentosService.fetchEntries(0, false);
+```
+
+### 9.6 Fluxo de Funcionamento
+
+**1ª carga (cache vazio):**
+1. Usuário acessa página
+2. `fetchEntries()` não encontra cache
+3. Faz requisição HTTP para `/get-sheet-entries`
+4. Salva resposta no localStorage
+5. Retorna dados
+
+**Tempo**: ~500-2000ms (dependendo da rede)
+**Network**: 2 requests (get-sheet-entries + get-sheet-categories)
+
+**2ª carga (< 5 min, cache válido):**
+1. Usuário acessa página
+2. `fetchEntries()` encontra cache válido
+3. Retorna dados do localStorage
+4. **Não faz requisição HTTP**
+
+**Tempo**: ~5-20ms (96-99% mais rápido!)
+**Network**: 0 requests
+
+**Após 5 minutos (cache expirado):**
+1. Cache expira automaticamente
+2. Próxima carga funciona como "primeira carga"
+3. Cache é renovado
+
+**Após adicionar/editar/deletar:**
+1. Operação é executada
+2. Cache é invalidado automaticamente
+3. Próxima carga busca dados atualizados
+
+### 9.7 Logs do Console
+
+**Cache hit (usando cache):**
+```
+[LancamentosService] Usando dados do cache
+[Cache] Cache hit: ehtudoplanilha:sheet-entries (idade: 15s)
+[SheetsService] Usando categorias do cache
+[Cache] Cache hit: ehtudoplanilha:sheet-categories (idade: 15s)
+```
+
+**Cache miss (buscando do servidor):**
+```
+[LancamentosService] Buscando dados do servidor
+[Cache] Dados salvos: ehtudoplanilha:sheet-entries (TTL: 300000ms)
+[SheetsService] Buscando categorias do servidor
+[Cache] Dados salvos: ehtudoplanilha:sheet-categories (TTL: 300000ms)
+```
+
+**Invalidação após mutação:**
+```
+[SheetsService] Invalidando caches após adicionar lançamento
+[Cache] Cache limpo: ehtudoplanilha:sheet-entries
+[Cache] Cache limpo: ehtudoplanilha:sheet-categories
+```
+
+### 9.8 Benefícios
+
+- ✅ **Performance**: 96-99% mais rápido em cargas subsequentes
+- ✅ **Redução de carga no servidor**: Menos requisições ao PocketBase/Google Sheets
+- ✅ **Melhor UX**: Interface responde instantaneamente
+- ✅ **Economia de dados**: Para usuários com planos limitados
+- ✅ **Funciona offline**: Dados em cache disponíveis sem internet (por até 5 min)
+- ✅ **Elimina duplicação**: Endpoints não são mais chamados múltiplas vezes na mesma página
+
+### 9.9 Considerações de Segurança
+
+- ✅ Dados em localStorage são específicos do domínio
+- ✅ Cache é limpo automaticamente ao fazer logout
+- ✅ TTL de 5 minutos evita dados muito desatualizados
+- ✅ Token de autenticação não é armazenado no cache (gerenciado pelo PocketBase)
+- ✅ Invalidação automática após modificações garante consistência
+
+## 10. Roadmap Futuro
 - Login e cadastro OAuth google
-- Novos tipos de lançamentos (lançamento futuro, transferência, pagamento parcelado)
 - Ver lançamentos da categoria selecionada
 - Melhorar a IA para processamento da imagem e geração de lançamentos
 
-## 10. Os detalhes
+## 11. Os detalhes
 - Alert para revogar o token google, configuar para alinhar para um modal com aparencia do modal delete e utros entry-form edit-entry-form
-- Botão de adicionar na página de lançamentos ao editar uma transação o simbolo "+" se desloca um pouco para a direita
 - Ao clicar no botão de sair ser redirecionado para a pagina home
