@@ -31,7 +31,8 @@ class LancamentosService {
       
       if (cached) {
         console.log('[LancamentosService] Usando dados do cache');
-        // Se o cache tem mais entradas do que o limit, retorna apenas o necessário
+        // Se limit > 0 e o cache tem mais entradas, retorna apenas o necessário
+        // Se limit === 0, retorna todas as entradas do cache
         if (limit > 0 && cached.entries && cached.entries.length > limit) {
           return {
             ...cached,
