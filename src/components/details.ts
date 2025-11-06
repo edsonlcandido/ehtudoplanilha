@@ -144,10 +144,11 @@ export function inicializarDetalhes(entries: Entry[], budgetsInInterval: BudgetI
       entryCard.className = 'category-entry-card';
       
       // Formata a data para exibição
-      let dataFormatada = 'Data não informada';
-      if (lancamento.data) {
+      let dataFormatada = '--';
+      if (lancamento.data && typeof lancamento.data === 'number' && lancamento.data > 0) {
         const date = new Date(lancamento.data);
-        if (!isNaN(date.getTime())) {
+        // Valida se a data é válida e não é uma data muito antiga (anterior a 1970)
+        if (!isNaN(date.getTime()) && date.getFullYear() > 1970) {
           dataFormatada = date.toLocaleDateString('pt-BR');
         }
       }
@@ -213,10 +214,11 @@ export function inicializarDetalhes(entries: Entry[], budgetsInInterval: BudgetI
       entryCard.className = 'category-entry-card';
       
       // Formata a data para exibição
-      let dataFormatada = 'Data não informada';
-      if (lancamento.data) {
+      let dataFormatada = '--';
+      if (lancamento.data && typeof lancamento.data === 'number' && lancamento.data > 0) {
         const date = new Date(lancamento.data);
-        if (!isNaN(date.getTime())) {
+        // Valida se a data é válida e não é uma data muito antiga (anterior a 1970)
+        if (!isNaN(date.getTime()) && date.getFullYear() > 1970) {
           dataFormatada = date.toLocaleDateString('pt-BR');
         }
       }
