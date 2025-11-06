@@ -3,8 +3,6 @@
  * Form simplificado com: valor, descrição, categoria, orçamento
  */
 
-import config from '../config/env';
-import { pb } from '../main';
 import type { OnEntryAddedCallback, SheetEntry } from '../types';
 import { SheetsService } from '../services/sheets';
 import lancamentosService from '../services/lancamentos';
@@ -463,28 +461,11 @@ class FutureEntryModal {
       };
 
       console.log('[FutureEntryModal] 📤 Enviando:', payload);
-      console.log('[FutureEntryModal] 📍 URL:', `${config.pocketbaseUrl}/append-entry`);
-      console.log('[FutureEntryModal] 🔑 Token presente:', !!pb.authStore.token);
 
-      const response = await fetch(`${config.pocketbaseUrl}/append-entry`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': pb.authStore.token ? `Bearer ${pb.authStore.token}` : '',
-        },
-        body: JSON.stringify(payload),
-      });
+      // Usa SheetsService que invalida o cache automaticamente
+      await SheetsService.appendEntry(payload as any);
 
-      console.log('[FutureEntryModal] 📡 Response status:', response.status);
-
-      const result = await response.json();
-      console.log('[FutureEntryModal] 📦 Response data:', result);
-
-      if (!response.ok) {
-        throw new Error(result.message || 'Erro ao adicionar lançamento futuro');
-      }
-
-      console.log('[FutureEntryModal] ✅ Sucesso:', result);
+      console.log('[FutureEntryModal] ✅ Lançamento futuro adicionado com sucesso');
       
       this.showFeedback('✅ Lançamento futuro adicionado com sucesso!', 'success');
       
@@ -494,7 +475,7 @@ class FutureEntryModal {
 
       // Chama callback se fornecido
       if (this.callback) {
-        this.callback(result);
+        this.callback({ success: true });
       }
 
       // Fecha o modal após 1.5s

@@ -4,10 +4,9 @@
  * Categoria sempre "Transferência"
  */
 
-import config from '../config/env';
-import { pb } from '../main';
 import type { OnEntryAddedCallback, SheetEntry } from '../types';
 import lancamentosService from '../services/lancamentos';
+import { SheetsService } from '../services/sheets';
 
 // Singleton instance
 let modalInstance: TransferEntryModal | null = null;
@@ -351,20 +350,8 @@ class TransferEntryModal {
 
       console.log('[TransferEntryModal] 📤 Enviando saída:', payloadSaida);
 
-      const responseSaida = await fetch(`${config.pocketbaseUrl}/append-entry`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': pb.authStore.token ? `Bearer ${pb.authStore.token}` : '',
-        },
-        body: JSON.stringify(payloadSaida),
-      });
-
-      const resultSaida = await responseSaida.json();
-
-      if (!responseSaida.ok) {
-        throw new Error(resultSaida.message || 'Erro ao adicionar lançamento de saída');
-      }
+      // Usa SheetsService que invalida o cache automaticamente
+      await SheetsService.appendEntry(payloadSaida as any);
 
       // Segundo lançamento: Entrada (positivo)
       const payloadEntrada = {
@@ -378,22 +365,10 @@ class TransferEntryModal {
 
       console.log('[TransferEntryModal] 📤 Enviando entrada:', payloadEntrada);
 
-      const responseEntrada = await fetch(`${config.pocketbaseUrl}/append-entry`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': pb.authStore.token ? `Bearer ${pb.authStore.token}` : '',
-        },
-        body: JSON.stringify(payloadEntrada),
-      });
+      // Usa SheetsService que invalida o cache automaticamente
+      await SheetsService.appendEntry(payloadEntrada as any);
 
-      const resultEntrada = await responseEntrada.json();
-
-      if (!responseEntrada.ok) {
-        throw new Error(resultEntrada.message || 'Erro ao adicionar lançamento de entrada');
-      }
-
-      console.log('[TransferEntryModal] ✅ Sucesso:', { saida: resultSaida, entrada: resultEntrada });
+      console.log('[TransferEntryModal] ✅ Transferência realizada com sucesso');
       
       this.showFeedback('✅ Transferência realizada com sucesso!', 'success');
       
@@ -402,7 +377,7 @@ class TransferEntryModal {
 
       // Chama callback se fornecido
       if (this.callback) {
-        this.callback({ saida: resultSaida, entrada: resultEntrada });
+        this.callback({ success: true });
       }
 
       // Fecha o modal após 1.5s

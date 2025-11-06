@@ -3,7 +3,6 @@
  * Baseado em pb_public_/js/components/entry-modal.js
  */
 
-import config from '../config/env';
 import { pb } from '../main';
 import type { EntryFormData, EntryPayload, OnEntryAddedCallback, SheetEntry } from '../types';
 import { SheetsService } from '../services/sheets';
@@ -527,22 +526,10 @@ class EntryModal {
 
       console.log('[EntryModal] 📤 Enviando:', payload);
 
-      const response = await fetch(`${config.pocketbaseUrl}/append-entry`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': pb.authStore.token ? `Bearer ${pb.authStore.token}` : '',
-        },
-        body: JSON.stringify(payload),
-      });
+      // Usa SheetsService que invalida o cache automaticamente
+      await SheetsService.appendEntry(payload as any);
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.message || 'Erro ao adicionar lançamento');
-      }
-
-      console.log('[EntryModal] ✅ Sucesso:', result);
+      console.log('[EntryModal] ✅ Lançamento adicionado com sucesso');
       
       this.showFeedback('✅ Lançamento adicionado com sucesso!', 'success');
       
@@ -552,7 +539,7 @@ class EntryModal {
 
       // Chama callback se fornecido
       if (this.callback) {
-        this.callback(result);
+        this.callback({ success: true });
       }
 
       // Fecha o modal após 1.5s
