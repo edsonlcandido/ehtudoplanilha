@@ -74,6 +74,23 @@
     box-sizing: border-box;
 }
 
+.details__card--clickable {
+    cursor: pointer;
+    border: 2px solid rgba(0,0,0,0.06);
+    transition: all 0.2s ease;
+}
+
+.details__card--clickable:hover {
+    border-color: var(--primary-color, #0074d9);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+}
+
+.details__card--selected {
+    border-color: var(--primary-color, #0074d9);
+    background: rgba(0, 116, 217, 0.05);
+}
+
 .details__card-title {
     font-size: 0.9rem;
     color: var(--text-light);
