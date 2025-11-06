@@ -1,5 +1,6 @@
 import { pb } from '../main';
 import { API_ENDPOINTS } from '../config/env';
+import { CacheService, CACHE_KEYS } from './cache';
 
 /**
  * Interface para resposta de lista de planilhas
@@ -161,6 +162,10 @@ export class SheetsService {
         method: 'POST',
         body: entry,
       });
+      
+      // Invalida o cache após adicionar lançamento
+      console.log('[SheetsService] Invalidando cache após adicionar lançamento');
+      CacheService.clear(CACHE_KEYS.SHEET_ENTRIES);
     } catch (error) {
       console.error('[SheetsService] Erro ao adicionar lançamento:', error);
       throw error;
@@ -176,6 +181,10 @@ export class SheetsService {
         method: 'PUT',
         body: { rowIndex, ...entry },
       });
+      
+      // Invalida o cache após editar lançamento
+      console.log('[SheetsService] Invalidando cache após editar lançamento');
+      CacheService.clear(CACHE_KEYS.SHEET_ENTRIES);
     } catch (error) {
       console.error('[SheetsService] Erro ao editar lançamento:', error);
       throw error;
@@ -191,6 +200,10 @@ export class SheetsService {
         method: 'DELETE',
         body: { rowIndex },
       });
+      
+      // Invalida o cache após deletar lançamento
+      console.log('[SheetsService] Invalidando cache após deletar lançamento');
+      CacheService.clear(CACHE_KEYS.SHEET_ENTRIES);
     } catch (error) {
       console.error('[SheetsService] Erro ao deletar lançamento:', error);
       throw error;

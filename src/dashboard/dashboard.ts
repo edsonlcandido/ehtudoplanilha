@@ -25,6 +25,7 @@ import {
   type BudgetSummary,
   type BudgetInfo
 } from '../utils/sheet-entries';
+import lancamentosService from '../services/lancamentos';
 
 // ============================================================================
 // Declarações globais para armazenar dados
@@ -151,17 +152,11 @@ async function loadAndRenderData(): Promise<void> {
   mostrarCardCarregamento();
 
   try {
-    // Busca os lançamentos
-    const responseEntries = await fetch(`${API_ENDPOINTS.getSheetEntries}?limit=0`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${pb.authStore.token}`
-      }
-    });
-
-    const sheetEntriesData = await responseEntries.json();
-    const entries: Entry[] = sheetEntriesData?.entries ?? [];
+    // Busca os lançamentos usando o serviço (com cache)
+    // limit=0 significa buscar todas as entradas
+    const sheetEntriesData = await lancamentosService.fetchEntries(0, false);
+    // As entradas vindas do backend já estão no formato correto para Entry
+    const entries: Entry[] = (sheetEntriesData?.entries ?? []) as any as Entry[];
 
     // Se não houver lançamentos, mostra mensagem
     if (!entries || entries.length === 0) {

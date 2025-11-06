@@ -92,8 +92,9 @@ function updateSearchResults(): void {
 
 /**
  * Carrega lançamentos da planilha
+ * @param forceRefresh - Se true, ignora cache e busca do servidor
  */
-async function loadEntries(): Promise<void> {
+async function loadEntries(forceRefresh = false): Promise<void> {
   if (state.isLoading) return;
 
   state.isLoading = true;
@@ -102,7 +103,7 @@ async function loadEntries(): Promise<void> {
   showLoading();
 
   try {
-    const response = await lancamentosService.fetchEntries(100);
+    const response = await lancamentosService.fetchEntries(100, forceRefresh);
     const rawEntries = response.entries || [];
     
     // Filtra entradas em branco
@@ -114,7 +115,9 @@ async function loadEntries(): Promise<void> {
     state.entries = [...state.originalEntries];
 
     applySortingAndFilters();
-    showMessage('Lançamentos carregados com sucesso', 'success');
+    
+    const cacheMsg = forceRefresh ? ' (cache atualizado)' : '';
+    showMessage('Lançamentos carregados com sucesso' + cacheMsg, 'success');
   } catch (error: any) {
     console.error('Erro ao carregar lançamentos:', error);
     showMessage('Erro ao carregar lançamentos: ' + error.message, 'error');
@@ -407,8 +410,8 @@ async function init(): Promise<void> {
   const refreshBtn = document.getElementById('refreshEntriesBtn');
   if (refreshBtn) {
     refreshBtn.addEventListener('click', () => {
-      console.log('🔄 Atualizando lançamentos...');
-      loadEntries();
+      console.log('🔄 Atualizando lançamentos (forceRefresh=true)...');
+      loadEntries(true); // força atualização do cache
     });
   }
 

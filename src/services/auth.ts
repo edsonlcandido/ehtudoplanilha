@@ -1,5 +1,6 @@
 import { pb } from '../main';
 import type { User } from '../types';
+import { CacheService } from './cache';
 
 /**
  * Verifica se o usuário está autenticado
@@ -22,6 +23,10 @@ export function getCurrentUser(): User | null {
  * Realiza logout do usuário
  */
 export function logout(): void {
+  // Limpa todos os caches antes de fazer logout
+  console.log('[Auth] Limpando caches ao fazer logout');
+  CacheService.clearAll();
+  
   pb.authStore.clear();
 }
 
