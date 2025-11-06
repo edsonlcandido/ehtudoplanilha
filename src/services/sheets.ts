@@ -163,9 +163,10 @@ export class SheetsService {
         body: entry,
       });
       
-      // Invalida o cache após adicionar lançamento
-      console.log('[SheetsService] Invalidando cache após adicionar lançamento');
+      // Invalida os caches após adicionar lançamento
+      console.log('[SheetsService] Invalidando caches após adicionar lançamento');
       CacheService.clear(CACHE_KEYS.SHEET_ENTRIES);
+      CacheService.clear(CACHE_KEYS.SHEET_CATEGORIES);
     } catch (error) {
       console.error('[SheetsService] Erro ao adicionar lançamento:', error);
       throw error;
@@ -182,9 +183,10 @@ export class SheetsService {
         body: { rowIndex, ...entry },
       });
       
-      // Invalida o cache após editar lançamento
-      console.log('[SheetsService] Invalidando cache após editar lançamento');
+      // Invalida os caches após editar lançamento
+      console.log('[SheetsService] Invalidando caches após editar lançamento');
       CacheService.clear(CACHE_KEYS.SHEET_ENTRIES);
+      CacheService.clear(CACHE_KEYS.SHEET_CATEGORIES);
     } catch (error) {
       console.error('[SheetsService] Erro ao editar lançamento:', error);
       throw error;
@@ -201,9 +203,10 @@ export class SheetsService {
         body: { rowIndex },
       });
       
-      // Invalida o cache após deletar lançamento
-      console.log('[SheetsService] Invalidando cache após deletar lançamento');
+      // Invalida os caches após deletar lançamento
+      console.log('[SheetsService] Invalidando caches após deletar lançamento');
       CacheService.clear(CACHE_KEYS.SHEET_ENTRIES);
+      CacheService.clear(CACHE_KEYS.SHEET_CATEGORIES);
     } catch (error) {
       console.error('[SheetsService] Erro ao deletar lançamento:', error);
       throw error;
@@ -260,13 +263,28 @@ export class SheetsService {
 
   /**
    * Obtém as categorias da planilha
+   * @param forceRefresh - Se true, ignora o cache e busca do servidor
    */
-  static async getSheetCategories(): Promise<string[]> {
+  static async getSheetCategories(forceRefresh = false): Promise<string[]> {
+    // Se não for forceRefresh, tenta usar o cache
+    if (!forceRefresh) {
+      const cached = CacheService.get<{ categories: string[] }>(CACHE_KEYS.SHEET_CATEGORIES);
+      if (cached) {
+        console.log('[SheetsService] Usando categorias do cache');
+        return cached.categories || [];
+      }
+    }
+
     try {
+      console.log('[SheetsService] Buscando categorias do servidor');
       const response = await pb.send<{ categories: string[] }>(
         API_ENDPOINTS.getSheetCategories,
         { method: 'GET' }
       );
+      
+      // Salva no cache
+      CacheService.set(CACHE_KEYS.SHEET_CATEGORIES, response);
+      
       return response.categories || [];
     } catch (error) {
       console.error('[SheetsService] Erro ao obter categorias:', error);

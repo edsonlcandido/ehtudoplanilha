@@ -6,6 +6,7 @@
 import config from '../config/env';
 import { pb } from '../main';
 import type { OnEntryAddedCallback, SheetEntry } from '../types';
+import { SheetsService } from '../services/sheets';
 
 // Singleton instance
 let modalInstance: FutureEntryModal | null = null;
@@ -353,23 +354,8 @@ class FutureEntryModal {
         )].sort();
       }
 
-      // Busca categorias do backend
-      const categoriesUrl = `${config.pocketbaseUrl}/get-sheet-categories`;
-      
-      const responseCat = await fetch(categoriesUrl, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': pb.authStore.token ? `Bearer ${pb.authStore.token}` : '',
-        },
-      });
-      
-      if (responseCat.ok) {
-        const catData = await responseCat.json();
-        this.categories = catData?.success && Array.isArray(catData.categories) 
-          ? catData.categories 
-          : [];
-      }
+      // Busca categorias usando SheetsService (com cache)
+      this.categories = await SheetsService.getSheetCategories();
 
       console.log('[FutureEntryModal] ✅ Dados carregados');
 

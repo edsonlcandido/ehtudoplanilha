@@ -46,7 +46,7 @@ class LancamentosService {
     // Busca do servidor
     try {
       console.log('[LancamentosService] Buscando dados do servidor');
-      const response = await fetch(`${pb.baseUrl}/get-sheet-entries?limit=${limit}`, {
+      const response = await fetch(`${pb.baseURL}/get-sheet-entries?limit=${limit}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${pb.authStore.token}`,
@@ -76,8 +76,9 @@ class LancamentosService {
    * Deve ser chamado após operações que modificam os lançamentos
    */
   invalidateCache(): void {
-    console.log('[LancamentosService] Invalidando cache de lançamentos');
+    console.log('[LancamentosService] Invalidando caches de lançamentos');
     CacheService.clear(CACHE_KEYS.SHEET_ENTRIES);
+    CacheService.clear(CACHE_KEYS.SHEET_CATEGORIES);
   }
 
   /**

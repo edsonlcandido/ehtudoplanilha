@@ -14,6 +14,7 @@ export interface CacheEntry<T> {
  */
 export const CACHE_KEYS = {
   SHEET_ENTRIES: 'ehtudoplanilha:sheet-entries',
+  SHEET_CATEGORIES: 'ehtudoplanilha:sheet-categories',
 } as const;
 
 /**
