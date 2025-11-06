@@ -6,6 +6,7 @@
 
 import type { Entry, BudgetInfo } from '../utils/sheet-entries';
 import { formatarMoeda } from './financial-cards';
+import { excelSerialToDate } from '../utils/date-helpers';
 
 /**
  * Template HTML para a seção de detalhes
@@ -146,9 +147,9 @@ export function inicializarDetalhes(entries: Entry[], budgetsInInterval: BudgetI
       // Formata a data para exibição
       let dataFormatada = '--';
       if (lancamento.data && typeof lancamento.data === 'number' && lancamento.data > 0) {
-        const date = new Date(lancamento.data);
-        // Valida se a data é válida e não é uma data muito antiga (anterior a 1970)
-        if (!isNaN(date.getTime()) && date.getFullYear() > 1970) {
+        // Converte Excel serial para Date
+        const date = excelSerialToDate(lancamento.data, true);
+        if (date) {
           dataFormatada = date.toLocaleDateString('pt-BR');
         }
       }
@@ -216,9 +217,9 @@ export function inicializarDetalhes(entries: Entry[], budgetsInInterval: BudgetI
       // Formata a data para exibição
       let dataFormatada = '--';
       if (lancamento.data && typeof lancamento.data === 'number' && lancamento.data > 0) {
-        const date = new Date(lancamento.data);
-        // Valida se a data é válida e não é uma data muito antiga (anterior a 1970)
-        if (!isNaN(date.getTime()) && date.getFullYear() > 1970) {
+        // Converte Excel serial para Date
+        const date = excelSerialToDate(lancamento.data, true);
+        if (date) {
           dataFormatada = date.toLocaleDateString('pt-BR');
         }
       }
