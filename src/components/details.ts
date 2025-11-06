@@ -26,7 +26,7 @@ const detailsTemplate = `
     </div>
   </div>
 
-  <div class="details__category-entries" id="detail-category-entries" style="display:none; margin-top:1rem;">
+  <div class="details__category-entries details__category-entries--hidden" id="detail-category-entries">
     <h3 class="details__title">Lançamentos da Categoria</h3>
     <div class="category-entries-list" id="category-entries-list">
       <!-- Lançamentos da categoria selecionada serão renderizados aqui -->
@@ -127,7 +127,7 @@ export function inicializarDetalhes(entries: Entry[], budgetsInInterval: BudgetI
     });
     
     // Mostra seção e renderiza lançamentos
-    elCategoryEntries.style.display = '';
+    elCategoryEntries.classList.remove('details__category-entries--hidden');
     elCategoryEntriesList.innerHTML = '';
     
     if (lancamentos.length === 0) {

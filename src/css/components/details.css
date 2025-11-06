@@ -148,6 +148,10 @@
     margin-top: 1rem;
 }
 
+.details__category-entries--hidden {
+    display: none;
+}
+
 .category-entries-list {
     display: flex;
     flex-direction: column;
@@ -194,33 +198,9 @@
     font-style: italic;
 }
 
-/* Tabela de top categorias (mantida para compatibilidade, mas não usada) */
+/* Área de categorias top */
 .details__top-categories {
     margin-top: 0.75rem;
-}
-
-.details__table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.95rem;
-    min-width: 420px; /* permite overflow-x no container já existente */
-}
-
-.details__table thead th {
-    text-align: left;
-    padding: 0.5rem 0.6rem;
-    border-bottom: 1px solid rgba(0,0,0,0.06);
-    font-weight: 600;
-}
-
-.details__table tbody td {
-    padding: 0.5rem 0.6rem;
-    border-bottom: 1px solid rgba(0,0,0,0.03);
-}
-
-/* Valor negativo visual (classe a ser aplicada dinamicamente se necessário) */
-.details__table td.negative {
-    color: var(--expense-color);
 }
 
 /* Animação de carregamento */
