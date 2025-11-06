@@ -7,6 +7,7 @@
 import config from '../config/env';
 import { pb } from '../main';
 import type { OnEntryAddedCallback, SheetEntry } from '../types';
+import lancamentosService from '../services/lancamentos';
 
 // Singleton instance
 let modalInstance: TransferEntryModal | null = null;
@@ -267,28 +268,16 @@ class TransferEntryModal {
     console.log('[TransferEntryModal] 📦 Carregando dados para autocomplete...');
     
     try {
-      // Busca entries do backend
-      const entriesUrl = `${config.pocketbaseUrl}/get-sheet-entries?limit=0`;
+      // Busca entries usando LancamentosService (com cache)
+      const response = await lancamentosService.fetchEntries(0, false);
+      this.entries = response?.entries ?? [];
       
-      const responseEntries = await fetch(entriesUrl, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': pb.authStore.token ? `Bearer ${pb.authStore.token}` : '',
-        },
-      });
-      
-      if (responseEntries.ok) {
-        const data = await responseEntries.json();
-        this.entries = data?.entries ?? [];
-        
-        // Extrai contas únicas
-        this.accounts = [...new Set(
-          this.entries
-            .map(e => e.conta)
-            .filter(c => c && c.trim())
-        )].sort();
-      }
+      // Extrai contas únicas
+      this.accounts = [...new Set(
+        this.entries
+          .map(e => e.conta)
+          .filter(c => c && c.trim())
+      )].sort();
 
       console.log('[TransferEntryModal] ✅ Dados carregados');
 

@@ -7,6 +7,7 @@ import config from '../config/env';
 import { pb } from '../main';
 import type { EntryFormData, EntryPayload, OnEntryAddedCallback, SheetEntry } from '../types';
 import { SheetsService } from '../services/sheets';
+import lancamentosService from '../services/lancamentos';
 
 // Singleton instance
 let modalInstance: EntryModal | null = null;
@@ -371,46 +372,30 @@ class EntryModal {
     console.log('[EntryModal] Auth token:', pb.authStore.token ? 'Presente' : 'Ausente');
     
     try {
-      // Busca entries do backend
-      const entriesUrl = `${config.pocketbaseUrl}/get-sheet-entries?limit=0`;
-      console.log('[EntryModal] Buscando entries de:', entriesUrl);
+      // Busca entries usando LancamentosService (com cache)
+      console.log('[EntryModal] Buscando entries com cache (limit=0)...');
+      const response = await lancamentosService.fetchEntries(0, false);
+      this.entries = response?.entries ?? [];
       
-      const responseEntries = await fetch(entriesUrl, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': pb.authStore.token ? `Bearer ${pb.authStore.token}` : '',
-        },
-      });
+      console.log('[EntryModal] Entries recebidos:', this.entries.length);
       
-      if (responseEntries.ok) {
-        const data = await responseEntries.json();
-        this.entries = data?.entries ?? [];
-        
-        console.log('[EntryModal] Entries recebidos:', this.entries.length);
-        
-        // Extrai contas únicas
-        this.accounts = [...new Set(
-          this.entries
-            .map(e => e.conta)
-            .filter(c => c && c.trim())
-        )].sort();
-        
-        console.log('[EntryModal] Contas extraídas:', this.accounts);
-        
-        // Extrai descrições únicas
-        this.descriptions = [...new Set(
-          this.entries
-            .map(e => e.descricao)
-            .filter(d => d && d.trim())
-        )].sort();
-        
-        console.log('[EntryModal] Descrições extraídas:', this.descriptions.length);
-      } else {
-        console.warn('[EntryModal] ⚠️ Erro ao buscar entries:', responseEntries.status, responseEntries.statusText);
-        const errorText = await responseEntries.text();
-        console.warn('[EntryModal] Resposta:', errorText);
-      }
+      // Extrai contas únicas
+      this.accounts = [...new Set(
+        this.entries
+          .map(e => e.conta)
+          .filter(c => c && c.trim())
+      )].sort();
+      
+      console.log('[EntryModal] Contas extraídas:', this.accounts);
+      
+      // Extrai descrições únicas
+      this.descriptions = [...new Set(
+        this.entries
+          .map(e => e.descricao)
+          .filter(d => d && d.trim())
+      )].sort();
+      
+      console.log('[EntryModal] Descrições extraídas:', this.descriptions.length);
 
       // Busca categorias usando SheetsService (com cache)
       console.log('[EntryModal] Buscando categorias com cache...');

@@ -7,6 +7,7 @@ import config from '../config/env';
 import { pb } from '../main';
 import type { OnEntryAddedCallback, SheetEntry } from '../types';
 import { SheetsService } from '../services/sheets';
+import lancamentosService from '../services/lancamentos';
 
 // Singleton instance
 let modalInstance: FutureEntryModal | null = null;
@@ -331,28 +332,16 @@ class FutureEntryModal {
     console.log('[FutureEntryModal] 📦 Carregando dados para autocomplete...');
     
     try {
-      // Busca entries do backend
-      const entriesUrl = `${config.pocketbaseUrl}/get-sheet-entries?limit=0`;
+      // Busca entries usando LancamentosService (com cache)
+      const response = await lancamentosService.fetchEntries(0, false);
+      this.entries = response?.entries ?? [];
       
-      const responseEntries = await fetch(entriesUrl, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': pb.authStore.token ? `Bearer ${pb.authStore.token}` : '',
-        },
-      });
-      
-      if (responseEntries.ok) {
-        const data = await responseEntries.json();
-        this.entries = data?.entries ?? [];
-        
-        // Extrai descrições únicas
-        this.descriptions = [...new Set(
-          this.entries
-            .map(e => e.descricao)
-            .filter(d => d && d.trim())
-        )].sort();
-      }
+      // Extrai descrições únicas
+      this.descriptions = [...new Set(
+        this.entries
+          .map(e => e.descricao)
+          .filter(d => d && d.trim())
+      )].sort();
 
       // Busca categorias usando SheetsService (com cache)
       this.categories = await SheetsService.getSheetCategories();
