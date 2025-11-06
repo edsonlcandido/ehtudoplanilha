@@ -21,19 +21,15 @@ const detailsTemplate = `
 
   <div class="details__top-categories" style="margin-top:1rem;">
     <h3 class="details__title">Top 10 Gastos por Categoria</h3>
-    <div class="tabela-rolavel">
-      <table class="details__table primary">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Categoria</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-        <tbody id="detail-categories-list">
-          <!-- Linhas de categorias serão renderizadas aqui -->
-        </tbody>
-      </table>
+    <div class="category-cards" id="detail-categories-cards">
+      <!-- Cards de categorias serão renderizados aqui -->
+    </div>
+  </div>
+
+  <div class="details__category-entries" id="detail-category-entries" style="display:none; margin-top:1rem;">
+    <h3 class="details__title">Lançamentos da Categoria</h3>
+    <div class="category-entries-list" id="category-entries-list">
+      <!-- Lançamentos da categoria selecionada serão renderizados aqui -->
     </div>
   </div>
 `;
@@ -97,6 +93,57 @@ export function inicializarDetalhes(entries: Entry[], budgetsInInterval: BudgetI
   };
 
   /**
+   * Renderiza lançamentos de uma categoria específica
+   */
+  const renderizarLancamentosCategoria = (categoria: string, orcamentos: number[]): void => {
+    const elCategoryEntries = container.querySelector('#detail-category-entries') as HTMLElement;
+    const elCategoryEntriesList = container.querySelector('#category-entries-list') as HTMLElement;
+    
+    if (!elCategoryEntries || !elCategoryEntriesList) return;
+    
+    // Filtra lançamentos da categoria nos orçamentos selecionados
+    const lancamentos = currentEntries.filter(e => 
+      orcamentos.includes(e.orcamento) && 
+      (e.categoria || 'Sem categoria') === categoria &&
+      e.valor < 0 // Apenas despesas
+    );
+    
+    // Ordena por data (mais recente primeiro)
+    lancamentos.sort((a, b) => {
+      const dateA = a.data ? new Date(a.data).getTime() : 0;
+      const dateB = b.data ? new Date(b.data).getTime() : 0;
+      return dateB - dateA;
+    });
+    
+    // Mostra seção e renderiza lançamentos
+    elCategoryEntries.style.display = '';
+    elCategoryEntriesList.innerHTML = '';
+    
+    if (lancamentos.length === 0) {
+      elCategoryEntriesList.innerHTML = '<p class="category-entries-empty">Nenhum lançamento encontrado nesta categoria.</p>';
+      return;
+    }
+    
+    lancamentos.forEach(lancamento => {
+      const entryCard = document.createElement('div');
+      entryCard.className = 'category-entry-card';
+      
+      // Formata a data para exibição
+      const dataFormatada = lancamento.data 
+        ? new Date(lancamento.data).toLocaleDateString('pt-BR')
+        : 'Data não informada';
+      
+      entryCard.innerHTML = `
+        <div class="category-entry-card__date">${dataFormatada}</div>
+        <div class="category-entry-card__description">${lancamento.descricao || 'Sem descrição'}</div>
+        <div class="category-entry-card__value">${formatarMoeda(lancamento.valor || 0)}</div>
+      `;
+      
+      elCategoryEntriesList.appendChild(entryCard);
+    });
+  };
+
+  /**
    * Renderiza detalhes para orçamentos específicos
    */
   const renderizarDetalhes = (orcamentos: number | number[]): void => {
@@ -110,7 +157,7 @@ export function inicializarDetalhes(entries: Entry[], budgetsInInterval: BudgetI
     // Seletores do DOM
     const elSaldo = container.querySelector('#detail-saldo') as HTMLElement;
     const elAccounts = container.querySelector('#detail-accounts-cards') as HTMLElement;
-    const elCategories = container.querySelector('#detail-categories-list') as HTMLElement;
+    const elCategoriesCards = container.querySelector('#detail-categories-cards') as HTMLElement;
     
     // Filtra lançamentos dos orçamentos selecionados
     const detalhe = currentEntries.filter(e => orcNums.includes(e.orcamento));
@@ -138,23 +185,44 @@ export function inicializarDetalhes(entries: Entry[], budgetsInInterval: BudgetI
       });
     }
 
-    // Atualiza top 10 categorias (apenas despesas)
-    if (elCategories) {
-      elCategories.innerHTML = '';
+    // Atualiza top 10 categorias como cards (apenas despesas)
+    if (elCategoriesCards) {
+      elCategoriesCards.innerHTML = '';
       
-      agruparPorCategoria(detalhe)
+      const topCategorias = agruparPorCategoria(detalhe)
         .filter(item => item.total < 0)
         .sort((a, b) => a.total - b.total)
-        .slice(0, 10)
-        .forEach((item, idx) => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${idx + 1}</td>
-            <td>${item.categoria}</td>
-            <td>${formatarMoeda(item.total)}</td>
-          `;
-          elCategories.appendChild(tr);
+        .slice(0, 10);
+      
+      topCategorias.forEach((item, idx) => {
+        const card = document.createElement('div');
+        card.className = 'category-card';
+        card.dataset.categoria = item.categoria;
+        
+        card.innerHTML = `
+          <div class="category-card__rank">#${idx + 1}</div>
+          <div class="category-card__content">
+            <div class="category-card__name">${item.categoria}</div>
+            <div class="category-card__value">${formatarMoeda(item.total)}</div>
+          </div>
+        `;
+        
+        // Adiciona evento de clique para mostrar lançamentos
+        card.addEventListener('click', () => {
+          // Remove seleção anterior
+          elCategoriesCards.querySelectorAll('.category-card').forEach(c => {
+            c.classList.remove('category-card--selected');
+          });
+          
+          // Adiciona seleção ao card clicado
+          card.classList.add('category-card--selected');
+          
+          // Renderiza lançamentos da categoria
+          renderizarLancamentosCategoria(item.categoria, orcNums);
         });
+        
+        elCategoriesCards.appendChild(card);
+      });
     }
   };
 
