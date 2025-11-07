@@ -3,6 +3,7 @@
  * Gerencia a lista de lançamentos e modais
  */
 
+import { verifyTokenValidity } from '../services/auth';
 import { renderUserMenu } from '../components/user-menu';
 import { initEntryModal, openEntryModal } from '../components/entry-modal';
 import { initEditEntryModal, openEditEntryModal, setEditModalEntries } from '../components/edit-entry-modal';
@@ -362,6 +363,13 @@ function deleteEntry(rowIndex: number): void {
 
 async function init(): Promise<void> {
   console.log('[Lançamentos] Inicializando página...');
+
+  // Verifica se o token é válido no início
+  const isTokenValid = await verifyTokenValidity();
+  if (!isTokenValid) {
+    console.warn('⚠️ Token inválido ou usuário não autenticado');
+    return;
+  }
 
   // Renderiza menu do usuário
   renderUserMenu();

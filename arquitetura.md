@@ -450,5 +450,5 @@ const data = await lancamentosService.fetchEntries(0, false);
 
 ## 11. Os detalhes
 - Alert para revogar o token google, configuar para alinhar para um modal com aparencia do modal delete e utros entry-form edit-entry-form
-- Ao clicar no botão de sair ser redirecionado para a pagina home
 - Página de lançamento deve fazer o get sheet entries limit=0 e solicitar no cache o limit=100
+- Alert para logout criar um modal

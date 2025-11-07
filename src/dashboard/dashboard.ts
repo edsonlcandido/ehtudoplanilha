@@ -4,6 +4,7 @@
  */
 
 import { pb } from '../main';
+import { verifyTokenValidity } from '../services/auth';
 import { API_ENDPOINTS } from '../config/env';
 import { renderUserMenu } from '../components/user-menu';
 import { initEntryModal, openEntryModal } from '../components/entry-modal';
@@ -45,6 +46,14 @@ declare global {
 // ============================================================================
 
 async function init(): Promise<void> {
+  // Verifica se o token é válido no início
+  // Se receber 401, faz logout e redireciona para /
+  const isTokenValid = await verifyTokenValidity();
+  if (!isTokenValid) {
+    console.warn('⚠️ Token inválido ou usuário não autenticado');
+    return;
+  }
+
   // Renderiza menu do usuário
   renderUserMenu();
 
@@ -141,6 +150,15 @@ function showConfigurationRequired(): void {
     p.style.marginTop = '1rem';
     p.textContent = 'Integração com Google não configurada. Clique em "Configurar Integração" para continuar.';
     header.appendChild(p);
+
+    // Adiciona botão de configuração
+    const button = document.createElement('a');
+    button.href = '/dashboard/configuracao.html';
+    button.className = 'button primary';
+    button.style.marginTop = '1rem';
+    button.style.display = 'inline-block';
+    button.textContent = '⚙️ Configurar Integração';
+    header.appendChild(button);
   }
 }
 
