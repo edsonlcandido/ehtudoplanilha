@@ -3,6 +3,7 @@
  * Gerencia autorização Google OAuth e criação de planilha
  */
 
+import { verifyTokenValidity } from '../services/auth';
 import { renderUserMenu } from '../components/user-menu';
 import { GoogleOAuthService } from '../services/google-oauth';
 import { SheetsService } from '../services/sheets';
@@ -449,6 +450,13 @@ function setupEventListeners(): void {
 // ============================================================================
 
 async function init(): Promise<void> {
+  // Verifica se o token é válido no início
+  const isTokenValid = await verifyTokenValidity();
+  if (!isTokenValid) {
+    console.warn('⚠️ Token inválido ou usuário não autenticado');
+    return;
+  }
+
   // Renderiza menu do usuário
   renderUserMenu();
   

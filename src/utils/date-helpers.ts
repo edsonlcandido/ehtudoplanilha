@@ -211,6 +211,35 @@ export function dateInputToDate(dateString: string): Date | null {
 }
 
 /**
+ * Converte Date JavaScript para string datetime-local (YYYY-MM-DDTHH:MM)
+ * SEM conversão de timezone - usa os valores locais da data
+ * 
+ * Esta função é essencial para popular inputs datetime-local corretamente,
+ * evitando o problema de adicionar/subtrair horas devido ao timezone.
+ * 
+ * @param date - Data a ser convertida
+ * @returns String no formato datetime-local ou string vazia se inválida
+ * 
+ * @example
+ * // Para uma data local 20/10/2025 16:52
+ * dateToDateTimeLocalString(new Date(2025, 9, 20, 16, 52)) // "2025-10-20T16:52"
+ */
+export function dateToDateTimeLocalString(date: Date): string {
+  if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+    return '';
+  }
+  
+  // Pega os valores LOCAIS (não UTC) para evitar conversão de timezone
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+/**
  * Calcula intervalo padrão para filtros
  * Retorna serials para hoje -5 dias até hoje +35 dias
  * 

@@ -68,3 +68,51 @@ export function onAuthChange(callback: (isAuth: boolean) => void): void {
     callback(isAuthenticated());
   });
 }
+
+/**
+ * Verifica se o token do PocketBase é válido
+ * Usa a melhor prática do PocketBase:
+ * 1. Verifica pb.authStore.isValid
+ * 2. Chama pb.collection('users').authRefresh() para validar com o servidor
+ * 3. Se falhar, limpa o authStore
+ * 4. Se inválido após refresh, redireciona para /
+ * 
+ * Deve ser chamado no início do carregamento de páginas protegidas
+ */
+export async function verifyTokenValidity(): Promise<boolean> {
+  // Passo 1: Verificar se está autenticado localmente
+  if (!isAuthenticated()) {
+    console.warn('[Auth] Usuário não autenticado localmente');
+    redirectToHome();
+    return false;
+  }
+
+  try {
+    // Passo 2: Validar token com o servidor usando authRefresh()
+    console.log('[Auth] Validando token com o servidor...');
+    await pb.collection('users').authRefresh();
+    
+    // Passo 3: Verificar novamente após refresh
+    if (!isAuthenticated()) {
+      console.warn('[Auth] Token inválido após refresh');
+      redirectToHome();
+      return false;
+    }
+
+    console.log('[Auth] Token válido ✓');
+    return true;
+  } catch (error) {
+    // Passo 4: Se houver erro (ex: 401), limpar o authStore e redirecionar
+    console.error('[Auth] Erro ao validar token:', error);
+    logout();
+    redirectToHome();
+    return false;
+  }
+}
+
+/**
+ * Redireciona para a página inicial
+ */
+function redirectToHome(): void {
+  window.location.href = '/';
+}

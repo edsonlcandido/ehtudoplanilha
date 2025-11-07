@@ -3,6 +3,7 @@
  * Gerencia a lista de lançamentos e modais
  */
 
+import { verifyTokenValidity } from '../services/auth';
 import { renderUserMenu } from '../components/user-menu';
 import { initEntryModal, openEntryModal } from '../components/entry-modal';
 import { initEditEntryModal, openEditEntryModal, setEditModalEntries } from '../components/edit-entry-modal';
@@ -103,7 +104,7 @@ async function loadEntries(forceRefresh = false): Promise<void> {
   showLoading();
 
   try {
-    const response = await lancamentosService.fetchEntries(100, forceRefresh);
+    const response = await lancamentosService.fetchEntries(0, forceRefresh);
     const rawEntries = response.entries || [];
     
     // Filtra entradas em branco
@@ -174,7 +175,11 @@ function renderEntriesList(): void {
   if (!container) return;
 
   const entriesToRender = state.searchTerm ? state.filteredEntries : state.filteredEntries.length > 0 ? state.filteredEntries : state.entries;
-  container.innerHTML = renderEntries(entriesToRender);
+  
+  // Limita aos 100 primeiros itens
+  const limitedEntries = entriesToRender.slice(0, 100);
+  
+  container.innerHTML = renderEntries(limitedEntries);
 }
 
 // ============================================================================
@@ -362,6 +367,13 @@ function deleteEntry(rowIndex: number): void {
 
 async function init(): Promise<void> {
   console.log('[Lançamentos] Inicializando página...');
+
+  // Verifica se o token é válido no início
+  const isTokenValid = await verifyTokenValidity();
+  if (!isTokenValid) {
+    console.warn('⚠️ Token inválido ou usuário não autenticado');
+    return;
+  }
 
   // Renderiza menu do usuário
   renderUserMenu();

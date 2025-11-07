@@ -8,7 +8,8 @@ import type { SheetEntry, OnEntryEditedCallback } from '../types';
 import {
   excelSerialToDate,
   dateTimeLocalToDate,
-  dateInputToDate
+  dateInputToDate,
+  dateToDateTimeLocalString
 } from '../utils/date-helpers';
 
 // Singleton instance
@@ -479,13 +480,15 @@ class EditEntryModal {
         // Converte Excel serial para Date com hora
         const dateObj = excelSerialToDate(entry.data, true);
         if (dateObj) {
-          dateValue = dateObj.toISOString().slice(0, 16);
+          // Usa dateToDateTimeLocalString para evitar problemas de timezone
+          dateValue = dateToDateTimeLocalString(dateObj);
         }
       } else if (typeof entry.data === 'string') {
         // Se for string, tenta parsear
         const dateObj = dateTimeLocalToDate(entry.data);
         if (dateObj) {
-          dateValue = dateObj.toISOString().slice(0, 16);
+          // Usa dateToDateTimeLocalString para evitar problemas de timezone
+          dateValue = dateToDateTimeLocalString(dateObj);
         }
       }
       dateInput.value = dateValue;
