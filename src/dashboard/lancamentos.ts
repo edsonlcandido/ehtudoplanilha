@@ -104,7 +104,7 @@ async function loadEntries(forceRefresh = false): Promise<void> {
   showLoading();
 
   try {
-    const response = await lancamentosService.fetchEntries(100, forceRefresh);
+    const response = await lancamentosService.fetchEntries(0, forceRefresh);
     const rawEntries = response.entries || [];
     
     // Filtra entradas em branco
@@ -175,7 +175,11 @@ function renderEntriesList(): void {
   if (!container) return;
 
   const entriesToRender = state.searchTerm ? state.filteredEntries : state.filteredEntries.length > 0 ? state.filteredEntries : state.entries;
-  container.innerHTML = renderEntries(entriesToRender);
+  
+  // Limita aos 100 primeiros itens
+  const limitedEntries = entriesToRender.slice(0, 100);
+  
+  container.innerHTML = renderEntries(limitedEntries);
 }
 
 // ============================================================================
