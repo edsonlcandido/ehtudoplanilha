@@ -27,6 +27,8 @@ import {
   type BudgetInfo
 } from '../utils/sheet-entries';
 import lancamentosService from '../services/lancamentos';
+import { SheetsService } from '../services/sheets';
+import { renderCategoryBudgetChart } from '../components/category-budget-chart';
 
 // ============================================================================
 // Declarações globais para armazenar dados
@@ -207,6 +209,9 @@ async function loadAndRenderData(): Promise<void> {
     renderizarCards(allSummaries, budgetsInIntervalMap);
     inicializarDetalhes(entries, budgetsInIntervalList);
 
+    // Renderiza gráfico de orçamento por categoria
+    await renderBudgetChart(entries);
+
   } catch (error) {
     console.error('Erro ao carregar dados:', error);
     mostrarErro('Não foi possível carregar os dados. Verifique sua conexão e tente novamente.');
@@ -234,6 +239,38 @@ function showNoEntriesMessage(): void {
     div.className = 'notice';
     div.textContent = 'Você ainda não tem lançamentos. Insira o primeiro lançamento — ex. "Saldo inicial Banco Laranjinha" ou "Fatura cartão roxinho atual". Após inserir recarregue a página.';
     header.appendChild(div);
+  }
+}
+
+/**
+ * Renderiza o gráfico de orçamento por categoria
+ */
+async function renderBudgetChart(entries: Entry[]): Promise<void> {
+  try {
+    console.log('[Dashboard] Carregando categorias completas para gráfico...');
+    
+    // Busca categorias completas
+    const categoriesComplete = await SheetsService.getSheetCategoriesComplete();
+    
+    if (!categoriesComplete || categoriesComplete.length === 0) {
+      console.log('[Dashboard] Nenhuma categoria completa encontrada');
+      return;
+    }
+
+    // Converte entries para o formato esperado pelo chart
+    const chartEntries = entries.map(e => ({
+      categoria: (e as any).categoria || '',
+      valor: (e as any).valor || 0,
+      tipo: (e as any).tipo || ''
+    }));
+
+    console.log('[Dashboard] Renderizando gráfico de orçamento...');
+    renderCategoryBudgetChart('categoryBudgetChart', chartEntries, categoriesComplete);
+    console.log('[Dashboard] Gráfico de orçamento renderizado');
+    
+  } catch (error) {
+    console.error('[Dashboard] Erro ao renderizar gráfico de orçamento:', error);
+    // Não quebra o dashboard se o gráfico falhar
   }
 }
 
