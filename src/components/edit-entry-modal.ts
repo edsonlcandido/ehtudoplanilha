@@ -4,7 +4,7 @@
  */
 
 import lancamentosService from '../services/lancamentos';
-import type { SheetEntry, OnEntryEditedCallback } from '../types';
+import type { SheetEntry, OnEntryEditedCallback, CategoryComplete } from '../types';
 import {
   excelSerialToDate,
   dateTimeLocalToDate,
@@ -25,6 +25,7 @@ class EditEntryModal {
   private currentEntry: SheetEntry | null = null;
   private accounts: string[] = [];
   private categories: string[] = [];
+  private categoriesComplete: CategoryComplete[] = [];
   private descriptions: string[] = [];
   private entries: SheetEntry[] = [];
 
@@ -718,11 +719,31 @@ class EditEntryModal {
   /**
    * Define lista de lançamentos (para autocomplete)
    */
-  setEntries(entries: SheetEntry[]): void {
+  async setEntries(entries: SheetEntry[]): Promise<void> {
     this.entries = entries;
     this.accounts = lancamentosService.getUniqueAccounts(entries);
-    this.categories = lancamentosService.getUniqueCategories(entries);
     this.descriptions = lancamentosService.getUniqueDescriptions(entries);
+    
+    // Extrai categorias únicas dos entries
+    const entriesCategories = lancamentosService.getUniqueCategories(entries);
+    
+    // Tenta carregar categorias completas do backend (com cache)
+    try {
+      const { SheetsService } = await import('../services/sheets');
+      this.categoriesComplete = await SheetsService.getSheetCategoriesComplete();
+      
+      // Usa categorias completas se disponíveis, senão usa as dos entries
+      if (this.categoriesComplete.length > 0) {
+        this.categories = this.categoriesComplete.map(c => c.categoria);
+        console.log('[EditEntryModal] Categorias completas carregadas:', this.categoriesComplete.length);
+      } else {
+        this.categories = entriesCategories;
+        console.log('[EditEntryModal] Usando categorias dos entries:', this.categories.length);
+      }
+    } catch (error) {
+      console.warn('[EditEntryModal] Erro ao carregar categorias completas, usando entries:', error);
+      this.categories = entriesCategories;
+    }
   }
 }
 

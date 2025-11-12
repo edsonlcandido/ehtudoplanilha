@@ -4,7 +4,7 @@
  */
 
 import { pb } from '../main';
-import type { EntryFormData, EntryPayload, OnEntryAddedCallback, SheetEntry } from '../types';
+import type { EntryFormData, EntryPayload, OnEntryAddedCallback, SheetEntry, CategoryComplete } from '../types';
 import { SheetsService } from '../services/sheets';
 import lancamentosService from '../services/lancamentos';
 
@@ -20,6 +20,7 @@ class EntryModal {
   private callback: OnEntryAddedCallback | undefined;
   private accounts: string[] = [];
   private categories: string[] = [];
+  private categoriesComplete: CategoryComplete[] = [];
   private descriptions: string[] = [];
   private entries: SheetEntry[] = [];
 
@@ -396,10 +397,14 @@ class EntryModal {
       
       console.log('[EntryModal] Descrições extraídas:', this.descriptions.length);
 
-      // Busca categorias usando SheetsService (com cache)
-      console.log('[EntryModal] Buscando categorias com cache...');
-      this.categories = await SheetsService.getSheetCategories();
-      console.log('[EntryModal] Categorias recebidas:', this.categories);
+      // Busca categorias completas usando SheetsService (com cache)
+      console.log('[EntryModal] Buscando categorias completas com cache...');
+      this.categoriesComplete = await SheetsService.getSheetCategoriesComplete();
+      
+      // Extrai apenas os nomes das categorias para o autocomplete
+      this.categories = this.categoriesComplete.map(c => c.categoria);
+      console.log('[EntryModal] Categorias completas recebidas:', this.categoriesComplete.length);
+      console.log('[EntryModal] Nomes de categorias extraídos:', this.categories.length);
 
       console.log('[EntryModal] ✅ Dados carregados:', {
         accounts: this.accounts.length,
