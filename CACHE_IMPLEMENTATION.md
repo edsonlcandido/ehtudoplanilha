@@ -23,7 +23,8 @@ Serviço centralizado para gerenciar cache no localStorage:
 
 **Chaves de cache:**
 - `SHEET_ENTRIES`: Cache de lançamentos
-- `SHEET_CATEGORIES`: Cache de categorias
+- `SHEET_CATEGORIES`: Cache de categorias (apenas nomes)
+- `SHEET_CATEGORIES_COMPLETE`: Cache de categorias completas (categoria, tipo, orcamento)
 
 **Métodos principais:**
 - `set(key, data, ttl)`: Salva dados no cache
@@ -66,20 +67,32 @@ Limpa os caches de lançamentos e categorias. Chamado automaticamente após:
 
 Similar ao fetchEntries, verifica cache antes de buscar do servidor.
 
+#### `getSheetCategoriesComplete(forceRefresh)`
+
+Nova função que busca categorias completas (categoria, tipo, orcamento) da aba CATEGORIAS.
+- Usa cache com TTL de 5 minutos (igual às categorias simples)
+- Implementa fallback para `getSheetCategories()` se o endpoint completo falhar
+- Converte categorias simples para formato completo se necessário
+
 **Invalidação de cache adicionada em:**
-- `appendEntry()`: após adicionar lançamento
-- `editEntry()`: após editar lançamento
-- `deleteEntry()`: após deletar lançamento
+- `appendEntry()`: após adicionar lançamento (invalida ambos SHEET_CATEGORIES e SHEET_CATEGORIES_COMPLETE)
+- `editEntry()`: após editar lançamento (invalida ambos SHEET_CATEGORIES e SHEET_CATEGORIES_COMPLETE)
+- `deleteEntry()`: após deletar lançamento (invalida ambos SHEET_CATEGORIES e SHEET_CATEGORIES_COMPLETE)
 
 ### 4. Modais que usam cache de categorias
 
 #### Entry Modal (`src/components/entry-modal.ts`)
-Usa `SheetsService.getSheetCategories()` em vez de fetch direto.
+Usa `SheetsService.getSheetCategoriesComplete()` para carregar categorias com informações completas.
+Extrai apenas os nomes para autocomplete.
 
 #### Future Entry Modal (`src/components/future-entry-modal.ts`)
-Usa `SheetsService.getSheetCategories()` em vez de fetch direto.
+Usa `SheetsService.getSheetCategoriesComplete()` para carregar categorias com informações completas.
+Extrai apenas os nomes para autocomplete.
 
-**Resultado**: Elimina chamadas duplicadas ao `/get-sheet-categories`
+#### Edit Entry Modal (`src/components/edit-entry-modal.ts`)
+Carrega categorias completas de forma assíncrona via `setEntries()` e usa como fallback as categorias extraídas dos lançamentos.
+
+**Resultado**: Elimina chamadas duplicadas e fornece informações completas de categoria (tipo, orçamento) para os componentes.
 
 ### 5. Páginas que usam cache
 
