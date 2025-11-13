@@ -41,6 +41,15 @@ export interface SheetEntry {
 }
 
 /**
+ * Modelo de categoria completa da planilha
+ */
+export interface CategoryComplete {
+  categoria: string;
+  tipo: string;
+  orcamento: number;
+}
+
+/**
  * Dados do formulário de lançamento
  */
 export interface EntryFormData {

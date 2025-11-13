@@ -1,6 +1,7 @@
 import { pb } from '../main';
 import { API_ENDPOINTS } from '../config/env';
 import { CacheService, CACHE_KEYS } from './cache';
+import type { CategoryComplete } from '../types';
 
 /**
  * Interface para resposta de lista de planilhas
@@ -167,6 +168,7 @@ export class SheetsService {
       console.log('[SheetsService] Invalidando caches após adicionar lançamento');
       CacheService.clear(CACHE_KEYS.SHEET_ENTRIES);
       CacheService.clear(CACHE_KEYS.SHEET_CATEGORIES);
+      CacheService.clear(CACHE_KEYS.SHEET_CATEGORIES_COMPLETE);
     } catch (error) {
       console.error('[SheetsService] Erro ao adicionar lançamento:', error);
       throw error;
@@ -187,6 +189,7 @@ export class SheetsService {
       console.log('[SheetsService] Invalidando caches após editar lançamento');
       CacheService.clear(CACHE_KEYS.SHEET_ENTRIES);
       CacheService.clear(CACHE_KEYS.SHEET_CATEGORIES);
+      CacheService.clear(CACHE_KEYS.SHEET_CATEGORIES_COMPLETE);
     } catch (error) {
       console.error('[SheetsService] Erro ao editar lançamento:', error);
       throw error;
@@ -207,6 +210,7 @@ export class SheetsService {
       console.log('[SheetsService] Invalidando caches após deletar lançamento');
       CacheService.clear(CACHE_KEYS.SHEET_ENTRIES);
       CacheService.clear(CACHE_KEYS.SHEET_CATEGORIES);
+      CacheService.clear(CACHE_KEYS.SHEET_CATEGORIES_COMPLETE);
     } catch (error) {
       console.error('[SheetsService] Erro ao deletar lançamento:', error);
       throw error;
@@ -289,6 +293,50 @@ export class SheetsService {
     } catch (error) {
       console.error('[SheetsService] Erro ao obter categorias:', error);
       return [];
+    }
+  }
+
+  /**
+   * Obtém as categorias completas da planilha (categoria, tipo, orcamento)
+   * @param forceRefresh - Se true, ignora o cache e busca do servidor
+   */
+  static async getSheetCategoriesComplete(forceRefresh = false): Promise<CategoryComplete[]> {
+    // Se não for forceRefresh, tenta usar o cache
+    if (!forceRefresh) {
+      const cached = CacheService.get<{ categoriesComplete: CategoryComplete[] }>(CACHE_KEYS.SHEET_CATEGORIES_COMPLETE);
+      if (cached) {
+        console.log('[SheetsService] Usando categorias completas do cache');
+        return cached.categoriesComplete || [];
+      }
+    }
+
+    try {
+      console.log('[SheetsService] Buscando categorias completas do servidor');
+      const response = await pb.send<{ categoriesComplete: CategoryComplete[] }>(
+        API_ENDPOINTS.getSheetCategoriesComplete,
+        { method: 'GET' }
+      );
+      
+      // Salva no cache
+      CacheService.set(CACHE_KEYS.SHEET_CATEGORIES_COMPLETE, response);
+      
+      return response.categoriesComplete || [];
+    } catch (error) {
+      console.error('[SheetsService] Erro ao obter categorias completas:', error);
+      
+      // Fallback: tenta usar o endpoint antigo e converte para o novo formato
+      console.log('[SheetsService] Tentando fallback para endpoint de categorias antigas');
+      try {
+        const categories = await SheetsService.getSheetCategories(forceRefresh);
+        return categories.map(cat => ({
+          categoria: cat,
+          tipo: '',
+          orcamento: 0
+        }));
+      } catch (fallbackError) {
+        console.error('[SheetsService] Erro no fallback:', fallbackError);
+        return [];
+      }
     }
   }
 

@@ -3,7 +3,7 @@
  * Form simplificado com: valor, descrição, categoria, orçamento
  */
 
-import type { OnEntryAddedCallback, SheetEntry } from '../types';
+import type { OnEntryAddedCallback, SheetEntry, CategoryComplete } from '../types';
 import { SheetsService } from '../services/sheets';
 import lancamentosService from '../services/lancamentos';
 
@@ -25,6 +25,7 @@ class FutureEntryModal {
   private form: HTMLFormElement | null = null;
   private callback: OnEntryAddedCallback | undefined;
   private categories: string[] = [];
+  private categoriesComplete: CategoryComplete[] = [];
   private descriptions: string[] = [];
   private entries: SheetEntry[] = [];
 
@@ -341,8 +342,13 @@ class FutureEntryModal {
           .filter(d => d && d.trim())
       )].sort();
 
-      // Busca categorias usando SheetsService (com cache)
-      this.categories = await SheetsService.getSheetCategories();
+      // Busca categorias completas usando SheetsService (com cache)
+      console.log('[FutureEntryModal] Buscando categorias completas com cache...');
+      this.categoriesComplete = await SheetsService.getSheetCategoriesComplete();
+      
+      // Extrai apenas os nomes das categorias para o autocomplete
+      this.categories = this.categoriesComplete.map(c => c.categoria);
+      console.log('[FutureEntryModal] Categorias completas recebidas:', this.categoriesComplete.length);
 
       console.log('[FutureEntryModal] ✅ Dados carregados');
 

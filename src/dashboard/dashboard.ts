@@ -205,7 +205,9 @@ async function loadAndRenderData(): Promise<void> {
 
     // Renderiza cards e detalhes
     renderizarCards(allSummaries, budgetsInIntervalMap);
-    inicializarDetalhes(entries, budgetsInIntervalList);
+    
+    // Inicializa detalhes (inclui agregados, top 10 categorias e gráfico de rosca)
+    await inicializarDetalhes(entries, budgetsInIntervalList);
 
   } catch (error) {
     console.error('Erro ao carregar dados:', error);

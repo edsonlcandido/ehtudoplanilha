@@ -26,6 +26,28 @@ Endpoints auxiliares para integração Google:
 Hook para provisionamento de planilhas:
 - **Endpoint POST `/provision-sheet`**: Copia planilha template para o usuário
 
+#### 5. `pb_hooks/get-sheet-categories.pb.js`
+Hook para buscar categorias da planilha:
+- **Endpoint GET `/get-sheet-categories`**: Retorna lista de nomes de categorias da aba CATEGORIAS (coluna A)
+- Mantido para retrocompatibilidade com PWA
+
+#### 6. `pb_hooks/get-sheet-categories-complete.pb.js`
+Hook para buscar categorias completas da planilha:
+- **Endpoint GET `/get-sheet-categories-complete`**: Retorna categorias completas (categoria, tipo, orcamento)
+- Lê colunas A (categoria), B (tipo) e C (orcamento) da aba CATEGORIAS
+- Formato de resposta:
+  ```json
+  {
+    "success": true,
+    "categoriesComplete": [
+      {"categoria": "Transporte", "tipo": "DESPESA", "orcamento": 500},
+      {"categoria": "Salário", "tipo": "RECEITA", "orcamento": 0}
+    ]
+  }
+  ```
+- Filtra apenas categorias do tipo DESPESA com orçamento > 0 para análise de orçamento
+- Implementa refresh token automático igual aos outros endpoints
+
 ### Frontend Modules (pb_public/js)
 
 #### 1. `pb_public/js/google/oauth-service.js`

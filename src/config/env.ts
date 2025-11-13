@@ -78,6 +78,7 @@ export const API_ENDPOINTS = {
   getFinancialSummary: '/get-financial-summary',      // GET - Resumo financeiro
   getAvailableMonths: '/get-available-months',        // GET - Meses disponíveis
   getSheetCategories: '/get-sheet-categories',        // GET - Categorias da planilha
+  getSheetCategoriesComplete: '/get-sheet-categories-complete', // GET - Categorias completas (categoria, tipo, orcamento)
 } as const;
 
 /**

@@ -1,0 +1,186 @@
+/**
+ * Estilos para o Componente de Gráfico de Orçamento
+ */
+
+.budget-chart {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.budget-chart__title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  color: #333;
+}
+
+.budget-chart__content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.budget-chart__donut {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.budget-chart__svg {
+  width: 100%;
+  height: auto;
+  max-width: 200px;
+  max-height: 200px;
+}
+
+.budget-chart__segment {
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.budget-chart__segment:hover {
+  opacity: 0.8;
+}
+
+.budget-chart__legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.budget-chart__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.budget-chart__legend-item:hover {
+  background-color: #f5f5f5;
+}
+
+.budget-chart__legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.budget-chart__legend-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.budget-chart__legend-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.budget-chart__legend-value {
+  font-size: 0.75rem;
+  color: #666;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.budget-chart__legend-percent {
+  font-weight: 600;
+  padding: 0.125rem 0.375rem;
+  border-radius: 3px;
+  font-size: 0.75rem;
+}
+
+.budget-chart__status--ok {
+  color: #28a745;
+}
+
+.budget-chart__status--warning {
+  color: #ffc107;
+}
+
+.budget-chart__status--over {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+.budget-chart__summary {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.budget-chart__summary-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+}
+
+.budget-chart__summary-item span:first-child {
+  color: #666;
+}
+
+.budget-chart__summary-item span:last-child {
+  font-weight: 600;
+  color: #333;
+}
+
+.budget-chart__empty {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #666;
+}
+
+.budget-chart__empty p {
+  margin: 0.5rem 0;
+}
+
+.budget-chart__empty small {
+  font-size: 0.75rem;
+  color: #999;
+}
+
+/* Responsivo */
+@media (min-width: 768px) {
+  .budget-chart__content {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .budget-chart__donut {
+    flex: 0 0 200px;
+  }
+
+  .budget-chart__legend {
+    flex: 1;
+  }
+}
+
+/* Loading state */
+.budget-chart.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.budget-chart.loading::after {
+  content: "Carregando...";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
