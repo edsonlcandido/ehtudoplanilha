@@ -245,18 +245,32 @@ function showNoEntriesMessage(): void {
 /**
  * Renderiza o gráfico de orçamento por categoria
  */
-async function renderBudgetChart(entries: Entry[]): Promise<void> {
+async function renderBudgetChart(entries: Entry[], retryCount: number = 0): Promise<void> {
+  const MAX_RETRIES = 3;
+  
   try {
     console.log('[Dashboard] Carregando categorias completas para gráfico...');
     
     // Verifica se o container existe no DOM
     const chartContainer = document.getElementById('categoryBudgetChart');
     if (!chartContainer) {
-      console.warn('[Dashboard] Container categoryBudgetChart não encontrado no DOM, aguardando...');
-      // Tenta novamente após um pequeno delay para garantir que o DOM está pronto
-      setTimeout(() => renderBudgetChart(entries), 100);
-      return;
+      if (retryCount < MAX_RETRIES) {
+        console.warn(`[Dashboard] Container categoryBudgetChart não encontrado (tentativa ${retryCount + 1}/${MAX_RETRIES}), aguardando...`);
+        // Tenta novamente após um pequeno delay
+        setTimeout(() => renderBudgetChart(entries, retryCount + 1), 200);
+        return;
+      } else {
+        console.warn('[Dashboard] Container categoryBudgetChart não encontrado após múltiplas tentativas. Gráfico não será renderizado.');
+        console.log('[Dashboard] Elementos no DOM:', {
+          aside: document.querySelector('.dashboard__col--right.details'),
+          topCategories: document.querySelector('.details__top-categories'),
+          allDivs: Array.from(document.querySelectorAll('div[id]')).map(d => d.id)
+        });
+        return;
+      }
     }
+    
+    console.log('[Dashboard] Container encontrado, carregando categorias...');
     
     // Busca categorias completas
     const categoriesComplete = await SheetsService.getSheetCategoriesComplete();
@@ -275,7 +289,7 @@ async function renderBudgetChart(entries: Entry[]): Promise<void> {
 
     console.log('[Dashboard] Renderizando gráfico de orçamento...');
     renderCategoryBudgetChart('categoryBudgetChart', chartEntries, categoriesComplete);
-    console.log('[Dashboard] Gráfico de orçamento renderizado');
+    console.log('[Dashboard] ✅ Gráfico de orçamento renderizado com sucesso');
     
   } catch (error) {
     console.error('[Dashboard] Erro ao renderizar gráfico de orçamento:', error);
