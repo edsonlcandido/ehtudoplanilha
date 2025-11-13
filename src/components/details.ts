@@ -20,15 +20,15 @@ const detailsTemplate = `
     </div>
   </div>
 
+  <!-- Gráfico de Despesas por Tipo -->
+  <div id="categoryBudgetChart" style="margin-top:1rem;"></div>
+
   <div class="details__top-categories" style="margin-top:1rem;">
     <h3 class="details__title">Top 10 Gastos por Categoria</h3>
     <div class="category-cards" id="detail-categories-cards">
       <!-- Cards de categorias serão renderizados aqui -->
     </div>
   </div>
-
-  <!-- Gráfico de Despesas por Categoria -->
-  <div id="categoryBudgetChart"></div>
 
   <div class="details__category-entries details__category-entries--hidden" id="detail-entries">
     <h3 class="details__title" id="detail-entries-title">Lançamentos</h3>

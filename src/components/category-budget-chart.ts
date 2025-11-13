@@ -1,6 +1,6 @@
 /**
- * Componente de Gráfico de Despesas por Categoria
- * Exibe gráfico de rosca (donut chart) mostrando distribuição de despesas
+ * Componente de Gráfico de Despesas por Tipo
+ * Exibe gráfico de rosca (donut chart) mostrando distribuição de despesas por TIPO de categoria
  * Ignora: TRANSFERÊNCIA, SALDO, RENDA, RECEITA
  * Usa SVG puro para renderização
  */
@@ -18,7 +18,7 @@ interface CategoryExpenseData {
 }
 
 /**
- * Classe para renderizar gráfico de despesas por categoria
+ * Classe para renderizar gráfico de despesas por tipo
  */
 export class CategoryBudgetChart {
   private container: HTMLElement;
@@ -49,7 +49,7 @@ export class CategoryBudgetChart {
   }
 
   /**
-   * Calcula dados de despesas por categoria
+   * Calcula dados de despesas agrupados por TIPO de categoria
    */
   private calculateExpenseData(): CategoryExpenseData[] {
     // Tipos a ignorar conforme solicitado
@@ -65,29 +65,28 @@ export class CategoryBudgetChart {
       return [];
     }
 
-    // Agrupa por categoria e soma valores
-    const porCategoria = new Map<string, number>();
+    // Agrupa por TIPO e soma valores
+    const porTipo = new Map<string, number>();
     
     for (const entry of despesas) {
-      const categoria = entry.categoria || 'Sem Categoria';
+      const tipo = entry.tipo || 'Sem Tipo';
       const valorAbs = Math.abs(entry.valor);
-      porCategoria.set(categoria, (porCategoria.get(categoria) || 0) + valorAbs);
+      porTipo.set(tipo, (porTipo.get(tipo) || 0) + valorAbs);
     }
 
     // Calcula total para percentuais
-    const total = Array.from(porCategoria.values()).reduce((sum, val) => sum + val, 0);
+    const total = Array.from(porTipo.values()).reduce((sum, val) => sum + val, 0);
 
     // Converte para array e ordena por valor (maior primeiro)
-    const data: CategoryExpenseData[] = Array.from(porCategoria.entries())
-      .map(([categoria, valor]) => ({
-        categoria,
+    const data: CategoryExpenseData[] = Array.from(porTipo.entries())
+      .map(([tipo, valor]) => ({
+        categoria: tipo, // Usando 'categoria' para manter compatibilidade
         valor,
         percentual: (valor / total) * 100
       }))
       .sort((a, b) => b.valor - a.valor);
 
-    // Limita a 10 categorias
-    return data.slice(0, 10);
+    return data;
   }
 
   /**
@@ -96,7 +95,7 @@ export class CategoryBudgetChart {
   private renderEmptyState(): void {
     this.container.innerHTML = `
       <div class="budget-chart">
-        <h3 class="budget-chart__title">Despesas por Categoria</h3>
+        <h3 class="budget-chart__title">Despesas por Tipo</h3>
         <div class="budget-chart__empty">
           <p>Nenhuma despesa encontrada.</p>
           <p><small>Adicione lançamentos de despesas para visualizar o gráfico.</small></p>
@@ -130,7 +129,7 @@ export class CategoryBudgetChart {
 
     this.container.innerHTML = `
       <div class="budget-chart">
-        <h3 class="budget-chart__title">Despesas por Categoria</h3>
+        <h3 class="budget-chart__title">Despesas por Tipo</h3>
         <div class="budget-chart__content">
           <div class="budget-chart__donut">
             ${this.renderDonutChart(displayData)}
@@ -261,7 +260,7 @@ export class CategoryBudgetChart {
 }
 
 /**
- * Cria e renderiza um gráfico de despesas
+ * Cria e renderiza um gráfico de despesas por tipo
  */
 export function renderCategoryBudgetChart(
   containerId: string,

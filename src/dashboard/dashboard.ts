@@ -208,8 +208,8 @@ async function loadAndRenderData(): Promise<void> {
     renderizarCards(allSummaries, budgetsInIntervalMap);
     inicializarDetalhes(entries, budgetsInIntervalList);
 
-    // Renderiza gráfico de orçamento por categoria
-    await renderBudgetChart(entries);
+    // Renderiza gráfico de despesas por tipo usando entries filtrados (ativos)
+    await renderBudgetChart(entriesInInterval);
 
   } catch (error) {
     console.error('Erro ao carregar dados:', error);
