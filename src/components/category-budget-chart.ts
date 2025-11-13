@@ -1,10 +1,9 @@
 /**
- * Componente de Gráfico de Orçamento por Categoria
- * Exibe gráfico de rosca (donut chart) comparando realizado vs planejado
+ * Componente de Gráfico de Despesas por Categoria
+ * Exibe gráfico de rosca (donut chart) mostrando distribuição de despesas
+ * Ignora: TRANSFERÊNCIA, SALDO, RENDA, RECEITA
  * Usa SVG puro para renderização
  */
-
-import type { CategoryComplete } from '../types';
 
 interface ChartEntry {
   categoria: string;
@@ -12,23 +11,19 @@ interface ChartEntry {
   tipo: string;
 }
 
-interface CategoryBudgetData {
+interface CategoryExpenseData {
   categoria: string;
-  tipo: string;
-  orcamento: number;
-  realizado: number;
+  valor: number;
   percentual: number;
-  status: 'ok' | 'warning' | 'over';
 }
 
 /**
- * Classe para renderizar gráfico de orçamento por categoria
+ * Classe para renderizar gráfico de despesas por categoria
  */
 export class CategoryBudgetChart {
   private container: HTMLElement;
   private entries: ChartEntry[] = [];
-  private categoriesComplete: CategoryComplete[] = [];
-  private chartData: CategoryBudgetData[] = [];
+  private chartData: CategoryExpenseData[] = [];
 
   constructor(containerId: string) {
     const element = document.getElementById(containerId);
@@ -41,10 +36,9 @@ export class CategoryBudgetChart {
   /**
    * Atualiza os dados e renderiza o gráfico
    */
-  render(entries: ChartEntry[], categoriesComplete: CategoryComplete[]): void {
+  render(entries: ChartEntry[]): void {
     this.entries = entries;
-    this.categoriesComplete = categoriesComplete;
-    this.chartData = this.calculateBudgetData();
+    this.chartData = this.calculateExpenseData();
     
     if (this.chartData.length === 0) {
       this.renderEmptyState();
@@ -55,57 +49,45 @@ export class CategoryBudgetChart {
   }
 
   /**
-   * Calcula dados de orçamento vs realizado
+   * Calcula dados de despesas por categoria
    */
-  private calculateBudgetData(): CategoryBudgetData[] {
-    const data: CategoryBudgetData[] = [];
+  private calculateExpenseData(): CategoryExpenseData[] {
+    // Tipos a ignorar conforme solicitado
+    const tiposIgnorados = ['TRANSFERÊNCIA', 'TRANSFERENCIA', 'SALDO', 'RENDA', 'RECEITA'];
+    
+    // Filtra apenas despesas válidas (valores negativos, não nos tipos ignorados)
+    const despesas = this.entries.filter(e => {
+      const tipoUpper = e.tipo.toUpperCase().trim();
+      return !tiposIgnorados.includes(tipoUpper) && e.valor < 0;
+    });
 
-    // Filtra apenas categorias do tipo DESPESA com orçamento > 0
-    const categoriesWithBudget = this.categoriesComplete.filter(
-      cat => cat.tipo.toUpperCase() === 'DESPESA' && cat.orcamento > 0
-    );
-
-    if (categoriesWithBudget.length === 0) {
+    if (despesas.length === 0) {
       return [];
     }
 
-    // Para cada categoria com orçamento, calcula o realizado
-    for (const category of categoriesWithBudget) {
-      // Soma todos os valores (negativos) dessa categoria
-      const realizado = Math.abs(
-        this.entries
-          .filter(e => 
-            e.categoria === category.categoria && 
-            e.tipo.toUpperCase() === 'DESPESA'
-          )
-          .reduce((sum, e) => sum + Math.abs(e.valor), 0)
-      );
-
-      const percentual = category.orcamento > 0 
-        ? (realizado / category.orcamento) * 100 
-        : 0;
-
-      let status: 'ok' | 'warning' | 'over' = 'ok';
-      if (percentual >= 100) {
-        status = 'over';
-      } else if (percentual >= 80) {
-        status = 'warning';
-      }
-
-      data.push({
-        categoria: category.categoria,
-        tipo: category.tipo,
-        orcamento: category.orcamento,
-        realizado,
-        percentual,
-        status
-      });
+    // Agrupa por categoria e soma valores
+    const porCategoria = new Map<string, number>();
+    
+    for (const entry of despesas) {
+      const categoria = entry.categoria || 'Sem Categoria';
+      const valorAbs = Math.abs(entry.valor);
+      porCategoria.set(categoria, (porCategoria.get(categoria) || 0) + valorAbs);
     }
 
-    // Ordena por percentual usado (maior primeiro)
-    data.sort((a, b) => b.percentual - a.percentual);
+    // Calcula total para percentuais
+    const total = Array.from(porCategoria.values()).reduce((sum, val) => sum + val, 0);
 
-    return data;
+    // Converte para array e ordena por valor (maior primeiro)
+    const data: CategoryExpenseData[] = Array.from(porCategoria.entries())
+      .map(([categoria, valor]) => ({
+        categoria,
+        valor,
+        percentual: (valor / total) * 100
+      }))
+      .sort((a, b) => b.valor - a.valor);
+
+    // Limita a 10 categorias
+    return data.slice(0, 10);
   }
 
   /**
@@ -114,10 +96,10 @@ export class CategoryBudgetChart {
   private renderEmptyState(): void {
     this.container.innerHTML = `
       <div class="budget-chart">
-        <h3 class="budget-chart__title">Orçamento por Categoria</h3>
+        <h3 class="budget-chart__title">Despesas por Categoria</h3>
         <div class="budget-chart__empty">
-          <p>Nenhuma categoria com orçamento definido.</p>
-          <p><small>Configure orçamentos na aba CATEGORIAS da planilha.</small></p>
+          <p>Nenhuma despesa encontrada.</p>
+          <p><small>Adicione lançamentos de despesas para visualizar o gráfico.</small></p>
         </div>
       </div>
     `;
@@ -127,12 +109,10 @@ export class CategoryBudgetChart {
    * Renderiza o gráfico completo
    */
   private renderChart(): void {
-    // Limita a 10 categorias para não poluir o gráfico
-    const displayData = this.chartData.slice(0, 10);
+    const displayData = this.chartData;
     
     const legendHTML = displayData.map((item, index) => {
       const color = this.getColor(index);
-      const statusClass = `budget-chart__status--${item.status}`;
       
       return `
         <div class="budget-chart__legend-item">
@@ -140,12 +120,8 @@ export class CategoryBudgetChart {
           <div class="budget-chart__legend-content">
             <div class="budget-chart__legend-label">${item.categoria}</div>
             <div class="budget-chart__legend-value">
-              <span class="${statusClass}">
-                R$ ${item.realizado.toFixed(2)} / R$ ${item.orcamento.toFixed(2)}
-              </span>
-              <span class="budget-chart__legend-percent ${statusClass}">
-                ${item.percentual.toFixed(0)}%
-              </span>
+              <span>R$ ${item.valor.toFixed(2)}</span>
+              <span class="budget-chart__legend-percent">${item.percentual.toFixed(1)}%</span>
             </div>
           </div>
         </div>
@@ -154,7 +130,7 @@ export class CategoryBudgetChart {
 
     this.container.innerHTML = `
       <div class="budget-chart">
-        <h3 class="budget-chart__title">Orçamento por Categoria</h3>
+        <h3 class="budget-chart__title">Despesas por Categoria</h3>
         <div class="budget-chart__content">
           <div class="budget-chart__donut">
             ${this.renderDonutChart(displayData)}
@@ -165,12 +141,8 @@ export class CategoryBudgetChart {
         </div>
         <div class="budget-chart__summary">
           <div class="budget-chart__summary-item">
-            <span>Total Orçado:</span>
-            <span>R$ ${displayData.reduce((sum, d) => sum + d.orcamento, 0).toFixed(2)}</span>
-          </div>
-          <div class="budget-chart__summary-item">
-            <span>Total Realizado:</span>
-            <span>R$ ${displayData.reduce((sum, d) => sum + d.realizado, 0).toFixed(2)}</span>
+            <span>Total de Despesas:</span>
+            <span>R$ ${displayData.reduce((sum, d) => sum + d.valor, 0).toFixed(2)}</span>
           </div>
         </div>
       </div>
@@ -180,23 +152,23 @@ export class CategoryBudgetChart {
   /**
    * Renderiza o gráfico de rosca em SVG
    */
-  private renderDonutChart(data: CategoryBudgetData[]): string {
+  private renderDonutChart(data: CategoryExpenseData[]): string {
     const size = 200;
     const strokeWidth = 30;
     const radius = (size - strokeWidth) / 2;
     const centerX = size / 2;
     const centerY = size / 2;
 
-    // Calcula o total de orçamento
-    const totalBudget = data.reduce((sum, d) => sum + d.orcamento, 0);
+    // Calcula o total de despesas
+    const totalExpense = data.reduce((sum, d) => sum + d.valor, 0);
     
-    if (totalBudget === 0) {
-      return '<p>Sem dados de orçamento</p>';
+    if (totalExpense === 0) {
+      return '<p>Sem dados de despesas</p>';
     }
 
     let currentAngle = -90; // Começa no topo
     const segments = data.map((item, index) => {
-      const percentage = (item.orcamento / totalBudget) * 100;
+      const percentage = (item.valor / totalExpense) * 100;
       const angle = (percentage / 100) * 360;
       
       // Calcula o arco SVG
@@ -231,10 +203,9 @@ export class CategoryBudgetChart {
           stroke-width="2"
           class="budget-chart__segment"
           data-category="${item.categoria}"
-          data-value="${item.realizado.toFixed(2)}"
-          data-budget="${item.orcamento.toFixed(2)}"
+          data-value="${item.valor.toFixed(2)}"
         >
-          <title>${item.categoria}: R$ ${item.realizado.toFixed(2)} / R$ ${item.orcamento.toFixed(2)} (${item.percentual.toFixed(0)}%)</title>
+          <title>${item.categoria}: R$ ${item.valor.toFixed(2)} (${item.percentual.toFixed(1)}%)</title>
         </path>
       `;
     }).join('');
@@ -290,14 +261,13 @@ export class CategoryBudgetChart {
 }
 
 /**
- * Cria e renderiza um gráfico de orçamento
+ * Cria e renderiza um gráfico de despesas
  */
 export function renderCategoryBudgetChart(
   containerId: string,
-  entries: ChartEntry[],
-  categoriesComplete: CategoryComplete[]
+  entries: ChartEntry[]
 ): CategoryBudgetChart {
   const chart = new CategoryBudgetChart(containerId);
-  chart.render(entries, categoriesComplete);
+  chart.render(entries);
   return chart;
 }

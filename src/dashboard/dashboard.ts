@@ -27,7 +27,6 @@ import {
   type BudgetInfo
 } from '../utils/sheet-entries';
 import lancamentosService from '../services/lancamentos';
-import { SheetsService } from '../services/sheets';
 import { renderCategoryBudgetChart } from '../components/category-budget-chart';
 
 // ============================================================================
@@ -243,13 +242,13 @@ function showNoEntriesMessage(): void {
 }
 
 /**
- * Renderiza o gráfico de orçamento por categoria
+ * Renderiza o gráfico de despesas por categoria
  */
 async function renderBudgetChart(entries: Entry[], retryCount: number = 0): Promise<void> {
   const MAX_RETRIES = 3;
   
   try {
-    console.log('[Dashboard] Carregando categorias completas para gráfico...');
+    console.log('[Dashboard] Preparando gráfico de despesas...');
     
     // Verifica se o container existe no DOM
     const chartContainer = document.getElementById('categoryBudgetChart');
@@ -270,15 +269,7 @@ async function renderBudgetChart(entries: Entry[], retryCount: number = 0): Prom
       }
     }
     
-    console.log('[Dashboard] Container encontrado, carregando categorias...');
-    
-    // Busca categorias completas
-    const categoriesComplete = await SheetsService.getSheetCategoriesComplete();
-    
-    if (!categoriesComplete || categoriesComplete.length === 0) {
-      console.log('[Dashboard] Nenhuma categoria completa encontrada');
-      return;
-    }
+    console.log('[Dashboard] Container encontrado, preparando dados...');
 
     // Converte entries para o formato esperado pelo chart
     const chartEntries = entries.map(e => ({
@@ -287,12 +278,12 @@ async function renderBudgetChart(entries: Entry[], retryCount: number = 0): Prom
       tipo: (e as any).tipo || ''
     }));
 
-    console.log('[Dashboard] Renderizando gráfico de orçamento...');
-    renderCategoryBudgetChart('categoryBudgetChart', chartEntries, categoriesComplete);
-    console.log('[Dashboard] ✅ Gráfico de orçamento renderizado com sucesso');
+    console.log('[Dashboard] Renderizando gráfico de despesas...');
+    renderCategoryBudgetChart('categoryBudgetChart', chartEntries);
+    console.log('[Dashboard] ✅ Gráfico de despesas renderizado com sucesso');
     
   } catch (error) {
-    console.error('[Dashboard] Erro ao renderizar gráfico de orçamento:', error);
+    console.error('[Dashboard] Erro ao renderizar gráfico de despesas:', error);
     // Não quebra o dashboard se o gráfico falhar
   }
 }
