@@ -249,6 +249,15 @@ async function renderBudgetChart(entries: Entry[]): Promise<void> {
   try {
     console.log('[Dashboard] Carregando categorias completas para gráfico...');
     
+    // Verifica se o container existe no DOM
+    const chartContainer = document.getElementById('categoryBudgetChart');
+    if (!chartContainer) {
+      console.warn('[Dashboard] Container categoryBudgetChart não encontrado no DOM, aguardando...');
+      // Tenta novamente após um pequeno delay para garantir que o DOM está pronto
+      setTimeout(() => renderBudgetChart(entries), 100);
+      return;
+    }
+    
     // Busca categorias completas
     const categoriesComplete = await SheetsService.getSheetCategoriesComplete();
     
