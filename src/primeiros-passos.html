@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia de Primeiros Passos - Planilha Eh Tudo</title>
+    <meta name="description"
+        content="Aprenda a usar o Planilha Eh Tudo em poucos minutos. Guia completo sobre as abas LANCAMENTOS e CATEGORIAS.">
+    <link rel="stylesheet" href="./css/main.css">
+    <link rel="stylesheet" href="./css/pages/landing.css">
+    <link rel="stylesheet" href="./css/pages/guia.css">
+</head>
+
+<body>
+    <nav>
+        <a href="/" class="brand">
+            <span>Planilha Eh Tudo</span>
+        </a>
+
+        <!-- responsive-->
+        <input id="bmenub" type="checkbox" class="show">
+        <label for="bmenub" class="burger pseudo button">menu</label>
+
+        <div class="menu user-menu" id="menu-user" role="menubar" aria-label="Menu do usuário"></div>
+    </nav>
+
+    <header class="guia-hero">
+        <div class="container">
+            <h1>🚀 Guia de Primeiros Passos</h1>
+            <p>Aprenda a dominar sua planilha financeira em minutos</p>
+        </div>
+    </header>
+
+    <main class="section section-light">
+        <div class="container">
+            <div class="text-center" style="margin-bottom: 3rem;">
+                <p style="font-size: 1.2rem; max-width: 800px; margin: 0 auto;">
+                    Bem-vindo! Este guia vai te mostrar como aproveitar ao máximo a combinação de planilha + app. 
+                    Você vai entender como as abas <strong>LANCAMENTOS</strong> e <strong>CATEGORIAS</strong> funcionam 
+                    e como usar ambas as ferramentas no dia a dia.
+                </p>
+            </div>
+
+            <!-- Passo 1 -->
+            <div class="step-section">
+                <div class="step-header">
+                    <div class="step-number">1</div>
+                    <div>
+                        <h2 style="margin: 0;">Conheça sua planilha</h2>
+                    </div>
+                </div>
+                <div class="step-content">
+                    <p>
+                        Quando você se cadastra, criamos automaticamente uma planilha modelo no seu Google Drive 
+                        com duas abas principais:
+                    </p>
+
+                    <div class="sheet-structure">
+                        <h4>📊 Aba LANCAMENTOS</h4>
+                        <p>É onde todos os seus gastos e receitas ficam registrados. Cada linha é um lançamento com as seguintes colunas:</p>
+                        <ul>
+                            <li><code>Data</code> - Quando o gasto/receita aconteceu (ex: 15/01/2025)</li>
+                            <li><code>Conta</code> - De onde saiu o dinheiro (ex: Cartão Itaú, Dinheiro, Conta Corrente)</li>
+                            <li><code>Valor</code> - Quanto foi (negativo para gastos, positivo para receitas)</li>
+                            <li><code>Descrição</code> - O que foi (ex: Compras mercado, Salário, Gasolina)</li>
+                            <li><code>Categoria</code> - Tipo do gasto (ex: Alimentação, Transporte, Moradia)</li>
+                            <li><code>Observações</code> - Detalhes extras (opcional)</li>
+                            <li><code>Conciliado</code> - Para marcar se já conferiu com extrato (opcional)</li>
+                        </ul>
+                    </div>
+
+                    <div class="sheet-structure">
+                        <h4>🏷️ Aba CATEGORIAS</h4>
+                        <p>É sua lista de categorias personalizadas. Você define quais categorias fazem sentido para você:</p>
+                        <ul>
+                            <li>Alimentação</li>
+                            <li>Transporte</li>
+                            <li>Moradia</li>
+                            <li>Lazer</li>
+                            <li>Saúde</li>
+                            <li>E qualquer outra que você precisar!</li>
+                        </ul>
+                    </div>
+
+                    <div class="tip-box">
+                        <strong>💡 Dica:</strong> A planilha é totalmente sua! Você pode adicionar mais abas, 
+                        criar fórmulas, fazer dashboards personalizados. Nosso app apenas escreve na aba LANCAMENTOS.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Passo 2 -->
+            <div class="step-section">
+                <div class="step-header">
+                    <div class="step-number">2</div>
+                    <div>
+                        <h2 style="margin: 0;">Configure suas categorias</h2>
+                    </div>
+                </div>
+                <div class="step-content">
+                    <p>
+                        Antes de começar a lançar gastos, configure as categorias que fazem sentido para sua vida financeira:
+                    </p>
+
+                    <h4>Como adicionar categorias:</h4>
+                    <ol>
+                        <li>Abra sua planilha no Google Sheets</li>
+                        <li>Vá para a aba <strong>CATEGORIAS</strong></li>
+                        <li>Adicione suas categorias, uma por linha</li>
+                        <li>Pronto! Elas aparecerão automaticamente no app</li>
+                    </ol>
+
+                    <div class="example-box">
+                        <h4>📝 Exemplo de Categorias</h4>
+                        <p>Sugestões para começar:</p>
+                        <ul>
+                            <li><strong>Alimentação</strong> - Supermercado, restaurantes, delivery</li>
+                            <li><strong>Transporte</strong> - Gasolina, Uber, ônibus, metrô</li>
+                            <li><strong>Moradia</strong> - Aluguel, condomínio, luz, água, internet</li>
+                            <li><strong>Lazer</strong> - Cinema, shows, viagens, hobbies</li>
+                            <li><strong>Saúde</strong> - Farmácia, médicos, plano de saúde</li>
+                            <li><strong>Educação</strong> - Cursos, livros, material escolar</li>
+                            <li><strong>Vestuário</strong> - Roupas, calçados, acessórios</li>
+                            <li><strong>Outros</strong> - Para gastos que não se encaixam</li>
+                        </ul>
+                    </div>
+
+                    <div class="tip-box">
+                        <strong>💡 Dica:</strong> Comece com poucas categorias (5-8) e vá refinando com o tempo. 
+                        Categorias demais podem complicar mais do que ajudar.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Passo 3 -->
+            <div class="step-section">
+                <div class="step-header">
+                    <div class="step-number">3</div>
+                    <div>
+                        <h2 style="margin: 0;">Faça lançamentos na planilha</h2>
+                    </div>
+                </div>
+                <div class="step-content">
+                    <p>
+                        Você pode lançar gastos diretamente na planilha quando estiver no computador 
+                        ou quando quiser fazer algo mais específico:
+                    </p>
+
+                    <h4>Lançamento completo (com data e conta):</h4>
+                    <p>Use quando o gasto já aconteceu e você quer registrar tudo:</p>
+                    
+                    <div class="example-box">
+                        <h4>📝 Exemplo 1: Compra no mercado</h4>
+                        <p>Você gastou R$ 150,00 no mercado hoje e pagou com cartão:</p>
+                        <ul>
+                            <li><strong>Data:</strong> 15/01/2025 (ou =HOJE())</li>
+                            <li><strong>Conta:</strong> Cartão Itaú</li>
+                            <li><strong>Valor:</strong> -150,00</li>
+                            <li><strong>Descrição:</strong> Compras mercado</li>
+                            <li><strong>Categoria:</strong> Alimentação</li>
+                        </ul>
+                    </div>
+
+                    <h4>Lançamento futuro (sem data/conta - para planejamento):</h4>
+                    <p>Use quando quiser planejar um gasto que ainda não aconteceu:</p>
+
+                    <div class="example-box">
+                        <h4>📝 Exemplo 2: Planejando ir ao cinema</h4>
+                        <p>Você quer reservar R$ 80,00 para ir ao cinema no fim de semana:</p>
+                        <ul>
+                            <li><strong>Data:</strong> (deixe vazio)</li>
+                            <li><strong>Conta:</strong> (deixe vazio)</li>
+                            <li><strong>Valor:</strong> -80,00</li>
+                            <li><strong>Descrição:</strong> Cinema</li>
+                            <li><strong>Categoria:</strong> Lazer</li>
+                        </ul>
+                        <p style="margin-top: 0.5rem;">
+                            <em>Depois, quando for realmente, preencha a data e conta!</em>
+                        </p>
+                    </div>
+
+                    <h4>Editando e apagando lançamentos:</h4>
+                    <p>A grande vantagem da planilha é a flexibilidade:</p>
+                    <ul>
+                        <li><strong>Para editar:</strong> Simplesmente clique na célula e altere o valor</li>
+                        <li><strong>Para apagar:</strong> Selecione a linha inteira e pressione Delete ou Ctrl+X</li>
+                        <li><strong>Para copiar lançamentos:</strong> Selecione as células, copie (Ctrl+C) e cole (Ctrl+V)</li>
+                    </ul>
+
+                    <div class="tip-box">
+                        <strong>💡 Dica:</strong> Use valores negativos para gastos (ex: -150,00) e positivos 
+                        para receitas (ex: 5000,00). Isso facilita fórmulas de soma automática.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Passo 4 -->
+            <div class="step-section">
+                <div class="step-header">
+                    <div class="step-number">4</div>
+                    <div>
+                        <h2 style="margin: 0;">Use o app para agilidade</h2>
+                    </div>
+                </div>
+                <div class="step-content">
+                    <p>
+                        O app é perfeito para quando você está fora de casa e precisa lançar um gasto rapidamente:
+                    </p>
+
+                    <h4>Como funciona no app:</h4>
+                    <ol>
+                        <li>Abra o app no celular ou navegador</li>
+                        <li>Clique em "Novo Lançamento" ou no botão +</li>
+                        <li>Preencha os campos principais</li>
+                        <li>Clique em "Salvar"</li>
+                        <li>Pronto! O lançamento vai direto para a aba LANCAMENTOS da sua planilha</li>
+                    </ol>
+
+                    <div class="example-box">
+                        <h4>📱 Exemplo 3: Lançamento rápido no mercado</h4>
+                        <p><strong>Situação:</strong> Você está na fila do mercado e quer lançar o gasto na hora</p>
+                        <p><strong>No app (5 segundos):</strong></p>
+                        <ul>
+                            <li>Abre o app</li>
+                            <li>Preenche: Valor -150, Conta "Cartão Itaú", Categoria "Alimentação"</li>
+                            <li>Clica em Salvar</li>
+                        </ul>
+                        <p><strong>Na planilha (seria mais demorado):</strong></p>
+                        <ul>
+                            <li>Abrir Google Sheets no celular</li>
+                            <li>Encontrar a planilha</li>
+                            <li>Navegar até a aba LANCAMENTOS</li>
+                            <li>Encontrar a primeira linha vazia</li>
+                            <li>Preencher células uma por uma</li>
+                        </ul>
+                    </div>
+
+                    <h4>Recursos exclusivos do app:</h4>
+                    <ul>
+                        <li>📸 <strong>OCR de comprovantes:</strong> Tire foto do cupom fiscal e o app extrai os dados automaticamente</li>
+                        <li>⚡ <strong>Sugestões inteligentes:</strong> Categorias são sugeridas com base no histórico</li>
+                        <li>💳 <strong>Saldo das contas:</strong> Veja rapidamente quanto tem em cada conta</li>
+                        <li>📊 <strong>Resumos rápidos:</strong> Gastos do mês em um clique</li>
+                    </ul>
+
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Situação</th>
+                                <th>Melhor ferramenta</th>
+                                <th>Por quê</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Lançar gasto rápido no celular</td>
+                                <td><strong>App</strong></td>
+                                <td>Interface otimizada e OCR automático</td>
+                            </tr>
+                            <tr>
+                                <td>Planejar gastos futuros</td>
+                                <td><strong>Planilha</strong></td>
+                                <td>Deixar campos vazios e preencher depois</td>
+                            </tr>
+                            <tr>
+                                <td>Editar vários lançamentos</td>
+                                <td><strong>Planilha</strong></td>
+                                <td>Copiar, colar, editar em massa</td>
+                            </tr>
+                            <tr>
+                                <td>Análises e dashboards</td>
+                                <td><strong>Planilha</strong></td>
+                                <td>Fórmulas, gráficos e tabelas dinâmicas</td>
+                            </tr>
+                            <tr>
+                                <td>Ver saldo rápido das contas</td>
+                                <td><strong>App</strong></td>
+                                <td>Visualização instantânea</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Passo 5 -->
+            <div class="step-section">
+                <div class="step-header">
+                    <div class="step-number">5</div>
+                    <div>
+                        <h2 style="margin: 0;">Dicas de uso avançado</h2>
+                    </div>
+                </div>
+                <div class="step-content">
+                    <h4>Fórmulas úteis na planilha:</h4>
+                    
+                    <div class="sheet-structure">
+                        <p><strong>Total de gastos do mês:</strong></p>
+                        <code>=SUMIFS(C:C, A:A, ">=01/01/2025", A:A, "<=31/01/2025", C:C, "<0")</code>
+                    </div>
+
+                    <div class="sheet-structure">
+                        <p><strong>Gastos por categoria:</strong></p>
+                        <code>=SUMIF(E:E, "Alimentação", C:C)</code>
+                    </div>
+
+                    <div class="sheet-structure">
+                        <p><strong>Saldo de uma conta específica:</strong></p>
+                        <code>=SUMIF(B:B, "Cartão Itaú", C:C)</code>
+                    </div>
+
+                    <h4 style="margin-top: 2rem;">Como usar ambos no dia a dia:</h4>
+                    
+                    <div class="example-box">
+                        <h4>🎯 Rotina sugerida</h4>
+                        <ol>
+                            <li><strong>Durante o dia:</strong> Use o app para lançar gastos rapidamente sempre que acontecerem</li>
+                            <li><strong>Fim de semana:</strong> Abra a planilha para:
+                                <ul>
+                                    <li>Revisar todos os lançamentos da semana</li>
+                                    <li>Fazer correções se necessário</li>
+                                    <li>Planejar gastos da próxima semana</li>
+                                    <li>Analisar dashboards e gráficos</li>
+                                </ul>
+                            </li>
+                            <li><strong>Fim do mês:</strong> Análise completa na planilha:
+                                <ul>
+                                    <li>Categorias que mais gastou</li>
+                                    <li>Saldo final de cada conta</li>
+                                    <li>Comparar com mês anterior</li>
+                                    <li>Planejar metas para próximo mês</li>
+                                </ul>
+                            </li>
+                        </ol>
+                    </div>
+
+                    <h4 style="margin-top: 2rem;">Personalizações avançadas:</h4>
+                    <ul>
+                        <li>Crie uma aba "DASHBOARD" com gráficos de pizza mostrando gastos por categoria</li>
+                        <li>Use formatação condicional para destacar gastos acima de certo valor</li>
+                        <li>Adicione uma coluna "Tags" para classificações extras além de categoria</li>
+                        <li>Crie uma aba "METAS" para acompanhar objetivos financeiros</li>
+                        <li>Use validação de dados para garantir consistência nas categorias</li>
+                    </ul>
+
+                    <div class="tip-box">
+                        <strong>💡 Lembre-se:</strong> A planilha é 100% sua. Você pode modificar tudo, 
+                        exceto a estrutura das colunas da aba LANCAMENTOS (para o app continuar funcionando). 
+                        Mas pode adicionar colunas extras sem problema!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conclusão -->
+            <div class="text-center" style="margin-top: 3rem; padding: 2rem; background: #f8f9fa; border-radius: 8px;">
+                <h2>🎉 Pronto para começar?</h2>
+                <p style="font-size: 1.1rem; margin-bottom: 2rem;">
+                    Agora você sabe tudo sobre como usar o Planilha Eh Tudo! 
+                    Lembre-se: não existe jeito certo ou errado - use as ferramentas da forma que fizer mais sentido para você.
+                </p>
+                <a href="registro.html" class="button primary large" style="margin-right: 1rem;">Criar minha conta grátis</a>
+                <a href="/" class="button">Voltar para página inicial</a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-nav" role="navigation" aria-label="Links institucionais">
+                <ul class="footer-links">
+                    <li><a href="primeiros-passos.html">Guia de Primeiros Passos</a></li>
+                    <li><a href="prints.html">Prints & Recursos</a></li>
+                    <li><a href="privacidade.html">Política de Privacidade</a></li>
+                    <li><a href="termos.html">Termos de Uso</a></li>
+                    <li><a href="mailto:planilha@ehtudo.app">Contato</a></li>
+                </ul>
+            </div>
+            <p>&copy; 2025 Planilha Eh Tudo. Flexibilidade com velocidade.</p>
+            <p><small>Produzido por <a href="https://www.ehtudo.app">Eh!Tudo.app</a></small></p>
+        </div>
+    </footer>
+
+    <script type="module" src="/main.ts"></script>
+    <script type="module" src="/index.ts"></script>
+</body>
+
+</html>
