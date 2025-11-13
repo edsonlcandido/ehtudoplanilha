@@ -27,6 +27,7 @@ import {
   type BudgetInfo
 } from '../utils/sheet-entries';
 import lancamentosService from '../services/lancamentos';
+import { SheetsService } from '../services/sheets';
 import { renderCategoryBudgetChart } from '../components/category-budget-chart';
 
 // ============================================================================
@@ -242,7 +243,7 @@ function showNoEntriesMessage(): void {
 }
 
 /**
- * Renderiza o gráfico de despesas por categoria
+ * Renderiza o gráfico de despesas por tipo de categoria (via JOIN com categoriesComplete)
  */
 async function renderBudgetChart(entries: Entry[], retryCount: number = 0): Promise<void> {
   const MAX_RETRIES = 3;
@@ -269,13 +270,30 @@ async function renderBudgetChart(entries: Entry[], retryCount: number = 0): Prom
       }
     }
     
-    console.log('[Dashboard] Container encontrado, preparando dados...');
+    console.log('[Dashboard] Container encontrado, carregando categorias completas...');
 
-    // Converte entries para o formato esperado pelo chart
+    // Carrega categorias completas para fazer JOIN
+    const categoriesComplete = await SheetsService.getSheetCategoriesComplete();
+    
+    if (!categoriesComplete || categoriesComplete.length === 0) {
+      console.log('[Dashboard] Nenhuma categoria completa encontrada');
+      return;
+    }
+
+    console.log('[Dashboard] Fazendo JOIN entre entries e categoriesComplete...');
+
+    // Cria mapa de categoria -> tipo para JOIN eficiente
+    const categoriaTipoMap = new Map<string, string>();
+    for (const cat of categoriesComplete) {
+      categoriaTipoMap.set(cat.categoria, cat.tipo);
+    }
+
+    // Faz JOIN: adiciona campo tipo de categoriesComplete aos entries
     const chartEntries = entries.map(e => ({
       categoria: (e as any).categoria || '',
       valor: (e as any).valor || 0,
-      tipo: (e as any).tipo || ''
+      // TIPO vem do JOIN com categoriesComplete, não do entry original
+      tipo: categoriaTipoMap.get((e as any).categoria) || 'Sem Tipo'
     }));
 
     console.log('[Dashboard] Renderizando gráfico de despesas...');
