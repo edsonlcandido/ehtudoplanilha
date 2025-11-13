@@ -27,6 +27,9 @@ const detailsTemplate = `
     </div>
   </div>
 
+  <!-- Gráfico de Despesas por Categoria -->
+  <div id="categoryBudgetChart"></div>
+
   <div class="details__category-entries details__category-entries--hidden" id="detail-entries">
     <h3 class="details__title" id="detail-entries-title">Lançamentos</h3>
     <div class="category-entries-list" id="entries-list">
