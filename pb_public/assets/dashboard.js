@@ -1,47 +1,112 @@
-import{v as k,p as I,A as F}from"./auth.js";import"./sheets.js";import{e as N,t as S,a as q,g as A,i as D,b as H,c as R,d as z,l as V,o as O,f as P,h as j}from"./fab-menu.js";import{r as G}from"./user-menu.js";function E(a){return Number(a).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}let T=[],w={};function U(a,e){const r=document.getElementById("summaryCards");if(!r)return;T=a||[],w=e||{};const s=T.slice().sort((t,o)=>o.orcamento-t.orcamento);r.className="financial-cards",r.innerHTML="",s.forEach(t=>{w[t.label]===!0?r.appendChild(W(t)):r.appendChild(J(t))}),r.querySelectorAll(".financial-card--inactive").forEach(t=>{const o=t;o.style.cursor="pointer",o.addEventListener("click",L)}),r.querySelectorAll(".financial-card__close").forEach(t=>{t.addEventListener("click",$)})}function W(a){const e=document.createElement("div"),r=a.sum>=0?"financial-card--incomes":"financial-card--expenses";return e.className=`financial-card ${r}`,e.dataset.budget=a.label,e.dataset.sum=String(a.sum),e.dataset.incomes=String(a.incomes),e.dataset.expenses=String(a.expenses),e.dataset.orcamento=String(a.orcamento),e.innerHTML=`
-    <button class="financial-card__close" aria-label="Fechar cartão" data-budget="${a.label}">✕</button>
+var P=Object.defineProperty;var O=(t,e,n)=>e in t?P(t,e,{enumerable:!0,configurable:!0,writable:!0,value:n}):t[e]=n;var w=(t,e,n)=>O(t,typeof e!="symbol"?e+"":e,n);import{v as V,p as A,A as X}from"./auth.js";import{SheetsService as j}from"./sheets.js";import{e as M,t as $,a as R,g as G,i as Y,b as U,c as W,d as J,l as Z,o as K,f as Q,h as ee}from"./fab-menu.js";import{r as te}from"./user-menu.js";function S(t){return Number(t).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}let x=[],D={};function ae(t,e){const n=document.getElementById("summaryCards");if(!n)return;x=t||[],D=e||{};const i=x.slice().sort((a,s)=>s.orcamento-a.orcamento);n.className="financial-cards",n.innerHTML="",i.forEach(a=>{D[a.label]===!0?n.appendChild(ne(a)):n.appendChild(re(a))}),n.querySelectorAll(".financial-card--inactive").forEach(a=>{const s=a;s.style.cursor="pointer",s.addEventListener("click",N)}),n.querySelectorAll(".financial-card__close").forEach(a=>{a.addEventListener("click",q)})}function ne(t){const e=document.createElement("div"),n=t.sum>=0?"financial-card--incomes":"financial-card--expenses";return e.className=`financial-card ${n}`,e.dataset.budget=t.label,e.dataset.sum=String(t.sum),e.dataset.incomes=String(t.incomes),e.dataset.expenses=String(t.expenses),e.dataset.orcamento=String(t.orcamento),e.innerHTML=`
+    <button class="financial-card__close" aria-label="Fechar cartão" data-budget="${t.label}">✕</button>
     <div class="financial-card__header">
-      <h3 class="financial-card__title">${a.label}</h3>
+      <h3 class="financial-card__title">${t.label}</h3>
     </div>
-    <div class="financial-card__value">${E(a.sum)}</div>
+    <div class="financial-card__value">${S(t.sum)}</div>
 
     <div class="financial-card__actions">
       <button class="financial-card__toggle button pseudo" aria-expanded="false">Mostrar detalhes</button>
     </div>
 
     <div class="financial-card__details financial-card__details--hidden">
-      <div class="financial-card__detail">Receitas: ${E(a.incomes)}</div>
-      <div class="financial-card__detail">Despesas: ${E(a.expenses)}</div>
+      <div class="financial-card__detail">Receitas: ${S(t.incomes)}</div>
+      <div class="financial-card__detail">Despesas: ${S(t.expenses)}</div>
     </div>
-  `,e}function J(a){const e=document.createElement("div");return e.className="financial-card financial-card--inactive",e.dataset.budget=a.label,e.dataset.sum=String(a.sum),e.dataset.incomes=String(a.incomes),e.dataset.expenses=String(a.expenses),e.dataset.orcamento=String(a.orcamento),e.innerHTML=`
-    <div class="financial-card__title">${a.label}</div>
+  `,e}function re(t){const e=document.createElement("div");return e.className="financial-card financial-card--inactive",e.dataset.budget=t.label,e.dataset.sum=String(t.sum),e.dataset.incomes=String(t.incomes),e.dataset.expenses=String(t.expenses),e.dataset.orcamento=String(t.orcamento),e.innerHTML=`
+    <div class="financial-card__title">${t.label}</div>
     <div class="financial-card__value">...</div>
-  `,e}function L(){const a=this.dataset.budget,e=parseFloat(this.dataset.sum),r=parseFloat(this.dataset.incomes),s=parseFloat(this.dataset.expenses),n=Number(this.dataset.orcamento);this.classList.remove("financial-card--inactive");const c=e>=0?"financial-card--incomes":"financial-card--expenses";this.classList.add(c),this.style.cursor="default",this.innerHTML=`
-    <button class="financial-card__close" aria-label="Fechar cartão" data-budget="${a}">✕</button>
+  `,e}function N(){const t=this.dataset.budget,e=parseFloat(this.dataset.sum),n=parseFloat(this.dataset.incomes),i=parseFloat(this.dataset.expenses),r=Number(this.dataset.orcamento);this.classList.remove("financial-card--inactive");const o=e>=0?"financial-card--incomes":"financial-card--expenses";this.classList.add(o),this.style.cursor="default",this.innerHTML=`
+    <button class="financial-card__close" aria-label="Fechar cartão" data-budget="${t}">✕</button>
     <div class="financial-card__header">
-      <h3 class="financial-card__title">${a}</h3>
+      <h3 class="financial-card__title">${t}</h3>
     </div>
-    <div class="financial-card__value">${E(e)}</div>
+    <div class="financial-card__value">${S(e)}</div>
 
     <div class="financial-card__actions">
       <button class="financial-card__toggle button pseudo" aria-expanded="false">Mostrar detalhes</button>
     </div>
 
     <div class="financial-card__details financial-card__details--hidden">
-      <div class="financial-card__detail">Receitas: ${E(r)}</div>
-      <div class="financial-card__detail">Despesas: ${E(s)}</div>
+      <div class="financial-card__detail">Receitas: ${S(n)}</div>
+      <div class="financial-card__detail">Despesas: ${S(i)}</div>
     </div>
-  `,this.removeEventListener("click",L);const t=this.querySelector(".financial-card__toggle");t&&t.addEventListener("click",function(v){v.stopPropagation();const d=this.closest(".financial-card").classList.toggle("financial-card__details--hidden");this.setAttribute("aria-expanded",String(!d)),this.textContent=d?"Mostrar detalhes":"Ocultar detalhes"});const o=this.querySelector(".financial-card__close");o&&o.addEventListener("click",$),document.dispatchEvent(new CustomEvent("detail:show",{detail:{orcamento:n}}))}function $(a){a.stopPropagation();const e=this.closest(".financial-card"),r=e.dataset.budget,s=e.dataset.sum,n=e.dataset.incomes,c=e.dataset.expenses,t=e.dataset.orcamento;e.className="financial-card financial-card--inactive",e.style.cursor="pointer",e.innerHTML=`
-    <div class="financial-card__title">${r}</div>
+  `,this.removeEventListener("click",N);const a=this.querySelector(".financial-card__toggle");a&&a.addEventListener("click",function(h){h.stopPropagation();const b=this.closest(".financial-card").classList.toggle("financial-card__details--hidden");this.setAttribute("aria-expanded",String(!b)),this.textContent=b?"Mostrar detalhes":"Ocultar detalhes"});const s=this.querySelector(".financial-card__close");s&&s.addEventListener("click",q),document.dispatchEvent(new CustomEvent("detail:show",{detail:{orcamento:r}}))}function q(t){t.stopPropagation();const e=this.closest(".financial-card"),n=e.dataset.budget,i=e.dataset.sum,r=e.dataset.incomes,o=e.dataset.expenses,a=e.dataset.orcamento;e.className="financial-card financial-card--inactive",e.style.cursor="pointer",e.innerHTML=`
+    <div class="financial-card__title">${n}</div>
     <div class="financial-card__value">...</div>
-  `,e.dataset.budget=r,e.dataset.sum=s,e.dataset.incomes=n,e.dataset.expenses=c,e.dataset.orcamento=t;const o=e.cloneNode(!0);e.replaceWith(o);const v=document.querySelector(`.financial-card--inactive[data-budget="${r}"]`);v&&(v.style.cursor="pointer",v.addEventListener("click",L));const p=Number(t);document.dispatchEvent(new CustomEvent("detail:show",{detail:{orcamento:p}}))}function K(){const a=document.getElementById("summaryCards");a==null||a.addEventListener("click",e=>{const s=e.target.closest(".financial-card__toggle");if(!s)return;const c=s.closest(".financial-card").querySelector(".financial-card__details"),t=c==null?void 0:c.classList.toggle("financial-card__details--hidden");s.setAttribute("aria-expanded",String(!t)),s.textContent=t?"Mostrar detalhes":"Ocultar detalhes"})}function Q(a="Verifique sua conexão e tente novamente"){const e=document.getElementById("summaryCards");e&&(e.className="financial-cards",e.innerHTML=`
+  `,e.dataset.budget=n,e.dataset.sum=i,e.dataset.incomes=r,e.dataset.expenses=o,e.dataset.orcamento=a;const s=e.cloneNode(!0);e.replaceWith(s);const h=document.querySelector(`.financial-card--inactive[data-budget="${n}"]`);h&&(h.style.cursor="pointer",h.addEventListener("click",N));const C=Number(a);document.dispatchEvent(new CustomEvent("detail:show",{detail:{orcamento:C}}))}function se(){const t=document.getElementById("summaryCards");t==null||t.addEventListener("click",e=>{const i=e.target.closest(".financial-card__toggle");if(!i)return;const o=i.closest(".financial-card").querySelector(".financial-card__details"),a=o==null?void 0:o.classList.toggle("financial-card__details--hidden");i.setAttribute("aria-expanded",String(!a)),i.textContent=a?"Mostrar detalhes":"Ocultar detalhes"})}function ie(t="Verifique sua conexão e tente novamente"){const e=document.getElementById("summaryCards");e&&(e.className="financial-cards",e.innerHTML=`
     <div class="financial-card financial-card--saldo">
       <div class="financial-card__header">
         <h3 class="financial-card__title">Erro ao carregar dados</h3>
       </div>
-      <div class="financial-card__value">${a}</div>
+      <div class="financial-card__value">${t}</div>
     </div>
-  `)}const X=`
+  `)}function T(t){return t.toLocaleString("pt-BR",{style:"currency",currency:"BRL",minimumFractionDigits:2,maximumFractionDigits:2})}class oe{constructor(e){w(this,"container");w(this,"entries",[]);w(this,"chartData",[]);const n=document.getElementById(e);if(!n)throw new Error(`Container ${e} não encontrado`);this.container=n}render(e){if(this.entries=e,this.chartData=this.calculateExpenseData(),this.chartData.length===0){this.renderEmptyState();return}this.renderChart()}calculateExpenseData(){const e=["TRANSFERÊNCIA","TRANSFERENCIA","SALDO","RENDA","RECEITA"],n=this.entries.filter(a=>{const s=a.tipo.toUpperCase().trim();return!e.includes(s)&&a.valor<0});if(n.length===0)return[];const i=new Map;for(const a of n){const s=a.tipo||"Sem Tipo",h=Math.abs(a.valor);i.set(s,(i.get(s)||0)+h)}const r=Array.from(i.values()).reduce((a,s)=>a+s,0);return Array.from(i.entries()).map(([a,s])=>({categoria:a,valor:s,percentual:s/r*100})).sort((a,s)=>s.valor-a.valor)}renderEmptyState(){this.container.innerHTML=`
+      <div class="budget-chart">
+        <h3 class="budget-chart__title">Despesas por Tipo</h3>
+        <div class="budget-chart__empty">
+          <p>Nenhuma despesa encontrada.</p>
+          <p><small>Adicione lançamentos de despesas para visualizar o gráfico.</small></p>
+        </div>
+      </div>
+    `}renderChart(){const e=this.chartData,n=e.map((r,o)=>`
+        <div class="budget-chart__legend-item">
+          <div class="budget-chart__legend-color" style="background-color: ${this.getColor(o)};"></div>
+          <div class="budget-chart__legend-content">
+            <div class="budget-chart__legend-label">${r.categoria}</div>
+            <div class="budget-chart__legend-value">
+              <span>${T(r.valor)}</span>
+              <span class="budget-chart__legend-percent">${r.percentual.toFixed(1)}%</span>
+            </div>
+          </div>
+        </div>
+      `).join(""),i=e.reduce((r,o)=>r+o.valor,0);this.container.innerHTML=`
+      <div class="budget-chart">
+        <h3 class="budget-chart__title">Despesas por Tipo</h3>
+        <div class="budget-chart__content">
+          <div class="budget-chart__donut">
+            ${this.renderDonutChart(e)}
+          </div>
+          <div class="budget-chart__legend">
+            ${n}
+          </div>
+        </div>
+        <div class="budget-chart__summary">
+          <div class="budget-chart__summary-item">
+            <span>Total de Despesas:</span>
+            <span>${T(i)}</span>
+          </div>
+        </div>
+      </div>
+    `}renderDonutChart(e){const s=e.reduce((c,d)=>c+d.valor,0);if(s===0)return"<p>Sem dados de despesas</p>";let h=-90;return`
+      <svg 
+        viewBox="0 0 200 200" 
+        class="budget-chart__svg"
+        style="max-width: 200px; max-height: 200px;"
+      >
+        ${e.map((c,d)=>{const y=c.valor/s*100/100*360,E=h,l=h+y;h=l;const p=E*Math.PI/180,g=l*Math.PI/180,u=100+85*Math.cos(p),f=100+85*Math.sin(p),_=100+85*Math.cos(g),L=100+85*Math.sin(g),k=y>180?1:0,z=["M 100 100",`L ${u} ${f}`,`A 85 85 0 ${k} 1 ${_} ${L}`,"Z"].join(" "),H=this.getColor(d);return`
+        <path 
+          d="${z}" 
+          fill="${H}" 
+          stroke="white" 
+          stroke-width="2"
+          class="budget-chart__segment"
+          data-category="${c.categoria}"
+          data-value="${c.valor}"
+        >
+          <title>${c.categoria}: ${T(c.valor)} (${c.percentual.toFixed(1)}%)</title>
+        </path>
+      `}).join("")}
+        
+      <circle 
+        cx="100" 
+        cy="100" 
+        r="55" 
+        fill="white"
+      />
+    
+      </svg>
+    `}getColor(e){const n=["#FF6384","#36A2EB","#FFCE56","#4BC0C0","#9966FF","#FF9F40","#FF6384","#C9CBCF","#4BC0C0","#FF9F40"];return n[e%n.length]}clear(){this.container.innerHTML=""}}function ce(t,e){const n=new oe(t);return n.render(e),n}const de=`
   <div class="details__aggregates">
     <h3 class="details__title">Saldo e contas</h3>
     <h3><span class="details__saldo" id="detail-saldo">R$ 0,00</span></h3>
@@ -49,6 +114,9 @@ import{v as k,p as I,A as F}from"./auth.js";import"./sheets.js";import{e as N,t 
       <!-- Cartões de contas serão renderizados aqui -->
     </div>
   </div>
+
+  <!-- Gráfico de Despesas por Tipo -->
+  <div id="categoryBudgetChart" style="margin-top:1rem;"></div>
 
   <div class="details__top-categories" style="margin-top:1rem;">
     <h3 class="details__title">Top 10 Gastos por Categoria</h3>
@@ -63,21 +131,21 @@ import{v as k,p as I,A as F}from"./auth.js";import"./sheets.js";import{e as N,t 
       <!-- Lançamentos serão renderizados aqui -->
     </div>
   </div>
-`;function Y(a,e){const r=document.querySelector(".details");if(!r)return;let s=e.map(d=>d.orcamento),n=a||[];const c=d=>{const f={};return d.forEach(i=>{!i.conta||i.conta.trim()===""||(f[i.conta]=(f[i.conta]||0)+(i.valor||0))}),Object.entries(f).map(([i,y])=>({conta:i,total:y}))},t=d=>{const f={};return d.forEach(i=>{const y=i.categoria||"Sem categoria";f[y]=(f[y]||0)+(i.valor||0)}),Object.entries(f).map(([i,y])=>({categoria:i,total:y}))},o=(d,f)=>{const i=r.querySelector("#detail-entries"),y=r.querySelector("#detail-entries-title"),_=r.querySelector("#entries-list");if(!i||!_||!y)return;y.textContent=`Lançamentos da Categoria: ${d}`;const h=n.filter(l=>f.includes(l.orcamento)&&(l.categoria||"Sem categoria")===d&&l.valor<0);if(h.sort((l,g)=>{if(!l.data&&!g.data)return 0;if(!l.data)return 1;if(!g.data)return-1;const u=new Date(l.data).getTime(),m=new Date(g.data).getTime();return isNaN(u)&&isNaN(m)?0:isNaN(u)?1:isNaN(m)?-1:m-u}),i.classList.remove("details__category-entries--hidden"),_.innerHTML="",h.length===0){_.innerHTML='<p class="category-entries-empty">Nenhum lançamento encontrado nesta categoria.</p>';return}h.forEach(l=>{const g=document.createElement("div");g.className="category-entry-card";let u="--";if(l.data&&typeof l.data=="number"&&l.data>0){const m=N(l.data,!0);m&&(u=m.toLocaleDateString("pt-BR")+" "+m.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}))}g.innerHTML=`
-        <div class="category-entry-card__date">${u}</div>
+`;async function le(t,e){const n=document.querySelector(".details");if(!n)return;let i=e.map(m=>m.orcamento),r=t||[];const o=async(m,c=0)=>{try{if(console.log("[Details] Preparando gráfico de despesas por tipo..."),!document.getElementById("categoryBudgetChart"))if(c<3){console.warn(`[Details] Container categoryBudgetChart não encontrado (tentativa ${c+1}/3), aguardando...`),setTimeout(()=>o(m,c+1),200);return}else{console.warn("[Details] Container categoryBudgetChart não encontrado após múltiplas tentativas. Gráfico não será renderizado.");return}console.log("[Details] Container encontrado, carregando categorias completas...");const y=await j.getSheetCategoriesComplete();if(!y||y.length===0){console.log("[Details] Nenhuma categoria completa encontrada");return}console.log("[Details] Fazendo JOIN entre entries e categoriesComplete...");const E=new Map;for(const f of y)E.set(f.categoria.toLowerCase(),f.tipo);console.log("[Details] Categorias mapeadas:",Array.from(E.entries()));const l=r.filter(f=>m.includes(f.orcamento));console.log(`[Details] Filtrando ${r.length} entries por ${m.length} orçamentos -> ${l.length} entries`);const p=[...new Set(l.map(f=>f.categoria).filter(f=>f))];console.log("[Details] 📋 Categorias presentes nos entries filtrados:",p);const g=l.map(f=>{const _=(f.categoria||"").toLowerCase(),L=E.get(_)||"Sem Tipo";return{categoria:f.categoria||"",valor:f.valor||0,tipo:L}}),u=g.filter(f=>f.tipo==="Sem Tipo");if(u.length>0){console.warn(`[Details] ⚠️ Encontrados ${u.length} entries SEM TIPO:`),console.table(u.map(_=>({categoria:_.categoria,valor:_.valor,tipo:_.tipo})));const f=[...new Set(u.map(_=>_.categoria))];console.warn("[Details] 📋 Categorias SEM TIPO encontradas:",f),f.forEach(_=>{const L=E.has(_);console.warn(`[Details] Categoria "${_}" existe no mapa? ${L}`)})}console.log("[Details] Renderizando gráfico de despesas por tipo..."),ce("categoryBudgetChart",g),console.log("[Details] ✅ Gráfico de despesas por tipo renderizado com sucesso")}catch(v){console.error("[Details] Erro ao renderizar gráfico de despesas:",v)}},a=m=>{const c={};return m.forEach(d=>{!d.conta||d.conta.trim()===""||(c[d.conta]=(c[d.conta]||0)+(d.valor||0))}),Object.entries(c).map(([d,v])=>({conta:d,total:v}))},s=m=>{const c={};return m.forEach(d=>{const v=d.categoria||"Sem categoria";c[v]=(c[v]||0)+(d.valor||0)}),Object.entries(c).map(([d,v])=>({categoria:d,total:v}))},h=(m,c)=>{const d=n.querySelector("#detail-entries"),v=n.querySelector("#detail-entries-title"),y=n.querySelector("#entries-list");if(!d||!y||!v)return;v.textContent=`Lançamentos da Categoria: ${m}`;const E=r.filter(l=>c.includes(l.orcamento)&&(l.categoria||"Sem categoria")===m&&l.valor<0);if(E.sort((l,p)=>{if(!l.data&&!p.data)return 0;if(!l.data)return 1;if(!p.data)return-1;const g=new Date(l.data).getTime(),u=new Date(p.data).getTime();return isNaN(g)&&isNaN(u)?0:isNaN(g)?1:isNaN(u)?-1:u-g}),d.classList.remove("details__category-entries--hidden"),y.innerHTML="",E.length===0){y.innerHTML='<p class="category-entries-empty">Nenhum lançamento encontrado nesta categoria.</p>';return}E.forEach(l=>{const p=document.createElement("div");p.className="category-entry-card";let g="--";if(l.data&&typeof l.data=="number"&&l.data>0){const u=M(l.data,!0);u&&(g=u.toLocaleDateString("pt-BR")+" "+u.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}))}p.innerHTML=`
+        <div class="category-entry-card__date">${g}</div>
         <div class="category-entry-card__description">${l.descricao||"Sem descrição"}</div>
-        <div class="category-entry-card__value">${E(l.valor||0)}</div>
-      `,_.appendChild(g)})},v=(d,f)=>{const i=r.querySelector("#detail-entries"),y=r.querySelector("#detail-entries-title"),_=r.querySelector("#entries-list");if(!i||!_||!y)return;y.textContent=`Lançamentos da Conta: ${d}`;const h=n.filter(l=>f.includes(l.orcamento)&&l.conta===d);if(h.sort((l,g)=>{if(!l.data&&!g.data)return 0;if(!l.data)return 1;if(!g.data)return-1;const u=new Date(l.data).getTime(),m=new Date(g.data).getTime();return isNaN(u)&&isNaN(m)?0:isNaN(u)?1:isNaN(m)?-1:m-u}),i.classList.remove("details__category-entries--hidden"),_.innerHTML="",h.length===0){_.innerHTML='<p class="category-entries-empty">Nenhum lançamento encontrado nesta conta.</p>';return}h.forEach(l=>{const g=document.createElement("div");g.className="category-entry-card";let u="--";if(l.data&&typeof l.data=="number"&&l.data>0){const m=N(l.data,!0);m&&(u=m.toLocaleDateString("pt-BR")+" "+m.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}))}g.innerHTML=`
-        <div class="category-entry-card__date">${u}</div>
+        <div class="category-entry-card__value">${S(l.valor||0)}</div>
+      `,y.appendChild(p)})},C=(m,c)=>{const d=n.querySelector("#detail-entries"),v=n.querySelector("#detail-entries-title"),y=n.querySelector("#entries-list");if(!d||!y||!v)return;v.textContent=`Lançamentos da Conta: ${m}`;const E=r.filter(l=>c.includes(l.orcamento)&&l.conta===m);if(E.sort((l,p)=>{if(!l.data&&!p.data)return 0;if(!l.data)return 1;if(!p.data)return-1;const g=new Date(l.data).getTime(),u=new Date(p.data).getTime();return isNaN(g)&&isNaN(u)?0:isNaN(g)?1:isNaN(u)?-1:u-g}),d.classList.remove("details__category-entries--hidden"),y.innerHTML="",E.length===0){y.innerHTML='<p class="category-entries-empty">Nenhum lançamento encontrado nesta conta.</p>';return}E.forEach(l=>{const p=document.createElement("div");p.className="category-entry-card";let g="--";if(l.data&&typeof l.data=="number"&&l.data>0){const u=M(l.data,!0);u&&(g=u.toLocaleDateString("pt-BR")+" "+u.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}))}p.innerHTML=`
+        <div class="category-entry-card__date">${g}</div>
         <div class="category-entry-card__description">${l.descricao||"Sem descrição"}</div>
-        <div class="category-entry-card__value">${E(l.valor||0)}</div>
-      `,_.appendChild(g)})},p=d=>{const f=Array.isArray(d)?d:[d];r.innerHTML=X,r.style.display="";const i=r.querySelector("#detail-saldo"),y=r.querySelector("#detail-accounts-cards"),_=r.querySelector("#detail-categories-cards"),h=n.filter(g=>f.includes(g.orcamento));if(!h.length){i&&(i.textContent=E(0));return}const l=h.reduce((g,u)=>g+(u.valor||0),0);i&&(i.textContent=E(l)),y&&(y.innerHTML="",c(h).forEach(({conta:g,total:u})=>{const m=document.createElement("div");m.className="details__card details__card--clickable",m.dataset.conta=g,m.innerHTML=`
-          <div class="details__card-title">${g}</div>
-          <div class="details__card-value">${E(u)}</div>
-        `,m.addEventListener("click",()=>{y.querySelectorAll(".details__card").forEach(C=>{C.classList.remove("details__card--selected")});const b=r.querySelector("#detail-categories-cards");b&&b.querySelectorAll(".category-card").forEach(C=>{C.classList.remove("category-card--selected")}),m.classList.add("details__card--selected"),v(g,f)}),y.appendChild(m)})),_&&(_.innerHTML="",t(h).filter(u=>u.total<0).sort((u,m)=>u.total-m.total).slice(0,10).forEach((u,m)=>{const b=document.createElement("div");b.className="category-card",b.dataset.categoria=u.categoria,b.innerHTML=`
-          <div class="category-card__rank">#${m+1}</div>
+        <div class="category-entry-card__value">${S(l.valor||0)}</div>
+      `,y.appendChild(p)})},b=async m=>{const c=Array.isArray(m)?m:[m];n.innerHTML=de,n.style.display="";const d=n.querySelector("#detail-saldo"),v=n.querySelector("#detail-accounts-cards"),y=n.querySelector("#detail-categories-cards"),E=r.filter(p=>c.includes(p.orcamento));if(!E.length){d&&(d.textContent=S(0)),await o(c);return}const l=E.reduce((p,g)=>p+(g.valor||0),0);d&&(d.textContent=S(l)),v&&(v.innerHTML="",a(E).forEach(({conta:p,total:g})=>{const u=document.createElement("div");u.className="details__card details__card--clickable",u.dataset.conta=p,u.innerHTML=`
+          <div class="details__card-title">${p}</div>
+          <div class="details__card-value">${S(g)}</div>
+        `,u.addEventListener("click",()=>{v.querySelectorAll(".details__card").forEach(_=>{_.classList.remove("details__card--selected")});const f=n.querySelector("#detail-categories-cards");f&&f.querySelectorAll(".category-card").forEach(_=>{_.classList.remove("category-card--selected")}),u.classList.add("details__card--selected"),C(p,c)}),v.appendChild(u)})),y&&(y.innerHTML="",s(E).filter(g=>g.total<0).sort((g,u)=>g.total-u.total).slice(0,10).forEach((g,u)=>{const f=document.createElement("div");f.className="category-card",f.dataset.categoria=g.categoria,f.innerHTML=`
+          <div class="category-card__rank">#${u+1}</div>
           <div class="category-card__content">
-            <div class="category-card__name">${u.categoria}</div>
-            <div class="category-card__value">${E(u.total)}</div>
+            <div class="category-card__name">${g.categoria}</div>
+            <div class="category-card__value">${S(g.total)}</div>
           </div>
-        `,b.addEventListener("click",()=>{_.querySelectorAll(".category-card").forEach(C=>{C.classList.remove("category-card--selected")}),y&&y.querySelectorAll(".details__card").forEach(C=>{C.classList.remove("details__card--selected")}),b.classList.add("category-card--selected"),o(u.categoria,f)}),_.appendChild(b)}))};s.length>0&&p(s),document.addEventListener("detail:show",d=>{const i=d.detail.orcamento;s.includes(i)?s=s.filter(y=>y!==i):s.push(i),p(s)}),document.addEventListener("cards:updated",d=>{const f=d,{allEntries:i}=f.detail||{};i&&(n=i,p(s))})}function Z(a=[],e="orcamento",r=-5,s=35){const{startSerial:n,endSerial:c}=A(r,s);return a.filter(t=>{const o=t&&t[e];return typeof o=="number"&&!Number.isNaN(o)&&o>=n&&o<=c})}function M(a=[],e="orcamento"){const r=new Map;return a.forEach(n=>{let c=n&&n[e],t=Number(c);if(!Number.isFinite(t)&&typeof c=="string"&&c.includes("/")){const p=c.split("/");if(p.length===3){const[d,f,i]=p.map(y=>Number(y));[d,f,i].every(Number.isFinite)&&(t=S(new Date(i,f-1,d)))}else if(p.length===2){const[d,f]=p.map(i=>Number(i));[d,f].every(Number.isFinite)&&(t=S(new Date(f,d-1,1)))}}if(!Number.isFinite(t))return;const o=Number(n.valor)||0,v=r.get(t)||{orcamento:t,sum:0,count:0,incomes:0,expenses:0};v.sum+=o,v.count+=1,o>=0?v.incomes+=o:v.expenses+=o,r.set(t,v)}),Array.from(r.values()).map(n=>({orcamento:n.orcamento,label:q(n.orcamento),count:n.count,sum:Number(n.sum.toFixed(2)),incomes:Number(n.incomes.toFixed(2)),expenses:Number(n.expenses.toFixed(2))})).sort((n,c)=>c.orcamento-n.orcamento)}function x(a=[],e="orcamento"){const r=n=>{let c=Number(n);if(Number.isFinite(c))return c;if(typeof n=="string"&&n.includes("/")){const t=n.split("/");if(t.length===3){const[o,v,p]=t.map(d=>Number(d));if([o,v,p].every(Number.isFinite))return S(new Date(p,v-1,o))}else if(t.length===2){const[o,v]=t.map(p=>Number(p));if([o,v].every(Number.isFinite))return S(new Date(v,o-1,1))}}return null},s=new Map;return a.forEach(n=>{const c=n&&n[e],t=r(c);t===null||!Number.isFinite(t)||s.has(t)||s.set(t,{orcamento:t,label:q(t)})}),Array.from(s.values()).sort((n,c)=>n.orcamento-c.orcamento)}async function B(){if(!await k()){console.warn("⚠️ Token inválido ou usuário não autenticado");return}if(G(),K(),await D(()=>{console.log("✅ Lançamento adicionado! Recarregue a página para ver as mudanças."),window.location.reload()}),await H(()=>{console.log("✅ Lançamento futuro adicionado! Recarregue a página para ver as mudanças."),window.location.reload()}),await R(()=>{console.log("✅ Transferência realizada! Recarregue a página para ver as mudanças."),window.location.reload()}),z(()=>j(),()=>P(),()=>O()),!I.authStore.isValid){console.log("⚠️ Usuário não autenticado");return}if(!(await ee()).isValid){ae();return}await te(),console.log("✅ Dashboard inicializado")}async function ee(){try{const e=await(await fetch(`${F.configStatus}`,{method:"GET",headers:{Authorization:`Bearer ${I.authStore.token}`}})).json();return{isValid:e.hasRefreshToken&&e.hasSheetId}}catch(a){return console.error("Erro ao verificar configuração:",a),{isValid:!1}}}function ae(){const a=document.getElementById("configBtn");a&&(a.style.display="");const e=document.getElementById("summaryCards");e&&(e.style.display="none");const r=document.querySelector(".dashboard__col--right.details");r&&(r.style.display="none");const s=document.getElementById("openEntryModal");s&&(s.style.display="none");const n=document.querySelector(".dashboard__header");if(n&&!document.getElementById("configMessage")){const c=document.createElement("p");c.id="configMessage",c.style.marginTop="1rem",c.textContent='Integração com Google não configurada. Clique em "Configurar Integração" para continuar.',n.appendChild(c);const t=document.createElement("a");t.href="/dashboard/configuracao.html",t.className="button primary",t.style.marginTop="1rem",t.style.display="inline-block",t.textContent="⚙️ Configurar Integração",n.appendChild(t)}}async function te(){try{const a=await V.fetchEntries(0,!1),e=(a==null?void 0:a.entries)??[];if(!e||e.length===0){ne();return}window.allEntries=e;const r=M(e);window.allBudgets=x(e);const s=Z(e),n=M(s),c=x(s);window.filteredEntries=s,window.summaryByBudget=n,window.budgetsInInterval=c;const t={};n.forEach(o=>{t[o.label]=!0}),U(r,t),Y(e,c)}catch(a){console.error("Erro ao carregar dados:",a),Q("Não foi possível carregar os dados. Verifique sua conexão e tente novamente.")}}function ne(){const a=document.getElementById("summaryCards");a&&(a.style.display="none");const e=document.querySelector(".dashboard__col--right.details");e&&(e.style.display="none");const r=document.getElementById("openEntryModal");r&&(r.style.display="");const s=document.querySelector(".dashboard__header");if(s&&!document.getElementById("firstEntryMessage")){const n=document.createElement("div");n.id="firstEntryMessage",n.style.marginTop="1rem",n.className="notice",n.textContent='Você ainda não tem lançamentos. Insira o primeiro lançamento — ex. "Saldo inicial Banco Laranjinha" ou "Fatura cartão roxinho atual". Após inserir recarregue a página.',s.appendChild(n)}}document.readyState==="loading"?document.addEventListener("DOMContentLoaded",B):B();
+        `,f.addEventListener("click",()=>{y.querySelectorAll(".category-card").forEach(_=>{_.classList.remove("category-card--selected")}),v&&v.querySelectorAll(".details__card").forEach(_=>{_.classList.remove("details__card--selected")}),f.classList.add("category-card--selected"),h(g.categoria,c)}),y.appendChild(f)})),await o(c)};i.length>0?await b(i):await o([]),document.addEventListener("detail:show",async m=>{const d=m.detail.orcamento;i.includes(d)?i=i.filter(v=>v!==d):i.push(d),await b(i)}),document.addEventListener("cards:updated",async m=>{const c=m,{allEntries:d}=c.detail||{};d&&(r=d,await b(i))})}function ue(t=[],e="orcamento",n=-5,i=35){const{startSerial:r,endSerial:o}=G(n,i);return t.filter(a=>{const s=a&&a[e];return typeof s=="number"&&!Number.isNaN(s)&&s>=r&&s<=o})}function B(t=[],e="orcamento"){const n=new Map;return t.forEach(r=>{let o=r&&r[e],a=Number(o);if(!Number.isFinite(a)&&typeof o=="string"&&o.includes("/")){const C=o.split("/");if(C.length===3){const[b,m,c]=C.map(d=>Number(d));[b,m,c].every(Number.isFinite)&&(a=$(new Date(c,m-1,b)))}else if(C.length===2){const[b,m]=C.map(c=>Number(c));[b,m].every(Number.isFinite)&&(a=$(new Date(m,b-1,1)))}}if(!Number.isFinite(a))return;const s=Number(r.valor)||0,h=n.get(a)||{orcamento:a,sum:0,count:0,incomes:0,expenses:0};h.sum+=s,h.count+=1,s>=0?h.incomes+=s:h.expenses+=s,n.set(a,h)}),Array.from(n.values()).map(r=>({orcamento:r.orcamento,label:R(r.orcamento),count:r.count,sum:Number(r.sum.toFixed(2)),incomes:Number(r.incomes.toFixed(2)),expenses:Number(r.expenses.toFixed(2))})).sort((r,o)=>o.orcamento-r.orcamento)}function F(t=[],e="orcamento"){const n=r=>{let o=Number(r);if(Number.isFinite(o))return o;if(typeof r=="string"&&r.includes("/")){const a=r.split("/");if(a.length===3){const[s,h,C]=a.map(b=>Number(b));if([s,h,C].every(Number.isFinite))return $(new Date(C,h-1,s))}else if(a.length===2){const[s,h]=a.map(C=>Number(C));if([s,h].every(Number.isFinite))return $(new Date(h,s-1,1))}}return null},i=new Map;return t.forEach(r=>{const o=r&&r[e],a=n(o);a===null||!Number.isFinite(a)||i.has(a)||i.set(a,{orcamento:a,label:R(a)})}),Array.from(i.values()).sort((r,o)=>r.orcamento-o.orcamento)}async function I(){if(!await V()){console.warn("⚠️ Token inválido ou usuário não autenticado");return}if(te(),se(),await Y(()=>{console.log("✅ Lançamento adicionado! Recarregue a página para ver as mudanças."),window.location.reload()}),await U(()=>{console.log("✅ Lançamento futuro adicionado! Recarregue a página para ver as mudanças."),window.location.reload()}),await W(()=>{console.log("✅ Transferência realizada! Recarregue a página para ver as mudanças."),window.location.reload()}),J(()=>ee(),()=>Q(),()=>K()),!A.authStore.isValid){console.log("⚠️ Usuário não autenticado");return}if(!(await ge()).isValid){me();return}await pe(),console.log("✅ Dashboard inicializado")}async function ge(){try{const e=await(await fetch(`${X.configStatus}`,{method:"GET",headers:{Authorization:`Bearer ${A.authStore.token}`}})).json();return{isValid:e.hasRefreshToken&&e.hasSheetId}}catch(t){return console.error("Erro ao verificar configuração:",t),{isValid:!1}}}function me(){const t=document.getElementById("configBtn");t&&(t.style.display="");const e=document.getElementById("summaryCards");e&&(e.style.display="none");const n=document.querySelector(".dashboard__col--right.details");n&&(n.style.display="none");const i=document.getElementById("openEntryModal");i&&(i.style.display="none");const r=document.querySelector(".dashboard__header");if(r&&!document.getElementById("configMessage")){const o=document.createElement("p");o.id="configMessage",o.style.marginTop="1rem",o.textContent='Integração com Google não configurada. Clique em "Configurar Integração" para continuar.',r.appendChild(o);const a=document.createElement("a");a.href="/dashboard/configuracao.html",a.className="button primary",a.style.marginTop="1rem",a.style.display="inline-block",a.textContent="⚙️ Configurar Integração",r.appendChild(a)}}async function pe(){try{const t=await Z.fetchEntries(0,!1),e=(t==null?void 0:t.entries)??[];if(!e||e.length===0){fe();return}window.allEntries=e;const n=B(e);window.allBudgets=F(e);const i=ue(e),r=B(i),o=F(i);window.filteredEntries=i,window.summaryByBudget=r,window.budgetsInInterval=o;const a={};r.forEach(s=>{a[s.label]=!0}),ae(n,a),await le(e,o)}catch(t){console.error("Erro ao carregar dados:",t),ie("Não foi possível carregar os dados. Verifique sua conexão e tente novamente.")}}function fe(){const t=document.getElementById("summaryCards");t&&(t.style.display="none");const e=document.querySelector(".dashboard__col--right.details");e&&(e.style.display="none");const n=document.getElementById("openEntryModal");n&&(n.style.display="");const i=document.querySelector(".dashboard__header");if(i&&!document.getElementById("firstEntryMessage")){const r=document.createElement("div");r.id="firstEntryMessage",r.style.marginTop="1rem",r.className="notice",r.textContent='Você ainda não tem lançamentos. Insira o primeiro lançamento — ex. "Saldo inicial Banco Laranjinha" ou "Fatura cartão roxinho atual". Após inserir recarregue a página.',i.appendChild(r)}}document.readyState==="loading"?document.addEventListener("DOMContentLoaded",I):I();
