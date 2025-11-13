@@ -27,8 +27,6 @@ import {
   type BudgetInfo
 } from '../utils/sheet-entries';
 import lancamentosService from '../services/lancamentos';
-import { SheetsService } from '../services/sheets';
-import { renderCategoryBudgetChart } from '../components/category-budget-chart';
 
 // ============================================================================
 // Declarações globais para armazenar dados
@@ -207,10 +205,9 @@ async function loadAndRenderData(): Promise<void> {
 
     // Renderiza cards e detalhes
     renderizarCards(allSummaries, budgetsInIntervalMap);
-    inicializarDetalhes(entries, budgetsInIntervalList);
-
-    // Renderiza gráfico de despesas por tipo usando entries filtrados (ativos)
-    await renderBudgetChart(entriesInInterval);
+    
+    // Inicializa detalhes (inclui agregados, top 10 categorias e gráfico de rosca)
+    await inicializarDetalhes(entries, budgetsInIntervalList);
 
   } catch (error) {
     console.error('Erro ao carregar dados:', error);
@@ -239,70 +236,6 @@ function showNoEntriesMessage(): void {
     div.className = 'notice';
     div.textContent = 'Você ainda não tem lançamentos. Insira o primeiro lançamento — ex. "Saldo inicial Banco Laranjinha" ou "Fatura cartão roxinho atual". Após inserir recarregue a página.';
     header.appendChild(div);
-  }
-}
-
-/**
- * Renderiza o gráfico de despesas por tipo de categoria (via JOIN com categoriesComplete)
- */
-async function renderBudgetChart(entries: Entry[], retryCount: number = 0): Promise<void> {
-  const MAX_RETRIES = 3;
-  
-  try {
-    console.log('[Dashboard] Preparando gráfico de despesas...');
-    
-    // Verifica se o container existe no DOM
-    const chartContainer = document.getElementById('categoryBudgetChart');
-    if (!chartContainer) {
-      if (retryCount < MAX_RETRIES) {
-        console.warn(`[Dashboard] Container categoryBudgetChart não encontrado (tentativa ${retryCount + 1}/${MAX_RETRIES}), aguardando...`);
-        // Tenta novamente após um pequeno delay
-        setTimeout(() => renderBudgetChart(entries, retryCount + 1), 200);
-        return;
-      } else {
-        console.warn('[Dashboard] Container categoryBudgetChart não encontrado após múltiplas tentativas. Gráfico não será renderizado.');
-        console.log('[Dashboard] Elementos no DOM:', {
-          aside: document.querySelector('.dashboard__col--right.details'),
-          topCategories: document.querySelector('.details__top-categories'),
-          allDivs: Array.from(document.querySelectorAll('div[id]')).map(d => d.id)
-        });
-        return;
-      }
-    }
-    
-    console.log('[Dashboard] Container encontrado, carregando categorias completas...');
-
-    // Carrega categorias completas para fazer JOIN
-    const categoriesComplete = await SheetsService.getSheetCategoriesComplete();
-    
-    if (!categoriesComplete || categoriesComplete.length === 0) {
-      console.log('[Dashboard] Nenhuma categoria completa encontrada');
-      return;
-    }
-
-    console.log('[Dashboard] Fazendo JOIN entre entries e categoriesComplete...');
-
-    // Cria mapa de categoria -> tipo para JOIN eficiente
-    const categoriaTipoMap = new Map<string, string>();
-    for (const cat of categoriesComplete) {
-      categoriaTipoMap.set(cat.categoria, cat.tipo);
-    }
-
-    // Faz JOIN: adiciona campo tipo de categoriesComplete aos entries
-    const chartEntries = entries.map(e => ({
-      categoria: (e as any).categoria || '',
-      valor: (e as any).valor || 0,
-      // TIPO vem do JOIN com categoriesComplete, não do entry original
-      tipo: categoriaTipoMap.get((e as any).categoria) || 'Sem Tipo'
-    }));
-
-    console.log('[Dashboard] Renderizando gráfico de despesas...');
-    renderCategoryBudgetChart('categoryBudgetChart', chartEntries);
-    console.log('[Dashboard] ✅ Gráfico de despesas renderizado com sucesso');
-    
-  } catch (error) {
-    console.error('[Dashboard] Erro ao renderizar gráfico de despesas:', error);
-    // Não quebra o dashboard se o gráfico falhar
   }
 }
 

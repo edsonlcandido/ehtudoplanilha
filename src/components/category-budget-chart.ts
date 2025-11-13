@@ -18,6 +18,18 @@ interface CategoryExpenseData {
 }
 
 /**
+ * Formata valor para moeda brasileira (R$ 1.234,56)
+ */
+function formatarMoeda(valor: number): string {
+  return valor.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
+/**
  * Classe para renderizar gráfico de despesas por tipo
  */
 export class CategoryBudgetChart {
@@ -119,13 +131,15 @@ export class CategoryBudgetChart {
           <div class="budget-chart__legend-content">
             <div class="budget-chart__legend-label">${item.categoria}</div>
             <div class="budget-chart__legend-value">
-              <span>R$ ${item.valor.toFixed(2)}</span>
+              <span>${formatarMoeda(item.valor)}</span>
               <span class="budget-chart__legend-percent">${item.percentual.toFixed(1)}%</span>
             </div>
           </div>
         </div>
       `;
     }).join('');
+
+    const totalDespesas = displayData.reduce((sum, d) => sum + d.valor, 0);
 
     this.container.innerHTML = `
       <div class="budget-chart">
@@ -141,7 +155,7 @@ export class CategoryBudgetChart {
         <div class="budget-chart__summary">
           <div class="budget-chart__summary-item">
             <span>Total de Despesas:</span>
-            <span>R$ ${displayData.reduce((sum, d) => sum + d.valor, 0).toFixed(2)}</span>
+            <span>${formatarMoeda(totalDespesas)}</span>
           </div>
         </div>
       </div>
@@ -202,9 +216,9 @@ export class CategoryBudgetChart {
           stroke-width="2"
           class="budget-chart__segment"
           data-category="${item.categoria}"
-          data-value="${item.valor.toFixed(2)}"
+          data-value="${item.valor}"
         >
-          <title>${item.categoria}: R$ ${item.valor.toFixed(2)} (${item.percentual.toFixed(1)}%)</title>
+          <title>${item.categoria}: ${formatarMoeda(item.valor)} (${item.percentual.toFixed(1)}%)</title>
         </path>
       `;
     }).join('');
