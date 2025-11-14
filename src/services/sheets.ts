@@ -97,6 +97,12 @@ export class SheetsService {
           sheet_name: sheetName 
         },
       });
+      
+      // Invalida os caches após mudar a planilha
+      console.log('[SheetsService] Invalidando caches após mudar planilha');
+      CacheService.clear(CACHE_KEYS.SHEET_ENTRIES);
+      CacheService.clear(CACHE_KEYS.SHEET_CATEGORIES);
+      CacheService.clear(CACHE_KEYS.SHEET_CATEGORIES_COMPLETE);
     } catch (error) {
       console.error('[SheetsService] Erro ao salvar sheet ID:', error);
       throw error;

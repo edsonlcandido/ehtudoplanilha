@@ -78,6 +78,7 @@ Nova função que busca categorias completas (categoria, tipo, orcamento) da aba
 - `appendEntry()`: após adicionar lançamento (invalida ambos SHEET_CATEGORIES e SHEET_CATEGORIES_COMPLETE)
 - `editEntry()`: após editar lançamento (invalida ambos SHEET_CATEGORIES e SHEET_CATEGORIES_COMPLETE)
 - `deleteEntry()`: após deletar lançamento (invalida ambos SHEET_CATEGORIES e SHEET_CATEGORIES_COMPLETE)
+- `saveSheetId()`: após mudar a planilha selecionada na configuração (invalida ambos SHEET_ENTRIES, SHEET_CATEGORIES e SHEET_CATEGORIES_COMPLETE)
 
 ### 4. Modais que usam cache de categorias
 
@@ -167,6 +168,11 @@ export function logout(): void {
 1. Usuário adiciona/edita/deleta lançamento
 2. Ambos os caches são invalidados automaticamente
 3. Próxima carga busca dados atualizados
+
+### Após mudar a planilha na configuração
+1. Usuário seleciona uma planilha diferente na página de configuração
+2. Todos os caches (entries e categorias) são invalidados automaticamente
+3. Próxima navegação para dashboard ou lançamentos busca dados da nova planilha
 
 ## Teste Manual
 
@@ -347,6 +353,7 @@ Invalidação de cache adicionada em:
 - `appendEntry()`: após adicionar lançamento
 - `editEntry()`: após editar lançamento
 - `deleteEntry()`: após deletar lançamento
+- `saveSheetId()`: após mudar a planilha selecionada na configuração
 
 ### 4. Páginas que usam cache
 
