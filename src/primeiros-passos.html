@@ -61,27 +61,33 @@
                         <h4>📊 Aba LANCAMENTOS</h4>
                         <p>É onde todos os seus gastos e receitas ficam registrados. Cada linha é um lançamento com as seguintes colunas:</p>
                         <ul>
-                            <li><code>Data</code> - Quando o gasto/receita aconteceu (ex: 15/01/2025)</li>
-                            <li><code>Conta</code> - De onde saiu o dinheiro (ex: Cartão Itaú, Dinheiro, Conta Corrente)</li>
-                            <li><code>Valor</code> - Quanto foi (negativo para gastos, positivo para receitas)</li>
-                            <li><code>Descrição</code> - O que foi (ex: Compras mercado, Salário, Gasolina)</li>
-                            <li><code>Categoria</code> - Tipo do gasto (ex: Alimentação, Transporte, Moradia)</li>
-                            <li><code>Observações</code> - Detalhes extras (opcional)</li>
-                            <li><code>Conciliado</code> - Para marcar se já conferiu com extrato (opcional)</li>
+                            <li><code>data</code> - Quando o gasto/receita aconteceu (ex: 15/01/2025)</li>
+                            <li><code>conta</code> - De onde saiu o dinheiro (ex: Cartão Itaú, Dinheiro, Conta Corrente)</li>
+                            <li><code>valor</code> - Quanto foi (negativo para gastos, positivo para receitas)</li>
+                            <li><code>descrição</code> - O que foi (ex: Compras mercado, Salário, Gasolina)</li>
+                            <li><code>categoria</code> - Tipo do gasto (ex: Alimentação, Transporte, Moradia)</li>
+                            <li><code>observações</code> - Detalhes extras (opcional)</li>
                         </ul>
                     </div>
 
                     <div class="sheet-structure">
                         <h4>🏷️ Aba CATEGORIAS</h4>
                         <p>É sua lista de categorias personalizadas. Você define quais categorias fazem sentido para você:</p>
-                        <ul>
-                            <li>Alimentação</li>
-                            <li>Transporte</li>
-                            <li>Moradia</li>
-                            <li>Lazer</li>
-                            <li>Saúde</li>
-                            <li>E qualquer outra que você precisar!</li>
-                        </ul>
+                        <div class="category-columns">
+                            <p><strong>categoria</strong> – descreve o centro de custo ou receita (ex: Aluguel, Alimentação, Salário).</p>
+                            <p><strong>tipo</strong> – classifica cada linha como RENDA, PRECISO, QUERO, INVESTIMENTOS, TRANSFERÊNCIA ou SALDO para ajudar na priorização.</p>
+                            <p><strong>limite (30 dias)</strong> – use este valor como referência para controlar o teto mensal de cada categoria e comparar com os gastos reais.</p>
+                        </div>
+                        <p>As categorias sugeridas abaixo já vêm com o tipo indicado e podem servir de ponto de partida; você pode ajustá-las ou criar outras que façam mais sentido para sua realidade.</p>
+                        <div class="category-type-chart">
+                            <p><strong>RENDA</strong> – Salário, 13º salário, Férias, Horas extras, Pensão e outras entradas recorrentes.</p>
+                            <p><strong>PRECISO</strong> – Despesas essenciais como Aluguel, Contas da casa, Supermercado, Saúde e Transporte.</p>
+                            <p><strong>QUERO</strong> – Gastos variáveis que você pode controlar: Lazer, Delivery, Cuidados pessoais, Viagens, Presentes e Acessórios.</p>
+                            <p><strong>INVESTIMENTOS</strong> – Aposentadoria, Fundo de emergência, Investimentos, Patrimônio.</p>
+                            <p><strong>TRANSFERÊNCIA</strong> – Movimentações entre contas e reservas.</p>
+                            <p><strong>SALDO</strong> – Registre saldos abertos para facilitar conferências.</p>
+                        </div>
+                        <p>Defina limites para cada categoria e compare com o gasto real a cada 30 dias; esse hábito facilita priorizar PRECISO e QUERO e manter os INVESTIMENTOS em dia.</p>
                     </div>
 
                     <div class="tip-box">
@@ -95,49 +101,6 @@
             <div class="step-section">
                 <div class="step-header">
                     <div class="step-number">2</div>
-                    <div>
-                        <h2 style="margin: 0;">Configure suas categorias</h2>
-                    </div>
-                </div>
-                <div class="step-content">
-                    <p>
-                        Antes de começar a lançar gastos, configure as categorias que fazem sentido para sua vida financeira:
-                    </p>
-
-                    <h4>Como adicionar categorias:</h4>
-                    <ol>
-                        <li>Abra sua planilha no Google Sheets</li>
-                        <li>Vá para a aba <strong>CATEGORIAS</strong></li>
-                        <li>Adicione suas categorias, uma por linha</li>
-                        <li>Pronto! Elas aparecerão automaticamente no app</li>
-                    </ol>
-
-                    <div class="example-box">
-                        <h4>📝 Exemplo de Categorias</h4>
-                        <p>Sugestões para começar:</p>
-                        <ul>
-                            <li><strong>Alimentação</strong> - Supermercado, restaurantes, delivery</li>
-                            <li><strong>Transporte</strong> - Gasolina, Uber, ônibus, metrô</li>
-                            <li><strong>Moradia</strong> - Aluguel, condomínio, luz, água, internet</li>
-                            <li><strong>Lazer</strong> - Cinema, shows, viagens, hobbies</li>
-                            <li><strong>Saúde</strong> - Farmácia, médicos, plano de saúde</li>
-                            <li><strong>Educação</strong> - Cursos, livros, material escolar</li>
-                            <li><strong>Vestuário</strong> - Roupas, calçados, acessórios</li>
-                            <li><strong>Outros</strong> - Para gastos que não se encaixam</li>
-                        </ul>
-                    </div>
-
-                    <div class="tip-box">
-                        <strong>💡 Dica:</strong> Comece com poucas categorias (5-8) e vá refinando com o tempo. 
-                        Categorias demais podem complicar mais do que ajudar.
-                    </div>
-                </div>
-            </div>
-
-            <!-- Passo 3 -->
-            <div class="step-section">
-                <div class="step-header">
-                    <div class="step-number">3</div>
                     <div>
                         <h2 style="margin: 0;">Faça lançamentos na planilha</h2>
                     </div>
@@ -196,10 +159,10 @@
                 </div>
             </div>
 
-            <!-- Passo 4 -->
+            <!-- Passo 3 -->
             <div class="step-section">
                 <div class="step-header">
-                    <div class="step-number">4</div>
+                    <div class="step-number">3</div>
                     <div>
                         <h2 style="margin: 0;">Use o app para agilidade</h2>
                     </div>
@@ -270,24 +233,17 @@
                                 <td>Copiar, colar, editar em massa</td>
                             </tr>
                             <tr>
-                                <td>Análises e dashboards</td>
-                                <td><strong>Planilha</strong></td>
-                                <td>Fórmulas, gráficos e tabelas dinâmicas</td>
-                            </tr>
-                            <tr>
-                                <td>Ver saldo rápido das contas</td>
-                                <td><strong>App</strong></td>
-                                <td>Visualização instantânea</td>
+                               
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Passo 5 -->
+            <!-- Passo 4 -->
             <div class="step-section">
                 <div class="step-header">
-                    <div class="step-number">5</div>
+                    <div class="step-number">4</div>
                     <div>
                         <h2 style="margin: 0;">Dicas de uso avançado</h2>
                     </div>
@@ -360,7 +316,6 @@
                     Lembre-se: não existe jeito certo ou errado - use as ferramentas da forma que fizer mais sentido para você.
                 </p>
                 <a href="registro.html" class="button primary large" style="margin-right: 1rem;">Criar minha conta grátis</a>
-                <a href="/" class="button">Voltar para página inicial</a>
             </div>
         </div>
     </main>
@@ -370,7 +325,6 @@
             <div class="footer-nav" role="navigation" aria-label="Links institucionais">
                 <ul class="footer-links">
                     <li><a href="primeiros-passos.html">Guia de Primeiros Passos</a></li>
-                    <li><a href="prints.html">Prints & Recursos</a></li>
                     <li><a href="privacidade.html">Política de Privacidade</a></li>
                     <li><a href="termos.html">Termos de Uso</a></li>
                     <li><a href="mailto:planilha@ehtudo.app">Contato</a></li>

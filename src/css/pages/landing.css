@@ -6,7 +6,7 @@
 /* ========== Header Hero ========== */
 .header-hero {
   background: linear-gradient(rgba(44, 62, 80, 0.7), rgba(44, 62, 80, 0.7)),
-              url('../img/hero.png');
+              url('../../img/hero.png');
   background-size: cover;
   background-position: center;
   color: var(--white-color);
