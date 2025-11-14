@@ -474,6 +474,22 @@ async function init(): Promise<void> {
   // Atualiza autocomplete do modal de edição quando entradas são carregadas
   setEditModalEntries(state.entries);
 
+  // Verifica se há parâmetros de filtro na URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const contaParam = urlParams.get('conta');
+  const categoriaParam = urlParams.get('categoria');
+
+  // Se houver parâmetro de conta ou categoria, aplica o filtro
+  if (contaParam || categoriaParam) {
+    const searchInput = document.getElementById('searchInput') as HTMLInputElement;
+    if (searchInput) {
+      const searchTerm = contaParam || categoriaParam || '';
+      searchInput.value = searchTerm;
+      handleSearch(searchTerm);
+      console.log(`🔍 Filtro aplicado automaticamente: ${contaParam ? 'conta' : 'categoria'} = ${searchTerm}`);
+    }
+  }
+
   console.log('✅ Página de lançamentos inicializada');
 }
 
