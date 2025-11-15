@@ -27,6 +27,33 @@
   margin: var(--spacing-md) auto var(--spacing-xl);
 }
 
+/* ========== FAQ Section ========== */
+.faq-item {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+  border-left: 4px solid var(--primary-color);
+}
+
+.faq-item h3 {
+  color: var(--secondary-color);
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  font-size: 1.25rem;
+}
+
+.faq-item p {
+  margin: 0;
+  line-height: 1.6;
+  color: var(--text-color);
+}
+
+.faq-item strong {
+  color: var(--primary-color);
+}
+
 /* ========== Call to Action ========== */
 .call-to-action {
   background-color: var(--secondary-color);
