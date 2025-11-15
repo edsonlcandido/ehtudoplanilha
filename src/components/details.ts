@@ -33,7 +33,9 @@ const detailsTemplate = `
   </div>
 
   <div class="details__category-entries details__category-entries--hidden" id="detail-entries">
-    <h3 class="details__title" id="detail-entries-title">Lançamentos</h3>
+    <h3 class="details__title" id="detail-entries-title">
+      <span id="lancamentos">Lançamentos</span>
+    </h3>
     <div class="category-entries-list" id="entries-list">
       <!-- Lançamentos serão renderizados aqui -->
     </div>
@@ -206,7 +208,7 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
     if (!elEntries || !elEntriesList || !elEntriesTitle) return;
 
     // Atualiza título
-    elEntriesTitle.textContent = `Lançamentos da Categoria: ${categoria}`;
+    elEntriesTitle.innerHTML = `<span id="lancamentos">Lançamentos da Categoria: ${categoria}</span>`;
 
     // Filtra lançamentos da categoria nos orçamentos selecionados
     const lancamentos = currentEntries.filter(e =>
@@ -267,6 +269,14 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
 
       elEntriesList.appendChild(entryCard);
     });
+
+    // Faz scroll suave até a seção de lançamentos
+    setTimeout(() => {
+      const lancamentosAnchor = document.getElementById('lancamentos');
+      if (lancamentosAnchor) {
+        lancamentosAnchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   };
 
   /**
@@ -280,7 +290,7 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
     if (!elEntries || !elEntriesList || !elEntriesTitle) return;
 
     // Atualiza título
-    elEntriesTitle.textContent = `Lançamentos da Conta: ${conta}`;
+    elEntriesTitle.innerHTML = `<span id="lancamentos">Lançamentos da Conta: ${conta}</span>`;
 
     // Filtra lançamentos da conta nos orçamentos selecionados
     const lancamentos = currentEntries.filter(e =>
@@ -340,6 +350,14 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
 
       elEntriesList.appendChild(entryCard);
     });
+
+    // Faz scroll suave até a seção de lançamentos
+    setTimeout(() => {
+      const lancamentosAnchor = document.getElementById('lancamentos');
+      if (lancamentosAnchor) {
+        lancamentosAnchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   };
 
   /**
@@ -384,7 +402,7 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
           <div class="details__card-value">${formatarMoeda(total)}</div>
         `;
 
-        // Adiciona evento de clique para mostrar lançamentos da conta
+        // Adiciona evento de clique para mostrar lançamentos da conta e fazer scroll
         card.addEventListener('click', () => {
           // Remove seleção anterior dos cards de contas
           elAccounts.querySelectorAll('.details__card').forEach(c => {
@@ -402,7 +420,7 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
           // Adiciona seleção ao card clicado
           card.classList.add('details__card--selected');
 
-          // Renderiza lançamentos da conta
+          // Renderiza lançamentos da conta e faz scroll
           renderizarLancamentosConta(conta, orcNums);
         });
 
@@ -432,7 +450,7 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
           </div>
         `;
 
-        // Adiciona evento de clique para mostrar lançamentos
+        // Adiciona evento de clique para mostrar lançamentos e fazer scroll
         card.addEventListener('click', () => {
           // Remove seleção anterior dos cards de categorias
           elCategoriesCards.querySelectorAll('.category-card').forEach(c => {
@@ -449,7 +467,7 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
           // Adiciona seleção ao card clicado
           card.classList.add('category-card--selected');
 
-          // Renderiza lançamentos da categoria
+          // Renderiza lançamentos da categoria e faz scroll
           renderizarLancamentosCategoria(item.categoria, orcNums);
         });
 
