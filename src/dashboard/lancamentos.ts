@@ -474,7 +474,33 @@ async function init(): Promise<void> {
   // Atualiza autocomplete do modal de edição quando entradas são carregadas
   setEditModalEntries(state.entries);
 
+  // Verifica se há parâmetros de filtro na URL
+  applyUrlFilters();
+
   console.log('✅ Página de lançamentos inicializada');
+}
+
+/**
+ * Aplica filtros baseados nos parâmetros da URL
+ */
+function applyUrlFilters(): void {
+  const urlParams = new URLSearchParams(window.location.search);
+  const conta = urlParams.get('conta');
+  const categoria = urlParams.get('categoria');
+
+  if (conta) {
+    console.log('[Lançamentos] Filtrando por conta:', conta);
+    handleSearch(conta);
+  } else if (categoria) {
+    console.log('[Lançamentos] Filtrando por categoria:', categoria);
+    handleSearch(categoria);
+  }
+
+  // Preenche o campo de busca se houver filtro
+  const searchInput = document.getElementById('searchInput') as HTMLInputElement;
+  if (searchInput && (conta || categoria)) {
+    searchInput.value = conta || categoria || '';
+  }
 }
 
 // Inicializa quando o DOM estiver pronto

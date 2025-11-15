@@ -6,7 +6,6 @@
 
 import type { Entry, BudgetInfo } from '../utils/sheet-entries';
 import { formatarMoeda } from './financial-cards';
-import { excelSerialToDate } from '../utils/date-helpers';
 import { renderCategoryBudgetChart } from './category-budget-chart';
 import { SheetsService } from '../services/sheets';
 
@@ -29,15 +28,6 @@ const detailsTemplate = `
     <h3 class="details__title">Top 10 Gastos por Categoria</h3>
     <div class="category-cards" id="detail-categories-cards">
       <!-- Cards de categorias serão renderizados aqui -->
-    </div>
-  </div>
-
-  <div class="details__category-entries details__category-entries--hidden" id="detail-entries">
-    <h3 class="details__title" id="detail-entries-title">
-      <span id="lancamentos">Lançamentos</span>
-    </h3>
-    <div class="category-entries-list" id="entries-list">
-      <!-- Lançamentos serão renderizados aqui -->
     </div>
   </div>
 `;
@@ -197,168 +187,7 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
     return Object.entries(mapa).map(([categoria, total]) => ({ categoria, total }));
   };
 
-  /**
-   * Renderiza lançamentos de uma categoria específica
-   */
-  const renderizarLancamentosCategoria = (categoria: string, orcamentos: number[]): void => {
-    const elEntries = container.querySelector('#detail-entries') as HTMLElement;
-    const elEntriesTitle = container.querySelector('#detail-entries-title') as HTMLElement;
-    const elEntriesList = container.querySelector('#entries-list') as HTMLElement;
 
-    if (!elEntries || !elEntriesList || !elEntriesTitle) return;
-
-    // Atualiza título
-    elEntriesTitle.innerHTML = `<span id="lancamentos">Lançamentos da Categoria: ${categoria}</span>`;
-
-    // Filtra lançamentos da categoria nos orçamentos selecionados
-    const lancamentos = currentEntries.filter(e =>
-      orcamentos.includes(e.orcamento) &&
-      (e.categoria || 'Sem categoria') === categoria &&
-      e.valor < 0 // Apenas despesas
-    );
-
-    // Ordena por data (mais recente primeiro)
-    lancamentos.sort((a, b) => {
-      // Entradas sem data vão para o final
-      if (!a.data && !b.data) return 0;
-      if (!a.data) return 1;
-      if (!b.data) return -1;
-
-      const dateA = new Date(a.data).getTime();
-      const dateB = new Date(b.data).getTime();
-
-      // Se alguma data for inválida, coloca no final
-      if (isNaN(dateA) && isNaN(dateB)) return 0;
-      if (isNaN(dateA)) return 1;
-      if (isNaN(dateB)) return -1;
-
-      return dateB - dateA;
-    });
-
-    // Mostra seção e renderiza lançamentos
-    elEntries.classList.remove('details__category-entries--hidden');
-    elEntriesList.innerHTML = '';
-
-    if (lancamentos.length === 0) {
-      elEntriesList.innerHTML = '<p class="category-entries-empty">Nenhum lançamento encontrado nesta categoria.</p>';
-      return;
-    }
-
-    lancamentos.forEach(lancamento => {
-      const entryCard = document.createElement('div');
-      entryCard.className = 'category-entry-card';
-
-      // Formata a data para exibição
-      let dataFormatada = '--';
-      if (lancamento.data && typeof lancamento.data === 'number' && lancamento.data > 0) {
-        // Converte Excel serial para Date
-        const date = excelSerialToDate(lancamento.data, true);
-        if (date) {
-          dataFormatada = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', {
-            hour: '2-digit',
-            minute: '2-digit'
-          });
-        }
-      }
-
-      entryCard.innerHTML = `
-        <div class="category-entry-card__date">${dataFormatada}</div>
-        <div class="category-entry-card__description">${lancamento.descricao || 'Sem descrição'}</div>
-        <div class="category-entry-card__value">${formatarMoeda(lancamento.valor || 0)}</div>
-      `;
-
-      elEntriesList.appendChild(entryCard);
-    });
-
-    // Faz scroll suave até a seção de lançamentos
-    setTimeout(() => {
-      const lancamentosAnchor = document.getElementById('lancamentos');
-      if (lancamentosAnchor) {
-        lancamentosAnchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 100);
-  };
-
-  /**
-   * Renderiza lançamentos de uma conta específica
-   */
-  const renderizarLancamentosConta = (conta: string, orcamentos: number[]): void => {
-    const elEntries = container.querySelector('#detail-entries') as HTMLElement;
-    const elEntriesTitle = container.querySelector('#detail-entries-title') as HTMLElement;
-    const elEntriesList = container.querySelector('#entries-list') as HTMLElement;
-
-    if (!elEntries || !elEntriesList || !elEntriesTitle) return;
-
-    // Atualiza título
-    elEntriesTitle.innerHTML = `<span id="lancamentos">Lançamentos da Conta: ${conta}</span>`;
-
-    // Filtra lançamentos da conta nos orçamentos selecionados
-    const lancamentos = currentEntries.filter(e =>
-      orcamentos.includes(e.orcamento) &&
-      e.conta === conta
-    );
-
-    // Ordena por data (mais recente primeiro)
-    lancamentos.sort((a, b) => {
-      // Entradas sem data vão para o final
-      if (!a.data && !b.data) return 0;
-      if (!a.data) return 1;
-      if (!b.data) return -1;
-
-      const dateA = new Date(a.data).getTime();
-      const dateB = new Date(b.data).getTime();
-
-      // Se alguma data for inválida, coloca no final
-      if (isNaN(dateA) && isNaN(dateB)) return 0;
-      if (isNaN(dateA)) return 1;
-      if (isNaN(dateB)) return -1;
-
-      return dateB - dateA;
-    });
-
-    // Mostra seção e renderiza lançamentos
-    elEntries.classList.remove('details__category-entries--hidden');
-    elEntriesList.innerHTML = '';
-
-    if (lancamentos.length === 0) {
-      elEntriesList.innerHTML = '<p class="category-entries-empty">Nenhum lançamento encontrado nesta conta.</p>';
-      return;
-    }
-
-    lancamentos.forEach(lancamento => {
-      const entryCard = document.createElement('div');
-      entryCard.className = 'category-entry-card';
-
-      // Formata a data para exibição
-      let dataFormatada = '--';
-      if (lancamento.data && typeof lancamento.data === 'number' && lancamento.data > 0) {
-        // Converte Excel serial para Date
-        const date = excelSerialToDate(lancamento.data, true);
-        if (date) {
-          dataFormatada = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', {
-            hour: '2-digit',
-            minute: '2-digit'
-          });
-        }
-      }
-
-      entryCard.innerHTML = `
-        <div class="category-entry-card__date">${dataFormatada}</div>
-        <div class="category-entry-card__description">${lancamento.descricao || 'Sem descrição'}</div>
-        <div class="category-entry-card__value">${formatarMoeda(lancamento.valor || 0)}</div>
-      `;
-
-      elEntriesList.appendChild(entryCard);
-    });
-
-    // Faz scroll suave até a seção de lançamentos
-    setTimeout(() => {
-      const lancamentosAnchor = document.getElementById('lancamentos');
-      if (lancamentosAnchor) {
-        lancamentosAnchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 100);
-  };
 
   /**
    * Renderiza detalhes para orçamentos específicos
@@ -402,26 +231,10 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
           <div class="details__card-value">${formatarMoeda(total)}</div>
         `;
 
-        // Adiciona evento de clique para mostrar lançamentos da conta e fazer scroll
+        // Adiciona evento de clique para navegar para página de lançamentos
         card.addEventListener('click', () => {
-          // Remove seleção anterior dos cards de contas
-          elAccounts.querySelectorAll('.details__card').forEach(c => {
-            c.classList.remove('details__card--selected');
-          });
-
-          // Remove seleção dos cards de categorias
-          const elCategoriesCards = container.querySelector('#detail-categories-cards') as HTMLElement;
-          if (elCategoriesCards) {
-            elCategoriesCards.querySelectorAll('.category-card').forEach(c => {
-              c.classList.remove('category-card--selected');
-            });
-          }
-
-          // Adiciona seleção ao card clicado
-          card.classList.add('details__card--selected');
-
-          // Renderiza lançamentos da conta e faz scroll
-          renderizarLancamentosConta(conta, orcNums);
+          // Navega para a página de lançamentos com filtro de conta
+          window.location.href = `/dashboard/lancamentos.html?conta=${encodeURIComponent(conta)}`;
         });
 
         elAccounts.appendChild(card);
@@ -450,25 +263,10 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
           </div>
         `;
 
-        // Adiciona evento de clique para mostrar lançamentos e fazer scroll
+        // Adiciona evento de clique para navegar para página de lançamentos
         card.addEventListener('click', () => {
-          // Remove seleção anterior dos cards de categorias
-          elCategoriesCards.querySelectorAll('.category-card').forEach(c => {
-            c.classList.remove('category-card--selected');
-          });
-
-          // Remove seleção dos cards de contas
-          if (elAccounts) {
-            elAccounts.querySelectorAll('.details__card').forEach(c => {
-              c.classList.remove('details__card--selected');
-            });
-          }
-
-          // Adiciona seleção ao card clicado
-          card.classList.add('category-card--selected');
-
-          // Renderiza lançamentos da categoria e faz scroll
-          renderizarLancamentosCategoria(item.categoria, orcNums);
+          // Navega para a página de lançamentos com filtro de categoria
+          window.location.href = `/dashboard/lancamentos.html?categoria=${encodeURIComponent(item.categoria)}`;
         });
 
         elCategoriesCards.appendChild(card);
