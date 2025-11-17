@@ -8,14 +8,20 @@
   perspective: 1000px;
   background: linear-gradient(rgba(44, 62, 80, 0.7), rgba(44, 62, 80, 0.7)),
               url('../../img/hero-dashboard.png');
-  background-size: 90%;
-  background-position: center;
+  background-size: cover;
+  background-position: center right;
+  background-repeat: no-repeat;
   background-attachment: fixed;
   color: var(--white-color);
   padding: var(--spacing-3xl) 0;
   text-align: center;
   transform: translateZ(0) rotateX(2deg);
-  animation: heroFloat 1s ease-in-out;
+  animation: heroFloat 1s ease-in-out, slideHorizontal 120s ease-in-out infinite;
+  /* Ocupar altura completa no desktop */
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @keyframes heroFloat {
@@ -48,6 +54,7 @@
   .header-hero {
     background-attachment: scroll;
     background-size: cover;
+    min-height: auto;
     background-repeat: no-repeat;
     background-position: center right;
     animation: slideHorizontal 120s ease-in-out infinite;
@@ -270,12 +277,15 @@
     grid-template-columns: 1fr !important;
   }
 
-  .solution-subsection-reverse .solution-image {
-    order: unset !important;
+  /* No mobile, sempre texto primeiro, depois imagem */
+  .solution-subsection .solution-text,
+  .solution-subsection-reverse .solution-text {
+    order: 1;
   }
 
-  .solution-subsection-reverse .solution-text {
-    order: unset !important;
+  .solution-subsection .solution-image,
+  .solution-subsection-reverse .solution-image {
+    order: 2;
   }
 
   .solution-image {
