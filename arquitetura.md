@@ -541,7 +541,3 @@ const data = await lancamentosService.fetchEntries(0, false);
 - Login e cadastro OAuth google
 - Melhorar a IA para processamento da imagem e geração de lançamentos
 
-## 11. Os detalhes
-- Alert para revogar o token google, configuar para alinhar para um modal com aparencia do modal delete e utros entry-form edit-entry-form
-- Página de lançamento deve fazer o get sheet entries limit=0 e solicitar no cache o limit=100
-- Alert para logout criar um modal

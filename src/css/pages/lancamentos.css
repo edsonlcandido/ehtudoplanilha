@@ -29,13 +29,6 @@ body {
   margin-bottom: 1rem;
 }
 
-.lancamentos__actions {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
 /* ===================================
    BARRA DE PESQUISA
    =================================== */
@@ -367,15 +360,6 @@ body {
 
   .lancamentos__title {
     font-size: 1.5rem;
-  }
-
-  .lancamentos__actions {
-    width: 100%;
-  }
-
-  .lancamentos__actions .button {
-    flex: 1;
-    min-width: 0;
   }
 
   .lancamentos__search-input {
