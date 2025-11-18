@@ -83,15 +83,20 @@ small {
 
 .clear-search-btn {
   position: absolute;
-  right: var(--spacing-sm);
+  right: 8px;
   top: 50%;
   transform: translateY(-50%);
   background: none;
   border: none;
-  font-size: var(--font-size-xl);
+  font-size: 1.25rem;
+  line-height: 1;
   color: var(--text-muted);
   cursor: pointer;
-  padding: var(--spacing-xs);
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: auto;
 }
 
 .clear-search-btn:hover {

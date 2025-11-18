@@ -101,7 +101,11 @@ async function loadEntries(forceRefresh = false): Promise<void> {
   state.isLoading = true;
   state.entries = [];
   renderEntriesList();
-  showLoading();
+  
+  // Só mostra o loader grande se não for refresh manual (botão)
+  if (!forceRefresh) {
+    showLoading();
+  }
 
   try {
     const response = await lancamentosService.fetchEntries(0, forceRefresh);
@@ -127,7 +131,11 @@ async function loadEntries(forceRefresh = false): Promise<void> {
     renderEntriesList();
   } finally {
     state.isLoading = false;
-    hideLoading();
+    
+    // Só esconde o loader grande se não for refresh manual
+    if (!forceRefresh) {
+      hideLoading();
+    }
   }
 }
 
@@ -419,11 +427,23 @@ async function init(): Promise<void> {
   }
 
   // Configura botão de atualizar
-  const refreshBtn = document.getElementById('refreshEntriesBtn');
+  const refreshBtn = document.getElementById('refreshEntriesBtn') as HTMLButtonElement;
   if (refreshBtn) {
-    refreshBtn.addEventListener('click', () => {
+    refreshBtn.addEventListener('click', async () => {
       console.log('🔄 Atualizando lançamentos (forceRefresh=true)...');
-      loadEntries(true); // força atualização do cache
+      
+      // Desabilita botão e mostra loader
+      const originalText = refreshBtn.innerHTML;
+      refreshBtn.disabled = true;
+      refreshBtn.innerHTML = '⏳ Atualizando...';
+      
+      try {
+        await loadEntries(true); // força atualização do cache
+      } finally {
+        // Restaura botão
+        refreshBtn.disabled = false;
+        refreshBtn.innerHTML = originalText;
+      }
     });
   }
 

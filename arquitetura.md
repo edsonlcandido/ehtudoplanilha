@@ -137,7 +137,8 @@ dateTimeLocalToDate(datetimeStr) // 'YYYY-MM-DDTHH:MM' → Date com hora
 | Coluna | Campo     | Tipo  | Observação |
 |--------|-----------|-------|-----------|
 | A      | categoria | Texto | Nome único da categoria (chave) |
-| B      | tipo      | Texto | Livre ou controlado (ex.: "despesa", "receita") |
+| B      | tipo      | Texto | Livre ou controlado (ex.: "QUERO", "PRECISO", "RENDA","INVESTIMENTOS") |
+| C | limite | Numero | 
 
 Regras recomendadas:
 - A coluna `categoria` da aba LANCAMENTOS deve referenciar (por validação de dados no Google Sheets, se possível) uma entrada existente na coluna `categoria` da aba CATEGORIAS.
@@ -160,6 +161,8 @@ Regras recomendadas:
 4. Atualiza `sheet_id` no registro.
 
 ### 4.3 Inserção de Lançamentos
+
+#### 4.3.1 Lançamento Normal (Receita/Despesa)
 1. Usuário preenche formulário:
    - **Data**: campo `datetime-local` coleta data e hora (ex.: `2025-10-20T16:52`)
    - **Orçamento**: campo `date` coleta apenas data (ex.: `2025-10-31`)
@@ -189,11 +192,101 @@ Regras recomendadas:
    - String date "31/10/2025" → Converte internamente para Excel Serial sem hora
 9. Hook atualiza `last_success_append_at`
 10. Retorna sucesso ao frontend
-11. Frontend recebe confirmação e atualiza UI (ou recarrega dados)
+11. Frontend **invalida cache** automaticamente (entries e categories)
+12. Frontend recebe confirmação e recarrega página para exibir novo lançamento
 
 **Importante sobre leitura posterior**: Quando o frontend busca lançamentos via `GET /get-sheet-entries`, o Google Sheets retorna valores `unformatted` (Excel Serial numbers). O frontend então usa os helpers de conversão (`excelSerialToDate`) para exibir as datas de forma legível.
 
 (Validação futura: antes do append, opcionalmente ler `CATEGORIAS!A:A` para garantir que a categoria informada existe; em caso de ausência, retornar erro padronizado.)
+
+#### 4.3.2 Lançamento Futuro
+**Objetivo**: Criar lançamento planejado sem data/conta definida, a ser preenchido posteriormente.
+
+1. Usuário preenche formulário simplificado:
+   - **Orçamento**: campo `date` obrigatório (ex.: `2025-11-30`)
+   - **Valor**: número (positivo=receita, negativo=despesa)
+   - **Descrição**: texto obrigatório
+   - **Categoria**: texto obrigatório
+   - **Observação**: texto opcional
+   - **Data e Conta**: deixadas em branco intencionalmente
+2. Frontend formata orçamento para formato brasileiro (DD/MM/YYYY)
+3. Frontend envia `POST /append-entry` com payload:
+   ```json
+   {
+     "data": "",
+     "conta": "",
+     "valor": -250.00,
+     "descricao": "Conta de luz",
+     "categoria": "Contas",
+     "orcamento": "30/11/2025",
+     "observacao": "Vencimento estimado"
+   }
+   ```
+4. Hook processa normalmente e insere linha na planilha:
+   ```javascript
+   [["", "", -250.00, "Conta de luz", "Contas", "30/11/2025", "Vencimento estimado"]]
+   ```
+5. Lançamento fica visível na planilha como "futuro" (sem data efetiva)
+6. Frontend **invalida cache** automaticamente
+7. Frontend recarrega página
+8. **Completar lançamento futuro**: Usuário pode editar o lançamento posteriormente para adicionar data e conta quando efetivado
+
+**Casos de uso**:
+- Planejar despesas recorrentes (contas, parcelas)
+- Orçamento mensal sem datas específicas
+- Lançamentos a confirmar
+
+#### 4.3.3 Transferência entre Contas
+**Objetivo**: Movimentar valor entre duas contas sem impactar saldo total.
+
+1. Usuário preenche formulário de transferência:
+   - **Data**: campo `datetime-local` coleta data e hora (ex.: `2025-10-20T10:00`)
+   - **Conta Origem**: texto obrigatório (ex.: "Banco A")
+   - **Conta Destino**: texto obrigatório (ex.: "Banco B")
+   - **Valor**: número positivo (ex.: 500.00)
+   - **Orçamento**: campo `date` obrigatório
+   - **Descrição**: texto (opcional, padrão: "Transferência: [origem] → [destino]")
+   - **Categoria**: "Transferência" (categoria especial para transferências)
+2. Frontend formata datas e cria **dois lançamentos**:
+   - **Saída** (débito na conta origem):
+     ```json
+     {
+       "data": "20/10/2025 10:00",
+       "conta": "Banco A",
+       "valor": -500.00,
+       "descricao": "Transferência: Banco A → Banco B",
+       "categoria": "Transferência",
+       "orcamento": "31/10/2025"
+     }
+     ```
+   - **Entrada** (crédito na conta destino):
+     ```json
+     {
+       "data": "20/10/2025 10:00",
+       "conta": "Banco B",
+       "valor": 500.00,
+       "descricao": "Transferência: Banco A → Banco B",
+       "categoria": "Transferência",
+       "orcamento": "31/10/2025"
+     }
+     ```
+3. Frontend envia **duas requisições** `POST /append-entry` sequencialmente
+4. Hook processa cada lançamento normalmente
+5. Resultado na planilha: duas linhas com valores opostos e mesma descrição
+6. Frontend **invalida cache** após ambas as inserções
+7. Frontend recarrega página
+
+**Características**:
+- **Saldo neutro**: soma dos valores é zero (-500 + 500 = 0)
+- **Rastreabilidade**: mesma descrição e timestamp facilita identificação
+- **Categoria especial**: "Transferência" permite filtrar/excluir de relatórios de despesas
+- **Atômica no frontend**: ambas as operações devem ser concluídas ou nenhuma
+
+**Casos de uso**:
+- Transferências entre contas bancárias
+- Movimentação entre carteira e banco
+- Aporte em investimentos
+- Pagamento de cartão com conta corrente
 
 ## 5. Endpoints Custom (Resumo)
 - `GET /google-oauth-callback`

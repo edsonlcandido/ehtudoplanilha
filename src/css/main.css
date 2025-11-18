@@ -25,4 +25,5 @@
 @import './components/loading.css';
 @import './components/user-menu.css';
 @import './components/entry-modal.css';
+@import './components/confirm-modal.css';
 @import './components/toast.css';
