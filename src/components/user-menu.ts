@@ -133,10 +133,81 @@ function renderGuestMenu(menuElement: HTMLElement): void {
  */
 function setupAuthenticatedMenuListeners(): void {
   const logoutBtn = document.getElementById('logoutBtn');
-  
+
   if (logoutBtn) {
     logoutBtn.addEventListener('click', handleLogout);
   }
+  
+  // Configura event listeners do modal de logout
+  const closeLogoutModalBtn = document.getElementById('closeLogoutModal');
+  const cancelLogoutBtn = document.getElementById('cancelLogoutBtn');
+  const confirmLogoutBtn = document.getElementById('confirmLogoutBtn');
+  const logoutModal = document.getElementById('logoutModal');
+  
+  if (closeLogoutModalBtn) {
+    closeLogoutModalBtn.addEventListener('click', closeLogoutModal);
+  }
+  
+  if (cancelLogoutBtn) {
+    cancelLogoutBtn.addEventListener('click', closeLogoutModal);
+  }
+  
+  if (confirmLogoutBtn) {
+    confirmLogoutBtn.addEventListener('click', confirmLogout);
+  }
+  
+  // Fechar modal ao clicar fora
+  if (logoutModal) {
+    logoutModal.addEventListener('click', (e: MouseEvent) => {
+      if (e.target === logoutModal) {
+        closeLogoutModal();
+      }
+    });
+  }
+  
+  // Fechar modal com tecla ESC
+  document.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key === 'Escape' && logoutModal?.style.display === 'flex') {
+      closeLogoutModal();
+    }
+  });
+}/**
+ * Abre o modal de confirmação de logout
+ */
+function openLogoutModal(): void {
+  const modal = document.getElementById('logoutModal');
+  if (modal) {
+    modal.style.display = 'flex';
+  }
+}
+
+/**
+ * Fecha o modal de confirmação de logout
+ */
+function closeLogoutModal(): void {
+  const modal = document.getElementById('logoutModal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
+/**
+ * Confirma e executa o logout
+ */
+function confirmLogout(): void {
+  // Fecha o modal
+  closeLogoutModal();
+  
+  // Adicionar loading state no botão de logout se disponível
+  const logoutBtn = document.getElementById('logoutBtn') as HTMLButtonElement;
+  if (logoutBtn) {
+    logoutBtn.disabled = true;
+    logoutBtn.classList.add('is-loading');
+    logoutBtn.textContent = '🔄 Saindo...';
+  }
+  
+  // Executa o logout
+  logoutAndReload();
 }
 
 /**
@@ -145,20 +216,8 @@ function setupAuthenticatedMenuListeners(): void {
 function handleLogout(event: Event): void {
   event.preventDefault();
   
-  // Confirmação com feedback visual
-  const shouldLogout = confirm('Deseja realmente sair? Você será desconectado.');
-  
-  if (shouldLogout) {
-    // Opcional: adicionar loading state
-    const logoutBtn = event.target as HTMLButtonElement;
-    if (logoutBtn) {
-      logoutBtn.disabled = true;
-      logoutBtn.classList.add('is-loading');
-      logoutBtn.textContent = '🔄 Saindo...';
-    }
-    
-    logoutAndReload();
-  }
+  // Abre modal de confirmação
+  openLogoutModal();
 }
 
 /**

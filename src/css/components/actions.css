@@ -1,0 +1,25 @@
+/**
+ * Actions Component
+ * Container para botões de ação em páginas
+ * Segue metodologia BEM: .lancamentos__actions
+ */
+
+/* Desktop: ações em linha */
+.lancamentos__actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Mobile: ações em coluna, botões ocupam largura total */
+@media (max-width: 768px) {
+  .lancamentos__actions {
+    width: 100%;
+  }
+  
+  .lancamentos__actions .button {
+    flex: 1;
+    min-width: 0;
+  }
+}

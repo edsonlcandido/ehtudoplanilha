@@ -111,6 +111,35 @@
         </main>
     </div>
 
+    <!-- Modal de confirmação de revogação -->
+    <div id="revokeModal" class="confirm-modal" style="display:none;">
+        <div class="confirm-modal__content">
+            <button class="confirm-modal__close" id="closeRevokeModal">×</button>
+            <h3 class="confirm-modal__title">Confirmar Revogação de Autorização</h3>
+            
+            <div class="confirm-modal__body">
+                <p class="confirm-modal__message">
+                    Tem certeza que deseja revogar a autorização do Google Drive?
+                </p>
+                
+                <ul class="confirm-modal__list">
+                    <li class="confirm-modal__list-item">Remover todos os tokens de acesso</li>
+                    <li class="confirm-modal__list-item">Limpar a configuração da planilha</li>
+                    <li class="confirm-modal__list-item">Será necessário autorizar novamente para usar o sistema</li>
+                </ul>
+                
+                <p class="confirm-modal__warning confirm-modal__warning--danger">
+                    Esta ação não pode ser desfeita. Você precisará clicar em "🔑 Autorizar com Google" e fazer login novamente com sua conta Google para continuar usando o sistema.
+                </p>
+            </div>
+            
+            <div class="confirm-modal__actions">
+                <button type="button" class="button" id="cancelRevokeBtn">Cancelar</button>
+                <button type="button" class="button error" id="confirmRevokeBtn">🚫 Revogar Autorização</button>
+            </div>
+        </div>
+    </div>
+
     <!-- FOOTER -->
     <footer class="footer">
         <div class="container">

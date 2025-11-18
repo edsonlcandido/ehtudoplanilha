@@ -99,6 +99,27 @@ async function init(): Promise<void> {
     return;
   }
 
+  // Configura botão de atualizar
+  const refreshBtn = document.getElementById('refreshDashboardBtn') as HTMLButtonElement;
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', async () => {
+      console.log('🔄 Atualizando dashboard (limpando cache)...');
+      
+      // Desabilita botão e mostra loader
+      const originalText = refreshBtn.innerHTML;
+      refreshBtn.disabled = true;
+      refreshBtn.innerHTML = '⏳ Atualizando...';
+      
+      try {
+        await refreshDashboard();
+      } finally {
+        // Restaura botão
+        refreshBtn.disabled = false;
+        refreshBtn.innerHTML = originalText;
+      }
+    });
+  }
+
   // Carrega e renderiza dados
   await loadAndRenderData();
 
@@ -163,16 +184,32 @@ function showConfigurationRequired(): void {
 }
 
 /**
+ * Atualiza o dashboard forçando limpeza de cache
+ */
+async function refreshDashboard(): Promise<void> {
+  mostrarCardCarregamento();
+  
+  try {
+    // Força atualização do cache buscando com forceRefresh=true
+    await loadAndRenderData(true);
+    console.log('✅ Dashboard atualizado com sucesso');
+  } catch (error) {
+    console.error('❌ Erro ao atualizar dashboard:', error);
+    mostrarErro('Erro ao atualizar dados. Tente novamente.');
+  }
+}
+
+/**
  * Carrega e renderiza os dados financeiros
  */
-async function loadAndRenderData(): Promise<void> {
+async function loadAndRenderData(forceRefresh: boolean = false): Promise<void> {
   // Mostra card de carregamento
   mostrarCardCarregamento();
 
   try {
     // Busca os lançamentos usando o serviço (com cache)
     // limit=0 significa buscar todas as entradas
-    const sheetEntriesData = await lancamentosService.fetchEntries(0, false);
+    const sheetEntriesData = await lancamentosService.fetchEntries(0, forceRefresh);
     // As entradas vindas do backend já estão no formato correto para Entry
     const entries: Entry[] = (sheetEntriesData?.entries ?? []) as any as Entry[];
 

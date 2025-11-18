@@ -42,6 +42,12 @@ const elements = {
   createSheetButton: document.getElementById('create-sheet-button') as HTMLButtonElement,
   sheetsList: document.getElementById('sheets-list') as HTMLDivElement,
   loadSheetsButton: document.getElementById('load-sheets-button') as HTMLButtonElement,
+  
+  // Modal de revogação
+  revokeModal: document.getElementById('revokeModal') as HTMLDivElement,
+  closeRevokeModal: document.getElementById('closeRevokeModal') as HTMLButtonElement,
+  cancelRevokeBtn: document.getElementById('cancelRevokeBtn') as HTMLButtonElement,
+  confirmRevokeBtn: document.getElementById('confirmRevokeBtn') as HTMLButtonElement,
 };
 
 // ============================================================================
@@ -366,22 +372,29 @@ async function handleGoogleAuth(): Promise<void> {
 }
 
 /**
- * Revoga a autorização OAuth do Google
+ * Abre o modal de confirmação de revogação
  */
-async function handleRevokeAuth(): Promise<void> {
-  // Confirmar com o usuário
-  const confirmed = confirm(
-    'Tem certeza que deseja revogar a autorização do Google Drive?\n\n' +
-    'Isso irá:\n' +
-    '• Remover todos os tokens de acesso\n' +
-    '• Limpar a configuração da planilha\n' +
-    '• Será necessário autorizar novamente para usar o sistema\n\n' +
-    'Deseja continuar?'
-  );
-  
-  if (!confirmed) {
-    return;
+function openRevokeModal(): void {
+  if (elements.revokeModal) {
+    elements.revokeModal.style.display = 'flex';
   }
+}
+
+/**
+ * Fecha o modal de confirmação de revogação
+ */
+function closeRevokeModal(): void {
+  if (elements.revokeModal) {
+    elements.revokeModal.style.display = 'none';
+  }
+}
+
+/**
+ * Confirma e executa a revogação da autorização OAuth do Google
+ */
+async function confirmRevoke(): Promise<void> {
+  // Fechar o modal
+  closeRevokeModal();
   
   try {
     console.log('🚫 Revogando autorização Google...');
@@ -431,6 +444,13 @@ async function handleRevokeAuth(): Promise<void> {
   }
 }
 
+/**
+ * Handler para abrir o modal de revogação
+ */
+function handleRevokeAuth(): void {
+  openRevokeModal();
+}
+
 // ============================================================================
 // Event Listeners
 // ============================================================================
@@ -443,6 +463,25 @@ function setupEventListeners(): void {
   // Cartão 2: Planilha
   elements.createSheetButton?.addEventListener('click', handleCreateNewSheet);
   elements.loadSheetsButton?.addEventListener('click', handleListSheets);
+  
+  // Modal de revogação
+  elements.closeRevokeModal?.addEventListener('click', closeRevokeModal);
+  elements.cancelRevokeBtn?.addEventListener('click', closeRevokeModal);
+  elements.confirmRevokeBtn?.addEventListener('click', confirmRevoke);
+  
+  // Fechar modal ao clicar fora
+  elements.revokeModal?.addEventListener('click', (e: MouseEvent) => {
+    if (e.target === elements.revokeModal) {
+      closeRevokeModal();
+    }
+  });
+  
+  // Fechar modal com tecla ESC
+  document.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key === 'Escape' && elements.revokeModal?.style.display === 'flex') {
+      closeRevokeModal();
+    }
+  });
 }
 
 // ============================================================================
