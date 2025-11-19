@@ -22,7 +22,7 @@ let elements: LoginElements;
 /**
  * Inicializa a página de login
  */
-function init(): void {
+async function init(): Promise<void> {
   if (config.isDevelopment) {
     console.log('[Login] Página inicializada em modo desenvolvimento');
   }
@@ -50,8 +50,46 @@ function init(): void {
     return;
   }
 
+  // Verificar se há callback OAuth pendente
+  await handleOAuthCallbackIfPresent();
+
   // Setup event listeners
   setupEventListeners();
+}
+
+/**
+ * Verifica e processa callback OAuth se presente na URL
+ */
+async function handleOAuthCallbackIfPresent(): Promise<void> {
+  if (AuthOAuthService.hasOAuthCallback()) {
+    if (config.isDevelopment) {
+      console.log('[Login] Detectado callback OAuth, processando...');
+    }
+
+    try {
+      hideMessages();
+      showSuccess('Processando autenticação...');
+
+      // Processa o callback OAuth
+      const success = await AuthOAuthService.handleOAuthCallback();
+
+      if (success) {
+        if (config.isDevelopment) {
+          const user = AuthOAuthService.getCurrentUser();
+          console.log('[Login] OAuth callback processado com sucesso:', user?.email);
+        }
+
+        showSuccess('Login realizado com sucesso! Redirecionando...');
+
+        setTimeout(() => {
+          redirectToDashboard();
+        }, 1000);
+      }
+    } catch (error: any) {
+      console.error('[Login] Erro ao processar callback OAuth:', error);
+      showError('Erro ao processar autenticação. Tente novamente.');
+    }
+  }
 }
 
 /**

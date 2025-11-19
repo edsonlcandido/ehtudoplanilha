@@ -330,7 +330,7 @@ function setupGoogleRegisterHandler(elements: RegisterElements): void {
 // Inicialização
 // ============================================================================
 
-function init(): void {
+async function init(): Promise<void> {
   // Verifica se já está autenticado
   if (isAuthenticated()) {
     redirectToDashboard();
@@ -344,12 +344,50 @@ function init(): void {
     return;
   }
 
+  // Verifica e processa callback OAuth se presente
+  await handleOAuthCallbackIfPresent(elements);
+
   // Configura handlers
   setupFormHandler(elements);
   setupInputValidation(elements);
   setupGoogleRegisterHandler(elements);
 
   console.log('✅ Página de registro inicializada');
+}
+
+/**
+ * Verifica e processa callback OAuth se presente na URL
+ */
+async function handleOAuthCallbackIfPresent(elements: RegisterElements): Promise<void> {
+  if (AuthOAuthService.hasOAuthCallback()) {
+    if (config.isDevelopment) {
+      console.log('[Registro] Detectado callback OAuth, processando...');
+    }
+
+    try {
+      hideMessages(elements);
+      showSuccess(elements, 'Processando autenticação...');
+
+      // Processa o callback OAuth
+      const success = await AuthOAuthService.handleOAuthCallback();
+
+      if (success) {
+        if (config.isDevelopment) {
+          const user = AuthOAuthService.getCurrentUser();
+          console.log('[Registro] OAuth callback processado com sucesso:', user?.email);
+        }
+
+        showSuccess(elements, 'Conta criada com sucesso! Redirecionando...');
+
+        setTimeout(() => {
+          redirectToDashboard();
+        }, 1000);
+      }
+    } catch (error: any) {
+      console.error('[Registro] Erro ao processar callback OAuth:', error);
+      showError(elements, 'Erro ao processar autenticação. Tente novamente.');
+    }
+  }
 }
 
 // Inicializa quando o DOM estiver pronto
