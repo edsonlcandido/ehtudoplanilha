@@ -70,6 +70,31 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
   // Estado de orçamentos selecionados e entries
   let selectedBudgets = budgetsInInterval.map(b => b.orcamento);
   let currentEntries = entries || [];
+  
+  // Estado das contas excluídas do saldo total (útil para cartões de crédito)
+  // Carrega do localStorage
+  const STORAGE_KEY = 'excludedAccounts';
+  const loadExcludedAccounts = (): Set<string> => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        return new Set(JSON.parse(stored));
+      }
+    } catch (error) {
+      console.error('Erro ao carregar contas excluídas:', error);
+    }
+    return new Set<string>();
+  };
+  
+  const saveExcludedAccounts = (accounts: Set<string>): void => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(accounts)));
+    } catch (error) {
+      console.error('Erro ao salvar contas excluídas:', error);
+    }
+  };
+  
+  const excludedAccounts = loadExcludedAccounts();
 
   /**
    * Renderiza o gráfico de despesas por tipo
@@ -183,7 +208,7 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
     return Object.entries(mapa).map(([conta, total]) => ({ conta, total }));
   };
 
-/**
+  /**
    * ✨ PASSO 5: Renderiza TODAS as contas (sem filtro de budget)
    */
   const renderizarTodasAsContas = (): void => {
@@ -195,8 +220,13 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
     
     console.log('🎨 Renderizando todas as contas:', accountSummary);
 
-    // Calcula saldo total
-    const saldoTotal = accountSummary.reduce((acc, item) => acc + item.total, 0);
+    // Calcula saldo total excluindo contas desmarcadas
+    const saldoTotal = accountSummary.reduce((acc, item) => {
+      if (excludedAccounts.has(item.conta)) {
+        return acc; // Não adiciona se a conta está excluída
+      }
+      return acc + item.total;
+    }, 0);
     
     if (elSaldo) {
       elSaldo.textContent = formatarMoeda(saldoTotal);
@@ -208,43 +238,56 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
       
       accountSummary.forEach(({ conta, total }) => {
         const card = document.createElement('div');
-        card.className = 'details__card details__card--clickable';
+        const isExcluded = excludedAccounts.has(conta);
+        card.className = `details__card details__card--clickable${isExcluded ? ' details__card--excluded' : ''}`;
         card.dataset.conta = conta;
-        card.innerHTML = `
-          <div class="details__card-title">${conta}</div>
-          <div class="details__card-value">${formatarMoeda(total)}</div>
+        
+        // Cria estrutura do card com checkbox
+        const cardContent = document.createElement('div');
+        cardContent.className = 'details__card-content';
+        
+        cardContent.innerHTML = `
+          <div class="details__card-info">
+            <span class="details__card-icon">${isExcluded ? '💳' : ''}</span>
+            <span class="details__card-title">${conta}</span>
+            <span class="details__card-value">${formatarMoeda(total)}</span>
+          </div>
         `;
+        
+        card.appendChild(cardContent);
 
-        // Adiciona evento de clique para mostrar lançamentos da conta
+        // Clique no card para toggle incluir/excluir do saldo
         card.addEventListener('click', () => {
-          console.log('🖱️ Clicou na conta:', conta);
+          const iconEl = cardContent.querySelector('.details__card-icon') as HTMLElement;
           
-          // Remove seleção anterior dos cards de contas
-          elAccounts.querySelectorAll('.details__card').forEach(c => {
-            c.classList.remove('details__card--selected');
-          });
-
-          // Remove seleção dos cards de categorias
-          const elCategoriesCards = container.querySelector('#detail-categories-cards') as HTMLElement;
-          if (elCategoriesCards) {
-            elCategoriesCards.querySelectorAll('.category-card').forEach(c => {
-              c.classList.remove('category-card--selected');
-            });
+          if (excludedAccounts.has(conta)) {
+            // Incluir no saldo
+            excludedAccounts.delete(conta);
+            card.classList.remove('details__card--excluded');
+            if (iconEl) iconEl.textContent = '';
+          } else {
+            // Excluir do saldo
+            excludedAccounts.add(conta);
+            card.classList.add('details__card--excluded');
+            if (iconEl) iconEl.textContent = '💳';
           }
-
-          // Adiciona seleção ao card clicado
-          card.classList.add('details__card--selected');
-
-          // Renderiza lançamentos da conta (TODOS os entries, sem filtro de budget)
-          renderizarLancamentosContaTodos(conta);
+          
+          // Salva no localStorage
+          saveExcludedAccounts(excludedAccounts);
+          
+          // Recalcula e atualiza saldo total
+          const novoSaldo = accountSummary.reduce((acc, item) => {
+            if (excludedAccounts.has(item.conta)) return acc;
+            return acc + item.total;
+          }, 0);
+          
+          if (elSaldo) elSaldo.textContent = formatarMoeda(novoSaldo);
         });
 
         elAccounts.appendChild(card);
       });
     }
   };
-
-
 
   /**
    * Agrupa lançamentos por categoria
