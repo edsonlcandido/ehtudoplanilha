@@ -198,10 +198,11 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](./LICENSE.md) pa
 
 **Edson Candido**
 
-- Website: [ehtudo.app](https://www.ehtudo.app)
+- Website: [planilha.ehtudo.app](https://planilha.ehtudo.app)
 - Email: planilha@ehtudo.app
 - GitHub: [@edsonlcandido](https://github.com/edsonlcandido)
+- GitHub: [@ehtudoapp](https://github.com/ehtudoapp)
 
 ---
 
-**Produzido por [Eh!Tudo.app](https://www.ehtudo.app)** - Simplificando suas finanças.
+**Produzido por [Eh!Tudo.app](https://www.ehtudo.app)**.
