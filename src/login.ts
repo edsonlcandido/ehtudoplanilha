@@ -22,9 +22,26 @@ let elements: LoginElements;
 /**
  * Inicializa a página de login
  */
-function init(): void {
+async function init(): Promise<void> {
   if (config.isDevelopment) {
     console.log('[Login] Página inicializada em modo desenvolvimento');
+  }
+
+  // Verificar se há callback OAuth pendente (usuário retornou do Google)
+  if (AuthOAuthService.hasOAuthCallback()) {
+    if (config.isDevelopment) {
+      console.log('[Login] Detectado callback OAuth, processando...');
+    }
+
+    const success = await AuthOAuthService.handleOAuthCallback();
+    
+    if (success) {
+      // Redireciona para o dashboard após login OAuth bem-sucedido
+      redirectToDashboard();
+      return;
+    } else {
+      console.error('[Login] Falha ao processar callback OAuth');
+    }
   }
 
   // Se já estiver autenticado, redirecionar para dashboard
@@ -192,7 +209,7 @@ function isValidEmail(email: string): boolean {
 /**
  * Handler para login com Google OAuth
  */
-async function handleGoogleLogin(event: Event): Promise<void> {
+function handleGoogleLogin(event: Event): void {
   event.preventDefault();
   
   hideMessages();
@@ -202,20 +219,12 @@ async function handleGoogleLogin(event: Event): Promise<void> {
       console.log('[Login] Iniciando login com Google OAuth...');
     }
     
-    // Inicia o fluxo OAuth com Google
-    // O PocketBase abre popup automaticamente e gerencia todo o fluxo
-    const authData = await AuthOAuthService.loginWithGoogle();
-    
-    // Se chegou aqui, o login foi bem-sucedido
-    if (config.isDevelopment) {
-      console.log('[Login] Login OAuth bem-sucedido:', authData.record.email);
-    }
-    
-    showSuccess('Login realizado com sucesso! Redirecionando...');
-    
-    setTimeout(() => {
-      redirectToDashboard();
-    }, 1000);
+    // Inicia o fluxo OAuth com Google (redirect para o Google)
+    // Não é async para evitar problemas com popup blocking
+    AuthOAuthService.loginWithGoogle().catch((error: any) => {
+      console.error('[Login] Erro ao iniciar login com Google:', error);
+      showError('Erro ao iniciar login com Google. Tente novamente.');
+    });
     
   } catch (error: any) {
     console.error('[Login] Erro ao fazer login com Google:', error);

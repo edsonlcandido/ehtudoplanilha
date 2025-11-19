@@ -269,7 +269,7 @@ function setupInputValidation(elements: RegisterElements): void {
 /**
  * Handler para registro com Google OAuth
  */
-async function handleGoogleRegister(elements: RegisterElements): Promise<void> {
+function handleGoogleRegister(elements: RegisterElements): void {
   hideMessages(elements);
   
   try {
@@ -277,21 +277,12 @@ async function handleGoogleRegister(elements: RegisterElements): Promise<void> {
       console.log('[Registro] Iniciando registro com Google OAuth...');
     }
     
-    // Inicia o fluxo OAuth com Google (mesmo fluxo do login)
-    // O PocketBase abre popup automaticamente e gerencia todo o fluxo
-    const authData = await AuthOAuthService.loginWithGoogle();
-    
-    // Se chegou aqui, o registro foi bem-sucedido
-    if (config.isDevelopment) {
-      console.log('[Registro] Registro OAuth bem-sucedido:', authData.record.email);
-      console.log('[Registro] Novo usuário:', authData.meta?.isNew);
-    }
-    
-    showSuccess(elements, 'Conta criada com sucesso! Redirecionando...');
-    
-    setTimeout(() => {
-      redirectToDashboard();
-    }, 1000);
+    // Inicia o fluxo OAuth com Google (redirect para o Google)
+    // Não é async para evitar problemas com popup blocking
+    AuthOAuthService.loginWithGoogle().catch((error: any) => {
+      console.error('[Registro] Erro ao iniciar registro com Google:', error);
+      showError(elements, 'Erro ao iniciar registro com Google. Tente novamente.');
+    });
     
   } catch (error: any) {
     console.error('[Registro] Erro ao registrar com Google:', error);
@@ -319,7 +310,24 @@ function setupGoogleRegisterHandler(elements: RegisterElements): void {
 // Inicialização
 // ============================================================================
 
-function init(): void {
+async function init(): Promise<void> {
+  // Verificar se há callback OAuth pendente (usuário retornou do Google)
+  if (AuthOAuthService.hasOAuthCallback()) {
+    if (config.isDevelopment) {
+      console.log('[Registro] Detectado callback OAuth, processando...');
+    }
+
+    const success = await AuthOAuthService.handleOAuthCallback();
+    
+    if (success) {
+      // Redireciona para o dashboard após registro OAuth bem-sucedido
+      redirectToDashboard();
+      return;
+    } else {
+      console.error('[Registro] Falha ao processar callback OAuth');
+    }
+  }
+
   // Verifica se já está autenticado
   if (isAuthenticated()) {
     redirectToDashboard();
