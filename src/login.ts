@@ -22,26 +22,9 @@ let elements: LoginElements;
 /**
  * Inicializa a página de login
  */
-async function init(): Promise<void> {
+function init(): void {
   if (config.isDevelopment) {
     console.log('[Login] Página inicializada em modo desenvolvimento');
-  }
-
-  // Verificar se há callback OAuth pendente (usuário retornou do Google)
-  if (AuthOAuthService.hasOAuthCallback()) {
-    if (config.isDevelopment) {
-      console.log('[Login] Detectado callback OAuth, processando...');
-    }
-
-    const success = await AuthOAuthService.handleOAuthCallback();
-    
-    if (success) {
-      // Redireciona para o dashboard após login OAuth bem-sucedido
-      redirectToDashboard();
-      return;
-    } else {
-      console.error('[Login] Falha ao processar callback OAuth');
-    }
   }
 
   // Se já estiver autenticado, redirecionar para dashboard
@@ -208,35 +191,20 @@ function isValidEmail(email: string): boolean {
 
 /**
  * Handler para login com Google OAuth
+ * IMPORTANTE: Não é async para evitar popup blocking
  */
 function handleGoogleLogin(event: Event): void {
   event.preventDefault();
   
   hideMessages();
   
-  try {
-    if (config.isDevelopment) {
-      console.log('[Login] Iniciando login com Google OAuth...');
-    }
-    
-    // Inicia o fluxo OAuth com Google (redirect para o Google)
-    // Não é async para evitar problemas com popup blocking
-    AuthOAuthService.loginWithGoogle().catch((error: any) => {
-      console.error('[Login] Erro ao iniciar login com Google:', error);
-      showError('Erro ao iniciar login com Google. Tente novamente.');
-    });
-    
-  } catch (error: any) {
-    console.error('[Login] Erro ao fazer login com Google:', error);
-    
-    let errorMessage = 'Erro ao fazer login com Google';
-    
-    if (error?.message) {
-      errorMessage = error.message;
-    }
-    
-    showError(errorMessage);
+  if (config.isDevelopment) {
+    console.log('[Login] Iniciando login com Google OAuth...');
   }
+  
+  // Inicia o fluxo OAuth com Google
+  // O método loginWithGoogle() usa promises internamente e trata os erros
+  AuthOAuthService.loginWithGoogle();
 }
 
 /**

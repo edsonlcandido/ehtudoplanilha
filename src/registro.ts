@@ -268,33 +268,18 @@ function setupInputValidation(elements: RegisterElements): void {
 
 /**
  * Handler para registro com Google OAuth
+ * IMPORTANTE: Não é async para evitar popup blocking
  */
 function handleGoogleRegister(elements: RegisterElements): void {
   hideMessages(elements);
   
-  try {
-    if (config.isDevelopment) {
-      console.log('[Registro] Iniciando registro com Google OAuth...');
-    }
-    
-    // Inicia o fluxo OAuth com Google (redirect para o Google)
-    // Não é async para evitar problemas com popup blocking
-    AuthOAuthService.loginWithGoogle().catch((error: any) => {
-      console.error('[Registro] Erro ao iniciar registro com Google:', error);
-      showError(elements, 'Erro ao iniciar registro com Google. Tente novamente.');
-    });
-    
-  } catch (error: any) {
-    console.error('[Registro] Erro ao registrar com Google:', error);
-    
-    let errorMessage = 'Erro ao registrar com Google';
-    
-    if (error?.message) {
-      errorMessage = error.message;
-    }
-    
-    showError(elements, errorMessage);
+  if (config.isDevelopment) {
+    console.log('[Registro] Iniciando registro com Google OAuth...');
   }
+  
+  // Inicia o fluxo OAuth com Google
+  // O método loginWithGoogle() usa promises internamente e trata os erros
+  AuthOAuthService.loginWithGoogle();
 }
 
 /**
@@ -310,24 +295,7 @@ function setupGoogleRegisterHandler(elements: RegisterElements): void {
 // Inicialização
 // ============================================================================
 
-async function init(): Promise<void> {
-  // Verificar se há callback OAuth pendente (usuário retornou do Google)
-  if (AuthOAuthService.hasOAuthCallback()) {
-    if (config.isDevelopment) {
-      console.log('[Registro] Detectado callback OAuth, processando...');
-    }
-
-    const success = await AuthOAuthService.handleOAuthCallback();
-    
-    if (success) {
-      // Redireciona para o dashboard após registro OAuth bem-sucedido
-      redirectToDashboard();
-      return;
-    } else {
-      console.error('[Registro] Falha ao processar callback OAuth');
-    }
-  }
-
+function init(): void {
   // Verifica se já está autenticado
   if (isAuthenticated()) {
     redirectToDashboard();

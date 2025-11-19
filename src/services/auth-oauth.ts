@@ -48,98 +48,46 @@ export class AuthOAuthService {
 
   /**
    * Inicia o fluxo OAuth com o Google
-   * Usa redirect manual para evitar problemas com EventSource/realtime
+   * Usa o método nativo do PocketBase com tratamento adequado
    */
-  static async loginWithGoogle(): Promise<void> {
+  static loginWithGoogle(): void {
     try {
       if (config.isDevelopment) {
         console.log('[AuthOAuth] Iniciando fluxo OAuth com Google...');
       }
 
-      // Salva a URL atual para retornar após o OAuth
-      sessionStorage.setItem('oauth_redirect_after', window.location.pathname);
-
-      // Lista os métodos de autenticação para obter as URLs do OAuth
-      const authMethods: any = await pb.collection('users').listAuthMethods();
-      
-      if (!authMethods.authProviders || authMethods.authProviders.length === 0) {
-        throw new Error('Nenhum provedor OAuth configurado no PocketBase');
-      }
-
-      // Encontra o provedor Google
-      const googleProvider = authMethods.authProviders.find(
-        (p: any) => p.name === 'google'
-      );
-
-      if (!googleProvider) {
-        throw new Error('Provedor Google não está configurado no PocketBase');
-      }
-
-      if (config.isDevelopment) {
-        console.log('[AuthOAuth] Provedor Google encontrado:', googleProvider);
-      }
-
-      // Redireciona para a URL de autorização do Google
-      // O PocketBase retornará para /api/oauth2-redirect após a autorização
-      const redirectUrl = `${pb.baseUrl}/api/oauth2-redirect`;
-      const authUrl = `${googleProvider.authUrl}${redirectUrl}`;
-      
-      if (config.isDevelopment) {
-        console.log('[AuthOAuth] Redirecionando para:', authUrl);
-      }
-
-      window.location.href = authUrl;
+      // Usa o método nativo do PocketBase que gerencia tudo automaticamente
+      // IMPORTANTE: Não usar async/await no click handler para evitar popup blocking
+      pb.collection('users').authWithOAuth2({ provider: 'google' })
+        .then((authData: any) => {
+          if (config.isDevelopment) {
+            console.log('[AuthOAuth] Autenticação OAuth bem-sucedida:', authData.record.email);
+            console.log('[AuthOAuth] Novo usuário:', authData.meta?.isNew);
+          }
+          
+          // Redireciona para o dashboard após sucesso
+          window.location.href = '/dashboard/';
+        })
+        .catch((error: any) => {
+          console.error('[AuthOAuth] Erro no fluxo OAuth:', error);
+          
+          // Mostra mensagem de erro amigável
+          let errorMessage = 'Erro ao fazer login com Google';
+          if (error?.message) {
+            if (error.message.includes('popup')) {
+              errorMessage = 'Por favor, habilite popups para este site';
+            } else if (error.message.includes('EventSource')) {
+              errorMessage = 'Erro de conexão. Tente novamente';
+            } else {
+              errorMessage = error.message;
+            }
+          }
+          
+          alert(errorMessage);
+        });
     } catch (error: any) {
-      console.error('[AuthOAuth] Erro no fluxo OAuth:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Verifica se há parâmetros OAuth de retorno na URL
-   */
-  static hasOAuthCallback(): boolean {
-    const params = new URLSearchParams(window.location.search);
-    return params.has('code') && params.has('state');
-  }
-
-  /**
-   * Processa o callback OAuth após retorno do /api/oauth2-redirect
-   */
-  static async handleOAuthCallback(): Promise<boolean> {
-    if (!this.hasOAuthCallback()) {
-      return false;
-    }
-
-    try {
-      if (config.isDevelopment) {
-        console.log('[AuthOAuth] Processando callback OAuth...');
-      }
-
-      // Aguarda um momento para o PocketBase processar o OAuth
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      // Verifica se o usuário está autenticado
-      if (this.isAuthenticated()) {
-        const user = this.getCurrentUser();
-        
-        if (config.isDevelopment) {
-          console.log('[AuthOAuth] OAuth bem-sucedido:', user?.email);
-        }
-
-        // Limpa os parâmetros da URL
-        const url = new URL(window.location.href);
-        url.searchParams.delete('code');
-        url.searchParams.delete('state');
-        window.history.replaceState({}, document.title, url.toString());
-
-        return true;
-      }
-
-      return false;
-    } catch (error) {
-      console.error('[AuthOAuth] Erro ao processar callback:', error);
-      return false;
+      console.error('[AuthOAuth] Erro ao iniciar OAuth:', error);
+      alert('Erro ao iniciar login com Google. Tente novamente.');
     }
   }
 

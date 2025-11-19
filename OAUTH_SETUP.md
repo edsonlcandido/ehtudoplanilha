@@ -96,16 +96,16 @@ export GOOGLE_REDIRECT_URI="https://seudominio.com/google-oauth-callback"
 1. **Usuário clica em "Entrar com Google"** na página de login ou registro
 2. **Frontend inicia o fluxo OAuth**:
    - Chama `AuthOAuthService.loginWithGoogle()`
-   - Obtém URL de autorização do PocketBase
-   - Redireciona a página inteira para a página de consentimento do Google
+   - PocketBase SDK abre popup com a página de consentimento do Google
 3. **Usuário autoriza o aplicativo** no Google
-4. **Google redireciona para `/api/oauth2-redirect`** com código de autorização
+4. **Google redireciona para `/api/oauth2-redirect`** (endpoint do PocketBase)
 5. **PocketBase processa automaticamente**:
    - Troca o código por tokens de acesso
    - Cria usuário se não existir (registro automático)
-   - Autentica o usuário
-   - Redireciona de volta para a página de login/registro
-6. **Frontend detecta callback OAuth** e redireciona para o dashboard
+   - Autentica o usuário e fecha o popup
+6. **Frontend recebe dados de autenticação** e redireciona para o dashboard
+
+**Nota**: O método usa o `authWithOAuth2()` do PocketBase SDK que gerencia todo o fluxo OAuth automaticamente, incluindo popup e comunicação via realtime connection.
 
 ### Diferença entre OAuth para Auth e OAuth para Sheets
 
