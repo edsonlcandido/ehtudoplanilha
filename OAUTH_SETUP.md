@@ -53,10 +53,8 @@ Este documento descreve como configurar a autenticação OAuth do Google para pe
      - Desenvolvimento: `http://localhost:8090`
      - Produção: `https://seudominio.com`
    - **URIs de redirecionamento autorizados**:
-     - Desenvolvimento: `http://localhost:8090/login.html`
-     - Desenvolvimento: `http://localhost:8090/registro.html`
-     - Produção: `https://seudominio.com/login.html`
-     - Produção: `https://seudominio.com/registro.html`
+     - Desenvolvimento: `http://localhost:8090/api/oauth2-redirect`
+     - Produção: `https://seudominio.com/api/oauth2-redirect`
 5. Clique em **CRIAR**
 6. Anote o **ID do cliente** e o **Segredo do cliente**
 
@@ -98,14 +96,14 @@ export GOOGLE_REDIRECT_URI="https://seudominio.com/google-oauth-callback"
 1. **Usuário clica em "Entrar com Google"** na página de login ou registro
 2. **Frontend inicia o fluxo OAuth**:
    - Chama `AuthOAuthService.loginWithGoogle()`
-   - PocketBase redireciona para a página de consentimento do Google
+   - PocketBase abre popup com a página de consentimento do Google
 3. **Usuário autoriza o aplicativo** no Google
-4. **Google redireciona de volta** com código de autorização
-5. **PocketBase processa automaticamente**:
+4. **Google redireciona para `/api/oauth2-redirect`** com código de autorização
+5. **PocketBase processa automaticamente via realtime connection**:
    - Troca o código por tokens de acesso
    - Cria usuário se não existir (registro automático)
-   - Autentica o usuário
-6. **Frontend detecta autenticação** e redireciona para o dashboard
+   - Autentica o usuário e fecha o popup
+6. **Frontend recebe resposta** e redireciona para o dashboard
 
 ### Diferença entre OAuth para Auth e OAuth para Sheets
 
@@ -131,8 +129,8 @@ O sistema usa OAuth do Google para duas finalidades diferentes:
 - `src/registro.html` e `src/registro.ts` - Página de registro com botão Google
 
 ### Backend
-- `pb_hooks/setup-oauth-providers.pb.js` - Configura provedor OAuth no PocketBase
-- `pb_hooks/google-oauth-callback.pb.js` - Callback para Sheets OAuth (diferente)
+- Configuração OAuth no PocketBase Admin UI
+- `pb_hooks/google-oauth-callback.pb.js` - Callback para Sheets OAuth (diferente, não relacionado ao login)
 
 ## Testes
 
@@ -147,11 +145,10 @@ O sistema usa OAuth do Google para duas finalidades diferentes:
 
 ### Verificar Configuração
 
-1. Verifique se o PocketBase carregou as variáveis:
-   ```bash
-   # Nos logs do PocketBase você deve ver:
-   [OAuth Setup] ✅ Provedor OAuth Google configurado com sucesso
-   ```
+1. Verifique se o OAuth está configurado no Admin UI:
+   - Acesse o Admin UI: `http://localhost:8090/_/`
+   - Vá em Collections > users > Edit (⚙️) > Options > OAuth2
+   - Confirme que o Google está habilitado e configurado
 
 2. Verifique se o usuário foi criado:
    - Acesse o Admin UI do PocketBase: `http://localhost:8090/_/`
