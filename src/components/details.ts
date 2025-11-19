@@ -557,31 +557,22 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
     const elAccounts = container.querySelector('#detail-accounts-cards') as HTMLElement;
     const elCategoriesCards = container.querySelector('#detail-categories-cards') as HTMLElement;
 
-    // Filtra lançamentos dos orçamentos selecionados
+    // Filtra lançamentos dos orçamentos selecionados para top 10 categorias
     const detalhe = currentEntries.filter(e => orcNums.includes(e.orcamento));
 
-    if (!detalhe.length) {
-      if (elSaldo) elSaldo.textContent = formatarMoeda(0);
-      // Renderiza gráfico mesmo sem detalhes (usando orçamentos selecionados)
-      await renderizarGraficoRosca(orcNums);
-      return;
-    }
-
-    const saldoTotal = detalhe.reduce((acc, e) => acc + (e.valor || 0), 0);
-
-    if (elSaldo) elSaldo.textContent = formatarMoeda(saldoTotal);
-
-// ✨ PASSO 7: Renderiza TODAS as contas (não mais filtradas por budget)
+// ✨ Renderiza TODAS as contas (não mais filtradas por budget) - saldo sempre total
     renderizarTodasAsContas();
 
-    // Atualiza top 10 categorias como cards (apenas despesas)
+    // Atualiza top 10 categorias como cards (apenas despesas) - filtradas por orçamento
     if (elCategoriesCards) {
       elCategoriesCards.innerHTML = '';
 
-      const topCategorias = agruparPorCategoria(detalhe)
-        .filter(item => item.total < 0)
-        .sort((a, b) => a.total - b.total)
-        .slice(0, 10);
+      const topCategorias = detalhe.length > 0 
+        ? agruparPorCategoria(detalhe)
+            .filter(item => item.total < 0)
+            .sort((a, b) => a.total - b.total)
+            .slice(0, 10)
+        : [];
 
       topCategorias.forEach((item, idx) => {
         const card = document.createElement('div');
@@ -625,17 +616,13 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
     await renderizarGraficoRosca(orcNums);
   };
 
-// ✨ PASSO 7: Renderização inicial - mostra TODAS as contas desde o início
+// ✨ Renderização inicial - mostra TODAS as contas desde o início
   container.innerHTML = detailsTemplate;
   container.style.display = '';
   renderizarTodasAsContas();
   
-  // Mantém a lógica de gráfico e top 10 para budgets selecionados
-  if (selectedBudgets.length > 0) {
-    await renderizarDetalhes(selectedBudgets);
-  } else {
-    await renderizarGraficoRosca([]);
-  }
+  // Renderiza top 10 e gráfico para budgets selecionados (ou vazio se nenhum)
+  await renderizarDetalhes(selectedBudgets);
 
   // Toggle de seleção ao clicar no card
   document.addEventListener('detail:show', async (ev) => {
