@@ -19,7 +19,7 @@ interface OAuthUser {
 /**
  * Interface para resultado da autenticação OAuth
  */
-interface OAuthAuthData {
+export interface OAuthAuthData {
   record: OAuthUser;
   token: string;
   meta?: {
@@ -38,7 +38,7 @@ export class AuthOAuthService {
    */
   static async listOAuthProviders(): Promise<any[]> {
     try {
-      const methods = await pb.collection('users').listAuthMethods();
+      const methods: any = await pb.collection('users').listAuthMethods();
       return methods.authProviders || [];
     } catch (error) {
       console.error('[AuthOAuth] Erro ao listar provedores OAuth:', error);
