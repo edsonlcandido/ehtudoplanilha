@@ -230,6 +230,6 @@ export function aggregateByAccount(entries: Entry[] = []): AccountSummary[] {
     count: data.count
   }));
 
-  // Ordena por saldo decrescente (maior saldo primeiro)
-  return result.sort((a, b) => b.total - a.total);
+  //Ordene por conta alfabéticamente
+  return result.sort((a, b) => a.conta.localeCompare(b.conta));
 }
