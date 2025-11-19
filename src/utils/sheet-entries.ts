@@ -43,6 +43,12 @@ export interface BudgetInfo {
   label: string;
 }
 
+export interface AccountSummary {
+  conta: string;
+  total: number;
+  count: number;
+}
+
 /**
  * Filtra entries por intervalo de orçamento
  * Padrão: hoje -5 dias até hoje +35 dias
@@ -192,4 +198,38 @@ export function budgetsInEntries(
 
   // Retorna array ordenado por orcamento ascendente
   return Array.from(map.values()).sort((a, b) => a.orcamento - b.orcamento);
+}
+
+/**
+ * ✨ PASSO 1: Agrega entries por conta
+ * Retorna array com resumo de cada conta (saldo total e quantidade de lançamentos)
+ * 
+ * @param entries - Array de entries
+ * @returns Array de resumos ordenados por saldo decrescente
+ */
+export function aggregateByAccount(entries: Entry[] = []): AccountSummary[] {
+  const map = new Map<string, { total: number; count: number }>();
+
+  entries.forEach(e => {
+    // Ignora lançamentos sem conta definida ou com conta vazia
+    if (!e.conta || e.conta.trim() === '') return;
+
+    const valor = Number(e.valor) || 0;
+    const existing = map.get(e.conta) || { total: 0, count: 0 };
+    
+    existing.total += valor;
+    existing.count += 1;
+    
+    map.set(e.conta, existing);
+  });
+
+  // Converte para array
+  const result: AccountSummary[] = Array.from(map.entries()).map(([conta, data]) => ({
+    conta,
+    total: Number(data.total.toFixed(2)),
+    count: data.count
+  }));
+
+  // Ordena por saldo decrescente (maior saldo primeiro)
+  return result.sort((a, b) => b.total - a.total);
 }

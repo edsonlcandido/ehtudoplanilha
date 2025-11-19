@@ -183,6 +183,69 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
     return Object.entries(mapa).map(([conta, total]) => ({ conta, total }));
   };
 
+/**
+   * ✨ PASSO 5: Renderiza TODAS as contas (sem filtro de budget)
+   */
+  const renderizarTodasAsContas = (): void => {
+    const elSaldo = container.querySelector('#detail-saldo') as HTMLElement;
+    const elAccounts = container.querySelector('#detail-accounts-cards') as HTMLElement;
+
+    // Pega as contas agregadas do estado global
+    const accountSummary = window.accountSummary || [];
+    
+    console.log('🎨 Renderizando todas as contas:', accountSummary);
+
+    // Calcula saldo total
+    const saldoTotal = accountSummary.reduce((acc, item) => acc + item.total, 0);
+    
+    if (elSaldo) {
+      elSaldo.textContent = formatarMoeda(saldoTotal);
+    }
+
+    // Renderiza cards de contas
+    if (elAccounts) {
+      elAccounts.innerHTML = '';
+      
+      accountSummary.forEach(({ conta, total }) => {
+        const card = document.createElement('div');
+        card.className = 'details__card details__card--clickable';
+        card.dataset.conta = conta;
+        card.innerHTML = `
+          <div class="details__card-title">${conta}</div>
+          <div class="details__card-value">${formatarMoeda(total)}</div>
+        `;
+
+        // Adiciona evento de clique para mostrar lançamentos da conta
+        card.addEventListener('click', () => {
+          console.log('🖱️ Clicou na conta:', conta);
+          
+          // Remove seleção anterior dos cards de contas
+          elAccounts.querySelectorAll('.details__card').forEach(c => {
+            c.classList.remove('details__card--selected');
+          });
+
+          // Remove seleção dos cards de categorias
+          const elCategoriesCards = container.querySelector('#detail-categories-cards') as HTMLElement;
+          if (elCategoriesCards) {
+            elCategoriesCards.querySelectorAll('.category-card').forEach(c => {
+              c.classList.remove('category-card--selected');
+            });
+          }
+
+          // Adiciona seleção ao card clicado
+          card.classList.add('details__card--selected');
+
+          // Renderiza lançamentos da conta (TODOS os entries, sem filtro de budget)
+          renderizarLancamentosContaTodos(conta);
+        });
+
+        elAccounts.appendChild(card);
+      });
+    }
+  };
+
+
+
   /**
    * Agrupa lançamentos por categoria
    */
@@ -361,6 +424,81 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
   };
 
   /**
+   * Renderiza lançamentos de uma conta SEM FILTRO de budget (TODOS os lançamentos)
+   */
+  const renderizarLancamentosContaTodos = (conta: string): void => {
+    const elEntries = container.querySelector('#detail-entries') as HTMLElement;
+    const elEntriesTitle = container.querySelector('#detail-entries-title') as HTMLElement;
+    const elEntriesList = container.querySelector('#entries-list') as HTMLElement;
+
+    if (!elEntries || !elEntriesList || !elEntriesTitle) return;
+
+    // Atualiza título
+    elEntriesTitle.innerHTML = `<span id="lancamentos">Lançamentos da Conta: ${conta}</span>`;
+
+    // Filtra lançamentos da conta (TODOS, sem filtro de orçamento)
+    const lancamentos = currentEntries.filter(e => e.conta === conta);
+
+    console.log('📋 Lançamentos da conta', conta, ':', lancamentos.length);
+
+    // Ordena por data (mais recente primeiro)
+    lancamentos.sort((a, b) => {
+      if (!a.data && !b.data) return 0;
+      if (!a.data) return 1;
+      if (!b.data) return -1;
+
+      const dateA = new Date(a.data).getTime();
+      const dateB = new Date(b.data).getTime();
+
+      if (isNaN(dateA) && isNaN(dateB)) return 0;
+      if (isNaN(dateA)) return 1;
+      if (isNaN(dateB)) return -1;
+
+      return dateB - dateA;
+    });
+
+    // Mostra seção e renderiza lançamentos
+    elEntries.classList.remove('details__category-entries--hidden');
+    elEntriesList.innerHTML = '';
+
+    if (lancamentos.length === 0) {
+      elEntriesList.innerHTML = '<p class="category-entries-empty">Nenhum lançamento encontrado nesta conta.</p>';
+      return;
+    }
+
+    lancamentos.forEach(lancamento => {
+      const entryCard = document.createElement('div');
+      entryCard.className = 'category-entry-card';
+
+      let dataFormatada = '--';
+      if (lancamento.data && typeof lancamento.data === 'number' && lancamento.data > 0) {
+        const date = excelSerialToDate(lancamento.data, true);
+        if (date) {
+          dataFormatada = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', {
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+        }
+      }
+
+      entryCard.innerHTML = `
+        <div class="category-entry-card__date">${dataFormatada}</div>
+        <div class="category-entry-card__description">${lancamento.descricao || 'Sem descrição'}</div>
+        <div class="category-entry-card__value">${formatarMoeda(lancamento.valor || 0)}</div>
+      `;
+
+      elEntriesList.appendChild(entryCard);
+    });
+
+    setTimeout(() => {
+      const lancamentosAnchor = document.getElementById('lancamentos');
+      if (lancamentosAnchor) {
+        lancamentosAnchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  };
+
+  /**
    * Renderiza detalhes para orçamentos específicos
    */
   const renderizarDetalhes = async (orcamentos: number | number[]): Promise<void> => {
@@ -390,43 +528,8 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
 
     if (elSaldo) elSaldo.textContent = formatarMoeda(saldoTotal);
 
-    // Atualiza cartões de contas
-    if (elAccounts) {
-      elAccounts.innerHTML = '';
-      agruparPorConta(detalhe).forEach(({ conta, total }) => {
-        const card = document.createElement('div');
-        card.className = 'details__card details__card--clickable';
-        card.dataset.conta = conta;
-        card.innerHTML = `
-          <div class="details__card-title">${conta}</div>
-          <div class="details__card-value">${formatarMoeda(total)}</div>
-        `;
-
-        // Adiciona evento de clique para mostrar lançamentos da conta e fazer scroll
-        card.addEventListener('click', () => {
-          // Remove seleção anterior dos cards de contas
-          elAccounts.querySelectorAll('.details__card').forEach(c => {
-            c.classList.remove('details__card--selected');
-          });
-
-          // Remove seleção dos cards de categorias
-          const elCategoriesCards = container.querySelector('#detail-categories-cards') as HTMLElement;
-          if (elCategoriesCards) {
-            elCategoriesCards.querySelectorAll('.category-card').forEach(c => {
-              c.classList.remove('category-card--selected');
-            });
-          }
-
-          // Adiciona seleção ao card clicado
-          card.classList.add('details__card--selected');
-
-          // Renderiza lançamentos da conta e faz scroll
-          renderizarLancamentosConta(conta, orcNums);
-        });
-
-        elAccounts.appendChild(card);
-      });
-    }
+// ✨ PASSO 7: Renderiza TODAS as contas (não mais filtradas por budget)
+    renderizarTodasAsContas();
 
     // Atualiza top 10 categorias como cards (apenas despesas)
     if (elCategoriesCards) {
@@ -479,11 +582,15 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
     await renderizarGraficoRosca(orcNums);
   };
 
-  // Renderização inicial para todos selecionados
+// ✨ PASSO 7: Renderização inicial - mostra TODAS as contas desde o início
+  container.innerHTML = detailsTemplate;
+  container.style.display = '';
+  renderizarTodasAsContas();
+  
+  // Mantém a lógica de gráfico e top 10 para budgets selecionados
   if (selectedBudgets.length > 0) {
     await renderizarDetalhes(selectedBudgets);
   } else {
-    // Se não houver orçamentos selecionados, renderiza o gráfico com array vazio (sem dados)
     await renderizarGraficoRosca([]);
   }
 

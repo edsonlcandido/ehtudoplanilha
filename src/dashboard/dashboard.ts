@@ -11,20 +11,22 @@ import { initEntryModal, openEntryModal } from '../components/entry-modal';
 import { initFutureEntryModal, openFutureEntryModal } from '../components/future-entry-modal';
 import { initTransferEntryModal, openTransferEntryModal } from '../components/transfer-entry-modal';
 import { initFabMenu } from '../components/fab-menu';
-import { 
-  renderizarCards, 
-  inicializarEventos, 
-  mostrarCardCarregamento, 
-  mostrarErro 
+import {
+  renderizarCards,
+  inicializarEventos,
+  mostrarCardCarregamento,
+  mostrarErro
 } from '../components/financial-cards';
 import { inicializarDetalhes } from '../components/details';
-import { 
-  aggregateByBudget, 
-  filterEntriesByInterval, 
+import {
+  aggregateByBudget,
+  filterEntriesByInterval,
   budgetsInEntries,
+  aggregateByAccount,  // ✨ PASSO 2
   type Entry,
   type BudgetSummary,
-  type BudgetInfo
+  type BudgetInfo,
+  type AccountSummary  // ✨ PASSO 2
 } from '../utils/sheet-entries';
 import lancamentosService from '../services/lancamentos';
 
@@ -38,6 +40,7 @@ declare global {
     summaryByBudget: BudgetSummary[];
     budgetsInInterval: BudgetInfo[];
     allBudgets: BudgetInfo[];
+    accountSummary: AccountSummary[];  // ✨ PASSO 2
   }
 }
 
@@ -93,7 +96,7 @@ async function init(): Promise<void> {
 
   // Verifica se a configuração do Google está completa
   const configStatus = await checkConfiguration();
-  
+
   if (!configStatus.isValid) {
     showConfigurationRequired();
     return;
@@ -104,12 +107,12 @@ async function init(): Promise<void> {
   if (refreshBtn) {
     refreshBtn.addEventListener('click', async () => {
       console.log('🔄 Atualizando dashboard (limpando cache)...');
-      
+
       // Desabilita botão e mostra loader
       const originalText = refreshBtn.innerHTML;
       refreshBtn.disabled = true;
       refreshBtn.innerHTML = '⏳ Atualizando...';
-      
+
       try {
         await refreshDashboard();
       } finally {
@@ -188,7 +191,7 @@ function showConfigurationRequired(): void {
  */
 async function refreshDashboard(): Promise<void> {
   mostrarCardCarregamento();
-  
+
   try {
     // Força atualização do cache buscando com forceRefresh=true
     await loadAndRenderData(true);
@@ -225,11 +228,15 @@ async function loadAndRenderData(forceRefresh: boolean = false): Promise<void> {
     // Processa orçamentos e filtra por intervalo
     const allSummaries = aggregateByBudget(entries);
     window.allBudgets = budgetsInEntries(entries);
-    
+
     const entriesInInterval = filterEntriesByInterval(entries);
     const currentSummary = aggregateByBudget(entriesInInterval);
     const budgetsInIntervalList = budgetsInEntries(entriesInInterval);
-    
+
+    // ✨ PASSO 3: Agrega TODOS os lançamentos por conta (sem filtro de budget)
+    window.accountSummary = aggregateByAccount(entries);
+    console.log('📊 Contas agregadas:', window.accountSummary);
+
     window.filteredEntries = entriesInInterval;
     window.summaryByBudget = currentSummary;
     window.budgetsInInterval = budgetsInIntervalList;
@@ -242,7 +249,7 @@ async function loadAndRenderData(forceRefresh: boolean = false): Promise<void> {
 
     // Renderiza cards e detalhes
     renderizarCards(allSummaries, budgetsInIntervalMap);
-    
+
     // Inicializa detalhes (inclui agregados, top 10 categorias e gráfico de rosca)
     await inicializarDetalhes(entries, budgetsInIntervalList);
 
