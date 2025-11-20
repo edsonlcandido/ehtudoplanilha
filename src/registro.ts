@@ -4,6 +4,8 @@
  */
 
 import { isAuthenticated, redirectToDashboard, redirectToLogin } from './services/auth';
+import { AuthOAuthService } from './services/auth-oauth';
+import { config } from './config/env';
 
 // ============================================================================
 // Interfaces
@@ -17,6 +19,7 @@ interface RegisterElements {
   submitButton: HTMLButtonElement;
   buttonText: HTMLSpanElement;
   buttonLoading: HTMLSpanElement;
+  googleRegisterBtn: HTMLButtonElement;
   errorMsg: HTMLDivElement;
   successMsg: HTMLDivElement;
 }
@@ -45,11 +48,12 @@ function getElements(): RegisterElements | null {
   const submitButton = document.getElementById('submitButton') as HTMLButtonElement;
   const buttonText = document.getElementById('buttonText') as HTMLSpanElement;
   const buttonLoading = document.getElementById('buttonLoading') as HTMLSpanElement;
+  const googleRegisterBtn = document.getElementById('googleRegisterBtn') as HTMLButtonElement;
   const errorMsg = document.getElementById('errorMsg') as HTMLDivElement;
   const successMsg = document.getElementById('successMsg') as HTMLDivElement;
 
   if (!form || !emailInput || !passwordInput || !confirmPasswordInput || 
-      !submitButton || !buttonText || !buttonLoading || !errorMsg || !successMsg) {
+      !submitButton || !buttonText || !buttonLoading || !googleRegisterBtn || !errorMsg || !successMsg) {
     console.error('Elementos do formulário de registro não encontrados');
     return null;
   }
@@ -62,6 +66,7 @@ function getElements(): RegisterElements | null {
     submitButton,
     buttonText,
     buttonLoading,
+    googleRegisterBtn,
     errorMsg,
     successMsg,
   };
@@ -261,11 +266,48 @@ function setupInputValidation(elements: RegisterElements): void {
   elements.confirmPasswordInput.addEventListener('input', () => hideMessages(elements));
 }
 
+/**
+ * Handler para registro com Google OAuth
+ * IMPORTANTE: Não é async para evitar popup blocking
+ */
+function handleGoogleRegister(elements: RegisterElements): void {
+  hideMessages(elements);
+  
+  if (config.isDevelopment) {
+    console.log('[Registro] Iniciando registro com Google OAuth...');
+  }
+  
+  // Inicia o fluxo OAuth com Google
+  // O método loginWithGoogle() usa promises internamente e trata os erros
+  AuthOAuthService.loginWithGoogle();
+}
+
+/**
+ * Setup dos handlers do botão Google
+ */
+function setupGoogleRegisterHandler(elements: RegisterElements): void {
+  elements.googleRegisterBtn.addEventListener('click', async () => {
+    await handleGoogleRegister(elements);
+  });
+}
+
 // ============================================================================
 // Inicialização
 // ============================================================================
 
-function init(): void {
+async function init(): Promise<void> {
+  // Verifica se está retornando do OAuth (tem code ou error na URL)
+  if (AuthOAuthService.isOAuthCallback()) {
+    if (config.isDevelopment) {
+      console.log('[Registro] Detectado callback OAuth, processando...');
+    }
+    
+    // Processa o callback OAuth
+    await AuthOAuthService.handleOAuthCallback();
+    // handleOAuthCallback já redireciona para o dashboard se sucesso
+    return;
+  }
+
   // Verifica se já está autenticado
   if (isAuthenticated()) {
     redirectToDashboard();
@@ -282,6 +324,7 @@ function init(): void {
   // Configura handlers
   setupFormHandler(elements);
   setupInputValidation(elements);
+  setupGoogleRegisterHandler(elements);
 
   console.log('✅ Página de registro inicializada');
 }

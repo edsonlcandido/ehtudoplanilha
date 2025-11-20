@@ -2,6 +2,7 @@ import './main';
 import { pb } from './main';
 import { isAuthenticated, redirectToDashboard } from './services/auth';
 import { config } from './config/env';
+import { AuthOAuthService } from './services/auth-oauth';
 
 /**
  * Elementos do DOM
@@ -11,6 +12,7 @@ interface LoginElements {
   emailInput: HTMLInputElement;
   passwordInput: HTMLInputElement;
   loginBtn: HTMLButtonElement;
+  googleLoginBtn: HTMLButtonElement;
   errorMsg: HTMLParagraphElement;
   successMsg: HTMLParagraphElement;
 }
@@ -20,9 +22,21 @@ let elements: LoginElements;
 /**
  * Inicializa a página de login
  */
-function init(): void {
+async function init(): Promise<void> {
   if (config.isDevelopment) {
     console.log('[Login] Página inicializada em modo desenvolvimento');
+  }
+
+  // Verifica se está retornando do OAuth (tem code ou error na URL)
+  if (AuthOAuthService.isOAuthCallback()) {
+    if (config.isDevelopment) {
+      console.log('[Login] Detectado callback OAuth, processando...');
+    }
+    
+    // Processa o callback OAuth
+    await AuthOAuthService.handleOAuthCallback();
+    // handleOAuthCallback já redireciona para o dashboard se sucesso
+    return;
   }
 
   // Se já estiver autenticado, redirecionar para dashboard
@@ -37,6 +51,7 @@ function init(): void {
     emailInput: document.getElementById('email') as HTMLInputElement,
     passwordInput: document.getElementById('password') as HTMLInputElement,
     loginBtn: document.getElementById('login-btn') as HTMLButtonElement,
+    googleLoginBtn: document.getElementById('google-login-btn') as HTMLButtonElement,
     errorMsg: document.getElementById('errorMsg') as HTMLParagraphElement,
     successMsg: document.getElementById('successMsg') as HTMLParagraphElement,
   };
@@ -60,6 +75,7 @@ function validateElements(): boolean {
     elements.emailInput &&
     elements.passwordInput &&
     elements.loginBtn &&
+    elements.googleLoginBtn &&
     elements.errorMsg &&
     elements.successMsg
   );
@@ -70,6 +86,7 @@ function validateElements(): boolean {
  */
 function setupEventListeners(): void {
   elements.form.addEventListener('submit', handleSubmit);
+  elements.googleLoginBtn.addEventListener('click', handleGoogleLogin);
 }
 
 /**
@@ -182,6 +199,24 @@ function hideMessages(): void {
 function isValidEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
+}
+
+/**
+ * Handler para login com Google OAuth
+ * IMPORTANTE: Não é async para evitar popup blocking
+ */
+function handleGoogleLogin(event: Event): void {
+  event.preventDefault();
+  
+  hideMessages();
+  
+  if (config.isDevelopment) {
+    console.log('[Login] Iniciando login com Google OAuth...');
+  }
+  
+  // Inicia o fluxo OAuth com Google
+  // O método loginWithGoogle() usa promises internamente e trata os erros
+  AuthOAuthService.loginWithGoogle();
 }
 
 /**
