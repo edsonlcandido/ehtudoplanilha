@@ -63,28 +63,32 @@ export class AuthOAuthService {
       // Obtém os métodos de autenticação para pegar a URL do OAuth
       const authMethods: any = await pb.collection('users').listAuthMethods();
       
-      if (!authMethods.authProviders || authMethods.authProviders.length === 0) {
+      if (config.isDevelopment) {
+        console.log('[AuthOAuth] Resposta de listAuthMethods:', authMethods);
+      }
+      
+      // authProviders pode estar no root ou em oauth2.providers
+      const providers = authMethods.authProviders || authMethods.oauth2?.providers || [];
+      
+      if (providers.length === 0) {
         throw new Error('Nenhum provedor OAuth configurado. Configure o Google OAuth no PocketBase Admin UI.');
       }
 
       // Encontra o provedor Google
-      const googleProvider = authMethods.authProviders.find((p: any) => p.name === 'google');
+      const googleProvider = providers.find((p: any) => p.name === 'google');
       
       if (!googleProvider) {
         throw new Error('Provedor Google não configurado. Habilite-o no PocketBase Admin UI.');
       }
 
       if (config.isDevelopment) {
-        console.log('[AuthOAuth] Provedor Google encontrado');
+        console.log('[AuthOAuth] Provedor Google encontrado:', googleProvider);
       }
 
-      // Constrói a URL de redirect manualmente
-      // Formato: {authUrl}?client_id={clientId}&redirect_uri={redirectUri}&response_type=code&scope=...&state={state}
+      // O PocketBase já retorna a URL completa, só precisamos adicionar o redirect_uri no final
+      // A URL vem no formato: ...&redirect_uri= (vazio no final)
       const redirectUrl = encodeURIComponent(`${pb.baseUrl}/api/oauth2-redirect`);
-      const state = encodeURIComponent(googleProvider.state);
-      const codeChallenge = googleProvider.codeChallenge ? `&code_challenge=${encodeURIComponent(googleProvider.codeChallenge)}&code_challenge_method=S256` : '';
-      
-      const oauthUrl = `${googleProvider.authUrl}${redirectUrl}&state=${state}${codeChallenge}`;
+      const oauthUrl = `${googleProvider.authUrl}${redirectUrl}`;
       
       if (config.isDevelopment) {
         console.log('[AuthOAuth] Redirecionando para Google OAuth...');
