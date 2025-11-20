@@ -91,25 +91,25 @@ export GOOGLE_REDIRECT_URI="https://seudominio.com/google-oauth-callback"
 
 ## Como Funciona
 
-### Fluxo de Autenticação
+### Fluxo de Autenticação (Manual Code Exchange)
 
 1. **Usuário clica em "Entrar com Google"** na página de login ou registro
 2. **Frontend inicia o fluxo OAuth**:
    - Chama `AuthOAuthService.loginWithGoogle()`
    - Obtém configuração OAuth via `listAuthMethods()`
-   - PocketBase retorna URL OAuth pré-configurada com `redirect_uri=` vazio no final
-   - Adiciona o redirect_uri correto ao final da URL
-   - Faz redirect direto da página inteira (sem chamar `authWithOAuth2()`)
+   - PocketBase retorna URL OAuth pré-configurada com state e codeChallenge
+   - Define redirect_uri como a página atual (login.html ou registro.html)
+   - Salva state e codeVerifier no localStorage
+   - Faz redirect direto para Google OAuth
 3. **Usuário autoriza o aplicativo** no Google
-4. **Google redireciona para `/api/oauth2-redirect`** (endpoint do PocketBase)
-5. **PocketBase processa automaticamente**:
-   - Troca o código por tokens de acesso
-   - Cria usuário se não existir (registro automático)
-   - Autentica o usuário
-   - Redireciona de volta para a página de login/registro
-6. **Frontend detecta o callback OAuth**:
-   - Verifica se há parâmetros `code` ou `error` na URL
-   - Aguarda o PocketBase processar a autenticação
+4. **Google redireciona de volta** para a página de login/registro com parâmetros:
+   - `code`: código de autorização
+   - `state`: para validação CSRF
+5. **Frontend detecta o callback OAuth**:
+   - Verifica presença do parâmetro `code` na URL
+   - Valida o `state` recebido contra o salvo
+   - Chama `authWithOAuth2Code()` para trocar o código por tokens
+   - PocketBase autentica o usuário e cria conta se não existir
    - Limpa a URL e redireciona para o dashboard
 
 **Por que não usar `authWithOAuth2()`?**
@@ -119,14 +119,25 @@ Mesmo com `urlCallback`, o PocketBase SDK tenta estabelecer uma conexão EventSo
 - ❌ Bloqueio por extensões de navegador
 - ❌ Problemas de CORS/rede específicos
 
-**Solução implementada (Manual OAuth Flow)**:
+**Solução implementada (Manual OAuth Code Exchange)**:
 - ✅ Usa `listAuthMethods()` para obter URL OAuth pré-configurada
-- ✅ PocketBase retorna URL com state, codeChallenge, etc. já configurados
-- ✅ Apenas adiciona o `redirect_uri` no final da URL
+- ✅ PocketBase retorna URL com state, codeChallenge, codeVerifier já gerados
+- ✅ Define redirect_uri como a própria página (não /api/oauth2-redirect)
+- ✅ Salva state e codeVerifier no localStorage para uso posterior
 - ✅ Redirect direto com `window.location.href` (sem EventSource)
+- ✅ Recebe callback na mesma página e troca código manualmente via `authWithOAuth2Code()`
 - ✅ Funciona universalmente em qualquer ambiente
 
-**Nota**: A URL retornada pelo PocketBase já inclui todos os parâmetros necessários (client_id, code_challenge, state, etc.) e termina com `&redirect_uri=` vazio, facilitando a construção manual do fluxo OAuth.
+**Diferença do fluxo automático**:
+- ❌ Automático: usa `/api/oauth2-redirect` e PocketBase gerencia tudo (mas falha com EventSource)
+- ✅ Manual: redirect_uri aponta para frontend, que troca o código usando `authWithOAuth2Code()`
+
+**Configuração do redirect_uri**:
+No Google Cloud Console, configure as URIs:
+- `https://seudominio.com/login.html`
+- `https://seudominio.com/registro.html`
+
+Não use `/api/oauth2-redirect` pois estamos fazendo troca manual do código.
 
 ### Diferença entre OAuth para Auth e OAuth para Sheets
 

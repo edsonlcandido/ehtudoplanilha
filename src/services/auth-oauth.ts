@@ -87,12 +87,21 @@ export class AuthOAuthService {
 
       // O PocketBase já retorna a URL completa, só precisamos adicionar o redirect_uri no final
       // A URL vem no formato: ...&redirect_uri= (vazio no final)
-      const redirectUrl = encodeURIComponent(`${pb.baseUrl}/api/oauth2-redirect`);
+      // IMPORTANTE: Usamos a página de login/registro como redirect_uri (não /api/oauth2-redirect)
+      // para receber o code e fazer a troca manual
+      const currentPage = window.location.origin + window.location.pathname;
+      const redirectUrl = encodeURIComponent(currentPage);
       const oauthUrl = `${googleProvider.authUrl}${redirectUrl}`;
       
       if (config.isDevelopment) {
+        console.log('[AuthOAuth] Redirect URI:', currentPage);
+        console.log('[AuthOAuth] URL OAuth completa:', oauthUrl);
         console.log('[AuthOAuth] Redirecionando para Google OAuth...');
       }
+
+      // Salva state e codeVerifier no localStorage para validação posterior
+      localStorage.setItem('oauth_state', googleProvider.state);
+      localStorage.setItem('oauth_code_verifier', googleProvider.codeVerifier);
 
       // Faz redirect direto sem usar authWithOAuth2 (evita EventSource completamente)
       window.location.href = oauthUrl;
@@ -115,6 +124,7 @@ export class AuthOAuthService {
   /**
    * Processa o callback OAuth após retorno do Google
    * Este método deve ser chamado ao carregar a página se detectar callback OAuth
+   * Faz a troca manual do código OAuth por tokens
    */
   static async handleOAuthCallback(): Promise<boolean> {
     if (!this.isOAuthCallback()) {
@@ -126,48 +136,91 @@ export class AuthOAuthService {
     // Verifica se houve erro no OAuth
     if (params.has('error')) {
       const error = params.get('error');
-      console.error('[AuthOAuth] Erro no callback OAuth:', error);
+      const errorDescription = params.get('error_description') || '';
+      console.error('[AuthOAuth] Erro no callback OAuth:', error, errorDescription);
       
       // Limpa a URL e mostra erro
       window.history.replaceState({}, document.title, window.location.pathname);
-      alert(`Erro na autenticação: ${error}`);
+      alert(`Erro na autenticação: ${error}${errorDescription ? ': ' + errorDescription : ''}`);
+      
+      // Limpa dados do OAuth
+      localStorage.removeItem('oauth_state');
+      localStorage.removeItem('oauth_code_verifier');
+      localStorage.removeItem('oauth_return_path');
+      
       return false;
     }
 
     try {
       if (config.isDevelopment) {
         console.log('[AuthOAuth] Processando callback OAuth...');
+        console.log('[AuthOAuth] Parâmetros da URL:', Object.fromEntries(params));
       }
 
-      // Aguarda um momento para garantir que o PocketBase processou o OAuth
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // Verifica se o usuário foi autenticado
-      if (this.isAuthenticated()) {
-        const user = this.getCurrentUser();
-        
-        if (config.isDevelopment) {
-          console.log('[AuthOAuth] OAuth bem-sucedido:', user?.email);
-        }
-
-        // Limpa os parâmetros OAuth da URL
-        window.history.replaceState({}, document.title, window.location.pathname);
-
-        // Remove a flag de retorno e redireciona para o dashboard
-        localStorage.removeItem('oauth_return_path');
-        
-        window.location.href = '/dashboard/';
-        return true;
-      }
-
-      // Se não está autenticado, algo deu errado
-      console.error('[AuthOAuth] Callback processado mas usuário não está autenticado');
-      window.history.replaceState({}, document.title, window.location.pathname);
-      return false;
+      const code = params.get('code');
+      const state = params.get('state');
       
-    } catch (error) {
-      console.error('[AuthOAuth] Erro ao processar callback OAuth:', error);
+      if (!code) {
+        throw new Error('Código OAuth não encontrado no callback');
+      }
+
+      // Valida o state
+      const savedState = localStorage.getItem('oauth_state');
+      if (state !== savedState) {
+        console.error('[AuthOAuth] State inválido. Esperado:', savedState, 'Recebido:', state);
+        throw new Error('State OAuth inválido. Possível ataque CSRF.');
+      }
+
+      // Recupera o codeVerifier salvo
+      const codeVerifier = localStorage.getItem('oauth_code_verifier');
+      if (!codeVerifier) {
+        throw new Error('Code verifier não encontrado');
+      }
+
+      if (config.isDevelopment) {
+        console.log('[AuthOAuth] Trocando código OAuth por tokens...');
+      }
+
+      // Faz a troca manual do código por tokens usando a API do PocketBase
+      const authData = await pb.collection('users').authWithOAuth2Code(
+        'google',
+        code,
+        codeVerifier,
+        window.location.origin + window.location.pathname // redirectUrl usado na solicitação
+      );
+
+      if (config.isDevelopment) {
+        console.log('[AuthOAuth] Autenticação bem-sucedida:', authData.record.email);
+        console.log('[AuthOAuth] Novo usuário:', authData.meta?.isNew);
+      }
+
+      // Limpa os parâmetros OAuth da URL
       window.history.replaceState({}, document.title, window.location.pathname);
+
+      // Limpa dados temporários do OAuth
+      localStorage.removeItem('oauth_state');
+      localStorage.removeItem('oauth_code_verifier');
+      localStorage.removeItem('oauth_return_path');
+      
+      // Redireciona para o dashboard
+      window.location.href = '/dashboard/';
+      return true;
+      
+    } catch (error: any) {
+      console.error('[AuthOAuth] Erro ao processar callback OAuth:', error);
+      
+      // Limpa a URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      // Limpa dados temporários
+      localStorage.removeItem('oauth_state');
+      localStorage.removeItem('oauth_code_verifier');
+      localStorage.removeItem('oauth_return_path');
+      
+      // Mostra erro para o usuário
+      const errorMsg = error?.message || 'Erro ao processar autenticação OAuth';
+      alert(`Erro: ${errorMsg}`);
+      
       return false;
     }
   }
