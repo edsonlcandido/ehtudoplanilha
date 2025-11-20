@@ -47,47 +47,107 @@ export class AuthOAuthService {
   }
 
   /**
-   * Inicia o fluxo OAuth com o Google
-   * Usa o método nativo do PocketBase com tratamento adequado
+   * Inicia o fluxo OAuth com o Google usando redirect completo
+   * Este método faz redirect para o Google OAuth e depois retorna via /api/oauth2-redirect
+   * Funciona em todos os ambientes sem depender de EventSource ou popups
    */
   static loginWithGoogle(): void {
     try {
       if (config.isDevelopment) {
-        console.log('[AuthOAuth] Iniciando fluxo OAuth com Google...');
+        console.log('[AuthOAuth] Iniciando fluxo OAuth com Google (redirect completo)...');
       }
 
-      // Usa o método nativo do PocketBase que gerencia tudo automaticamente
-      // IMPORTANTE: Não usar async/await no click handler para evitar popup blocking
-      pb.collection('users').authWithOAuth2({ provider: 'google' })
-        .then((authData: any) => {
+      // Salva a página atual para retornar depois do OAuth
+      localStorage.setItem('oauth_return_path', window.location.pathname);
+
+      // Usa authWithOAuth2 com urlCallback para fazer redirect completo
+      // Isso evita problemas de EventSource/popup que ocorrem em alguns ambientes
+      pb.collection('users').authWithOAuth2({
+        provider: 'google',
+        // urlCallback faz redirect ao invés de abrir popup
+        urlCallback: (url: string) => {
           if (config.isDevelopment) {
-            console.log('[AuthOAuth] Autenticação OAuth bem-sucedida:', authData.record.email);
-            console.log('[AuthOAuth] Novo usuário:', authData.meta?.isNew);
+            console.log('[AuthOAuth] Redirecionando para:', url);
           }
-          
-          // Redireciona para o dashboard após sucesso
-          window.location.href = '/dashboard/';
-        })
-        .catch((error: any) => {
-          console.error('[AuthOAuth] Erro no fluxo OAuth:', error);
-          
-          // Mostra mensagem de erro amigável
-          let errorMessage = 'Erro ao fazer login com Google';
-          if (error?.message) {
-            if (error.message.includes('popup')) {
-              errorMessage = 'Por favor, habilite popups para este site';
-            } else if (error.message.includes('EventSource')) {
-              errorMessage = 'Erro de conexão. Tente novamente';
-            } else {
-              errorMessage = error.message;
-            }
-          }
-          
-          alert(errorMessage);
-        });
+          // Redireciona a página inteira para o Google OAuth
+          window.location.href = url;
+        },
+      }).catch((error: any) => {
+        // Este catch provavelmente não será executado pois estamos fazendo redirect
+        console.error('[AuthOAuth] Erro ao iniciar OAuth:', error);
+      });
     } catch (error: any) {
       console.error('[AuthOAuth] Erro ao iniciar OAuth:', error);
       alert('Erro ao iniciar login com Google. Tente novamente.');
+    }
+  }
+
+  /**
+   * Verifica se há callback OAuth na URL (após retorno do Google)
+   */
+  static isOAuthCallback(): boolean {
+    const params = new URLSearchParams(window.location.search);
+    // Verifica se há code ou error na URL (indicadores de retorno OAuth)
+    return params.has('code') || params.has('error');
+  }
+
+  /**
+   * Processa o callback OAuth após retorno do Google
+   * Este método deve ser chamado ao carregar a página se detectar callback OAuth
+   */
+  static async handleOAuthCallback(): Promise<boolean> {
+    if (!this.isOAuthCallback()) {
+      return false;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    
+    // Verifica se houve erro no OAuth
+    if (params.has('error')) {
+      const error = params.get('error');
+      console.error('[AuthOAuth] Erro no callback OAuth:', error);
+      
+      // Limpa a URL e mostra erro
+      window.history.replaceState({}, document.title, window.location.pathname);
+      alert(`Erro na autenticação: ${error}`);
+      return false;
+    }
+
+    try {
+      if (config.isDevelopment) {
+        console.log('[AuthOAuth] Processando callback OAuth...');
+      }
+
+      // Aguarda um momento para garantir que o PocketBase processou o OAuth
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Verifica se o usuário foi autenticado
+      if (this.isAuthenticated()) {
+        const user = this.getCurrentUser();
+        
+        if (config.isDevelopment) {
+          console.log('[AuthOAuth] OAuth bem-sucedido:', user?.email);
+        }
+
+        // Limpa os parâmetros OAuth da URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+        // Remove a flag de retorno e redireciona para o dashboard
+        localStorage.removeItem('oauth_return_path');
+        
+        window.location.href = '/dashboard/';
+        return true;
+      }
+
+      // Se não está autenticado, algo deu errado
+      console.error('[AuthOAuth] Callback processado mas usuário não está autenticado');
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return false;
+      
+    } catch (error) {
+      console.error('[AuthOAuth] Erro ao processar callback OAuth:', error);
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return false;
     }
   }
 

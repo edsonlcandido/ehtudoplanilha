@@ -22,9 +22,21 @@ let elements: LoginElements;
 /**
  * Inicializa a página de login
  */
-function init(): void {
+async function init(): Promise<void> {
   if (config.isDevelopment) {
     console.log('[Login] Página inicializada em modo desenvolvimento');
+  }
+
+  // Verifica se está retornando do OAuth (tem code ou error na URL)
+  if (AuthOAuthService.isOAuthCallback()) {
+    if (config.isDevelopment) {
+      console.log('[Login] Detectado callback OAuth, processando...');
+    }
+    
+    // Processa o callback OAuth
+    await AuthOAuthService.handleOAuthCallback();
+    // handleOAuthCallback já redireciona para o dashboard se sucesso
+    return;
   }
 
   // Se já estiver autenticado, redirecionar para dashboard

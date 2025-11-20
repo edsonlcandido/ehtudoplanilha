@@ -295,7 +295,19 @@ function setupGoogleRegisterHandler(elements: RegisterElements): void {
 // Inicialização
 // ============================================================================
 
-function init(): void {
+async function init(): Promise<void> {
+  // Verifica se está retornando do OAuth (tem code ou error na URL)
+  if (AuthOAuthService.isOAuthCallback()) {
+    if (config.isDevelopment) {
+      console.log('[Registro] Detectado callback OAuth, processando...');
+    }
+    
+    // Processa o callback OAuth
+    await AuthOAuthService.handleOAuthCallback();
+    // handleOAuthCallback já redireciona para o dashboard se sucesso
+    return;
+  }
+
   // Verifica se já está autenticado
   if (isAuthenticated()) {
     redirectToDashboard();
