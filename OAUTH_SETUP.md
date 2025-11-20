@@ -20,16 +20,14 @@ Este documento descreve como configurar a autenticação OAuth do Google para pe
 
 1. No menu lateral, vá em **APIs e Serviços** > **Biblioteca**
 2. Procure e habilite:
-   - **Google+ API** (para autenticação OAuth)
-   - **Google Sheets API** (se ainda não estiver habilitada)
-   - **Google Drive API** (se ainda não estiver habilitada)
+   - **Google+ API** ou **Google Identity API** (para autenticação OAuth)
 
 ### 3. Configurar Tela de Consentimento OAuth
 
 1. No menu lateral, vá em **APIs e Serviços** > **Tela de consentimento OAuth**
 2. Selecione o tipo de usuário:
    - **Interno**: Somente para usuários da sua organização Google Workspace
-   - **Externo**: Para qualquer usuário com conta Google (recomendado para SaaS público)
+   - **Externo**: Para qualquer usuário com conta Google (recomendado para aplicações públicas)
 3. Preencha as informações obrigatórias:
    - Nome do app: `Planilha Eh Tudo`
    - E-mail de suporte do usuário
@@ -52,42 +50,32 @@ Este documento descreve como configurar a autenticação OAuth do Google para pe
    - **Origens JavaScript autorizadas**:
      - Desenvolvimento: `http://localhost:8090`
      - Produção: `https://seudominio.com`
-   - **URIs de redirecionamento autorizados**:
-     - Desenvolvimento: `http://localhost:8090/api/oauth2-redirect`
-     - Produção: `https://seudominio.com/api/oauth2-redirect`
+   - **URIs de redirecionamento autorizados** (IMPORTANTE: use as páginas de login/registro, não `/api/oauth2-redirect`):
+     - Desenvolvimento: 
+       - `http://localhost:8090/login.html`
+       - `http://localhost:8090/registro.html`
+     - Produção: 
+       - `https://seudominio.com/login.html`
+       - `https://seudominio.com/registro.html`
 5. Clique em **CRIAR**
 6. Anote o **ID do cliente** e o **Segredo do cliente**
 
-### 5. Configurar Variáveis de Ambiente
+### 5. Configurar OAuth no PocketBase Admin UI
 
-#### Desenvolvimento Local
+**Não use variáveis de ambiente .env para OAuth de autenticação. Configure diretamente no PocketBase Admin UI:**
 
-1. Crie ou edite o arquivo `.env` na raiz do projeto:
-
-```bash
-# Google OAuth para Autenticação (Login/Registro)
-GOOGLE_CLIENT_ID=seu-client-id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=seu-client-secret
-
-# Google OAuth para Google Sheets API (já existente)
-GOOGLE_REDIRECT_URI=http://localhost:8090/google-oauth-callback
-```
-
-2. Execute o PocketBase com o script que carrega as variáveis:
-
-```bash
-./iniciar-pb.sh
-```
-
-#### Produção
-
-Configure as variáveis de ambiente no seu servidor/container:
-
-```bash
-export GOOGLE_CLIENT_ID="seu-client-id.apps.googleusercontent.com"
-export GOOGLE_CLIENT_SECRET="seu-client-secret"
-export GOOGLE_REDIRECT_URI="https://seudominio.com/google-oauth-callback"
-```
+1. Acesse o PocketBase Admin UI: `http://localhost:8090/_/` (ou seu domínio de produção)
+2. Faça login como administrador
+3. No menu lateral, vá em **Collections** > **users**
+4. Clique no ícone de configuração (⚙️) ao lado de "users"
+5. Vá para a aba **Options** > **OAuth2**
+6. Clique em **+ Add provider**
+7. Selecione **Google**
+8. Configure:
+   - **Enabled**: ✅ Ativado
+   - **Client ID**: cole o ID do cliente obtido no Google Cloud Console
+   - **Client Secret**: cole o segredo do cliente obtido no Google Cloud Console
+9. Clique em **Save**
 
 ## Como Funciona
 
@@ -139,21 +127,93 @@ No Google Cloud Console, configure as URIs:
 
 Não use `/api/oauth2-redirect` pois estamos fazendo troca manual do código.
 
-### Diferença entre OAuth para Auth e OAuth para Sheets
+### Validação do Código OAuth
 
-O sistema usa OAuth do Google para duas finalidades diferentes:
+O código OAuth retornado pelo Google é automaticamente validado em múltiplos níveis:
 
-1. **OAuth para Autenticação (NOVO)**:
-   - Permite login/registro usando conta Google
-   - Gerenciado nativamente pelo PocketBase
-   - Usa credenciais `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET`
-   - Fluxo: `login.html` → Google → PocketBase → `dashboard`
+#### 1. Validação de State (CSRF Protection)
 
-2. **OAuth para Google Sheets (EXISTENTE)**:
-   - Permite acesso à planilha do usuário no Google Sheets
-   - Gerenciado por hooks customizados em `pb_hooks/`
-   - Usa mesmas credenciais mas com scopes diferentes
-   - Fluxo: `configuracao.html` → Google → `/google-oauth-callback` → salva tokens
+Ao iniciar o fluxo OAuth, o PocketBase gera um `state` único que é:
+- Salvo no `localStorage` do navegador
+- Incluído na URL de autorização do Google
+- Retornado pelo Google junto com o código
+
+**Validação no código** (`src/services/auth-oauth.ts`, linha 169-172):
+```typescript
+const savedState = localStorage.getItem('oauth_state');
+if (state !== savedState) {
+  throw new Error('State OAuth inválido. Possível ataque CSRF.');
+}
+```
+
+Isso previne ataques CSRF (Cross-Site Request Forgery), garantindo que o callback OAuth veio de uma solicitação legítima iniciada pelo seu aplicativo.
+
+#### 2. Validação do Code Verifier (PKCE)
+
+O sistema usa PKCE (Proof Key for Code Exchange) para maior segurança:
+- PocketBase gera um `codeVerifier` aleatório
+- É salvo no `localStorage` para uso posterior
+- Um `codeChallenge` derivado é enviado ao Google
+- No callback, o `codeVerifier` original é usado para validar a troca
+
+**Validação no código** (`src/services/auth-oauth.ts`, linha 174-178):
+```typescript
+const codeVerifier = localStorage.getItem('oauth_code_verifier');
+if (!codeVerifier) {
+  throw new Error('Code verifier não encontrado');
+}
+```
+
+#### 3. Validação pelo PocketBase
+
+Quando chamamos `authWithOAuth2Code()`, o PocketBase:
+1. Verifica se o `code` é válido e não expirou
+2. Valida o `codeVerifier` contra o `codeChallenge`
+3. Troca o código por tokens (access_token, refresh_token)
+4. Valida os tokens com o Google
+5. Obtém informações do usuário (email, nome, foto)
+6. Cria ou atualiza o registro do usuário no banco de dados
+
+**Troca de código** (`src/services/auth-oauth.ts`, linha 185-190):
+```typescript
+const authData = await pb.collection('users').authWithOAuth2Code(
+  'google',
+  code,
+  codeVerifier,
+  redirectUrl
+);
+```
+
+#### 4. Tratamento de Erros
+
+O sistema trata diversos tipos de erros:
+- **Código inválido ou expirado**: Mostrado ao usuário
+- **State inválido**: Indica possível ataque CSRF
+- **Code verifier ausente**: Problema na sessão do navegador
+- **Erro do Google**: Exibido com descrição detalhada
+
+**Tratamento de erros** (`src/services/auth-oauth.ts`, linha 209-225):
+```typescript
+catch (error: any) {
+  console.error('[AuthOAuth] Erro ao processar callback OAuth:', error);
+  // Limpa dados temporários
+  localStorage.removeItem('oauth_state');
+  localStorage.removeItem('oauth_code_verifier');
+  // Mostra erro ao usuário
+  alert(`Erro: ${errorMsg}`);
+}
+```
+
+### Onde Encontrar o Código de Validação
+
+Todo o código de validação OAuth está em:
+- **Arquivo**: `src/services/auth-oauth.ts`
+- **Método principal**: `handleOAuthCallback()` (linha 129-226)
+- **Validações específicas**:
+  - State: linha 169-172
+  - Code verifier: linha 174-178
+  - Troca de código: linha 185-190
+  - Tratamento de erros: linha 209-225
 
 ## Arquivos Relacionados
 
@@ -200,9 +260,9 @@ O sistema usa OAuth do Google para duas finalidades diferentes:
 - Adicione a URL exata em "URIs de redirecionamento autorizados"
 
 ### Erro: "OAuth provider not configured"
-- Variáveis de ambiente não foram carregadas
-- Verifique se o `.env` existe e está correto
-- Reinicie o PocketBase com `./iniciar-pb.sh`
+- OAuth não foi configurado no PocketBase Admin UI
+- Acesse `http://localhost:8090/_/` e configure o Google OAuth conforme seção 5
+- Verifique se o Client ID e Secret estão corretos
 
 ### Usuário não é criado
 - Verifique os logs do PocketBase
@@ -211,19 +271,21 @@ O sistema usa OAuth do Google para duas finalidades diferentes:
 
 ## Segurança
 
-1. **Nunca commite credenciais**:
-   - O arquivo `.env` está no `.gitignore`
-   - Use `.env.example` como template
+1. **Proteja o Client Secret**:
+   - Configure apenas via PocketBase Admin UI
+   - Armazene de forma segura no banco de dados do PocketBase
+   - Não exponha no frontend ou em arquivos de configuração
 
-2. **Proteja o Client Secret**:
-   - Armazene de forma segura em produção
-   - Use variáveis de ambiente do servidor
-   - Não exponha no frontend
-
-3. **Configure domínios autorizados**:
-   - Limite as origens JavaScript autorizadas
-   - Configure URIs de redirecionamento específicas
+2. **Configure domínios autorizados**:
+   - Limite as origens JavaScript autorizadas no Google Console
+   - Configure URIs de redirecionamento específicas (login.html, registro.html)
    - Não use wildcards em produção
+
+3. **Validações de segurança implementadas**:
+   - **State validation**: Previne ataques CSRF
+   - **PKCE (Code Verifier/Challenge)**: Previne interceptação de código
+   - **HTTPS obrigatório em produção**: O Google requer HTTPS para OAuth
+   - **Tokens armazenados de forma segura**: PocketBase gerencia tokens no httpOnly cookie
 
 ## Referências
 
