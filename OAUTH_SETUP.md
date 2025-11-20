@@ -96,8 +96,9 @@ export GOOGLE_REDIRECT_URI="https://seudominio.com/google-oauth-callback"
 1. **Usuário clica em "Entrar com Google"** na página de login ou registro
 2. **Frontend inicia o fluxo OAuth**:
    - Chama `AuthOAuthService.loginWithGoogle()`
-   - Usa `authWithOAuth2()` com `urlCallback` para fazer redirect completo
-   - A página inteira redireciona para o Google OAuth (não usa popup)
+   - Obtém configuração OAuth via `listAuthMethods()`
+   - Constrói URL OAuth manualmente com os parâmetros corretos
+   - Faz redirect direto da página inteira (sem chamar `authWithOAuth2()`)
 3. **Usuário autoriza o aplicativo** no Google
 4. **Google redireciona para `/api/oauth2-redirect`** (endpoint do PocketBase)
 5. **PocketBase processa automaticamente**:
@@ -110,12 +111,18 @@ export GOOGLE_REDIRECT_URI="https://seudominio.com/google-oauth-callback"
    - Aguarda o PocketBase processar a autenticação
    - Limpa a URL e redireciona para o dashboard
 
-**Vantagens desta abordagem**:
-- ✅ Funciona em todos os ambientes (desktop, mobile, diferentes navegadores)
-- ✅ Não depende de EventSource ou realtime connection
-- ✅ Não é bloqueado por extensões de navegador
-- ✅ Não requer popups (evita bloqueadores de popup)
-- ✅ Experiência consistente em qualquer dispositivo
+**Por que não usar `authWithOAuth2()`?**
+
+Mesmo com `urlCallback`, o PocketBase SDK tenta estabelecer uma conexão EventSource primeiro, causando:
+- ❌ Timeout em ambientes com restrições
+- ❌ Bloqueio por extensões de navegador
+- ❌ Problemas de CORS/rede específicos
+
+**Solução implementada**:
+- ✅ Usa `listAuthMethods()` para obter configuração OAuth
+- ✅ Constrói URL OAuth manualmente (sem EventSource)
+- ✅ Redirect direto com `window.location.href`
+- ✅ Funciona universalmente em qualquer ambiente
 
 ### Diferença entre OAuth para Auth e OAuth para Sheets
 

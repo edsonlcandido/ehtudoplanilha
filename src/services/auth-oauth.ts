@@ -48,37 +48,54 @@ export class AuthOAuthService {
 
   /**
    * Inicia o fluxo OAuth com o Google usando redirect completo
-   * Este método faz redirect para o Google OAuth e depois retorna via /api/oauth2-redirect
+   * Este método obtém a URL OAuth e faz redirect direto, evitando completamente EventSource
    * Funciona em todos os ambientes sem depender de EventSource ou popups
    */
-  static loginWithGoogle(): void {
+  static async loginWithGoogle(): Promise<void> {
     try {
       if (config.isDevelopment) {
-        console.log('[AuthOAuth] Iniciando fluxo OAuth com Google (redirect completo)...');
+        console.log('[AuthOAuth] Iniciando fluxo OAuth com Google (redirect direto)...');
       }
 
       // Salva a página atual para retornar depois do OAuth
       localStorage.setItem('oauth_return_path', window.location.pathname);
 
-      // Usa authWithOAuth2 com urlCallback para fazer redirect completo
-      // Isso evita problemas de EventSource/popup que ocorrem em alguns ambientes
-      pb.collection('users').authWithOAuth2({
-        provider: 'google',
-        // urlCallback faz redirect ao invés de abrir popup
-        urlCallback: (url: string) => {
-          if (config.isDevelopment) {
-            console.log('[AuthOAuth] Redirecionando para:', url);
-          }
-          // Redireciona a página inteira para o Google OAuth
-          window.location.href = url;
-        },
-      }).catch((error: any) => {
-        // Este catch provavelmente não será executado pois estamos fazendo redirect
-        console.error('[AuthOAuth] Erro ao iniciar OAuth:', error);
-      });
+      // Obtém os métodos de autenticação para pegar a URL do OAuth
+      const authMethods: any = await pb.collection('users').listAuthMethods();
+      
+      if (!authMethods.authProviders || authMethods.authProviders.length === 0) {
+        throw new Error('Nenhum provedor OAuth configurado. Configure o Google OAuth no PocketBase Admin UI.');
+      }
+
+      // Encontra o provedor Google
+      const googleProvider = authMethods.authProviders.find((p: any) => p.name === 'google');
+      
+      if (!googleProvider) {
+        throw new Error('Provedor Google não configurado. Habilite-o no PocketBase Admin UI.');
+      }
+
+      if (config.isDevelopment) {
+        console.log('[AuthOAuth] Provedor Google encontrado');
+      }
+
+      // Constrói a URL de redirect manualmente
+      // Formato: {authUrl}?client_id={clientId}&redirect_uri={redirectUri}&response_type=code&scope=...&state={state}
+      const redirectUrl = encodeURIComponent(`${pb.baseUrl}/api/oauth2-redirect`);
+      const state = encodeURIComponent(googleProvider.state);
+      const codeChallenge = googleProvider.codeChallenge ? `&code_challenge=${encodeURIComponent(googleProvider.codeChallenge)}&code_challenge_method=S256` : '';
+      
+      const oauthUrl = `${googleProvider.authUrl}${redirectUrl}&state=${state}${codeChallenge}`;
+      
+      if (config.isDevelopment) {
+        console.log('[AuthOAuth] Redirecionando para Google OAuth...');
+      }
+
+      // Faz redirect direto sem usar authWithOAuth2 (evita EventSource completamente)
+      window.location.href = oauthUrl;
+      
     } catch (error: any) {
       console.error('[AuthOAuth] Erro ao iniciar OAuth:', error);
-      alert('Erro ao iniciar login com Google. Tente novamente.');
+      alert(error?.message || 'Erro ao iniciar login com Google. Verifique se o OAuth está configurado no PocketBase Admin UI.');
     }
   }
 
