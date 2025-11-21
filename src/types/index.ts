@@ -99,7 +99,8 @@ export interface LancamentosState {
   originalEntries: SheetEntry[];
   searchTerm: string;
   sortBy: SortType;
-  hideBlankDates: boolean;
+  showConsolidated: boolean;
+  showFuture: boolean;
   isLoading: boolean;
 }
 

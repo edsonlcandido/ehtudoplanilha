@@ -5,14 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-    <title>Lançamentos - Seu App Financeiro</title>
+    <title>Lançamentos - Seu App Financeiro</title>
   <script type="module" crossorigin src="/assets/lancamentos.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/auth.js">
   <link rel="modulepreload" crossorigin href="/assets/sheets.js">
   <link rel="modulepreload" crossorigin href="/assets/fab-menu.js">
   <link rel="modulepreload" crossorigin href="/assets/user-menu.js">
   <link rel="modulepreload" crossorigin href="/assets/toast.js">
-  <link rel="stylesheet" crossorigin href="/assets/auth2.css">
+  <link rel="stylesheet" crossorigin href="/assets/auth.css">
   <link rel="stylesheet" crossorigin href="/assets/sheets.css">
   <link rel="stylesheet" crossorigin href="/assets/fab-menu.css">
   <link rel="stylesheet" crossorigin href="/assets/lancamentos.css">
@@ -97,8 +97,14 @@
                             </div>
                             <div class="lancamentos__sorting-group form-group">
                                 <label class="lancamentos__sorting-checkbox checkable">
-                                    <input type="checkbox" id="hideBlankDatesCheck">
-                                    <span class="checkable">Ocultar lançamentos futuros</span>
+                                    <input type="checkbox" id="showConsolidatedCheck" name="showConsolidated" checked>
+                                    <span class="checkable">Mostrar lançamentos consolidados</span>
+                                </label>
+                            </div>
+                            <div class="lancamentos__sorting-group form-group">
+                                <label class="lancamentos__sorting-checkbox checkable">
+                                    <input type="checkbox" id="showFutureCheck" name="showFuture">
+                                    <span class="checkable">Mostrar lançamentos futuros</span>
                                 </label>
                             </div>
                         </div>
@@ -213,7 +219,7 @@
                 <a href="https://www.ehtudo.app">Eh!Tudo.app</a></small>
         </p>
     </footer>
-
+
 </body>
 
 </html>

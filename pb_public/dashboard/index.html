@@ -7,13 +7,13 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
     />
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
-    <title>Dashboard - Seu App Financeiro</title>
+    <title>Dashboard - Seu App Financeiro</title>
     <script type="module" crossorigin src="/assets/dashboard.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/auth.js">
     <link rel="modulepreload" crossorigin href="/assets/sheets.js">
     <link rel="modulepreload" crossorigin href="/assets/fab-menu.js">
     <link rel="modulepreload" crossorigin href="/assets/user-menu.js">
-    <link rel="stylesheet" crossorigin href="/assets/auth2.css">
+    <link rel="stylesheet" crossorigin href="/assets/auth.css">
     <link rel="stylesheet" crossorigin href="/assets/sheets.css">
     <link rel="stylesheet" crossorigin href="/assets/fab-menu.css">
     <link rel="stylesheet" crossorigin href="/assets/dashboard.css">
@@ -80,7 +80,10 @@
                 simples e rápida.
               </p>
 
-              <div style="margin-top: 1.25rem">
+              <div class="lancamentos__actions">
+                <button id="refreshDashboardBtn" class="button">
+                  🔄 Atualizar
+                </button>
                 <a
                   href="configuracao.html"
                   id="configBtn"
@@ -210,6 +213,6 @@
         >
       </p>
     </footer>
-
+
   </body>
 </html>

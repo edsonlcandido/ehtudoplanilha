@@ -26,7 +26,8 @@ const state: LancamentosState = {
   originalEntries: [],
   searchTerm: '',
   sortBy: 'original',
-  hideBlankDates: true,
+  showConsolidated: true,
+  showFuture: false,
   isLoading: false
 };
 
@@ -146,17 +147,19 @@ function applySortingAndFilters(): void {
   // Base para aplicar filtros
   let viewEntries = [...state.originalEntries];
 
-  // Filtra datas em branco se habilitado
-  if (state.hideBlankDates) {
-    viewEntries = viewEntries.filter(entry => {
-      if (entry.data === null || entry.data === undefined) return false;
-      if (typeof entry.data === 'string') {
-        const trimmed = entry.data.trim();
-        if (trimmed === '') return false;
-      }
-      return true;
-    });
-  }
+  // Filtra por tipo de lançamento (consolidado/futuro)
+  viewEntries = viewEntries.filter(entry => {
+    const hasDate = entry.data !== null 
+      && entry.data !== undefined 
+      && !(typeof entry.data === 'string' && entry.data.trim() === '');
+    
+    // Se tem data, é consolidado; se não tem, é futuro
+    if (hasDate) {
+      return state.showConsolidated;
+    } else {
+      return state.showFuture;
+    }
+  });
 
   // Ordena conforme configuração
   viewEntries = lancamentosService.sortEntries(viewEntries, state.sortBy);
@@ -167,9 +170,7 @@ function applySortingAndFilters(): void {
   }
 
   state.filteredEntries = viewEntries;
-  state.entries = state.sortBy === 'original' 
-    ? [...state.originalEntries]
-    : lancamentosService.sortEntries([...state.originalEntries], state.sortBy);
+  state.entries = viewEntries; // Atualiza state.entries com as entradas filtradas
 
   renderEntriesList();
   updateSearchResults();
@@ -182,7 +183,8 @@ function renderEntriesList(): void {
   const container = document.getElementById('entriesContainer');
   if (!container) return;
 
-  const entriesToRender = state.searchTerm ? state.filteredEntries : state.filteredEntries.length > 0 ? state.filteredEntries : state.entries;
+  // Sempre usa filteredEntries, que já contém o resultado dos filtros aplicados
+  const entriesToRender = state.filteredEntries;
   
   // Limita aos 100 primeiros itens
   const limitedEntries = entriesToRender.slice(0, 100);
@@ -203,10 +205,18 @@ function handleSortChange(sortType: SortType): void {
 }
 
 /**
- * Manipula mudança de ocultar datas em branco
+ * Manipula mudança de checkbox de lançamentos consolidados
  */
-function handleHideBlankDatesChange(hide: boolean): void {
-  state.hideBlankDates = hide;
+function handleShowConsolidatedChange(show: boolean): void {
+  state.showConsolidated = show;
+  applySortingAndFilters();
+}
+
+/**
+ * Manipula mudança de checkbox de lançamentos futuros
+ */
+function handleShowFutureChange(show: boolean): void {
+  state.showFuture = show;
   applySortingAndFilters();
 }
 
@@ -238,7 +248,7 @@ function clearSearch(): void {
  * Edita um lançamento
  */
 function editEntry(rowIndex: number): void {
-  const entry = state.entries.find(e => e.rowIndex === rowIndex);
+  const entry = state.originalEntries.find(e => e.rowIndex === rowIndex);
   if (entry) {
     openEditEntryModal(entry);
   } else {
@@ -256,7 +266,7 @@ let pendingDeleteRowIndex: number | null = null;
  * Abre o modal de confirmação de exclusão
  */
 function openDeleteModal(rowIndex: number): void {
-  const entry = state.entries.find(e => e.rowIndex === rowIndex);
+  const entry = state.originalEntries.find(e => e.rowIndex === rowIndex);
   if (!entry) {
     console.error('Lançamento não encontrado:', rowIndex);
     return;
@@ -471,12 +481,21 @@ async function init(): Promise<void> {
     });
   }
 
-  // Configura checkbox de ocultar datas em branco
-  const hideBlankDatesCheck = document.getElementById('hideBlankDatesCheck') as HTMLInputElement;
-  if (hideBlankDatesCheck) {
-    hideBlankDatesCheck.checked = state.hideBlankDates;
-    hideBlankDatesCheck.addEventListener('change', (e) => {
-      handleHideBlankDatesChange((e.target as HTMLInputElement).checked);
+  // Configura checkbox de lançamentos consolidados
+  const showConsolidatedCheck = document.getElementById('showConsolidatedCheck') as HTMLInputElement;
+  if (showConsolidatedCheck) {
+    showConsolidatedCheck.checked = state.showConsolidated;
+    showConsolidatedCheck.addEventListener('change', (e) => {
+      handleShowConsolidatedChange((e.target as HTMLInputElement).checked);
+    });
+  }
+
+  // Configura checkbox de lançamentos futuros
+  const showFutureCheck = document.getElementById('showFutureCheck') as HTMLInputElement;
+  if (showFutureCheck) {
+    showFutureCheck.checked = state.showFuture;
+    showFutureCheck.addEventListener('change', (e) => {
+      handleShowFutureChange((e.target as HTMLInputElement).checked);
     });
   }
 
@@ -492,7 +511,7 @@ async function init(): Promise<void> {
   await loadEntries();
 
   // Atualiza autocomplete do modal de edição quando entradas são carregadas
-  setEditModalEntries(state.entries);
+  setEditModalEntries(state.originalEntries);
 
   // Verifica se há parâmetros de filtro na URL
   applyUrlFilters();
