@@ -25,6 +25,22 @@
     box-sizing: border-box;
 }
 
+/* Seção de gastos por contas (após título "Detalhes orçamentos" e antes dos cards) */
+.dashboard__budget-accounts-section {
+    width: 100%;
+    margin-bottom: 1.5rem;
+    box-sizing: border-box;
+}
+
+.dashboard__budget-accounts-section .details__aggregates {
+    padding: 1rem;
+    border-radius: 8px;
+    background: var(--card-background, #ffffff);
+    border: 1px solid rgba(0,0,0,0.04);
+    box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+    box-sizing: border-box;
+}
+
 /* Título de seção (Detalhes orçamentos) */
 .dashboard__section-title {
     margin: 0 0 1rem 0;

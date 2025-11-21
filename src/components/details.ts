@@ -26,13 +26,6 @@ const detailsTemplate = `
     </div>
   </div>
 
-  <div class="details__budget-accounts" style="margin-top:1rem;">
-    <h3 class="details__title">Total das Contas</h3>
-    <div class="details__cards" id="detail-budget-accounts-cards">
-      <!-- Cards de contas filtradas por orçamento serão renderizados aqui -->
-    </div>
-  </div>
-
   <div class="details__category-entries details__category-entries--hidden" id="detail-entries">
     <h3 class="details__title" id="detail-entries-title">
       <span id="lancamentos">Lançamentos</span>
@@ -294,7 +287,8 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
    * Renderiza cards de contas filtradas pelos orçamentos selecionados
    */
   const renderizarContasDoOrcamento = (orcamentos: number[]): void => {
-    const elBudgetAccountsCards = container.querySelector('#detail-budget-accounts-cards') as HTMLElement;
+    // Busca o elemento no documento (não no container, pois está fora da seção details)
+    const elBudgetAccountsCards = document.querySelector('#detail-budget-accounts-cards') as HTMLElement;
     
     if (!elBudgetAccountsCards) return;
 
@@ -322,7 +316,6 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
       
       card.innerHTML = `
         <div class="details__card-info">
-          <span class="details__card-icon">${total >= 0 ? '💰' : '💳'}</span>
           <span class="details__card-title">${conta}</span>
           <span class="details__card-value" style="color: ${valorColor};">${formatarMoeda(total)}</span>
         </div>
