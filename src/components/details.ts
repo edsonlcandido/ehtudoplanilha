@@ -4,7 +4,8 @@
  * Versão TypeScript migrada de pb_public_/dashboard/js/components/details.js
  */
 
-import type { Entry, BudgetInfo, AccountSummary } from '../utils/sheet-entries';
+import type { Entry, BudgetInfo } from '../utils/sheet-entries';
+import { aggregateByAccount } from '../utils/sheet-entries';
 import { formatarMoeda } from './financial-cards';
 import { excelSerialToDate } from '../utils/date-helpers';
 import { renderCategoryBudgetChart } from './category-budget-chart';
@@ -290,36 +291,6 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
   };
 
   /**
-   * Agrupa lançamentos por conta (filtrado por orçamentos)
-   */
-  const agruparPorConta = (list: Entry[]): AccountSummary[] => {
-    const mapa: Record<string, { total: number; count: number }> = {};
-
-    list.forEach(e => {
-      if (!e.conta || e.conta.trim() === '') return;
-      
-      const key = e.conta;
-      const valor = e.valor || 0;
-      
-      if (!mapa[key]) {
-        mapa[key] = { total: 0, count: 0 };
-      }
-      
-      mapa[key].total += valor;
-      mapa[key].count += 1;
-    });
-
-    const result = Object.entries(mapa).map(([conta, data]) => ({
-      conta,
-      total: Number(data.total.toFixed(2)),
-      count: data.count
-    }));
-
-    // Ordena alfabeticamente por conta
-    return result.sort((a, b) => a.conta.localeCompare(b.conta));
-  };
-
-  /**
    * Renderiza cards de contas filtradas pelos orçamentos selecionados
    */
   const renderizarContasDoOrcamento = (orcamentos: number[]): void => {
@@ -330,8 +301,8 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
     // Filtra lançamentos pelos orçamentos selecionados
     const lancamentosFiltrados = currentEntries.filter(e => orcamentos.includes(e.orcamento));
     
-    // Agrupa por conta
-    const contasAgregadas = agruparPorConta(lancamentosFiltrados);
+    // Agrupa por conta usando a função utilitária
+    const contasAgregadas = aggregateByAccount(lancamentosFiltrados);
     
     // Limpa conteúdo anterior
     elBudgetAccountsCards.innerHTML = '';
@@ -347,7 +318,7 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
       card.className = 'details__card';
       
       // Define cor baseada no saldo (positivo = verde, negativo = vermelho)
-      const valorColor = total >= 0 ? 'var(--income-color, #5cb85c)' : 'var(--expense-color, #d9534f)';
+      const valorColor = total >= 0 ? 'var(--income-color, #4caf50)' : 'var(--expense-color, #e53935)';
       
       card.innerHTML = `
         <div class="details__card-info">
