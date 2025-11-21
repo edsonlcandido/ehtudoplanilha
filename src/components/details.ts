@@ -187,11 +187,17 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
   const renderizarTodasAsContas = (): void => {
     const elSaldo = document.querySelector('#detail-saldo') as HTMLElement;
     const elAccounts = document.querySelector('#detail-accounts-cards') as HTMLElement;
+    const elAggregates = document.querySelector('.dashboard__balance-section .details__aggregates') as HTMLElement;
 
     // Pega as contas agregadas do estado global
     const accountSummary = window.accountSummary || [];
     
     console.log('🎨 Renderizando todas as contas:', accountSummary);
+
+    // Remove classe de loading
+    if (elAggregates) {
+      elAggregates.classList.remove('loading');
+    }
 
     // Calcula saldo total excluindo contas desmarcadas
     const saldoTotal = accountSummary.reduce((acc, item) => {
