@@ -11,17 +11,10 @@ import { renderCategoryBudgetChart } from './category-budget-chart';
 import { SheetsService } from '../services/sheets';
 
 /**
- * Template HTML para a seção de detalhes
+ * Template HTML para a seção de detalhes (gráfico e top 10)
+ * Nota: "Saldo e contas" agora fica fora desta seção, no dashboard__balance-section
  */
 const detailsTemplate = `
-  <div class="details__aggregates">
-    <h3 class="details__title">Saldo e contas</h3>
-    <h3><span class="details__saldo" id="detail-saldo">R$ 0,00</span></h3>
-    <div class="details__cards" id="detail-accounts-cards">
-      <!-- Cartões de contas serão renderizados aqui -->
-    </div>
-  </div>
-
   <!-- Gráfico de Despesas por Tipo -->
   <div id="categoryBudgetChart" style="margin-top:1rem;"></div>
 
@@ -189,15 +182,22 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
 
   /**
    * ✨ PASSO 5: Renderiza TODAS as contas (sem filtro de budget)
+   * Agora renderiza na seção dashboard__balance-section ao invés de dentro do container details
    */
   const renderizarTodasAsContas = (): void => {
-    const elSaldo = container.querySelector('#detail-saldo') as HTMLElement;
-    const elAccounts = container.querySelector('#detail-accounts-cards') as HTMLElement;
+    const elSaldo = document.querySelector('#detail-saldo') as HTMLElement;
+    const elAccounts = document.querySelector('#detail-accounts-cards') as HTMLElement;
+    const elAggregates = document.querySelector('.dashboard__balance-section .details__aggregates') as HTMLElement;
 
     // Pega as contas agregadas do estado global
     const accountSummary = window.accountSummary || [];
     
     console.log('🎨 Renderizando todas as contas:', accountSummary);
+
+    // Remove classe de loading
+    if (elAggregates) {
+      elAggregates.classList.remove('loading');
+    }
 
     // Calcula saldo total excluindo contas desmarcadas
     const saldoTotal = accountSummary.reduce((acc, item) => {
@@ -380,14 +380,10 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
     container.style.display = '';
 
     // Seletores do DOM
-    const elAccounts = container.querySelector('#detail-accounts-cards') as HTMLElement;
     const elCategoriesCards = container.querySelector('#detail-categories-cards') as HTMLElement;
 
     // Filtra lançamentos dos orçamentos selecionados para top 10 categorias
     const detalhe = currentEntries.filter(e => orcNums.includes(e.orcamento));
-
-// ✨ Renderiza TODAS as contas (não mais filtradas por budget) - saldo sempre total
-    renderizarTodasAsContas();
 
     // Atualiza top 10 categorias como cards (apenas despesas) - filtradas por orçamento
     if (elCategoriesCards) {
@@ -420,7 +416,8 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
             c.classList.remove('category-card--selected');
           });
 
-          // Remove seleção dos cards de contas
+          // Remove seleção dos cards de contas (agora busca no documento, não no container)
+          const elAccounts = document.querySelector('#detail-accounts-cards') as HTMLElement;
           if (elAccounts) {
             elAccounts.querySelectorAll('.details__card').forEach(c => {
               c.classList.remove('details__card--selected');
@@ -442,13 +439,12 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
     await renderizarGraficoRosca(orcNums);
   };
 
-// ✨ Renderização inicial - mostra TODAS as contas desde o início
-  container.innerHTML = detailsTemplate;
-  container.style.display = '';
-  renderizarTodasAsContas();
-  
-  // Renderiza top 10 e gráfico para budgets selecionados (ou vazio se nenhum)
+  // ✨ Renderização inicial
+  // 1. Renderiza detalhes (gráfico e top 10) no container details para budgets selecionados
   await renderizarDetalhes(selectedBudgets);
+  
+  // 2. Renderiza TODAS as contas na seção dashboard__balance-section (depois que entries estão disponíveis)
+  renderizarTodasAsContas();
 
   // Toggle de seleção ao clicar no card
   document.addEventListener('detail:show', async (ev) => {
@@ -476,6 +472,8 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
 
     if (allEntries) {
       currentEntries = allEntries;
+      // Atualiza saldo e cards de contas para refletir novo saldo após adição de lançamento
+      renderizarTodasAsContas();
       await renderizarDetalhes(selectedBudgets);
     }
   });
