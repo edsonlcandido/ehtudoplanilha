@@ -170,9 +170,7 @@ function applySortingAndFilters(): void {
   }
 
   state.filteredEntries = viewEntries;
-  state.entries = state.sortBy === 'original' 
-    ? [...state.originalEntries]
-    : lancamentosService.sortEntries([...state.originalEntries], state.sortBy);
+  state.entries = viewEntries; // Atualiza state.entries com as entradas filtradas
 
   renderEntriesList();
   updateSearchResults();
@@ -185,7 +183,8 @@ function renderEntriesList(): void {
   const container = document.getElementById('entriesContainer');
   if (!container) return;
 
-  const entriesToRender = state.searchTerm ? state.filteredEntries : state.filteredEntries.length > 0 ? state.filteredEntries : state.entries;
+  // Sempre usa filteredEntries, que já contém o resultado dos filtros aplicados
+  const entriesToRender = state.filteredEntries;
   
   // Limita aos 100 primeiros itens
   const limitedEntries = entriesToRender.slice(0, 100);
@@ -249,7 +248,7 @@ function clearSearch(): void {
  * Edita um lançamento
  */
 function editEntry(rowIndex: number): void {
-  const entry = state.entries.find(e => e.rowIndex === rowIndex);
+  const entry = state.originalEntries.find(e => e.rowIndex === rowIndex);
   if (entry) {
     openEditEntryModal(entry);
   } else {
@@ -267,7 +266,7 @@ let pendingDeleteRowIndex: number | null = null;
  * Abre o modal de confirmação de exclusão
  */
 function openDeleteModal(rowIndex: number): void {
-  const entry = state.entries.find(e => e.rowIndex === rowIndex);
+  const entry = state.originalEntries.find(e => e.rowIndex === rowIndex);
   if (!entry) {
     console.error('Lançamento não encontrado:', rowIndex);
     return;
@@ -512,7 +511,7 @@ async function init(): Promise<void> {
   await loadEntries();
 
   // Atualiza autocomplete do modal de edição quando entradas são carregadas
-  setEditModalEntries(state.entries);
+  setEditModalEntries(state.originalEntries);
 
   // Verifica se há parâmetros de filtro na URL
   applyUrlFilters();
