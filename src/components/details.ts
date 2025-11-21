@@ -434,11 +434,11 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
   };
 
   // ✨ Renderização inicial
-  // 1. Renderiza TODAS as contas na seção dashboard__balance-section (independente do details container)
-  renderizarTodasAsContas();
-  
-  // 2. Renderiza detalhes (gráfico e top 10) no container details para budgets selecionados
+  // 1. Renderiza detalhes (gráfico e top 10) no container details para budgets selecionados
   await renderizarDetalhes(selectedBudgets);
+  
+  // 2. Renderiza TODAS as contas na seção dashboard__balance-section (depois que entries estão disponíveis)
+  renderizarTodasAsContas();
 
   // Toggle de seleção ao clicar no card
   document.addEventListener('detail:show', async (ev) => {

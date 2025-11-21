@@ -25,6 +25,14 @@
     box-sizing: border-box;
 }
 
+/* Título de seção (Detalhes orçamentos) */
+.dashboard__section-title {
+    margin: 0 0 1rem 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
 /* Linha com duas colunas (cards à esquerda, detalhes à direita) */
 .dashboard__row {
     display: flex;
