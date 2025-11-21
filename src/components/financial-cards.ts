@@ -176,7 +176,8 @@ function cardClickHandler(this: HTMLElement): void {
     toggleBtn.addEventListener('click', function(this: HTMLElement, e: Event) {
       e.stopPropagation();
       const card = this.closest('.financial-card') as HTMLElement;
-      const isCompact = card.classList.toggle('financial-card__details--hidden');
+      const details = card.querySelector('.financial-card__details') as HTMLElement;
+      const isCompact = details.classList.toggle('financial-card__details--hidden');
       this.setAttribute('aria-expanded', String(!isCompact));
       this.textContent = isCompact ? 'Mostrar detalhes' : 'Ocultar detalhes';
     });
