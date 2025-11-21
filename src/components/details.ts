@@ -4,7 +4,7 @@
  * Versão TypeScript migrada de pb_public_/dashboard/js/components/details.js
  */
 
-import type { Entry, BudgetInfo } from '../utils/sheet-entries';
+import type { Entry, BudgetInfo, AccountSummary } from '../utils/sheet-entries';
 import { formatarMoeda } from './financial-cards';
 import { excelSerialToDate } from '../utils/date-helpers';
 import { renderCategoryBudgetChart } from './category-budget-chart';
@@ -22,6 +22,13 @@ const detailsTemplate = `
     <h3 class="details__title">Top 10 Gastos por Categoria</h3>
     <div class="category-cards" id="detail-categories-cards">
       <!-- Cards de categorias serão renderizados aqui -->
+    </div>
+  </div>
+
+  <div class="details__budget-accounts" style="margin-top:1rem;">
+    <h3 class="details__title">Total das Contas</h3>
+    <div class="details__cards" id="detail-budget-accounts-cards">
+      <!-- Cards de contas filtradas por orçamento serão renderizados aqui -->
     </div>
   </div>
 
@@ -283,6 +290,78 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
   };
 
   /**
+   * Agrupa lançamentos por conta (filtrado por orçamentos)
+   */
+  const agruparPorConta = (list: Entry[]): AccountSummary[] => {
+    const mapa: Record<string, { total: number; count: number }> = {};
+
+    list.forEach(e => {
+      if (!e.conta || e.conta.trim() === '') return;
+      
+      const key = e.conta;
+      const valor = e.valor || 0;
+      
+      if (!mapa[key]) {
+        mapa[key] = { total: 0, count: 0 };
+      }
+      
+      mapa[key].total += valor;
+      mapa[key].count += 1;
+    });
+
+    const result = Object.entries(mapa).map(([conta, data]) => ({
+      conta,
+      total: Number(data.total.toFixed(2)),
+      count: data.count
+    }));
+
+    // Ordena alfabeticamente por conta
+    return result.sort((a, b) => a.conta.localeCompare(b.conta));
+  };
+
+  /**
+   * Renderiza cards de contas filtradas pelos orçamentos selecionados
+   */
+  const renderizarContasDoOrcamento = (orcamentos: number[]): void => {
+    const elBudgetAccountsCards = container.querySelector('#detail-budget-accounts-cards') as HTMLElement;
+    
+    if (!elBudgetAccountsCards) return;
+
+    // Filtra lançamentos pelos orçamentos selecionados
+    const lancamentosFiltrados = currentEntries.filter(e => orcamentos.includes(e.orcamento));
+    
+    // Agrupa por conta
+    const contasAgregadas = agruparPorConta(lancamentosFiltrados);
+    
+    // Limpa conteúdo anterior
+    elBudgetAccountsCards.innerHTML = '';
+    
+    if (contasAgregadas.length === 0) {
+      elBudgetAccountsCards.innerHTML = '<p class="category-entries-empty">Nenhuma conta encontrada nos orçamentos selecionados.</p>';
+      return;
+    }
+
+    // Renderiza cards
+    contasAgregadas.forEach(({ conta, total }) => {
+      const card = document.createElement('div');
+      card.className = 'details__card';
+      
+      // Define cor baseada no saldo (positivo = verde, negativo = vermelho)
+      const valorColor = total >= 0 ? 'var(--income-color, #5cb85c)' : 'var(--expense-color, #d9534f)';
+      
+      card.innerHTML = `
+        <div class="details__card-info">
+          <span class="details__card-icon">${total >= 0 ? '💰' : '💳'}</span>
+          <span class="details__card-title">${conta}</span>
+          <span class="details__card-value" style="color: ${valorColor};">${formatarMoeda(total)}</span>
+        </div>
+      `;
+      
+      elBudgetAccountsCards.appendChild(card);
+    });
+  };
+
+  /**
    * Renderiza lançamentos de uma categoria específica
    */
   const renderizarLancamentosCategoria = (categoria: string, orcamentos: number[]): void => {
@@ -437,6 +516,9 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
 
     // Renderiza gráfico de despesas por tipo (com os mesmos orçamentos filtrados)
     await renderizarGraficoRosca(orcNums);
+
+    // Renderiza cards de contas filtradas pelos orçamentos selecionados
+    renderizarContasDoOrcamento(orcNums);
   };
 
   // ✨ Renderização inicial
