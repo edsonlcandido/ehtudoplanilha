@@ -94,6 +94,25 @@
               </div>
             </header>
 
+            <!-- Seção de Saldo e Contas (antes dos orçamentos) -->
+            <section class="dashboard__balance-section">
+              <div class="details__aggregates loading">
+                <h3 class="details__title">Saldo e contas</h3>
+                <h3><span class="details__saldo" id="detail-saldo">R$ -129,77</span></h3>
+                <div class="details__cards" id="detail-accounts-cards">
+                  <!-- Cartões de contas serão renderizados aqui -->
+                  <div class="details__card">
+                    <div class="details__card-title">Nubank</div>
+                    <div class="details__card-value">R$ 0,00</div>
+                  </div>
+                  <div class="details__card">
+                    <div class="details__card-title">Nuconta</div>
+                    <div class="details__card-value">R$ 0,00</div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
             <!-- Row dividida em 2 colunas -->
             <div class="dashboard__row">
               <!-- Coluna esquerda: cards de resumo -->
@@ -154,21 +173,6 @@
 
               <!-- Coluna direita: detalhes -->
               <aside class="dashboard__col dashboard__col--right details">
-                <!-- Area de cartões agregados -->
-                <div class="details__aggregates loading">
-                  <h3 class="details__title">Saldo e contas</h3>
-                  <h3><span class="details__saldo">R$ -129,77</span></h3>
-                  <div class="details__cards">
-                    <div class="details__card">
-                      <div class="details__card-title">Nubank</div>
-                      <div class="details__card-value">R$ 0,00</div>
-                    </div>
-                    <div class="details__card">
-                      <div class="details__card-title">Nuconta</div>
-                      <div class="details__card-value">R$ 0,00</div>
-                    </div>
-                  </div>
-                </div>
                 <!-- 🎯 Container do gráfico (renderizado dinamicamente) -->
                 <div id="categoryBudgetChart" class="category-budget-chart loading">
                   <div class="category-budget-chart__placeholder">
