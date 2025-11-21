@@ -466,6 +466,8 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
 
     if (allEntries) {
       currentEntries = allEntries;
+      // Atualiza contas também (para refletir novo saldo)
+      renderizarTodasAsContas();
       await renderizarDetalhes(selectedBudgets);
     }
   });
