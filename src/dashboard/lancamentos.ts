@@ -28,7 +28,6 @@ const state: LancamentosState = {
   sortBy: 'original',
   showConsolidated: true,
   showFuture: false,
-  hideBlankDates: true, // Mantido para compatibilidade
   isLoading: false
 };
 

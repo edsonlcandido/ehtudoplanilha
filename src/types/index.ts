@@ -101,7 +101,6 @@ export interface LancamentosState {
   sortBy: SortType;
   showConsolidated: boolean;
   showFuture: boolean;
-  hideBlankDates: boolean; // Mantido para compatibilidade
   isLoading: boolean;
 }
 

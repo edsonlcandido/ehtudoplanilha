@@ -1,7 +1,7 @@
-import{i as u,g as r,l as i}from"./auth.js";function o(){const e=document.getElementById("menu-user");if(!e){console.error("[UserMenu] Elemento #menu-user não encontrado no DOM");return}u()?d(e):a(e)}function d(e){const n=r();if(!n){a(e);return}e.classList.remove("user-menu--guest"),e.classList.add("user-menu--authenticated"),e.innerHTML=`
+import{i as d,g as c,l}from"./auth.js";function m(){const e=document.getElementById("menu-user");if(!e){console.error("[UserMenu] Elemento #menu-user não encontrado no DOM");return}d()?_(e):r(e)}function _(e){const n=c();if(!n){r(e);return}e.classList.remove("user-menu--guest"),e.classList.add("user-menu--authenticated"),e.innerHTML=`
     <div class="user-menu__item">
-      <span class="user-menu__email" title="${s(n.email)}">
-        ${s(n.email)}
+      <span class="user-menu__email" title="${i(n.email)}">
+        ${i(n.email)}
       </span>
     </div>
     
@@ -41,7 +41,7 @@ import{i as u,g as r,l as i}from"./auth.js";function o(){const e=document.getEle
         <span>Sair</span>
       </button>
     </div>
-  `,c()}function a(e){e.classList.remove("user-menu--authenticated"),e.classList.add("user-menu--guest"),e.innerHTML=`
+  `,g()}function r(e){e.classList.remove("user-menu--authenticated"),e.classList.add("user-menu--guest"),e.innerHTML=`
     <div class="user-menu__item">
       <a 
         href="/" 
@@ -76,4 +76,4 @@ import{i as u,g as r,l as i}from"./auth.js";function o(){const e=document.getEle
         <span>Registrar</span>
       </a>
     </div>
-  `}function c(){const e=document.getElementById("logoutBtn");e&&e.addEventListener("click",l)}function l(e){if(e.preventDefault(),confirm("Deseja realmente sair? Você será desconectado.")){const t=e.target;t&&(t.disabled=!0,t.classList.add("is-loading"),t.textContent="🔄 Saindo..."),i()}}function s(e){const n=document.createElement("div");return n.textContent=e,n.innerHTML}function _(){o()}export{_ as i,o as r};
+  `}function g(){const e=document.getElementById("logoutBtn");e&&e.addEventListener("click",b);const n=document.getElementById("closeLogoutModal"),u=document.getElementById("cancelLogoutBtn"),a=document.getElementById("confirmLogoutBtn"),t=document.getElementById("logoutModal");n&&n.addEventListener("click",s),u&&u.addEventListener("click",s),a&&a.addEventListener("click",f),t&&t.addEventListener("click",o=>{o.target===t&&s()}),document.addEventListener("keydown",o=>{o.key==="Escape"&&(t==null?void 0:t.style.display)==="flex"&&s()})}function p(){const e=document.getElementById("logoutModal");e&&(e.style.display="flex")}function s(){const e=document.getElementById("logoutModal");e&&(e.style.display="none")}function f(){s();const e=document.getElementById("logoutBtn");e&&(e.disabled=!0,e.classList.add("is-loading"),e.textContent="🔄 Saindo..."),l()}function b(e){e.preventDefault(),p()}function i(e){const n=document.createElement("div");return n.textContent=e,n.innerHTML}function L(){m()}export{L as i,m as r};
