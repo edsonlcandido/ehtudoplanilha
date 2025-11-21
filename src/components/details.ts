@@ -434,10 +434,10 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
   };
 
   // ✨ Renderização inicial
-  // Renderiza TODAS as contas na seção de saldo (fora do details container)
+  // 1. Renderiza TODAS as contas na seção dashboard__balance-section (independente do details container)
   renderizarTodasAsContas();
   
-  // Renderiza detalhes (top 10 e gráfico) para budgets selecionados
+  // 2. Renderiza detalhes (gráfico e top 10) no container details para budgets selecionados
   await renderizarDetalhes(selectedBudgets);
 
   // Toggle de seleção ao clicar no card
@@ -466,7 +466,7 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
 
     if (allEntries) {
       currentEntries = allEntries;
-      // Atualiza contas também (para refletir novo saldo)
+      // Atualiza saldo e cards de contas para refletir novo saldo após adição de lançamento
       renderizarTodasAsContas();
       await renderizarDetalhes(selectedBudgets);
     }
