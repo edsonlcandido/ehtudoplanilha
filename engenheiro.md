@@ -53,7 +53,7 @@ A planilha modelo deve conter duas abas:
 | F      | orcamento   | Data    | 31/10/2025 (somente data, sem hora) |
 | G      | observacao  | Texto   | opcional |
 
-Range de append: `LANCAMENTOS!A:G`
+Range de append: `LANCAMENTOS!A1:G` (alterado de `A:G` para `A1:G` para evitar deslocamento de colunas em lançamentos futuros com campos vazios)
 
 #### Formato de Conversão (Frontend ↔ Backend ↔ Sheets API)
 
@@ -200,7 +200,7 @@ dateTimeLocalToDate(datetimeStr) // 'YYYY-MM-DDTHH:MM' → Date com hora
    ```javascript
    [["31/10/2025 14:41", "Banco", -150.50, "Supermercado", "Alimentação", "31/10/2025", ""]]
    ```
-7. Chama Sheets API `values:append` em `LANCAMENTOS!A:G` com `valueInputOption=USER_ENTERED`
+7. Chama Sheets API `values:append` em `LANCAMENTOS!A1:G` com `valueInputOption=USER_ENTERED`
 8. Google Sheets interpreta automaticamente:
    - String datetime "31/10/2025 14:41" → Converte internamente para Excel Serial com hora
    - String date "31/10/2025" → Converte internamente para Excel Serial sem hora
@@ -255,11 +255,11 @@ routerAdd("POST", "/append-entry", (c) => {
   // 1. Extrair dados do request (NÃO enviar userId do frontend)
   // 2. Validar campos (data, valor)
   // 3. Verificar expires_at e refresh se necessário
-  // 4. Append via Sheets API (LANCAMENTOS!A:G)
+  // 4. Append via Sheets API (LANCAMENTOS!A1:G)
   // 5. Atualizar last_success_append_at
 });
 ```
-**Descrição:** Payload contém campos como `data`, `conta`, `valor`, `descricao`, `categoria`; hook escreve em `LANCAMENTOS!A:G`
+**Descrição:** Payload contém campos como `data`, `conta`, `valor`, `descricao`, `categoria`; hook escreve em `LANCAMENTOS!A1:G`
 
 ---
 
