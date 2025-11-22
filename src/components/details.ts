@@ -189,7 +189,6 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
     const elSaldo = document.querySelector('#detail-saldo') as HTMLElement;
     const elAccounts = document.querySelector('#detail-accounts-cards') as HTMLElement;
     const elAggregates = document.querySelector('.dashboard__balance-section .details__aggregates') as HTMLElement;
-    const toggleBtn = document.querySelector('#toggle-accounts-btn') as HTMLButtonElement;
 
     // Pega as contas agregadas do estado global
     const accountSummary = window.accountSummary || [];
