@@ -60,6 +60,23 @@ function generateProxyConfig() {
   return proxyConfig;
 }
 
+/**
+ * Plugin para adicionar timestamp nos imports de JS/CSS no HTML gerado
+ */
+function htmlTransformPlugin() {
+  const buildTimestamp = Date.now();
+  
+  return {
+    name: 'html-transform',
+    transformIndexHtml(html: string) {
+      // Adiciona ?v=timestamp em todos os imports de .js e .css
+      return html
+        .replace(/(<script[^>]+src=["']([^"']+\.js)["'])/g, `$1?v=${buildTimestamp}`)
+        .replace(/(<link[^>]+href=["']([^"']+\.css)["'])/g, `$1?v=${buildTimestamp}`);
+    },
+  };
+}
+
 export default defineConfig({
   root: './',
   publicDir: 'public',
@@ -87,6 +104,7 @@ export default defineConfig({
       },
     },
   },
+  plugins: [htmlTransformPlugin()],
   server: {
     port: 5173,
     open: true,
