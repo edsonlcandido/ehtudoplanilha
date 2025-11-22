@@ -25,6 +25,33 @@
     box-sizing: border-box;
 }
 
+/* Título do saldo sem margin bottom */
+.details__saldo-title {
+    margin: 0;
+}
+
+/* Botão para mostrar/ocultar contas */
+.details__toggle-accounts {
+    background: transparent;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    font-size: 0.875rem;
+    padding: 0.25rem 0;
+    margin: 0.5rem 0;
+    text-decoration: none;
+    transition: opacity 0.2s;
+}
+
+.details__toggle-accounts:hover {
+    opacity: 0.7;
+}
+
+/* Estado oculto dos cards de contas */
+.details__cards--hidden {
+    display: none !important;
+}
+
 /* Seção de gastos por contas (após título "Detalhes orçamentos" e antes dos cards) */
 .dashboard__budget-accounts-section {
     width: 100%;
@@ -139,7 +166,9 @@
 .details__card-info {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 0.5rem;
+    width: 100%;
 }
 
 .details__card-icon {
@@ -154,12 +183,13 @@
 .details__card-title {
     font-size: 0.9rem;
     color: var(--text-light);
-    flex: 1;
+    text-align: left;
 }
 
 .details__card-value {
     font-weight: 700;
     color: var(--text-color);
+    text-align: right;
     margin-left: auto;
 }
 

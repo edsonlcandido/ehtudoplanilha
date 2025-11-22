@@ -189,6 +189,7 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
     const elSaldo = document.querySelector('#detail-saldo') as HTMLElement;
     const elAccounts = document.querySelector('#detail-accounts-cards') as HTMLElement;
     const elAggregates = document.querySelector('.dashboard__balance-section .details__aggregates') as HTMLElement;
+    const toggleBtn = document.querySelector('#toggle-accounts-btn') as HTMLButtonElement;
 
     // Pega as contas agregadas do estado global
     const accountSummary = window.accountSummary || [];
@@ -266,6 +267,32 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
 
         elAccounts.appendChild(card);
       });
+
+      // Configura o botão de toggle
+      const toggleBtn = document.querySelector('#toggle-accounts-btn') as HTMLButtonElement;
+      if (toggleBtn && elAccounts) {
+        const updateToggleButton = () => {
+          const isHidden = elAccounts.classList.contains('details__cards--hidden');
+          toggleBtn.textContent = isHidden ? '👁️ Mostrar contas' : '🙈 Ocultar contas';
+        };
+
+        // Remove listener anterior se existir
+        const oldListener = (toggleBtn as any)._toggleListener;
+        if (oldListener) {
+          toggleBtn.removeEventListener('click', oldListener);
+        }
+
+        // Adiciona novo listener
+        const toggleListener = () => {
+          elAccounts.classList.toggle('details__cards--hidden');
+          updateToggleButton();
+        };
+        (toggleBtn as any)._toggleListener = toggleListener;
+        toggleBtn.addEventListener('click', toggleListener);
+
+        // Atualiza texto inicial
+        updateToggleButton();
+      }
     }
   };
 
@@ -311,13 +338,10 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
       const card = document.createElement('div');
       card.className = 'details__card';
       
-      // Define cor baseada no saldo (positivo = verde, negativo = vermelho)
-      const valorColor = total >= 0 ? 'var(--income-color, #4caf50)' : 'var(--expense-color, #e53935)';
-      
       card.innerHTML = `
         <div class="details__card-info">
           <span class="details__card-title">${conta}</span>
-          <span class="details__card-value" style="color: ${valorColor};">${formatarMoeda(total)}</span>
+          <span class="details__card-value">${formatarMoeda(total)}</span>
         </div>
       `;
       

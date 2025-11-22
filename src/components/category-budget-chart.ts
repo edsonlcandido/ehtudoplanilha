@@ -107,7 +107,7 @@ export class CategoryBudgetChart {
   private renderEmptyState(): void {
     this.container.innerHTML = `
       <div class="budget-chart">
-        <h3 class="budget-chart__title">Despesas por Tipo</h3>
+        <h3 class="budget-chart__title">Gastos por tipo</h3>
         <div class="budget-chart__empty">
           <p>Nenhuma despesa encontrada.</p>
           <p><small>Adicione lançamentos de despesas para visualizar o gráfico.</small></p>
@@ -143,7 +143,7 @@ export class CategoryBudgetChart {
 
     this.container.innerHTML = `
       <div class="budget-chart">
-        <h3 class="budget-chart__title">Despesas por Tipo</h3>
+        <h3 class="budget-chart__title">Gastos por tipo</h3>
         <div class="budget-chart__content">
           <div class="budget-chart__donut">
             ${this.renderDonutChart(displayData)}
