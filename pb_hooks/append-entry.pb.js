@@ -52,7 +52,7 @@ routerAdd("POST", "/append-entry", (c) => {
 
         // Preparar linha para inserir na planilha
         // Para lançamentos futuros, data e conta vazios são substituídos por "-"
-        // Isso evita que o Google Sheets API com USER_ENTERED pule/colapseessas colunas
+        // Isso evita que o Google Sheets API com USER_ENTERED pule/colapse essas colunas
         const values = [
             [
                 requestData.data || '-',
