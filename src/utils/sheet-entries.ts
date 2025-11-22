@@ -212,15 +212,16 @@ export function aggregateByAccount(entries: Entry[] = []): AccountSummary[] {
 
   entries.forEach(e => {
     // Ignora lançamentos sem conta definida ou com conta vazia
-    if (!e.conta || e.conta.trim() === '') return;
+    const conta = String(e.conta || '');
+    if (!conta || conta.trim() === '') return;
 
     const valor = Number(e.valor) || 0;
-    const existing = map.get(e.conta) || { total: 0, count: 0 };
+    const existing = map.get(conta) || { total: 0, count: 0 };
     
     existing.total += valor;
     existing.count += 1;
     
-    map.set(e.conta, existing);
+    map.set(conta, existing);
   });
 
   // Converte para array

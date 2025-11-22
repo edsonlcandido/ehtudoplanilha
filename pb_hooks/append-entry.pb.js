@@ -47,47 +47,48 @@ routerAdd("POST", "/append-entry", (c) => {
         }
 
         // Preparar linha para inserir na planilha
-        // data e conta podem ser vazias (para lançamentos futuros)
-        const values = [
-            [
-                requestData.data || '',
-                requestData.conta || '',
-                requestData.valor,
-                requestData.descricao,
-                requestData.categoria || '',
-                requestData.orcamento || '', // aceita string ou número
-                ''
-            ]
+        // Ordem: data, conta, valor, descrição, categoria, orçamento, observação
+        const newRow = [
+            requestData.data || '',
+            requestData.conta || '',
+            requestData.valor,
+            requestData.descricao,
+            requestData.categoria || '',
+            requestData.orcamento || '',
+            requestData.obs || ''
         ];
+        
+        console.log('📝 Dados recebidos para inserir:', JSON.stringify(requestData, null, 2));
+        console.log('📊 Linha montada:', JSON.stringify(newRow, null, 2));
 
-        // Função para tentar inserir com refresh de token se necessário
-        const appendWithTokenRefresh = (token) => {
-            // Usando o nome da aba "Lançamentos" e colunas A:G (para todas as colunas)
+        // Função auxiliar para fazer requisições com token
+        const makeRequest = (url, method, token, body) => {
             return $http.send({
-                url: `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Lançamentos!A:G:append?valueInputOption=USER_ENTERED`,
-                method: "POST",
+                url: url,
+                method: method,
                 headers: {
                     "Authorization": `Bearer ${token}`,
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({
-                    values: values
-                })
+                body: body ? JSON.stringify(body) : undefined
             });
         };
 
-        // Tenta inserir com token atual
-        let appendResponse = appendWithTokenRefresh(accessToken);
+        // PASSO 1: Buscar todas as linhas para encontrar a última linha com dados
+        let getResponse = makeRequest(
+            `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Lan%C3%A7amentos!A:G?majorDimension=ROWS&valueRenderOption=UNFORMATTED_VALUE`,
+            "GET",
+            accessToken
+        );
 
-        // Se token expirado, tenta renovar
-        if (appendResponse.statusCode === 401) {
-            console.log("Token expirado, tentando renovar...");
+        // Se token expirado na busca, tenta renovar
+        if (getResponse.statusCode === 401) {
+            console.log("Token expirado ao buscar dados, tentando renovar...");
             
             if (!refreshToken) {
                 return c.json(401, { "error": "Token expirado e refresh token não disponível" });
             }
 
-            // Renovar token
             const refreshResponse = $http.send({
                 url: "https://oauth2.googleapis.com/token",
                 method: "POST",
@@ -101,24 +102,57 @@ routerAdd("POST", "/append-entry", (c) => {
                 const tokenData = refreshResponse.json;
                 const newAccessToken = tokenData.access_token;
                 
-                // Atualizar token no banco
                 googleInfo.set("access_token", newAccessToken);
                 $app.save(googleInfo);
 
                 // Tentar novamente com novo token
-                appendResponse = appendWithTokenRefresh(newAccessToken);
+                getResponse = makeRequest(
+                    `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Lan%C3%A7amentos!A:G?majorDimension=ROWS&valueRenderOption=UNFORMATTED_VALUE`,
+                    "GET",
+                    newAccessToken
+                );
+                accessToken = newAccessToken;
             } else {
                 return c.json(401, { "error": "Falha ao renovar token de acesso" });
             }
         }
 
-        if (appendResponse.statusCode >= 200 && appendResponse.statusCode < 300) {
+        if (getResponse.statusCode < 200 || getResponse.statusCode >= 300) {
+            console.log("❌ Erro ao buscar dados da planilha:", getResponse.raw);
+            return c.json(500, { "error": "Erro ao buscar dados da planilha" });
+        }
+
+        // PASSO 2: Encontrar a última linha com dados
+        const data = getResponse.json;
+        const rows = data.values || [];
+        let lastRowWithData = rows.length; // Começa do final
+        
+        console.log(`📊 Total de linhas na planilha: ${rows.length}`);
+
+        // PASSO 3: Inserir na próxima linha (última + 1)
+        const nextRow = lastRowWithData + 1;
+        const range = `Lan%C3%A7amentos!A${nextRow}:G${nextRow}`;
+        
+        console.log(`📍 Inserindo na linha: ${nextRow}`);
+
+        const updateResponse = makeRequest(
+            `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?valueInputOption=USER_ENTERED`,
+            "PUT",
+            accessToken,
+            { values: [newRow] }
+        );
+
+        // Verifica resposta da inserção
+        if (updateResponse.statusCode >= 200 && updateResponse.statusCode < 300) {
+            console.log('✅ Lançamento inserido na linha:', nextRow);
+            console.log('✅ Resposta da API do Google:', JSON.stringify(updateResponse.json, null, 2));
             return c.json(200, {
                 "success": true,
-                "message": "Lançamento adicionado com sucesso na planilha"
+                "message": "Lançamento adicionado com sucesso na planilha",
+                "rowIndex": nextRow
             });
         } else {
-            console.log("Erro ao adicionar entrada na planilha:", appendResponse.raw);
+            console.log("❌ Erro ao adicionar entrada na planilha:", updateResponse.raw);
             return c.json(500, { "error": "Erro ao adicionar entrada na planilha" });
         }
     } catch (error) {

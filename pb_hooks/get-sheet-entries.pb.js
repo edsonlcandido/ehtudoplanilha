@@ -129,12 +129,12 @@ routerAdd("GET", "/get-sheet-entries", (c) => {
                 .map((row, index) => ({
                     rowIndex: index + 2,
                     data: row[0] || "",
-                    conta: row[1] || "",
+                    conta: String(row[1] || ""),
                     valor: (row[2] !== undefined && row[2] !== null && row[2] !== '') ? row[2] : 0,
-                    descricao: row[3] || "",
-                    categoria: row[4] || "",
+                    descricao: String(row[3] || ""),
+                    categoria: String(row[4] || ""),
                     orcamento: row[5] || "",
-                    obs: row[6] || ""
+                    obs: String(row[6] || "")
                 }))
                 .filter(e => {
                     // Todas as colunas vazias? remove
