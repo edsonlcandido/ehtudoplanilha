@@ -112,8 +112,7 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
       const categoriesComplete = await SheetsService.getSheetCategoriesComplete();
 
       if (!categoriesComplete || categoriesComplete.length === 0) {
-        console.log('[Details] Nenhuma categoria completa encontrada');
-        return;
+        console.warn('[Details] Nenhuma categoria completa encontrada, entries serão classificados como "Sem Tipo"');
       }
 
       console.log('[Details] Fazendo JOIN entre entries e categoriesComplete...');
@@ -121,8 +120,10 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
       // Cria mapa de categoria -> tipo para JOIN eficiente
       // 🔑 Usa toLowerCase() para ignorar case-sensitive (Telefone Celular = Telefone celular)
       const categoriaTipoMap = new Map<string, string>();
-      for (const cat of categoriesComplete) {
-        categoriaTipoMap.set(cat.categoria.toLowerCase(), cat.tipo);
+      if (categoriesComplete && categoriesComplete.length > 0) {
+        for (const cat of categoriesComplete) {
+          categoriaTipoMap.set(cat.categoria.toLowerCase(), cat.tipo);
+        }
       }
       
       console.log('[Details] Categorias mapeadas:', Array.from(categoriaTipoMap.entries()));
@@ -138,11 +139,11 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
 
       // Faz JOIN: adiciona campo tipo de categoriesComplete aos entries FILTRADOS
       const chartEntries = entriesFiltrados.map(e => {
-        // 🔑 Usa toLowerCase() para buscar no mapa, ignorando case-sensitive
-        const categoriaLower = (e.categoria || '').toLowerCase();
+        // 🔑 Usa toLowerCase() e trim() para buscar no mapa, ignorando case-sensitive e espaços
+        const categoriaLower = (e.categoria || '').toLowerCase().trim();
         const tipo = categoriaTipoMap.get(categoriaLower) || 'Sem Tipo';
         return {
-          categoria: e.categoria || '',
+          categoria: e.categoria || 'Sem Categoria',
           valor: e.valor || 0,
           tipo: tipo
         };
