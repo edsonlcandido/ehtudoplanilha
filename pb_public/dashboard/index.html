@@ -7,13 +7,13 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
     />
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
-    <title>Dashboard - Seu App Financeiro</title>
-    <script type="module" crossorigin src="/assets/dashboard.js"></script>
+    <title>Dashboard - Seu App Financeiro</title>
+    <script type="module" crossorigin src="/assets/dashboard.js"?v=1763817049766></script>
     <link rel="modulepreload" crossorigin href="/assets/auth.js">
     <link rel="modulepreload" crossorigin href="/assets/user-menu.js">
     <link rel="modulepreload" crossorigin href="/assets/sheets.js">
     <link rel="modulepreload" crossorigin href="/assets/fab-menu.js">
-    <link rel="stylesheet" crossorigin href="/assets/dashboard.css">
+    <link rel="stylesheet" crossorigin href="/assets/dashboard.css"?v=1763817049766>
   </head>
 
   <body>
@@ -91,12 +91,16 @@
               </div>
             </header>
 
+            <h3 class="dashboard__section-title">Saldo e contas</h3>
+
             <!-- Seção de Saldo e Contas (antes dos orçamentos) -->
             <section class="dashboard__balance-section">
-              <div class="details__aggregates loading">
-                <h3 class="details__title">Saldo e contas</h3>
-                <h3><span class="details__saldo" id="detail-saldo">R$ 0,00</span></h3>
-                <div class="details__cards" id="detail-accounts-cards">
+              <div class="details__aggregates loading">                
+                <h3 class="details__saldo-title"><span class="details__saldo" id="detail-saldo">R$ 0,00</span></h3>
+                <button class="details__toggle-accounts" id="toggle-accounts-btn" type="button">
+                  👁️ Mostrar contas
+                </button>
+                <div class="details__cards details__cards--hidden" id="detail-accounts-cards">
                   <!-- Cartões de contas serão renderizados aqui -->
                   <div class="details__card">
                     <div class="details__card-title">Nubank</div>
@@ -112,6 +116,16 @@
 
             <!-- Título para seção de orçamentos -->
             <h3 class="dashboard__section-title">Detalhes orçamentos</h3>
+
+            <!-- Seção de gastos por contas -->
+            <section class="dashboard__budget-accounts-section">
+              <div class="details__aggregates">
+                <h3 class="details__title">Gastos por contas</h3>
+                <div class="details__cards" id="detail-budget-accounts-cards">
+                  <!-- Cards de contas filtradas por orçamento serão renderizados aqui -->
+                </div>
+              </div>
+            </section>
 
             <!-- Row dividida em 2 colunas -->
             <div class="dashboard__row">
@@ -181,7 +195,7 @@
                 </div>
                 <!-- Cards dos 10 maiores gastos por categoria -->
                 <div class="details__top-categories" style="margin-top: 1rem">
-                  <h3 class="details__title">Top 10 Gastos por Categoria</h3>
+                  <h3 class="details__title">Top 10 Gastos por categoria</h3>
                   <div class="category-cards loading">
                     <div class="category-card">
                       <div class="category-card__rank">#1</div>
@@ -217,6 +231,6 @@
         >
       </p>
     </footer>
-
+
   </body>
 </html>
