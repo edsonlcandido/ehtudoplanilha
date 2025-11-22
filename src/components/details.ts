@@ -5,6 +5,7 @@
  */
 
 import type { Entry, BudgetInfo } from '../utils/sheet-entries';
+import { aggregateByAccount } from '../utils/sheet-entries';
 import { formatarMoeda } from './financial-cards';
 import { excelSerialToDate } from '../utils/date-helpers';
 import { renderCategoryBudgetChart } from './category-budget-chart';
@@ -283,6 +284,48 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
   };
 
   /**
+   * Renderiza cards de contas filtradas pelos orçamentos selecionados
+   */
+  const renderizarContasDoOrcamento = (orcamentos: number[]): void => {
+    // Busca o elemento no documento (não no container, pois está fora da seção details)
+    const elBudgetAccountsCards = document.querySelector('#detail-budget-accounts-cards') as HTMLElement;
+    
+    if (!elBudgetAccountsCards) return;
+
+    // Filtra lançamentos pelos orçamentos selecionados
+    const lancamentosFiltrados = currentEntries.filter(e => orcamentos.includes(e.orcamento));
+    
+    // Agrupa por conta usando a função utilitária
+    const contasAgregadas = aggregateByAccount(lancamentosFiltrados);
+    
+    // Limpa conteúdo anterior
+    elBudgetAccountsCards.innerHTML = '';
+    
+    if (contasAgregadas.length === 0) {
+      elBudgetAccountsCards.innerHTML = '<p class="category-entries-empty">Nenhuma conta encontrada nos orçamentos selecionados.</p>';
+      return;
+    }
+
+    // Renderiza cards
+    contasAgregadas.forEach(({ conta, total }) => {
+      const card = document.createElement('div');
+      card.className = 'details__card';
+      
+      // Define cor baseada no saldo (positivo = verde, negativo = vermelho)
+      const valorColor = total >= 0 ? 'var(--income-color, #4caf50)' : 'var(--expense-color, #e53935)';
+      
+      card.innerHTML = `
+        <div class="details__card-info">
+          <span class="details__card-title">${conta}</span>
+          <span class="details__card-value" style="color: ${valorColor};">${formatarMoeda(total)}</span>
+        </div>
+      `;
+      
+      elBudgetAccountsCards.appendChild(card);
+    });
+  };
+
+  /**
    * Renderiza lançamentos de uma categoria específica
    */
   const renderizarLancamentosCategoria = (categoria: string, orcamentos: number[]): void => {
@@ -437,6 +480,9 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
 
     // Renderiza gráfico de despesas por tipo (com os mesmos orçamentos filtrados)
     await renderizarGraficoRosca(orcNums);
+
+    // Renderiza cards de contas filtradas pelos orçamentos selecionados
+    renderizarContasDoOrcamento(orcNums);
   };
 
   // ✨ Renderização inicial
