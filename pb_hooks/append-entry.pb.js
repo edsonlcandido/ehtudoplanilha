@@ -5,10 +5,6 @@
  * Endpoint: POST /append-entry
  * Insere uma nova linha na aba "Lançamentos" da planilha do usuário
  * Formato esperado: data, conta, valor, descrição, categoria, orçamento, observação
- * 
- * CORREÇÃO: Para lançamentos futuros com data/conta vazios, substituímos strings vazias
- * por "-" para evitar que o Google Sheets API (com USER_ENTERED) pule/colapse essas
- * colunas e cause deslocamento dos valores.
  */
 
 routerAdd("POST", "/append-entry", (c) => {
@@ -51,26 +47,22 @@ routerAdd("POST", "/append-entry", (c) => {
         }
 
         // Preparar linha para inserir na planilha
-        // Para lançamentos futuros, data e conta vazios são substituídos por "-"
-        // Isso evita que o Google Sheets API com USER_ENTERED pule/colapse essas colunas INICIAIS
-        // Colunas posteriores (categoria, orcamento, obs) podem usar '' pois não afetam o layout
+        // data e conta podem ser vazias (para lançamentos futuros)
         const values = [
             [
-                requestData.data || '-',        // Placeholder obrigatório para coluna inicial
-                requestData.conta || '-',       // Placeholder obrigatório para coluna inicial
+                requestData.data || '',
+                requestData.conta || '',
                 requestData.valor,
                 requestData.descricao,
-                requestData.categoria || '',    // String vazia OK (não é coluna inicial)
-                requestData.orcamento || '',    // String vazia OK (não é coluna inicial)
-                ''                              // Observação sempre vazia por padrão
+                requestData.categoria || '',
+                requestData.orcamento || '', // aceita string ou número
+                ''
             ]
         ];
 
         // Função para tentar inserir com refresh de token se necessário
         const appendWithTokenRefresh = (token) => {
-            // CORREÇÃO: Usando USER_ENTERED (necessário para interpretar datas)
-            // Para evitar deslocamento de colunas, campos vazios são preenchidos com "-"
-            // ao invés de strings vazias, evitando que o Sheets tente colapsar colunas
+            // Usando o nome da aba "Lançamentos" e colunas A:G (para todas as colunas)
             return $http.send({
                 url: `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Lançamentos!A:G:append?valueInputOption=USER_ENTERED`,
                 method: "POST",
