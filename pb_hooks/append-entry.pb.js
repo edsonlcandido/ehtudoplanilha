@@ -5,6 +5,9 @@
  * Endpoint: POST /append-entry
  * Insere uma nova linha na aba "Lançamentos" da planilha do usuário
  * Formato esperado: data, conta, valor, descrição, categoria, orçamento, observação
+ * 
+ * CORREÇÃO: Alterado range de A:G para A1:G1 para evitar deslocamento de colunas
+ * quando campos iniciais (data, conta) estão vazios em lançamentos futuros.
  */
 
 routerAdd("POST", "/append-entry", (c) => {
@@ -62,9 +65,10 @@ routerAdd("POST", "/append-entry", (c) => {
 
         // Função para tentar inserir com refresh de token se necessário
         const appendWithTokenRefresh = (token) => {
-            // Usando o nome da aba "Lançamentos" e colunas A:G (para todas as colunas)
+            // Usando o nome da aba "Lançamentos" e colunas A1:G1 (para garantir estrutura correta)
+            // Mudança: A:G -> A1:G1 para evitar problemas de deslocamento de colunas
             return $http.send({
-                url: `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Lançamentos!A:G:append?valueInputOption=USER_ENTERED`,
+                url: `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Lançamentos!A1:G1:append?valueInputOption=USER_ENTERED`,
                 method: "POST",
                 headers: {
                     "Authorization": `Bearer ${token}`,
