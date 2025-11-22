@@ -69,7 +69,7 @@ export class CategoryBudgetChart {
     
     // Filtra apenas despesas válidas (valores negativos, não nos tipos ignorados)
     const despesas = this.entries.filter(e => {
-      const tipoUpper = e.tipo.toUpperCase().trim();
+      const tipoUpper = (e.tipo || 'Sem Tipo').toUpperCase().trim();
       return !tiposIgnorados.includes(tipoUpper) && e.valor < 0;
     });
 
@@ -82,7 +82,7 @@ export class CategoryBudgetChart {
     
     for (const entry of despesas) {
       const tipo = entry.tipo || 'Sem Tipo';
-      const valorAbs = Math.abs(entry.valor);
+      const valorAbs = Math.abs(entry.valor || 0);
       porTipo.set(tipo, (porTipo.get(tipo) || 0) + valorAbs);
     }
 
