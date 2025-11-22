@@ -63,14 +63,16 @@ routerAdd("PUT", "/edit-sheet-entry", (c) => {
 
 
         // Preparar os valores para atualização
-        // valor já foi validado acima, garantido como número válido
+        // Todos os campos obrigatórios já foram validados acima
+        // Nota: categoria e orcamento são obrigatórios na edição (validados em linhas 33-37)
+        // mas podem ter chegado como null por algum erro do cliente, então usamos ?? como fallback
         const values = [[
             requestData.data ?? "",
             requestData.conta ?? "",
             requestData.valor, // já validado como número válido
             requestData.descricao ?? "",
-            requestData.categoria ?? "",
-            requestData.orcamento ?? "",
+            requestData.categoria ?? "", // já validado como não-vazio
+            requestData.orcamento ?? "", // já validado como não-vazio
             requestData.obs ?? ""
         ]];
 

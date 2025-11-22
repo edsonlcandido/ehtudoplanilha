@@ -53,16 +53,20 @@ routerAdd("POST", "/append-entry", (c) => {
         }
 
         // Preparar linha para inserir na planilha
-        // data e conta podem ser vazias (para lançamentos futuros)
-        // valor já foi validado acima, garantido como número válido
+        // Campos opcionais para lançamentos futuros:
+        // - data: pode ser vazia (preenchida posteriormente)
+        // - conta: pode ser vazia (preenchida posteriormente)
+        // - categoria: pode ser vazia (preenchida posteriormente)
+        // - orcamento: pode ser vazio (preenchido posteriormente)
+        // Campos obrigatórios (já validados): valor, descricao
         const values = [
             [
                 requestData.data ?? '',
                 requestData.conta ?? '',
                 requestData.valor, // já validado como número válido
                 requestData.descricao ?? '',
-                requestData.categoria ?? '',
-                requestData.orcamento ?? '', // aceita string ou número
+                requestData.categoria ?? '', // opcional para lançamentos futuros
+                requestData.orcamento ?? '', // opcional para lançamentos futuros
                 requestData.obs ?? ''
             ]
         ];
