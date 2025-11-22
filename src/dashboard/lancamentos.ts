@@ -12,7 +12,7 @@ import { initTransferEntryModal, openTransferEntryModal } from '../components/tr
 import { initFabMenu } from '../components/fab-menu';
 import { renderEntries } from '../components/lancamentos-list';
 import lancamentosService from '../services/lancamentos';
-import type { SortType, LancamentosState } from '../types';
+import type { SortType, LancamentosState, SheetEntry } from '../types';
 import { excelSerialToDateTimeLabel } from '../utils/date-helpers';
 import { showSuccessToast, showErrorToast, showInfoToast } from '../components/toast';
 
