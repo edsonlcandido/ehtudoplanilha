@@ -63,10 +63,10 @@ routerAdd("PUT", "/edit-sheet-entry", (c) => {
         const values = [[
             requestData.data || "",
             requestData.conta || "",
-            requestData.valor,
+            requestData.valor ?? 0,
             requestData.descricao || "",
-            requestData.categoria,
-            requestData.orcamento,
+            requestData.categoria || "",
+            requestData.orcamento || "",
             requestData.obs || ""
         ]];
 

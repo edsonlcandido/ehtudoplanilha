@@ -52,11 +52,11 @@ routerAdd("POST", "/append-entry", (c) => {
             [
                 requestData.data || '',
                 requestData.conta || '',
-                requestData.valor,
-                requestData.descricao,
+                requestData.valor ?? 0,
+                requestData.descricao || '',
                 requestData.categoria || '',
                 requestData.orcamento || '', // aceita string ou número
-                ''
+                requestData.obs || ''
             ]
         ];
 
