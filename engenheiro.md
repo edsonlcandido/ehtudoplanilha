@@ -55,8 +55,6 @@ A planilha modelo deve conter duas abas:
 
 Range de append: `LANCAMENTOS!A:G`
 
-**Nota sobre lançamentos futuros:** Campos data e conta vazios são enviados como `-` (hífen) ao invés de strings vazias para evitar que o Google Sheets API colapse essas colunas e cause deslocamento de valores.
-
 #### Formato de Conversão (Frontend ↔ Backend ↔ Sheets API)
 
 **1. Leitura da Planilha (Sheets API → Backend)**
@@ -203,7 +201,6 @@ dateTimeLocalToDate(datetimeStr) // 'YYYY-MM-DDTHH:MM' → Date com hora
    [["31/10/2025 14:41", "Banco", -150.50, "Supermercado", "Alimentação", "31/10/2025", ""]]
    ```
 7. Chama Sheets API `values:append` em `LANCAMENTOS!A:G` com `valueInputOption=USER_ENTERED`
-   - Para lançamentos futuros: data e conta vazios são enviados como "-"
 8. Google Sheets interpreta automaticamente:
    - String datetime "31/10/2025 14:41" → Converte internamente para Excel Serial com hora
    - String date "31/10/2025" → Converte internamente para Excel Serial sem hora
@@ -259,11 +256,10 @@ routerAdd("POST", "/append-entry", (c) => {
   // 2. Validar campos (data, valor)
   // 3. Verificar expires_at e refresh se necessário
   // 4. Append via Sheets API (LANCAMENTOS!A:G)
-  //    Nota: campos vazios (data/conta) são enviados como "-"
   // 5. Atualizar last_success_append_at
 });
 ```
-**Descrição:** Payload contém campos como `data`, `conta`, `valor`, `descricao`, `categoria`; hook escreve em `LANCAMENTOS!A:G`. Lançamentos futuros com data/conta vazios usam "-" como placeholder.
+**Descrição:** Payload contém campos como `data`, `conta`, `valor`, `descricao`, `categoria`; hook escreve em `LANCAMENTOS!A:G`
 
 ---
 
