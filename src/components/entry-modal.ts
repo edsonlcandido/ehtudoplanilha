@@ -7,6 +7,11 @@ import { pb } from '../main';
 import type { EntryFormData, EntryPayload, OnEntryAddedCallback, SheetEntry, CategoryComplete } from '../types';
 import { SheetsService } from '../services/sheets';
 import lancamentosService from '../services/lancamentos';
+import {
+  excelSerialToDate,
+  dateInputToDate,
+  dateToDateTimeLocalString
+} from '../utils/date-helpers';
 
 // Singleton instance
 let modalInstance: EntryModal | null = null;
@@ -475,6 +480,91 @@ class EntryModal {
   }
 
   /**
+   * Abre o modal com dados pré-preenchidos (para copiar lançamento)
+   */
+  openWithData(data: Partial<SheetEntry>): void {
+    if (!this.modal) return;
+
+    console.log('[EntryModal] Modal aberto com dados');
+    this.modal.style.display = 'flex';
+    this.modal.setAttribute('aria-hidden', 'false');
+
+    // Adiciona classe ao botão FAB
+    const fabBtn = document.getElementById('openEntryModal');
+    if (fabBtn) {
+      fabBtn.classList.add('modal-open');
+      console.log('[EntryModal] ✅ Classe modal-open adicionada ao botão FAB');
+    } else {
+      console.warn('[EntryModal] ⚠️ Botão FAB não encontrado');
+    }
+
+    // Preenche os campos com os dados fornecidos
+    this.populateForm(data);
+  }
+
+  /**
+   * Preenche o formulário com dados de um lançamento (para copiar)
+   */
+  private populateForm(data: Partial<SheetEntry>): void {
+    // Data - usa data atual
+    const dateInput = document.getElementById('expenseDate') as HTMLInputElement;
+    if (dateInput) {
+      const now = new Date();
+      dateInput.value = dateToDateTimeLocalString(now);
+    }
+
+    // Conta
+    const accountInput = document.getElementById('expenseAccount') as HTMLInputElement;
+    if (accountInput && data.conta) {
+      accountInput.value = data.conta;
+    }
+
+    // Valor e sinal
+    const valueInput = document.getElementById('expenseValue') as HTMLInputElement;
+    if (valueInput && data.valor !== undefined) {
+      const absValue = Math.abs(data.valor);
+      valueInput.value = absValue.toString();
+      this.setSignState(data.valor < 0);
+    }
+
+    // Descrição
+    const descriptionInput = document.getElementById('expenseDescription') as HTMLInputElement;
+    if (descriptionInput && data.descricao) {
+      descriptionInput.value = data.descricao;
+    }
+
+    // Categoria
+    const categoryInput = document.getElementById('expenseCategory') as HTMLInputElement;
+    if (categoryInput && data.categoria) {
+      categoryInput.value = data.categoria;
+    }
+
+    // Orçamento - mantém o original
+    const budgetInput = document.getElementById('expenseBudget') as HTMLInputElement;
+    if (budgetInput && data.orcamento) {
+      let budgetValue = '';
+      if (typeof data.orcamento === 'number') {
+        // Converte Excel serial para Date sem hora
+        const dateObj = excelSerialToDate(data.orcamento, false);
+        if (dateObj) {
+          budgetValue = dateObj.toISOString().split('T')[0];
+        }
+      } else if (typeof data.orcamento === 'string') {
+        // Se for string, tenta parsear
+        const dateObj = dateInputToDate(data.orcamento);
+        if (dateObj) {
+          budgetValue = dateObj.toISOString().split('T')[0];
+        }
+      }
+      budgetInput.value = budgetValue;
+    }
+
+    // Observações - mantém o original se existir
+    // Nota: o modal de adicionar não tem campo obs no template atual,
+    // mas deixamos preparado caso seja adicionado no futuro
+  }
+
+  /**
    * Manipula o submit do formulário
    */
   private async handleSubmit(e: Event): Promise<void> {
@@ -634,11 +724,12 @@ class EntryModal {
     this.modal.style.display = 'none';
     this.modal.setAttribute('aria-hidden', 'true');
     
-    // Remove classe do botão FAB
+    // Remove classe e restaura visibilidade do botão FAB
     const fabBtn = document.getElementById('openEntryModal');
     if (fabBtn) {
       fabBtn.classList.remove('modal-open');
-      console.log('[EntryModal] ✅ Classe modal-open removida do botão FAB');
+      fabBtn.style.visibility = 'visible';
+      console.log('[EntryModal] ✅ Classe modal-open removida e visibilidade restaurada do botão FAB');
     } else {
       console.warn('[EntryModal] ⚠️ Botão FAB não encontrado');
     }
@@ -753,6 +844,18 @@ export function openEntryModal(): void {
   }
   
   modalInstance.open();
+}
+
+/**
+ * Abre o modal com dados pré-preenchidos (para copiar lançamento)
+ */
+export function openEntryModalWithData(data: Partial<SheetEntry>): void {
+  if (!modalInstance) {
+    console.error('[EntryModal] Modal não inicializado. Chame initEntryModal() primeiro.');
+    return;
+  }
+  
+  modalInstance.openWithData(data);
 }
 
 /**

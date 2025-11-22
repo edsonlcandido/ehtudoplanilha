@@ -5,14 +5,14 @@
 
 import { verifyTokenValidity } from '../services/auth';
 import { renderUserMenu } from '../components/user-menu';
-import { initEntryModal, openEntryModal } from '../components/entry-modal';
+import { initEntryModal, openEntryModal, openEntryModalWithData } from '../components/entry-modal';
 import { initEditEntryModal, openEditEntryModal, setEditModalEntries } from '../components/edit-entry-modal';
 import { initFutureEntryModal, openFutureEntryModal } from '../components/future-entry-modal';
 import { initTransferEntryModal, openTransferEntryModal } from '../components/transfer-entry-modal';
 import { initFabMenu } from '../components/fab-menu';
 import { renderEntries } from '../components/lancamentos-list';
 import lancamentosService from '../services/lancamentos';
-import type { SortType, LancamentosState } from '../types';
+import type { SortType, LancamentosState, SheetEntry } from '../types';
 import { excelSerialToDateTimeLabel } from '../utils/date-helpers';
 import { showSuccessToast, showErrorToast, showInfoToast } from '../components/toast';
 
@@ -256,6 +256,28 @@ function editEntry(rowIndex: number): void {
   }
 }
 
+/**
+ * Copia um lançamento (abre modal de adicionar com dados pré-preenchidos)
+ */
+function copyEntry(rowIndex: number): void {
+  const entry = state.originalEntries.find(e => e.rowIndex === rowIndex);
+  if (entry) {
+    // Remove rowIndex e prepara dados para cópia
+    const dataToCopy: Partial<SheetEntry> = {
+      conta: entry.conta,
+      valor: entry.valor,
+      descricao: entry.descricao,
+      categoria: entry.categoria,
+      orcamento: entry.orcamento,
+      obs: entry.obs
+    };
+    // Data será definida como atual no modal
+    openEntryModalWithData(dataToCopy);
+  } else {
+    console.error('Lançamento não encontrado para copiar:', rowIndex);
+  }
+}
+
 // ============================================================================
 // Gerenciamento do Modal de Exclusão
 // ============================================================================
@@ -365,6 +387,7 @@ function deleteEntry(rowIndex: number): void {
 
 // Expõe funções globalmente para uso nos botões
 (window as any).editEntry = editEntry;
+(window as any).copyEntry = copyEntry;
 (window as any).deleteEntry = deleteEntry;
 (window as any).lancamentosManager = {
   closeDeleteModal,

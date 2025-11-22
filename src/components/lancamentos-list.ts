@@ -53,10 +53,13 @@ function formatDateSimple(date: string | number | undefined): string {
 function renderActions(entry: SheetEntry): string {
   return `
     <button class="button small" onclick="window.editEntry(${entry.rowIndex})" title="Editar">
-      ✏️ Editar
+      ✏️
+    </button>
+    <button class="button small" onclick="window.copyEntry(${entry.rowIndex})" title="Copiar">
+      📑
     </button>
     <button class="button small danger" onclick="window.deleteEntry(${entry.rowIndex})" title="Excluir">
-      🗑️ Excluir
+      🗑️
     </button>
   `;
 }

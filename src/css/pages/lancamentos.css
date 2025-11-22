@@ -176,7 +176,7 @@ body {
    LISTA DE LANÇAMENTOS
    =================================== */
 .lancamentos__list {
-  display: flex;
+  display: none;
   flex-direction: column;
   gap: 1rem;
 }
@@ -248,6 +248,7 @@ body {
    TABELA (Desktop)
    =================================== */
 .lancamentos__table {
+  display: block;
   width: 100%;
   background: white;
   border: 1px solid #e6e6e6;
@@ -262,7 +263,7 @@ body {
 
 .lancamentos__table-row {
   display: grid;
-  grid-template-columns: 50px 110px 140px 100px 1fr 140px 80px 180px;
+  grid-template-columns: 50px 110px 140px 100px minmax(150px, 1fr) 140px 110px 120px;
   align-items: center;
   padding: 0.75rem 1rem;
   border-bottom: 1px solid #f0f0f0;
@@ -304,6 +305,31 @@ body {
   display: flex;
   gap: 0.5rem;
   justify-content: flex-end;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+/* Botões de ação com apenas ícones - compactos e quadrados */
+.lancamentos__table-cell--actions .button {
+  min-width: auto;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.lancamentos__item-actions .button {
+  min-width: auto;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
 }
 
 /* ===================================
