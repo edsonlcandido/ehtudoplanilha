@@ -52,16 +52,17 @@ routerAdd("POST", "/append-entry", (c) => {
 
         // Preparar linha para inserir na planilha
         // Para lançamentos futuros, data e conta vazios são substituídos por "-"
-        // Isso evita que o Google Sheets API com USER_ENTERED pule/colapse essas colunas
+        // Isso evita que o Google Sheets API com USER_ENTERED pule/colapse essas colunas INICIAIS
+        // Colunas posteriores (categoria, orcamento, obs) podem usar '' pois não afetam o layout
         const values = [
             [
-                requestData.data || '-',
-                requestData.conta || '-',
+                requestData.data || '-',        // Placeholder obrigatório para coluna inicial
+                requestData.conta || '-',       // Placeholder obrigatório para coluna inicial
                 requestData.valor,
                 requestData.descricao,
-                requestData.categoria || '',
-                requestData.orcamento || '', // aceita string ou número
-                ''
+                requestData.categoria || '',    // String vazia OK (não é coluna inicial)
+                requestData.orcamento || '',    // String vazia OK (não é coluna inicial)
+                ''                              // Observação sempre vazia por padrão
             ]
         ];
 
