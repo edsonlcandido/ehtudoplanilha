@@ -315,11 +315,20 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
   const renderizarContasDoOrcamento = (orcamentos: number[]): void => {
     // Busca o elemento no documento (não no container, pois está fora da seção details)
     const elBudgetAccountsCards = document.querySelector('#detail-budget-accounts-cards') as HTMLElement;
+    const elBudgetTotal = document.querySelector('#detail-budget-total') as HTMLElement;
     
     if (!elBudgetAccountsCards) return;
 
     // Filtra lançamentos pelos orçamentos selecionados
     const lancamentosFiltrados = currentEntries.filter(e => orcamentos.includes(e.orcamento));
+    
+    // Calcula total geral somando TODOS os valores dos lançamentos (receitas + despesas)
+    const totalGeral = lancamentosFiltrados.reduce((acc, entry) => acc + entry.valor, 0);
+    
+    // Atualiza o total
+    if (elBudgetTotal) {
+      elBudgetTotal.textContent = formatarMoeda(totalGeral);
+    }
     
     // Agrupa por conta usando a função utilitária
     const contasAgregadas = aggregateByAccount(lancamentosFiltrados);
