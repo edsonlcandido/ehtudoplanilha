@@ -63,15 +63,11 @@ routerAdd("PUT", "/edit-sheet-entry", (c) => {
 
 
         // Preparar os valores para atualização
-        // Valida que valor é numérico
-        const valorNumerico = typeof requestData.valor === 'number' && !isNaN(requestData.valor) 
-            ? requestData.valor 
-            : 0;
-        
+        // valor já foi validado acima, garantido como número válido
         const values = [[
             requestData.data ?? "",
             requestData.conta ?? "",
-            valorNumerico,
+            requestData.valor, // já validado como número válido
             requestData.descricao ?? "",
             requestData.categoria ?? "",
             requestData.orcamento ?? "",
