@@ -27,6 +27,9 @@ routerAdd("PUT", "/edit-sheet-entry", (c) => {
     if (requestData.valor === undefined || requestData.valor === null) {
         return c.json(400, { "error": "Campo valor é obrigatório" });
     }
+    if (typeof requestData.valor !== 'number' || isNaN(requestData.valor)) {
+        return c.json(400, { "error": "Campo valor deve ser um número válido" });
+    }
     if (!requestData.categoria || requestData.categoria.trim() === '') {
         return c.json(400, { "error": "Campo categoria é obrigatório" });
     }

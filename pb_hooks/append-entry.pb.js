@@ -18,8 +18,14 @@ routerAdd("POST", "/append-entry", (c) => {
     
     // Validação básica dos dados
     // data e conta são opcionais (para lançamentos futuros)
-    if (requestData.valor === undefined || requestData.descricao === undefined) {
-        return c.json(400, { "error": "Campos obrigatórios faltando (valor e descrição)" });
+    if (requestData.valor === undefined || requestData.valor === null) {
+        return c.json(400, { "error": "Campo valor é obrigatório" });
+    }
+    if (typeof requestData.valor !== 'number' || isNaN(requestData.valor)) {
+        return c.json(400, { "error": "Campo valor deve ser um número válido" });
+    }
+    if (requestData.descricao === undefined || requestData.descricao === null) {
+        return c.json(400, { "error": "Campo descrição é obrigatório" });
     }
 
     try {
