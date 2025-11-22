@@ -48,15 +48,20 @@ routerAdd("POST", "/append-entry", (c) => {
 
         // Preparar linha para inserir na planilha
         // data e conta podem ser vazias (para lançamentos futuros)
+        // Valida que valor é numérico
+        const valorNumerico = typeof requestData.valor === 'number' && !isNaN(requestData.valor) 
+            ? requestData.valor 
+            : 0;
+        
         const values = [
             [
-                requestData.data || '',
-                requestData.conta || '',
-                requestData.valor ?? 0,
-                requestData.descricao || '',
-                requestData.categoria || '',
-                requestData.orcamento || '', // aceita string ou número
-                requestData.obs || ''
+                requestData.data ?? '',
+                requestData.conta ?? '',
+                valorNumerico,
+                requestData.descricao ?? '',
+                requestData.categoria ?? '',
+                requestData.orcamento ?? '', // aceita string ou número
+                requestData.obs ?? ''
             ]
         ];
 

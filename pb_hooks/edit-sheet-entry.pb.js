@@ -60,14 +60,19 @@ routerAdd("PUT", "/edit-sheet-entry", (c) => {
 
 
         // Preparar os valores para atualização
+        // Valida que valor é numérico
+        const valorNumerico = typeof requestData.valor === 'number' && !isNaN(requestData.valor) 
+            ? requestData.valor 
+            : 0;
+        
         const values = [[
-            requestData.data || "",
-            requestData.conta || "",
-            requestData.valor ?? 0,
-            requestData.descricao || "",
-            requestData.categoria || "",
-            requestData.orcamento || "",
-            requestData.obs || ""
+            requestData.data ?? "",
+            requestData.conta ?? "",
+            valorNumerico,
+            requestData.descricao ?? "",
+            requestData.categoria ?? "",
+            requestData.orcamento ?? "",
+            requestData.obs ?? ""
         ]];
 
         // Função para tentar atualizar com refresh de token se necessário
