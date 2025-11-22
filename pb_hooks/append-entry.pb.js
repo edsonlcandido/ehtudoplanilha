@@ -6,9 +6,9 @@
  * Insere uma nova linha na aba "Lançamentos" da planilha do usuário
  * Formato esperado: data, conta, valor, descrição, categoria, orçamento, observação
  * 
- * CORREÇÃO: Alterado range de A:G para A1:G para evitar deslocamento de colunas
- * quando campos iniciais (data, conta) estão vazios em lançamentos futuros.
- * Range A1:G = começar da linha 1 (cabeçalho), colunas A até G.
+ * CORREÇÃO: Para lançamentos futuros com data/conta vazios, substituímos strings vazias
+ * por "-" para evitar que o Google Sheets API (com USER_ENTERED) pule/colapse essas
+ * colunas e cause deslocamento dos valores.
  */
 
 routerAdd("POST", "/append-entry", (c) => {
@@ -51,11 +51,12 @@ routerAdd("POST", "/append-entry", (c) => {
         }
 
         // Preparar linha para inserir na planilha
-        // data e conta podem ser vazias (para lançamentos futuros)
+        // Para lançamentos futuros, data e conta vazios são substituídos por "-"
+        // Isso evita que o Google Sheets API com USER_ENTERED pule/colapseessas colunas
         const values = [
             [
-                requestData.data || '',
-                requestData.conta || '',
+                requestData.data || '-',
+                requestData.conta || '-',
                 requestData.valor,
                 requestData.descricao,
                 requestData.categoria || '',
@@ -66,12 +67,11 @@ routerAdd("POST", "/append-entry", (c) => {
 
         // Função para tentar inserir com refresh de token se necessário
         const appendWithTokenRefresh = (token) => {
-            // Usando o nome da aba "Lançamentos" com range A1:G para garantir estrutura correta
-            // Range A1:G significa: começar da coluna A, linha 1 (cabeçalho), e usar até coluna G
-            // O :append automaticamente encontra a próxima linha vazia
-            // Mudança de A:G para A1:G para evitar deslocamento de colunas em lançamentos futuros
+            // CORREÇÃO: Usando USER_ENTERED (necessário para interpretar datas)
+            // Para evitar deslocamento de colunas, campos vazios são preenchidos com "-"
+            // ao invés de strings vazias, evitando que o Sheets tente colapsar colunas
             return $http.send({
-                url: `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Lançamentos!A1:G:append?valueInputOption=USER_ENTERED`,
+                url: `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Lançamentos!A:G:append?valueInputOption=USER_ENTERED`,
                 method: "POST",
                 headers: {
                     "Authorization": `Bearer ${token}`,
