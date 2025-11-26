@@ -357,19 +357,9 @@ async function loadCategories(forceRefresh = false): Promise<void> {
   showLoading();
   
   try {
-    const response = await fetch(`${pb.baseURL}${API_ENDPOINTS.getSheetCategoriesComplete}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${pb.authStore.token}`,
-        'Content-Type': 'application/json'
-      }
+    const data = await pb.send<CategoriesCompleteResponse>(API_ENDPOINTS.getSheetCategoriesComplete, {
+      method: 'GET'
     });
-    
-    const data: CategoriesCompleteResponse = await response.json();
-    
-    if (!response.ok) {
-      throw new Error((data as { error?: string }).error || 'Erro ao carregar categorias');
-    }
     
     // Mapeia para o formato simplificado (sem orçamento)
     state.categories = (data.categoriesComplete || []).map((cat: CategoryComplete) => ({
@@ -404,21 +394,15 @@ async function saveCategories(): Promise<boolean> {
   updateSaveStatus('saving');
   
   try {
-    const response = await fetch(`${pb.baseURL}${API_ENDPOINTS.postCategories}`, {
+    const data = await pb.send<PostCategoriesResponse>(API_ENDPOINTS.postCategories, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${pb.authStore.token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
+      body: {
         categories: state.categories
-      })
+      }
     });
     
-    const data: PostCategoriesResponse = await response.json();
-    
-    if (!response.ok) {
-      throw new Error((data as { error?: string }).error || 'Erro ao salvar categorias');
+    if (!data.success) {
+      throw new Error('Erro ao salvar categorias');
     }
     
     updateSaveStatus('saved');
