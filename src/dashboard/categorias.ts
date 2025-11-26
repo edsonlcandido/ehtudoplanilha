@@ -405,6 +405,10 @@ async function saveCategories(): Promise<boolean> {
       throw new Error('Erro ao salvar categorias');
     }
     
+    // Invalida o cache de categorias após salvar
+    CacheService.clear(CACHE_KEYS.SHEET_CATEGORIES);
+    CacheService.clear(CACHE_KEYS.SHEET_CATEGORIES_COMPLETE);
+    
     updateSaveStatus('saved');
     return true;
   } catch (error: unknown) {
