@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <title>Categorias - Planilha Eh Tudo</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/pages/categorias.css">
+</head>
+
+<body>
+    <!-- NAV: menu dinâmico -->
+    <nav>
+        <a href="/" class="brand">
+            <span>Planilha Eh Tudo</span>
+        </a>
+        <input id="bmenub" type="checkbox" class="show">
+        <label for="bmenub" class="burger pseudo button">menu</label>
+        <div class="menu user-menu" id="menu-user" role="menubar" aria-label="Menu do usuário"></div>
+    </nav>
+
+    <!-- Container principal com menu lateral -->
+    <div class="app-container">
+        <!-- Menu lateral fixo -->
+        <aside class="sidebar-menu">
+            <a href="index.html" title="Dashboard">
+                <span class="menu-icon">🏠</span>
+                <span class="menu-text">Dashboard</span>
+            </a>
+            <a href="lancamentos.html" title="Lançamentos">
+                <span class="menu-icon">📋</span>
+                <span class="menu-text">Lançamentos</span>
+            </a>
+            <a href="categorias.html" class="active" title="Categorias">
+                <span class="menu-icon">🏷️</span>
+                <span class="menu-text">Categorias</span>
+            </a>
+            <a href="/pwa" title="Celular">
+                <span class="menu-icon">📱</span>
+                <span class="menu-text">Celular</span>
+            </a>
+        </aside>
+
+        <!-- Conteúdo principal rolável -->
+        <main class="main-content">
+            <section class="section section-light dashboard-main">
+                <div class="container">
+                    <div class="categorias__header">
+                        <h2 class="categorias__title">Categorias</h2>
+                        <p class="categorias__description">Gerencie as categorias dos seus lançamentos. Arraste para reordenar.</p>
+
+                        <div class="categorias__actions">
+                            <button id="refreshCategoriesBtn" class="button">
+                                🔄 Atualizar
+                            </button>
+                            <button id="addCategoryBtn" class="button primary">
+                                ➕ Nova Categoria
+                            </button>
+                            <div id="saveStatus" class="categorias__status" style="display: none;">
+                                <span id="saveStatusText">Salvando...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Indicador de loading -->
+                    <div id="loadingIndicator" class="categorias__loading" style="display: none;">
+                        <div class="categorias__spinner"></div>
+                        <p>Carregando categorias...</p>
+                    </div>
+
+                    <!-- Container principal das categorias -->
+                    <div id="categoriesContainer" class="categorias__list">
+                        <!-- Conteúdo será carregado via JavaScript -->
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal de adicionar/editar categoria -->
+    <div id="categoryModal" class="categoria-modal">
+        <div class="categoria-modal__content">
+            <button class="categoria-modal__close" id="closeCategoryModal">×</button>
+            <h3 class="categoria-modal__title" id="categoryModalTitle">Nova Categoria</h3>
+            
+            <form id="categoryForm" class="categoria-modal__form">
+                <div class="categoria-modal__field">
+                    <label for="categoryName" class="categoria-modal__label">Nome da Categoria *</label>
+                    <input type="text" id="categoryName" class="categoria-modal__input" 
+                           placeholder="Ex: Alimentação, Transporte..." required>
+                </div>
+                
+                <div class="categoria-modal__field categoria-modal__field--autocomplete">
+                    <label for="categoryType" class="categoria-modal__label">Tipo</label>
+                    <input type="text" id="categoryType" class="categoria-modal__input" 
+                           placeholder="Digite ou selecione o tipo" autocomplete="off">
+                </div>
+                
+                <input type="hidden" id="categoryEditIndex" value="-1">
+                
+                <div class="categoria-modal__actions">
+                    <button type="button" class="button" id="cancelCategoryBtn">Cancelar</button>
+                    <button type="submit" class="button primary" id="saveCategoryBtn">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de confirmação de exclusão -->
+    <div id="deleteCategoryModal" class="categoria-modal">
+        <div class="categoria-modal__content">
+            <button class="categoria-modal__close" id="closeDeleteCategoryModal">×</button>
+            <h3 class="categoria-modal__title">Excluir Categoria</h3>
+            
+            <div class="categoria-delete-modal__warning">
+                <span class="categoria-delete-modal__warning-icon">⚠️</span>
+                <span class="categoria-delete-modal__warning-text">
+                    Esta ação não pode ser desfeita. A categoria será removida da planilha.
+                </span>
+            </div>
+            
+            <div class="categoria-delete-modal__name" id="deleteCategoryName">
+                <!-- Nome da categoria será inserido aqui -->
+            </div>
+            
+            <input type="hidden" id="deleteCategoryIndex" value="-1">
+            
+            <div class="categoria-modal__actions">
+                <button type="button" class="button" id="cancelDeleteCategoryBtn">Cancelar</button>
+                <button type="button" class="button danger" id="confirmDeleteCategoryBtn">🗑️ Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Planilha Eh Tudo. Simplificando suas finanças.</p>
+        </div>
+        <p>
+            <small>Produzido por
+                <a href="https://www.ehtudo.app">Eh!Tudo.app</a></small>
+        </p>
+    </footer>
+
+    <script type="module" src="../main.ts"></script>
+    <script type="module" src="./categorias.ts"></script>
+</body>
+
+</html>

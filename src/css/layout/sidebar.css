@@ -53,6 +53,13 @@
 .sidebar-menu a:hover {
   background-color: var(--light-gray);
   color: var(--text-color);
+  text-decoration: none;
+}
+
+.sidebar-menu a:active,
+.sidebar-menu a:visited,
+.sidebar-menu a:focus {
+  text-decoration: none;
 }
 
 .sidebar-menu a.active {

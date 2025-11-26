@@ -30,6 +30,9 @@ const POCKETBASE_CUSTOM_ENDPOINTS = [
   '/get-financial-summary',
   '/get-available-months',
   '/get-sheet-categories',
+  '/get-sheet-categories-complete',
+  // Categorias
+  '/post-categories',
 ];
 
 /**
@@ -95,6 +98,7 @@ export default defineConfig({
         dashboard: resolve(__dirname, 'dashboard/index.html'),
         configuracao: resolve(__dirname, 'dashboard/configuracao.html'),
         lancamentos: resolve(__dirname, 'dashboard/lancamentos.html'),
+        categorias: resolve(__dirname, 'dashboard/categorias.html'),
       },
       output: {
         // Remove hash dos nomes dos arquivos
