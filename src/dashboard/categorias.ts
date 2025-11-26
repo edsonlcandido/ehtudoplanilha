@@ -18,6 +18,24 @@ interface Category {
   tipo: string;
 }
 
+interface CategoryComplete {
+  categoria: string;
+  tipo: string;
+  orcamento?: number;
+}
+
+interface CategoriesCompleteResponse {
+  success: boolean;
+  categoriesComplete: CategoryComplete[];
+  message?: string;
+}
+
+interface PostCategoriesResponse {
+  success: boolean;
+  message: string;
+  count: number;
+}
+
 interface CategoriasState {
   categories: Category[];
   isLoading: boolean;
@@ -149,12 +167,14 @@ function renderCategories(): void {
       <div class="categoria-card__actions">
         <button class="categoria-card__action categoria-card__action--edit" 
                 title="Editar categoria"
-                onclick="editCategory(${index})">
+                data-action="edit"
+                data-index="${index}">
           ✏️
         </button>
         <button class="categoria-card__action categoria-card__action--delete" 
                 title="Excluir categoria"
-                onclick="deleteCategory(${index})">
+                data-action="delete"
+                data-index="${index}">
           🗑️
         </button>
       </div>
@@ -163,7 +183,7 @@ function renderCategories(): void {
   
   // Adiciona o card de adicionar no final
   const addCardHTML = `
-    <button class="categorias__add-card" onclick="openAddModal()">
+    <button class="categorias__add-card" data-action="add">
       <span class="categorias__add-card-icon">➕</span>
       <span>Nova Categoria</span>
     </button>
@@ -173,6 +193,9 @@ function renderCategories(): void {
   
   // Configura drag and drop nos cards
   setupDragAndDrop();
+  
+  // Configura event delegation para ações
+  setupActionHandlers();
 }
 
 /**
@@ -182,6 +205,50 @@ function escapeHtml(text: string): string {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
+}
+
+// ============================================================================
+// Event Delegation para Ações
+// ============================================================================
+
+/**
+ * Configura event delegation para ações dos cards
+ * Usa data attributes ao invés de inline handlers para evitar XSS
+ */
+function setupActionHandlers(): void {
+  const container = document.getElementById('categoriesContainer');
+  if (!container) return;
+  
+  // Remove listener anterior se existir
+  container.removeEventListener('click', handleActionClick);
+  
+  // Adiciona listener com delegation
+  container.addEventListener('click', handleActionClick);
+}
+
+/**
+ * Handler centralizado para clicks nos botões de ação
+ */
+function handleActionClick(e: Event): void {
+  const target = e.target as HTMLElement;
+  const button = target.closest('[data-action]') as HTMLElement;
+  
+  if (!button) return;
+  
+  const action = button.dataset.action;
+  const index = button.dataset.index ? parseInt(button.dataset.index, 10) : -1;
+  
+  switch (action) {
+    case 'edit':
+      if (index >= 0) openEditModal(index);
+      break;
+    case 'delete':
+      if (index >= 0) openDeleteModal(index);
+      break;
+    case 'add':
+      openAddModal();
+      break;
+  }
 }
 
 // ============================================================================
@@ -297,14 +364,14 @@ async function loadCategories(forceRefresh = false): Promise<void> {
       }
     });
     
-    const data = await response.json();
+    const data: CategoriesCompleteResponse = await response.json();
     
     if (!response.ok) {
-      throw new Error(data.error || 'Erro ao carregar categorias');
+      throw new Error((data as { error?: string }).error || 'Erro ao carregar categorias');
     }
     
     // Mapeia para o formato simplificado (sem orçamento)
-    state.categories = (data.categoriesComplete || []).map((cat: any) => ({
+    state.categories = (data.categoriesComplete || []).map((cat: CategoryComplete) => ({
       categoria: cat.categoria,
       tipo: cat.tipo
     }));
@@ -314,9 +381,10 @@ async function loadCategories(forceRefresh = false): Promise<void> {
     if (forceRefresh) {
       showSuccessToast('Categorias atualizadas com sucesso');
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
     console.error('Erro ao carregar categorias:', error);
-    showErrorToast('Erro ao carregar categorias: ' + error.message);
+    showErrorToast('Erro ao carregar categorias: ' + errorMessage);
     state.categories = [];
     renderCategories();
   } finally {
@@ -346,18 +414,19 @@ async function saveCategories(): Promise<boolean> {
       })
     });
     
-    const data = await response.json();
+    const data: PostCategoriesResponse = await response.json();
     
     if (!response.ok) {
-      throw new Error(data.error || 'Erro ao salvar categorias');
+      throw new Error((data as { error?: string }).error || 'Erro ao salvar categorias');
     }
     
     updateSaveStatus('saved');
     return true;
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
     console.error('Erro ao salvar categorias:', error);
     updateSaveStatus('error');
-    showErrorToast('Erro ao salvar categorias: ' + error.message);
+    showErrorToast('Erro ao salvar categorias: ' + errorMessage);
     return false;
   } finally {
     state.isSaving = false;
@@ -520,15 +589,6 @@ async function confirmDelete(): Promise<void> {
     showSuccessToast('Categoria excluída com sucesso');
   }
 }
-
-// ============================================================================
-// Funções globais
-// ============================================================================
-
-// Expõe funções globalmente para uso nos botões inline
-(window as any).editCategory = openEditModal;
-(window as any).deleteCategory = openDeleteModal;
-(window as any).openAddModal = openAddModal;
 
 // ============================================================================
 // Inicialização
