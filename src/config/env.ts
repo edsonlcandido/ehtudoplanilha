@@ -79,6 +79,9 @@ export const API_ENDPOINTS = {
   getAvailableMonths: '/get-available-months',        // GET - Meses disponíveis
   getSheetCategories: '/get-sheet-categories',        // GET - Categorias da planilha
   getSheetCategoriesComplete: '/get-sheet-categories-complete', // GET - Categorias completas (categoria, tipo, orcamento)
+  
+  // Categorias (post-categories.pb.js)
+  postCategories: '/post-categories',                 // POST - Atualiza categorias na planilha
 } as const;
 
 /**
