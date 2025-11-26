@@ -8,6 +8,7 @@ import { verifyTokenValidity } from '../services/auth';
 import { API_ENDPOINTS } from '../config/env';
 import { renderUserMenu } from '../components/user-menu';
 import { showSuccessToast, showErrorToast } from '../components/toast';
+import { CacheService, CACHE_KEYS } from '../services/cache';
 
 // ============================================================================
 // Tipos
@@ -438,6 +439,71 @@ async function saveCategories(): Promise<boolean> {
 // ============================================================================
 
 /**
+ * Obtém os tipos únicos das categorias existentes (do cache ou estado atual)
+ */
+function getUniqueTipos(): string[] {
+  // Primeiro, tenta obter do cache de categorias completas
+  const cached = CacheService.get<{ categoriesComplete: CategoryComplete[] }>(CACHE_KEYS.SHEET_CATEGORIES_COMPLETE);
+  
+  let allCategories: { tipo: string }[] = [];
+  
+  if (cached && cached.categoriesComplete) {
+    allCategories = cached.categoriesComplete;
+  }
+  
+  // Também considera as categorias do estado atual (caso tenham sido editadas)
+  allCategories = [...allCategories, ...state.categories];
+  
+  // Extrai tipos únicos (não vazios)
+  const tipos = new Set<string>();
+  allCategories.forEach(cat => {
+    if (cat.tipo && cat.tipo.trim() !== '') {
+      tipos.add(cat.tipo.toUpperCase());
+    }
+  });
+  
+  // Converte para array e ordena
+  return Array.from(tipos).sort();
+}
+
+/**
+ * Popula o select de tipos com os valores únicos existentes
+ */
+function populateTypeSelect(selectedValue = ''): void {
+  const typeSelect = document.getElementById('categoryType') as HTMLSelectElement;
+  if (!typeSelect) return;
+  
+  const uniqueTipos = getUniqueTipos();
+  
+  // Limpa as opções existentes
+  typeSelect.innerHTML = '<option value="">Selecione o tipo</option>';
+  
+  // Adiciona os tipos únicos
+  uniqueTipos.forEach(tipo => {
+    const option = document.createElement('option');
+    option.value = tipo;
+    option.textContent = tipo.charAt(0).toUpperCase() + tipo.slice(1).toLowerCase();
+    typeSelect.appendChild(option);
+  });
+  
+  // Se não houver nenhum tipo, adiciona opções padrão
+  if (uniqueTipos.length === 0) {
+    const defaultTipos = ['RECEITA', 'DESPESA'];
+    defaultTipos.forEach(tipo => {
+      const option = document.createElement('option');
+      option.value = tipo;
+      option.textContent = tipo.charAt(0).toUpperCase() + tipo.slice(1).toLowerCase();
+      typeSelect.appendChild(option);
+    });
+  }
+  
+  // Define o valor selecionado
+  if (selectedValue) {
+    typeSelect.value = selectedValue.toUpperCase();
+  }
+}
+
+/**
  * Abre modal para adicionar categoria
  */
 function openAddModal(): void {
@@ -446,13 +512,14 @@ function openAddModal(): void {
   const modal = document.getElementById('categoryModal');
   const title = document.getElementById('categoryModalTitle');
   const nameInput = document.getElementById('categoryName') as HTMLInputElement;
-  const typeSelect = document.getElementById('categoryType') as HTMLSelectElement;
   const indexInput = document.getElementById('categoryEditIndex') as HTMLInputElement;
   
   if (title) title.textContent = 'Nova Categoria';
   if (nameInput) nameInput.value = '';
-  if (typeSelect) typeSelect.value = '';
   if (indexInput) indexInput.value = '-1';
+  
+  // Popula o select de tipos com valores únicos
+  populateTypeSelect('');
   
   if (modal) modal.classList.add('categoria-modal--visible');
   if (nameInput) nameInput.focus();
@@ -470,13 +537,14 @@ function openEditModal(index: number): void {
   const modal = document.getElementById('categoryModal');
   const title = document.getElementById('categoryModalTitle');
   const nameInput = document.getElementById('categoryName') as HTMLInputElement;
-  const typeSelect = document.getElementById('categoryType') as HTMLSelectElement;
   const indexInput = document.getElementById('categoryEditIndex') as HTMLInputElement;
   
   if (title) title.textContent = 'Editar Categoria';
   if (nameInput) nameInput.value = cat.categoria;
-  if (typeSelect) typeSelect.value = cat.tipo.toUpperCase();
   if (indexInput) indexInput.value = String(index);
+  
+  // Popula o select de tipos com valores únicos e seleciona o atual
+  populateTypeSelect(cat.tipo);
   
   if (modal) modal.classList.add('categoria-modal--visible');
   if (nameInput) nameInput.focus();
