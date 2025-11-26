@@ -93,13 +93,10 @@
                            placeholder="Ex: Alimentação, Transporte..." required>
                 </div>
                 
-                <div class="categoria-modal__field">
+                <div class="categoria-modal__field categoria-modal__field--autocomplete">
                     <label for="categoryType" class="categoria-modal__label">Tipo</label>
-                    <select id="categoryType" class="categoria-modal__select">
-                        <option value="">Selecione o tipo</option>
-                        <option value="RECEITA">Receita</option>
-                        <option value="DESPESA">Despesa</option>
-                    </select>
+                    <input type="text" id="categoryType" class="categoria-modal__input" 
+                           placeholder="Digite ou selecione o tipo" autocomplete="off">
                 </div>
                 
                 <input type="hidden" id="categoryEditIndex" value="-1">

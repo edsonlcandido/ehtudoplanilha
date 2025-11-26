@@ -346,6 +346,49 @@
 }
 
 /* ===================================
+   AUTOCOMPLETE DE TIPO
+   =================================== */
+.categoria-modal__field--autocomplete {
+  position: relative;
+}
+
+.categoria-modal__suggestions {
+  position: absolute;
+  z-index: 1200;
+  background: var(--white-color, #fff);
+  border: 2px solid #e8e8e8;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  max-height: 200px;
+  overflow: auto;
+  width: 100%;
+  top: 100%;
+  left: 0;
+  margin-top: 0.25rem;
+  padding: 0.25rem;
+  display: none;
+}
+
+.categoria-modal__suggestions--visible {
+  display: block;
+}
+
+.categoria-modal__suggestion {
+  padding: 0.625rem 0.75rem;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: all 0.15s ease;
+  color: var(--text-color, #333);
+}
+
+.categoria-modal__suggestion:hover,
+.categoria-modal__suggestion--highlighted {
+  background: var(--info-bg-light, #e8f4fc);
+  color: var(--primary-color, #3498db);
+}
+
+/* ===================================
    MODAL DE CONFIRMAÇÃO DE DELEÇÃO
    =================================== */
 .categoria-delete-modal__warning {

@@ -462,45 +462,132 @@ function getUniqueTipos(): string[] {
     }
   });
   
+  // Se não houver nenhum tipo, adiciona opções padrão
+  if (tipos.size === 0) {
+    tipos.add('RECEITA');
+    tipos.add('DESPESA');
+  }
+  
   // Converte para array e ordena
   return Array.from(tipos).sort();
 }
 
 /**
- * Popula o select de tipos com os valores únicos existentes
+ * Garante que o container de sugestões existe
  */
-function populateTypeSelect(selectedValue = ''): void {
-  const typeSelect = document.getElementById('categoryType') as HTMLSelectElement;
-  if (!typeSelect) return;
-  
-  const uniqueTipos = getUniqueTipos();
-  
-  // Limpa as opções existentes
-  typeSelect.innerHTML = '<option value="">Selecione o tipo</option>';
-  
-  // Adiciona os tipos únicos
-  uniqueTipos.forEach(tipo => {
-    const option = document.createElement('option');
-    option.value = tipo;
-    option.textContent = tipo.charAt(0).toUpperCase() + tipo.slice(1).toLowerCase();
-    typeSelect.appendChild(option);
-  });
-  
-  // Se não houver nenhum tipo, adiciona opções padrão
-  if (uniqueTipos.length === 0) {
-    const defaultTipos = ['RECEITA', 'DESPESA'];
-    defaultTipos.forEach(tipo => {
-      const option = document.createElement('option');
-      option.value = tipo;
-      option.textContent = tipo.charAt(0).toUpperCase() + tipo.slice(1).toLowerCase();
-      typeSelect.appendChild(option);
+function ensureSuggestionsContainer(): HTMLDivElement {
+  const field = document.querySelector('.categoria-modal__field--autocomplete');
+  if (!field) {
+    throw new Error('Campo de autocomplete não encontrado');
+  }
+
+  let container = document.getElementById('typeSuggestions') as HTMLDivElement;
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'typeSuggestions';
+    container.classList.add('categoria-modal__suggestions');
+    container.setAttribute('role', 'listbox');
+    field.appendChild(container);
+  }
+  return container;
+}
+
+/**
+ * Mostra todas as sugestões de tipo
+ */
+function showAllTypeSuggestions(input: HTMLInputElement, container: HTMLDivElement): void {
+  const tipos = getUniqueTipos();
+  container.innerHTML = '';
+
+  if (tipos.length === 0) {
+    container.classList.remove('categoria-modal__suggestions--visible');
+    return;
+  }
+
+  tipos.forEach(tipo => {
+    const item = document.createElement('div');
+    item.setAttribute('role', 'option');
+    item.classList.add('categoria-modal__suggestion');
+    item.textContent = tipo.charAt(0).toUpperCase() + tipo.slice(1).toLowerCase();
+    item.addEventListener('click', () => {
+      input.value = tipo;
+      container.classList.remove('categoria-modal__suggestions--visible');
+      input.focus();
     });
-  }
+    container.appendChild(item);
+  });
+
+  container.classList.add('categoria-modal__suggestions--visible');
+}
+
+/**
+ * Mostra sugestões filtradas de tipo
+ */
+function showFilteredTypeSuggestions(input: HTMLInputElement, container: HTMLDivElement): void {
+  const query = input.value.trim().toLowerCase();
+  const tipos = getUniqueTipos();
   
-  // Define o valor selecionado
-  if (selectedValue) {
-    typeSelect.value = selectedValue.toUpperCase();
+  container.innerHTML = '';
+
+  // Se não tem query, mostra todas
+  if (!query || query.length < 1) {
+    showAllTypeSuggestions(input, container);
+    return;
   }
+
+  const filtered = tipos.filter(tipo => tipo.toLowerCase().includes(query));
+
+  if (filtered.length === 0) {
+    container.classList.remove('categoria-modal__suggestions--visible');
+    return;
+  }
+
+  filtered.forEach(tipo => {
+    const item = document.createElement('div');
+    item.setAttribute('role', 'option');
+    item.classList.add('categoria-modal__suggestion');
+    item.textContent = tipo.charAt(0).toUpperCase() + tipo.slice(1).toLowerCase();
+    item.addEventListener('click', () => {
+      input.value = tipo;
+      container.classList.remove('categoria-modal__suggestions--visible');
+      input.focus();
+    });
+    container.appendChild(item);
+  });
+
+  container.classList.add('categoria-modal__suggestions--visible');
+}
+
+/**
+ * Configura autocomplete para o campo de tipo
+ */
+function setupTypeAutocomplete(): void {
+  const input = document.getElementById('categoryType') as HTMLInputElement;
+  if (!input) return;
+
+  const container = ensureSuggestionsContainer();
+
+  // Mostra sugestões ao focar
+  input.addEventListener('focus', () => {
+    const query = input.value.trim().toLowerCase();
+    if (!query) {
+      showAllTypeSuggestions(input, container);
+    } else {
+      showFilteredTypeSuggestions(input, container);
+    }
+  });
+
+  // Filtra conforme digita
+  input.addEventListener('input', () => {
+    showFilteredTypeSuggestions(input, container);
+  });
+
+  // Esconde ao perder foco (com delay para permitir click)
+  input.addEventListener('blur', () => {
+    setTimeout(() => {
+      container.classList.remove('categoria-modal__suggestions--visible');
+    }, 200);
+  });
 }
 
 /**
@@ -512,14 +599,13 @@ function openAddModal(): void {
   const modal = document.getElementById('categoryModal');
   const title = document.getElementById('categoryModalTitle');
   const nameInput = document.getElementById('categoryName') as HTMLInputElement;
+  const typeInput = document.getElementById('categoryType') as HTMLInputElement;
   const indexInput = document.getElementById('categoryEditIndex') as HTMLInputElement;
   
   if (title) title.textContent = 'Nova Categoria';
   if (nameInput) nameInput.value = '';
+  if (typeInput) typeInput.value = '';
   if (indexInput) indexInput.value = '-1';
-  
-  // Popula o select de tipos com valores únicos
-  populateTypeSelect('');
   
   if (modal) modal.classList.add('categoria-modal--visible');
   if (nameInput) nameInput.focus();
@@ -537,14 +623,13 @@ function openEditModal(index: number): void {
   const modal = document.getElementById('categoryModal');
   const title = document.getElementById('categoryModalTitle');
   const nameInput = document.getElementById('categoryName') as HTMLInputElement;
+  const typeInput = document.getElementById('categoryType') as HTMLInputElement;
   const indexInput = document.getElementById('categoryEditIndex') as HTMLInputElement;
   
   if (title) title.textContent = 'Editar Categoria';
   if (nameInput) nameInput.value = cat.categoria;
+  if (typeInput) typeInput.value = cat.tipo || '';
   if (indexInput) indexInput.value = String(index);
-  
-  // Popula o select de tipos com valores únicos e seleciona o atual
-  populateTypeSelect(cat.tipo);
   
   if (modal) modal.classList.add('categoria-modal--visible');
   if (nameInput) nameInput.focus();
@@ -564,11 +649,11 @@ function closeCategoryModal(): void {
  */
 async function saveCategoryFromModal(): Promise<void> {
   const nameInput = document.getElementById('categoryName') as HTMLInputElement;
-  const typeSelect = document.getElementById('categoryType') as HTMLSelectElement;
+  const typeInput = document.getElementById('categoryType') as HTMLInputElement;
   const indexInput = document.getElementById('categoryEditIndex') as HTMLInputElement;
   
   const name = nameInput?.value.trim();
-  const type = typeSelect?.value || '';
+  const type = typeInput?.value.trim().toUpperCase() || '';
   const index = parseInt(indexInput?.value || '-1', 10);
   
   if (!name) {
@@ -715,6 +800,9 @@ async function init(): Promise<void> {
       await saveCategoryFromModal();
     });
   }
+  
+  // Configura autocomplete para o campo de tipo
+  setupTypeAutocomplete();
   
   // Configura modal de exclusão
   const closeDeleteModalBtn = document.getElementById('closeDeleteCategoryModal');
