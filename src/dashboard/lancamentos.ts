@@ -147,6 +147,11 @@ function applySortingAndFilters(): void {
   // Base para aplicar filtros
   let viewEntries = [...state.originalEntries];
 
+  // Aplica pesquisa PRIMEIRO (busca em TODAS as entradas)
+  if (state.searchTerm) {
+    viewEntries = lancamentosService.filterEntries(viewEntries, state.searchTerm);
+  }
+
   // Filtra por tipo de lançamento (consolidado/futuro)
   viewEntries = viewEntries.filter(entry => {
     const hasDate = entry.data !== null 
@@ -163,11 +168,6 @@ function applySortingAndFilters(): void {
 
   // Ordena conforme configuração
   viewEntries = lancamentosService.sortEntries(viewEntries, state.sortBy);
-
-  // Aplica pesquisa
-  if (state.searchTerm) {
-    viewEntries = lancamentosService.filterEntries(viewEntries, state.searchTerm);
-  }
 
   state.filteredEntries = viewEntries;
   state.entries = viewEntries; // Atualiza state.entries com as entradas filtradas
