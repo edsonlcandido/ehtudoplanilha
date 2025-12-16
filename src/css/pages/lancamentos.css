@@ -631,12 +631,14 @@ body {
 .filter-form__input,
 .filter-form__select {
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.875rem 0.75rem;
   border: 1px solid var(--border-color-alt);
   border-radius: 6px;
   font-size: 1rem;
   background: white;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  min-height: 44px;
+  line-height: 1.5;
 }
 
 .filter-form__select {
@@ -675,9 +677,11 @@ body {
     bottom: 0;
     top: auto;
     height: auto;
-    max-height: 90vh;
+    max-height: 85vh;
     border-radius: 16px 16px 0 0;
     transform: translateY(100%);
+    display: flex;
+    flex-direction: column;
   }
 
   .filter-panel[aria-hidden="false"] .filter-panel__content {
@@ -686,6 +690,7 @@ body {
 
   .filter-panel__header {
     padding: 1.25rem 1rem 0.75rem;
+    flex-shrink: 0;
   }
 
   .filter-panel__title {
@@ -694,15 +699,34 @@ body {
 
   .filter-panel__body {
     padding: 1rem;
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .filter-panel__footer {
-    padding: 0.75rem 1rem;
+    padding: 1rem;
     gap: 0.75rem;
+    flex-shrink: 0;
+    border-top: 2px solid #f0f0f0;
+    background: #f8f9fa;
+  }
+
+  .filter-panel__footer .button {
+    flex: 1;
+    min-height: 44px;
+    font-size: 0.95rem;
   }
 
   .filter-form__group {
     margin-bottom: 1.25rem;
+  }
+
+  .filter-form__input,
+  .filter-form__select {
+    padding: 1rem 0.875rem;
+    font-size: 1rem;
+    min-height: 48px;
   }
 }
 
