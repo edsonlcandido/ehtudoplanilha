@@ -6,15 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
     <title>Lançamentos - Planilha Eh tudo</title>
-  <script type="module" crossorigin src="/assets/lancamentos.js"?v=1765890934310></script>
+  <script type="module" crossorigin src="/assets/lancamentos.js"?v=1765895549375></script>
   <link rel="modulepreload" crossorigin href="/assets/auth.js">
   <link rel="modulepreload" crossorigin href="/assets/toast.js">
   <link rel="modulepreload" crossorigin href="/assets/user-menu.js">
   <link rel="modulepreload" crossorigin href="/assets/sheets.js">
   <link rel="modulepreload" crossorigin href="/assets/fab-menu.js">
-  <link rel="stylesheet" crossorigin href="/assets/toast.css"?v=1765890934310>
-  <link rel="stylesheet" crossorigin href="/assets/lancamentos.css"?v=1765890934310>
-  <link rel="stylesheet" crossorigin href="/assets/main.css"?v=1765890934310>
+  <link rel="stylesheet" crossorigin href="/assets/toast.css"?v=1765895549375>
+  <link rel="stylesheet" crossorigin href="/assets/lancamentos.css"?v=1765895549375>
+  <link rel="stylesheet" crossorigin href="/assets/main.css"?v=1765895549375>
 </head>
 
 <body>
@@ -122,10 +122,92 @@
         </main>
     </div>
 
+    <!-- Botão flutuante de filtrar -->
+    <button id="openFilterPanel" class="filter-fab-button" aria-label="Filtrar lançamentos" title="Filtrar lançamentos">
+        🔍
+    </button>
+
     <!-- Botão flutuante de adicionar lançamento -->
     <button id="openEntryModal" class="fab-button" aria-label="Adicionar lançamento">
         +
     </button>
+
+    <!-- Painel de Filtros -->
+    <aside id="filterPanel" class="filter-panel" role="dialog" aria-labelledby="filterPanelTitle" aria-hidden="true">
+        <div class="filter-panel__overlay" id="filterPanelOverlay"></div>
+        <div class="filter-panel__content">
+            <div class="filter-panel__header">
+                <h3 id="filterPanelTitle" class="filter-panel__title">Filtros</h3>
+                <button id="closeFilterPanel" class="filter-panel__close" aria-label="Fechar filtros">
+                    ✕
+                </button>
+            </div>
+
+            <div class="filter-panel__body">
+                <form id="filterForm" class="filter-form">
+                    <!-- Filtro por Conta -->
+                    <div class="filter-form__group">
+                        <label for="filterConta" class="filter-form__label">
+                            Conta
+                        </label>
+                        <select id="filterConta" name="conta" class="filter-form__select">
+                            <option value="">Todas as contas</option>
+                        </select>
+                    </div>
+
+                    <!-- Filtro por Data (Intervalo) -->
+                    <div class="filter-form__group">
+                        <label for="filterDataInicio" class="filter-form__label">
+                            Data início
+                        </label>
+                        <input 
+                            type="date" 
+                            id="filterDataInicio" 
+                            name="dataInicio" 
+                            class="filter-form__input"
+                            aria-describedby="filterDataInicioHelp">
+                        <small id="filterDataInicioHelp" class="filter-form__help">
+                            Deixe vazio para incluir todas
+                        </small>
+                    </div>
+
+                    <div class="filter-form__group">
+                        <label for="filterDataFim" class="filter-form__label">
+                            Data fim
+                        </label>
+                        <input 
+                            type="date" 
+                            id="filterDataFim" 
+                            name="dataFim" 
+                            class="filter-form__input"
+                            aria-describedby="filterDataFimHelp">
+                        <small id="filterDataFimHelp" class="filter-form__help">
+                            Deixe vazio para incluir todas
+                        </small>
+                    </div>
+
+                    <!-- Filtro por Orçamento -->
+                    <div class="filter-form__group">
+                        <label for="filterOrcamento" class="filter-form__label">
+                            Orçamento
+                        </label>
+                        <select id="filterOrcamento" name="orcamento" class="filter-form__select">
+                            <option value="">Todos os orçamentos</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+
+            <div class="filter-panel__footer">
+                <button type="button" id="clearFiltersBtn" class="button">
+                    Limpar filtros
+                </button>
+                <button type="button" id="applyFiltersBtn" class="button primary">
+                    Aplicar filtros
+                </button>
+            </div>
+        </div>
+    </aside>
 
     <!-- Modal de divisão de parcelas -->
     <div id="splitModal" class="modal" style="display:none; align-items:center; justify-content:center;">
