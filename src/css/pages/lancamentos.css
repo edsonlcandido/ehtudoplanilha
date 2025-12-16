@@ -631,14 +631,14 @@ body {
 .filter-form__input,
 .filter-form__select {
   width: 100%;
-  padding: 0.875rem 0.75rem;
+  padding: 0.625rem 0.75rem;
   border: 1px solid var(--border-color-alt);
   border-radius: 6px;
   font-size: 1rem;
   background: white;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   min-height: 44px;
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 .filter-form__select {
@@ -724,9 +724,10 @@ body {
 
   .filter-form__input,
   .filter-form__select {
-    padding: 1rem 0.875rem;
+    padding: 0.625rem 0.875rem;
     font-size: 1rem;
     min-height: 48px;
+    line-height: 1.4;
   }
 }
 
