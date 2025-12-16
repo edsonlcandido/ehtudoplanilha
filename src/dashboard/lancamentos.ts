@@ -416,12 +416,18 @@ function applyAdvancedFilters(entries: SheetEntry[]): SheetEntry[] {
       let entryDate: Date | null = null;
       if (typeof entry.data === 'number') {
         entryDate = excelSerialToDate(entry.data);
+        if (entryDate) {
+          // Normaliza para meia-noite do dia
+          entryDate.setHours(0, 0, 0, 0);
+        }
       } else if (typeof entry.data === 'string') {
         // Tenta parsear string de data no formato DD/MM/YYYY HH:mm
         const parts = entry.data.split(' ')[0].split('/');
         if (parts.length === 3) {
           const [day, month, year] = parts;
           entryDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+          // Normaliza para meia-noite do dia
+          entryDate.setHours(0, 0, 0, 0);
         }
       }
 
@@ -429,14 +435,18 @@ function applyAdvancedFilters(entries: SheetEntry[]): SheetEntry[] {
 
       // Verifica data início
       if (state.filters.dataInicio) {
-        const dataInicio = new Date(state.filters.dataInicio);
+        // Cria data a partir do input (formato YYYY-MM-DD)
+        const [year, month, day] = state.filters.dataInicio.split('-').map(Number);
+        const dataInicio = new Date(year, month - 1, day);
         dataInicio.setHours(0, 0, 0, 0);
         if (entryDate < dataInicio) return false;
       }
 
       // Verifica data fim
       if (state.filters.dataFim) {
-        const dataFim = new Date(state.filters.dataFim);
+        // Cria data a partir do input (formato YYYY-MM-DD)
+        const [year, month, day] = state.filters.dataFim.split('-').map(Number);
+        const dataFim = new Date(year, month - 1, day);
         dataFim.setHours(23, 59, 59, 999);
         if (entryDate > dataFim) return false;
       }
