@@ -91,6 +91,16 @@ export type OnEntryEditedCallback = (result: any) => void;
 export type SortType = 'original' | 'budget_date' | 'date';
 
 /**
+ * Filtros avançados de lançamentos
+ */
+export interface LancamentosFilters {
+  conta: string;
+  dataInicio: string;
+  dataFim: string;
+  orcamento: string;
+}
+
+/**
  * Estado de filtros e ordenação
  */
 export interface LancamentosState {
@@ -102,6 +112,8 @@ export interface LancamentosState {
   showConsolidated: boolean;
   showFuture: boolean;
   isLoading: boolean;
+  filters: LancamentosFilters;
+  filterPanelOpen: boolean;
 }
 
 /**

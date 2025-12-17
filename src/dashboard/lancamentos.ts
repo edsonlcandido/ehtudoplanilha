@@ -13,7 +13,7 @@ import { initFabMenu } from '../components/fab-menu';
 import { renderEntries } from '../components/lancamentos-list';
 import lancamentosService from '../services/lancamentos';
 import type { SortType, LancamentosState, SheetEntry } from '../types';
-import { excelSerialToDateTimeLabel } from '../utils/date-helpers';
+import { excelSerialToDateTimeLabel, excelSerialToDate } from '../utils/date-helpers';
 import { showSuccessToast, showErrorToast, showInfoToast } from '../components/toast';
 
 // ============================================================================
@@ -28,7 +28,14 @@ const state: LancamentosState = {
   sortBy: 'original',
   showConsolidated: true,
   showFuture: false,
-  isLoading: false
+  isLoading: false,
+  filters: {
+    conta: '',
+    dataInicio: '',
+    dataFim: '',
+    orcamento: ''
+  },
+  filterPanelOpen: false
 };
 
 // ============================================================================
@@ -120,6 +127,10 @@ async function loadEntries(forceRefresh = false): Promise<void> {
     state.originalEntries = cleaned;
     state.entries = [...state.originalEntries];
 
+    // Popula os filtros com as opções disponíveis
+    populateContaFilter();
+    populateOrcamentoFilter();
+
     applySortingAndFilters();
     
     const cacheMsg = forceRefresh ? ' (cache atualizado)' : '';
@@ -147,7 +158,10 @@ function applySortingAndFilters(): void {
   // Base para aplicar filtros
   let viewEntries = [...state.originalEntries];
 
-  // Aplica pesquisa PRIMEIRO (busca em TODAS as entradas)
+  // Aplica filtros avançados PRIMEIRO
+  viewEntries = applyAdvancedFilters(viewEntries);
+
+  // Aplica pesquisa (busca nas entradas já filtradas)
   if (state.searchTerm) {
     viewEntries = lancamentosService.filterEntries(viewEntries, state.searchTerm);
   }
@@ -238,6 +252,276 @@ function clearSearch(): void {
   }
   state.searchTerm = '';
   applySortingAndFilters();
+}
+
+// ============================================================================
+// Funções de gerenciamento do painel de filtros
+// ============================================================================
+
+/**
+ * Abre o painel de filtros
+ */
+function openFilterPanel(): void {
+  const panel = document.getElementById('filterPanel');
+  const fabButton = document.getElementById('openFilterPanel');
+  
+  if (panel && fabButton) {
+    panel.setAttribute('aria-hidden', 'false');
+    fabButton.classList.add('active');
+    state.filterPanelOpen = true;
+    
+    // Foca no primeiro campo do formulário
+    setTimeout(() => {
+      const firstInput = panel.querySelector('select, input') as HTMLElement;
+      if (firstInput) {
+        firstInput.focus();
+      }
+    }, 300);
+  }
+}
+
+/**
+ * Fecha o painel de filtros
+ */
+function closeFilterPanel(): void {
+  const panel = document.getElementById('filterPanel');
+  const fabButton = document.getElementById('openFilterPanel');
+  
+  if (panel && fabButton) {
+    panel.setAttribute('aria-hidden', 'true');
+    fabButton.classList.remove('active');
+    state.filterPanelOpen = false;
+  }
+}
+
+/**
+ * Popula as opções de conta no filtro
+ */
+function populateContaFilter(): void {
+  const select = document.getElementById('filterConta') as HTMLSelectElement;
+  if (!select) return;
+
+  // Extrai contas únicas dos lançamentos
+  const contas = new Set<string>();
+  state.originalEntries.forEach(entry => {
+    if (entry.conta && entry.conta.trim()) {
+      contas.add(entry.conta.trim());
+    }
+  });
+
+  // Ordena alfabeticamente
+  const sortedContas = Array.from(contas).sort();
+
+  // Mantém a opção "Todas as contas"
+  const defaultOption = select.options[0];
+  select.innerHTML = '';
+  select.appendChild(defaultOption);
+
+  // Adiciona as opções
+  sortedContas.forEach(conta => {
+    const option = document.createElement('option');
+    option.value = conta;
+    option.textContent = conta;
+    if (state.filters.conta === conta) {
+      option.selected = true;
+    }
+    select.appendChild(option);
+  });
+}
+
+/**
+ * Popula as opções de orçamento no filtro
+ */
+function populateOrcamentoFilter(): void {
+  const select = document.getElementById('filterOrcamento') as HTMLSelectElement;
+  if (!select) return;
+
+  // Extrai orçamentos únicos dos lançamentos
+  const orcamentos = new Set<string>();
+  state.originalEntries.forEach(entry => {
+    if (entry.orcamento) {
+      let orcamentoStr = '';
+      if (typeof entry.orcamento === 'number') {
+        // Converte número Excel para string de data
+        const date = excelSerialToDate(entry.orcamento);
+        if (date) {
+          orcamentoStr = `${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+        }
+      } else if (typeof entry.orcamento === 'string') {
+        orcamentoStr = entry.orcamento.trim();
+      }
+      if (orcamentoStr) {
+        orcamentos.add(orcamentoStr);
+      }
+    }
+  });
+
+  // Ordena
+  const sortedOrcamentos = Array.from(orcamentos).sort().reverse(); // Mais recentes primeiro
+
+  // Mantém a opção "Todos os orçamentos"
+  const defaultOption = select.options[0];
+  select.innerHTML = '';
+  select.appendChild(defaultOption);
+
+  // Adiciona as opções
+  sortedOrcamentos.forEach(orc => {
+    const option = document.createElement('option');
+    option.value = orc;
+    option.textContent = orc;
+    if (state.filters.orcamento === orc) {
+      option.selected = true;
+    }
+    select.appendChild(option);
+  });
+}
+
+/**
+ * Aplica os filtros avançados
+ */
+function applyAdvancedFilters(entries: SheetEntry[]): SheetEntry[] {
+  let filtered = [...entries];
+
+  // Filtro por conta
+  if (state.filters.conta) {
+    filtered = filtered.filter(entry => 
+      entry.conta && entry.conta.trim() === state.filters.conta
+    );
+  }
+
+  // Filtro por orçamento
+  if (state.filters.orcamento) {
+    filtered = filtered.filter(entry => {
+      if (!entry.orcamento) return false;
+      
+      let orcamentoStr = '';
+      if (typeof entry.orcamento === 'number') {
+        const date = excelSerialToDate(entry.orcamento);
+        if (date) {
+          orcamentoStr = `${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+        }
+      } else if (typeof entry.orcamento === 'string') {
+        orcamentoStr = entry.orcamento.trim();
+      }
+      
+      return orcamentoStr === state.filters.orcamento;
+    });
+  }
+
+  // Filtro por data (intervalo)
+  if (state.filters.dataInicio || state.filters.dataFim) {
+    filtered = filtered.filter(entry => {
+      if (!entry.data) return false;
+
+      let entryDate: Date | null = null;
+      if (typeof entry.data === 'number') {
+        entryDate = excelSerialToDate(entry.data);
+        if (entryDate) {
+          // Normaliza para meia-noite do dia
+          entryDate.setHours(0, 0, 0, 0);
+        }
+      } else if (typeof entry.data === 'string') {
+        // Tenta parsear string de data no formato DD/MM/YYYY HH:mm
+        const parts = entry.data.split(' ')[0].split('/');
+        if (parts.length === 3) {
+          const [day, month, year] = parts;
+          entryDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+          // Normaliza para meia-noite do dia
+          entryDate.setHours(0, 0, 0, 0);
+        }
+      }
+
+      if (!entryDate || isNaN(entryDate.getTime())) return false;
+
+      // Verifica data início
+      if (state.filters.dataInicio) {
+        // Cria data a partir do input (formato YYYY-MM-DD)
+        const [year, month, day] = state.filters.dataInicio.split('-').map(Number);
+        const dataInicio = new Date(year, month - 1, day);
+        dataInicio.setHours(0, 0, 0, 0);
+        if (entryDate < dataInicio) return false;
+      }
+
+      // Verifica data fim
+      if (state.filters.dataFim) {
+        // Cria data a partir do input (formato YYYY-MM-DD)
+        const [year, month, day] = state.filters.dataFim.split('-').map(Number);
+        const dataFim = new Date(year, month - 1, day);
+        dataFim.setHours(23, 59, 59, 999);
+        if (entryDate > dataFim) return false;
+      }
+
+      return true;
+    });
+  }
+
+  return filtered;
+}
+
+/**
+ * Aplica os filtros do formulário
+ */
+function applyFilters(): void {
+  const contaSelect = document.getElementById('filterConta') as HTMLSelectElement;
+  const dataInicioInput = document.getElementById('filterDataInicio') as HTMLInputElement;
+  const dataFimInput = document.getElementById('filterDataFim') as HTMLInputElement;
+  const orcamentoSelect = document.getElementById('filterOrcamento') as HTMLSelectElement;
+
+  // Atualiza o estado com os valores dos filtros
+  if (contaSelect) state.filters.conta = contaSelect.value;
+  if (dataInicioInput) state.filters.dataInicio = dataInicioInput.value;
+  if (dataFimInput) state.filters.dataFim = dataFimInput.value;
+  if (orcamentoSelect) state.filters.orcamento = orcamentoSelect.value;
+
+  // Fecha o painel
+  closeFilterPanel();
+
+  // Aplica os filtros
+  applySortingAndFilters();
+
+  // Mostra mensagem de feedback
+  const activeFiltersCount = [
+    state.filters.conta,
+    state.filters.dataInicio,
+    state.filters.dataFim,
+    state.filters.orcamento
+  ].filter(f => f).length;
+
+  if (activeFiltersCount > 0) {
+    showMessage(`${activeFiltersCount} filtro(s) aplicado(s)`, 'success');
+  }
+}
+
+/**
+ * Limpa todos os filtros
+ */
+function clearFilters(): void {
+  // Limpa o estado
+  state.filters = {
+    conta: '',
+    dataInicio: '',
+    dataFim: '',
+    orcamento: ''
+  };
+
+  // Limpa os campos do formulário
+  const contaSelect = document.getElementById('filterConta') as HTMLSelectElement;
+  const dataInicioInput = document.getElementById('filterDataInicio') as HTMLInputElement;
+  const dataFimInput = document.getElementById('filterDataFim') as HTMLInputElement;
+  const orcamentoSelect = document.getElementById('filterOrcamento') as HTMLSelectElement;
+
+  if (contaSelect) contaSelect.value = '';
+  if (dataInicioInput) dataInicioInput.value = '';
+  if (dataFimInput) dataFimInput.value = '';
+  if (orcamentoSelect) orcamentoSelect.value = '';
+
+  // Fecha o painel
+  closeFilterPanel();
+
+  // Reaplica os filtros (agora sem filtros avançados)
+  applySortingAndFilters();
+
+  showMessage('Filtros limpos', 'info');
 }
 
 // ============================================================================
@@ -521,6 +805,54 @@ async function init(): Promise<void> {
       handleShowFutureChange((e.target as HTMLInputElement).checked);
     });
   }
+
+  // Configura painel de filtros
+  const openFilterBtn = document.getElementById('openFilterPanel');
+  if (openFilterBtn) {
+    openFilterBtn.addEventListener('click', () => {
+      console.log('🔍 Abrindo painel de filtros...');
+      openFilterPanel();
+    });
+  }
+
+  const closeFilterBtn = document.getElementById('closeFilterPanel');
+  if (closeFilterBtn) {
+    closeFilterBtn.addEventListener('click', () => {
+      console.log('❌ Fechando painel de filtros...');
+      closeFilterPanel();
+    });
+  }
+
+  const filterOverlay = document.getElementById('filterPanelOverlay');
+  if (filterOverlay) {
+    filterOverlay.addEventListener('click', () => {
+      console.log('🖱️ Clique no overlay - fechando painel de filtros...');
+      closeFilterPanel();
+    });
+  }
+
+  const applyFiltersBtn = document.getElementById('applyFiltersBtn');
+  if (applyFiltersBtn) {
+    applyFiltersBtn.addEventListener('click', () => {
+      console.log('✅ Aplicando filtros...');
+      applyFilters();
+    });
+  }
+
+  const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+  if (clearFiltersBtn) {
+    clearFiltersBtn.addEventListener('click', () => {
+      console.log('🧹 Limpando filtros...');
+      clearFilters();
+    });
+  }
+
+  // Fecha painel com tecla ESC
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && state.filterPanelOpen) {
+      closeFilterPanel();
+    }
+  });
 
   // Escuta evento de entrada editada
   document.addEventListener('entry:edited', () => {
