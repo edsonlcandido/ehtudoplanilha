@@ -42,12 +42,12 @@ class EntryModal {
             <fieldset>
               <div class="form-group">
                 <label for="expenseDate">Data:</label>
-                <input type="datetime-local" id="expenseDate" name="data" class="form-control" required>
+                <input type="datetime-local" id="expenseDate" name="data" class="form-control">
               </div>
               
               <div class="form-group">
                 <label for="expenseAccount">Conta:</label>
-                <input type="text" id="expenseAccount" name="conta" class="form-control" placeholder="Ex: Conta Corrente" autocomplete="off" required>
+                <input type="text" id="expenseAccount" name="conta" class="form-control" placeholder="Ex: Conta Corrente" autocomplete="off">
               </div>
               
               <div class="form-group valor-toggle-group">
