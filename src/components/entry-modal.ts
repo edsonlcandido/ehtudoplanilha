@@ -436,6 +436,11 @@ class EntryModal {
    * Formata datetime-local "2025-10-31T14:41" para "31/10/2025 14:41"
    */
   private formatDateTimeLocal(datetimeStr: string): string {
+    // Retorna string vazia se o campo estiver vazio
+    if (!datetimeStr || datetimeStr.trim() === '') {
+      return '';
+    }
+    
     // "2025-10-31T14:41" -> ["2025-10-31", "14:41"]
     const [datePart, timePart] = datetimeStr.split('T');
     
