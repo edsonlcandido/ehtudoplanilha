@@ -42,12 +42,12 @@ class EntryModal {
             <fieldset>
               <div class="form-group">
                 <label for="expenseDate">Data:</label>
-                <input type="datetime-local" id="expenseDate" name="data" class="form-control" required>
+                <input type="datetime-local" id="expenseDate" name="data" class="form-control">
               </div>
               
               <div class="form-group">
                 <label for="expenseAccount">Conta:</label>
-                <input type="text" id="expenseAccount" name="conta" class="form-control" placeholder="Ex: Conta Corrente" autocomplete="off" required>
+                <input type="text" id="expenseAccount" name="conta" class="form-control" placeholder="Ex: Conta Corrente" autocomplete="off">
               </div>
               
               <div class="form-group valor-toggle-group">
@@ -436,6 +436,11 @@ class EntryModal {
    * Formata datetime-local "2025-10-31T14:41" para "31/10/2025 14:41"
    */
   private formatDateTimeLocal(datetimeStr: string): string {
+    // Retorna string vazia se o campo estiver vazio
+    if (!datetimeStr || datetimeStr.trim() === '') {
+      return '';
+    }
+    
     // "2025-10-31T14:41" -> ["2025-10-31", "14:41"]
     const [datePart, timePart] = datetimeStr.split('T');
     

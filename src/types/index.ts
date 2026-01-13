@@ -98,6 +98,7 @@ export interface LancamentosFilters {
   dataInicio: string;
   dataFim: string;
   orcamento: string;
+  categoria: string;
 }
 
 /**

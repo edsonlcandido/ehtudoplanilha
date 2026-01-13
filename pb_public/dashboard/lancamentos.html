@@ -5,16 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-    <title>Lançamentos - Planilha Eh tudo</title>
-  <script type="module" crossorigin src="/assets/lancamentos.js"?v=1765902945328></script>
+    <title>Lançamentos - Planilha Eh tudo</title>
+  <script type="module" crossorigin src="/assets/lancamentos.js"?v=1768264160129></script>
   <link rel="modulepreload" crossorigin href="/assets/auth.js">
   <link rel="modulepreload" crossorigin href="/assets/toast.js">
   <link rel="modulepreload" crossorigin href="/assets/user-menu.js">
   <link rel="modulepreload" crossorigin href="/assets/sheets.js">
   <link rel="modulepreload" crossorigin href="/assets/fab-menu.js">
-  <link rel="stylesheet" crossorigin href="/assets/toast.css"?v=1765902945328>
-  <link rel="stylesheet" crossorigin href="/assets/lancamentos.css"?v=1765902945328>
-  <link rel="stylesheet" crossorigin href="/assets/main.css"?v=1765902945328>
+  <link rel="stylesheet" crossorigin href="/assets/toast.css"?v=1768264160129>
+  <link rel="stylesheet" crossorigin href="/assets/lancamentos.css"?v=1768264160129>
+  <link rel="stylesheet" crossorigin href="/assets/main.css"?v=1768264160129>
 </head>
 
 <body>
@@ -186,6 +186,16 @@
                         </small>
                     </div>
 
+                    <!-- Filtro por Categoria (posicionado após Data fim) -->
+                    <div class="filter-form__group">
+                        <label for="filterCategoria" class="filter-form__label">
+                            Categoria
+                        </label>
+                        <select id="filterCategoria" name="categoria" class="filter-form__select">
+                            <option value="">Todas as categorias</option>
+                        </select>
+                    </div>
+
                     <!-- Filtro por Orçamento -->
                     <div class="filter-form__group">
                         <label for="filterOrcamento" class="filter-form__label">
@@ -304,7 +314,7 @@
                 <a href="https://www.ehtudo.app">Eh!Tudo.app</a></small>
         </p>
     </footer>
-
+
 </body>
 
 </html>

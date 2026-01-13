@@ -33,7 +33,8 @@ const state: LancamentosState = {
     conta: '',
     dataInicio: '',
     dataFim: '',
-    orcamento: ''
+    orcamento: '',
+    categoria: ''
   },
   filterPanelOpen: false
 };
@@ -130,6 +131,7 @@ async function loadEntries(forceRefresh = false): Promise<void> {
     // Popula os filtros com as opções disponíveis
     populateContaFilter();
     populateOrcamentoFilter();
+    populateCategoriaFilter();
 
     applySortingAndFilters();
     
@@ -377,6 +379,37 @@ function populateOrcamentoFilter(): void {
 }
 
 /**
+ * Popula as opções de categoria no filtro
+ */
+function populateCategoriaFilter(): void {
+  const select = document.getElementById('filterCategoria') as HTMLSelectElement;
+  if (!select) return;
+
+  const categorias = new Set<string>();
+  state.originalEntries.forEach(entry => {
+    if (entry.categoria && entry.categoria.trim()) {
+      categorias.add(entry.categoria.trim());
+    }
+  });
+
+  const sortedCategorias = Array.from(categorias).sort();
+
+  const defaultOption = select.options[0];
+  select.innerHTML = '';
+  select.appendChild(defaultOption);
+
+  sortedCategorias.forEach(cat => {
+    const option = document.createElement('option');
+    option.value = cat;
+    option.textContent = cat;
+    if (state.filters.categoria === cat) {
+      option.selected = true;
+    }
+    select.appendChild(option);
+  });
+}
+
+/**
  * Aplica os filtros avançados
  */
 function applyAdvancedFilters(entries: SheetEntry[]): SheetEntry[] {
@@ -387,25 +420,6 @@ function applyAdvancedFilters(entries: SheetEntry[]): SheetEntry[] {
     filtered = filtered.filter(entry => 
       entry.conta && entry.conta.trim() === state.filters.conta
     );
-  }
-
-  // Filtro por orçamento
-  if (state.filters.orcamento) {
-    filtered = filtered.filter(entry => {
-      if (!entry.orcamento) return false;
-      
-      let orcamentoStr = '';
-      if (typeof entry.orcamento === 'number') {
-        const date = excelSerialToDate(entry.orcamento);
-        if (date) {
-          orcamentoStr = `${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
-        }
-      } else if (typeof entry.orcamento === 'string') {
-        orcamentoStr = entry.orcamento.trim();
-      }
-      
-      return orcamentoStr === state.filters.orcamento;
-    });
   }
 
   // Filtro por data (intervalo)
@@ -455,6 +469,32 @@ function applyAdvancedFilters(entries: SheetEntry[]): SheetEntry[] {
     });
   }
 
+  // Filtro por categoria
+  if (state.filters.categoria) {
+    filtered = filtered.filter(entry =>
+      entry.categoria && entry.categoria.trim() === state.filters.categoria
+    );
+  }
+
+  // Filtro por orçamento
+  if (state.filters.orcamento) {
+    filtered = filtered.filter(entry => {
+      if (!entry.orcamento) return false;
+
+      let orcamentoStr = '';
+      if (typeof entry.orcamento === 'number') {
+        const date = excelSerialToDate(entry.orcamento);
+        if (date) {
+          orcamentoStr = `${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+        }
+      } else if (typeof entry.orcamento === 'string') {
+        orcamentoStr = entry.orcamento.trim();
+      }
+
+      return orcamentoStr === state.filters.orcamento;
+    });
+  }
+
   return filtered;
 }
 
@@ -465,12 +505,14 @@ function applyFilters(): void {
   const contaSelect = document.getElementById('filterConta') as HTMLSelectElement;
   const dataInicioInput = document.getElementById('filterDataInicio') as HTMLInputElement;
   const dataFimInput = document.getElementById('filterDataFim') as HTMLInputElement;
+  const categoriaSelect = document.getElementById('filterCategoria') as HTMLSelectElement;
   const orcamentoSelect = document.getElementById('filterOrcamento') as HTMLSelectElement;
 
   // Atualiza o estado com os valores dos filtros
   if (contaSelect) state.filters.conta = contaSelect.value;
   if (dataInicioInput) state.filters.dataInicio = dataInicioInput.value;
   if (dataFimInput) state.filters.dataFim = dataFimInput.value;
+  if (categoriaSelect) state.filters.categoria = categoriaSelect.value;
   if (orcamentoSelect) state.filters.orcamento = orcamentoSelect.value;
 
   // Fecha o painel
@@ -484,6 +526,7 @@ function applyFilters(): void {
     state.filters.conta,
     state.filters.dataInicio,
     state.filters.dataFim,
+    state.filters.categoria,
     state.filters.orcamento
   ].filter(f => f).length;
 
@@ -501,7 +544,8 @@ function clearFilters(): void {
     conta: '',
     dataInicio: '',
     dataFim: '',
-    orcamento: ''
+    orcamento: '',
+    categoria: ''
   };
 
   // Limpa os campos do formulário
@@ -509,11 +553,13 @@ function clearFilters(): void {
   const dataInicioInput = document.getElementById('filterDataInicio') as HTMLInputElement;
   const dataFimInput = document.getElementById('filterDataFim') as HTMLInputElement;
   const orcamentoSelect = document.getElementById('filterOrcamento') as HTMLSelectElement;
+  const categoriaSelect = document.getElementById('filterCategoria') as HTMLSelectElement;
 
   if (contaSelect) contaSelect.value = '';
   if (dataInicioInput) dataInicioInput.value = '';
   if (dataFimInput) dataFimInput.value = '';
   if (orcamentoSelect) orcamentoSelect.value = '';
+  if (categoriaSelect) categoriaSelect.value = '';
 
   // Fecha o painel
   closeFilterPanel();
