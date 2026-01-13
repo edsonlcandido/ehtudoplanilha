@@ -1,6 +1,6 @@
 {
   "name": "ehtudoplanilha-vite",
-  "version": "0.11.22",
+  "version": "0.01.12",
   "description": "Planilha Eh Tudo - Frontend com Vite e TypeScript",
   "type": "module",
   "scripts": {
