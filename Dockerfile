@@ -1,55 +1,18 @@
 # ============================================================================
-# Dockerfile - Build e Deploy para EasyPanel VPS (frontend + PWA)
+# Dockerfile - Empacota build do frontend + PWA + PocketBase
 # ============================================================================
-# Este Dockerfile:
-# 1. Builda o frontend Vite/TypeScript da pasta /src
-# 2. Builda o PWA (Vue + Vite + vite-plugin-pwa) da pasta /pwa
-# 3. Copia os builds pra pb_public (frontend na raiz, PWA em pb_public/pwa/)
-# 4. Usa PocketBase pré-compilado (sem download)
+# IMPORTANTE: este Dockerfile NÃO builda nada. Ele só empacota os artefatos
+# que já estão commitados em pb_public/ (build do frontend principal feito
+# via `npm run build:public`, build do PWA feito via `cd pwa && npm run build`
+# e copiado pra pb_public/pwa/ na mão).
+#
+# Pra buildar tudo via Docker (sem build manual), precisaria commitar o
+# source do PWA (pwa/src, pwa/package.json, etc) — o que muda a estrutura
+# do repo. Por ora, Docker só empacota o que já existe.
 # ============================================================================
 
 # ----------------------------------------------------------------------------
-# Estágio 1: BUILD FRONTEND PRINCIPAL (Node.js)
-# ----------------------------------------------------------------------------
-FROM node:22-alpine AS frontend-builder
-
-WORKDIR /build
-
-# Copiar apenas arquivos de dependências primeiro (cache layer)
-COPY src/package.json src/package-lock.json* ./
-
-# Instalar dependências (incluindo devDeps: vite, @vitejs/plugin-vue, etc)
-RUN npm ci || npm install
-
-# Copiar código fonte do frontend
-COPY src/ ./
-
-# Buildar o frontend Vite/TypeScript
-RUN npm run build
-
-# O resultado estará em /build/dist/
-
-# ----------------------------------------------------------------------------
-# Estágio 2: BUILD PWA (Node.js)
-# ----------------------------------------------------------------------------
-FROM node:22-alpine AS pwa-builder
-
-WORKDIR /pwa
-
-# Copiar apenas arquivos de dependências primeiro (cache layer)
-COPY pwa/package.json pwa/package-lock.json* ./
-
-# Instalar dependências (incluindo devDeps: vite, @vitejs/plugin-vue, etc)
-RUN npm ci || npm install
-
-# Copiar código fonte do PWA (src, public, vite.config.js, etc)
-COPY pwa/ ./
-
-# Buildar o PWA (output vai pra /pwa/pwa/ por causa do vite.config outDir: 'pwa')
-RUN npm run build
-
-# ----------------------------------------------------------------------------
-# Estágio 3: IMAGEM FINAL COM PocketBase PRÉ-COMPILADO
+# Estágio final: PocketBase + frontend + PWA pré-buildados
 # ----------------------------------------------------------------------------
 FROM alpine:3.22.1
 
@@ -71,11 +34,8 @@ RUN chmod +x /app/pocketbase
 RUN mkdir -p /app/pb_public /app/pb_hooks /app/pb_migrations /app/pb_data \
     && chown -R pocketbase:pocketbase /app
 
-# Copiar frontend principal buildado para pb_public/ (raiz)
-COPY --from=frontend-builder --chown=pocketbase:pocketbase /build/dist/ /app/pb_public/
-
-# Copiar PWA buildado para pb_public/pwa/
-COPY --from=pwa-builder --chown=pocketbase:pocketbase /pwa/pwa/ /app/pb_public/pwa/
+# Copiar frontend + PWA pré-buildados (raiz inteira de pb_public/)
+COPY --chown=pocketbase:pocketbase pb_public/ /app/pb_public/
 
 # Copiar hooks e migrations do projeto
 COPY --chown=pocketbase:pocketbase pb_hooks/ /app/pb_hooks/
