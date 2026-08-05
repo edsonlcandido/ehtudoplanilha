@@ -1,0 +1,90 @@
+:root {
+  /* Colors inspired by the provided image */
+  --color-primary: #3B82F6; /* Blue for primary actions/headers */
+  --color-secondary: #10B981; /* Green for success/secondary actions */
+  --color-accent: #EF4444; /* Red for warnings/logout */
+  --color-background-light: #F9FAFB; /* Light gray background */
+  --color-card-background: #FFFFFF; /* White for cards/containers */
+  --color-text-dark: #1F2937; /* Dark gray for main text */
+  --color-text-light: #6B7280; /* Lighter gray for secondary text */
+  --color-border: #D1D5DB; /* Light gray for borders */
+  --color-hover-blue: #2563EB; /* Darker blue for hover states */
+  --color-hover-green: #059669; /* Darker green for hover states */
+  --color-hover-red: #DC2626; /* Darker red for hover states */
+}
+
+/* Base styles for a mobile-first approach */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Roboto', sans-serif; /* A common, clean font for mobile */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-background-light);
+  color: var(--color-text-dark);
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--color-text-dark);
+  margin-top: 0;
+  margin-bottom: 0.5em;
+  line-height: 1.2;
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: 1em;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background-color: transparent;
+  padding: 0;
+  font-size: 1rem;
+}
+
+/* Form elements base */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+textarea {
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+  background-color: var(--color-card-background);
+  color: var(--color-text-dark);
+}
+
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); /* Focus ring */
+}

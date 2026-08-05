@@ -9,4 +9,6 @@ package-lock.json
 pb_public_backup/
 src/node_modules/
 src/dist/
-/pwa/
+pwa/node_modules/
+pwa/pwa/
+pwa/dist/
