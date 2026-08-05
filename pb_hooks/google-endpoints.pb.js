@@ -379,13 +379,13 @@ routerAdd("GET", "/config-status", (c) => {
     const sheetId = hasSheetId ? googleInfo.get("sheet_id") : undefined;
     const sheetName = hasSheetId ? googleInfo.get("sheet_name") : undefined;
 
-    console.log("📊 [config-status] Status do usuário:", {
+    console.log("📊 [config-status] Status do usuário:", JSON.stringify({
       userId,
       hasRefreshToken,
       hasSheetId,
       sheetId: sheetId ? "✓" : "✗",
       sheetName: sheetName || "N/A"
-    });
+    }));
 
     return c.json(200, {
       hasRefreshToken,

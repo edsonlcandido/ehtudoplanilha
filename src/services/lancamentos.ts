@@ -49,24 +49,23 @@ class LancamentosService {
       // Usa `pb.send()` para que o SDK adicione automaticamente o header
       // `Authorization: <authStore.token>` (lido do localStorage).
       // PB autentica via esse header (não via cookie).
-      const response = await pb.send(`${pb.baseURL}/get-sheet-entries?limit=${limit}`, {
+      //
+      // IMPORTANTE: `pb.send()` JÁ retorna o JSON parseado (NÃO o Response).
+      // Se der 401/4xx/5xx, o SDK joga `ClientResponseError`.
+      const data = await pb.send(`${pb.baseURL}/get-sheet-entries?limit=${limit}`, {
         method: 'GET'
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Erro ao carregar entradas da planilha');
-      }
 
       // Salva no cache (sempre salva o resultado completo)
       const cacheKey = CACHE_KEYS.SHEET_ENTRIES;
       CacheService.set(cacheKey, data);
 
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao buscar entradas da planilha:', error);
-      throw error;
+      // ClientResponseError tem .data com a response do server
+      const msg = error?.data?.message || error?.message || 'Erro ao carregar entradas da planilha';
+      throw new Error(msg);
     }
   }
 
@@ -89,7 +88,9 @@ class LancamentosService {
     }
 
     try {
-      const response = await pb.send(`${pb.baseUrl}/edit-sheet-entry`, {
+      // `pb.send()` retorna o JSON parseado. Erros 4xx/5xx viram
+      // `ClientResponseError` lançado pelo SDK.
+      const data = await pb.send(`${pb.baseUrl}/edit-sheet-entry`, {
         method: 'PUT',
         body: JSON.stringify({
           rowIndex,
@@ -97,19 +98,14 @@ class LancamentosService {
         })
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Erro ao editar lançamento');
-      }
-
       // Invalida o cache após edição bem-sucedida
       this.invalidateCache();
 
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao editar lançamento:', error);
-      throw error;
+      const msg = error?.data?.message || error?.message || 'Erro ao editar lançamento';
+      throw new Error(msg);
     }
   }
 
@@ -122,24 +118,21 @@ class LancamentosService {
     }
 
     try {
-      const response = await pb.send(`${pb.baseUrl}/delete-sheet-entry`, {
+      // `pb.send()` retorna o JSON parseado. Erros 4xx/5xx viram
+      // `ClientResponseError` lançado pelo SDK.
+      const data = await pb.send(`${pb.baseUrl}/delete-sheet-entry`, {
         method: 'DELETE',
         body: JSON.stringify({ rowIndex })
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Erro ao deletar lançamento');
-      }
 
       // Invalida o cache após deleção bem-sucedida
       this.invalidateCache();
 
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao deletar lançamento:', error);
-      throw error;
+      const msg = error?.data?.message || error?.message || 'Erro ao deletar lançamento';
+      throw new Error(msg);
     }
   }
 
