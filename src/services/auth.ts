@@ -128,10 +128,17 @@ export async function bootstrapAuthFromCookie(): Promise<boolean> {
  * Verifica se o token do PocketBase é válido
  *
  * Fluxo:
- * 1. Se `authStore.isValid` local (token + model populados), retorna true
- * 2. Se NÃO, tenta bootstrap via cookie HttpOnly (cross-app login via PWA)
- * 3. Se bootstrap OK, retorna true
- * 4. Se bootstrap falhou, redireciona pro / e retorna false
+ * 1. TENTA bootstrap via cookie HttpOnly PRIMEIRO (sempre)
+ *    - O cookie HttpOnly é a fonte de verdade de auth
+ *    - O JWT no localStorage pode estar expirado/inválido
+ *    - O cookie é o que o PB server usa pra validar $apis.requireAuth()
+ * 2. Se bootstrap OK, retorna true (token e model populados)
+ * 3. Se bootstrap falhou, redireciona pro / e retorna false
+ *
+ * POR QUE SEMPRE TENTA BOOTSTRAP: o JWT do localStorage pode estar
+ * "válido" pela checagem local (isValid = !isTokenExpired), mas o
+ * server pode rejeitar por outros motivos (token revogado, JWT
+ * dessincronizado do cookie, etc). O cookie HttpOnly é mais confiável.
  *
  * NÃO chama `pb.collection('users').authRefresh()` (que auto-limpa o
  * store em caso de 401). Em vez disso usa `bootstrapAuthFromCookie()`
@@ -140,12 +147,7 @@ export async function bootstrapAuthFromCookie(): Promise<boolean> {
  * Deve ser chamado no início do carregamento de páginas protegidas.
  */
 export async function verifyTokenValidity(): Promise<boolean> {
-  if (isAuthenticated()) {
-    console.log('[Auth] Token válido localmente ✓');
-    return true;
-  }
-
-  console.log('[Auth] Token local ausente, tentando bootstrap via cookie...');
+  console.log('[Auth] Verificando auth via cookie...');
   const ok = await bootstrapAuthFromCookie();
   if (ok) {
     return true;

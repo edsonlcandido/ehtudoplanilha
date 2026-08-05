@@ -46,10 +46,14 @@ class LancamentosService {
     // Busca do servidor
     try {
       console.log('[LancamentosService] Buscando dados do servidor');
+      // PocketBase autentica via cookie HttpOnly `pocketbase_auth`, não via
+      // header Authorization. O header Bearer só é necessário para clients
+      // não-browser (mobile). Em browser, `credentials: 'include'` envia o
+      // cookie e o `$apis.requireAuth()` valida automaticamente.
       const response = await fetch(`${pb.baseURL}/get-sheet-entries?limit=${limit}`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
-          'Authorization': `Bearer ${pb.authStore.token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -92,8 +96,8 @@ class LancamentosService {
     try {
       const response = await fetch(`${pb.baseUrl}/edit-sheet-entry`, {
         method: 'PUT',
+        credentials: 'include',
         headers: {
-          'Authorization': `Bearer ${pb.authStore.token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -129,8 +133,8 @@ class LancamentosService {
     try {
       const response = await fetch(`${pb.baseUrl}/delete-sheet-entry`, {
         method: 'DELETE',
+        credentials: 'include',
         headers: {
-          'Authorization': `Bearer ${pb.authStore.token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ rowIndex })

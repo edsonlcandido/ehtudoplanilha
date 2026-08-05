@@ -134,11 +134,12 @@ async function init(): Promise<void> {
  */
 async function checkConfiguration(): Promise<{ isValid: boolean }> {
   try {
+    // PocketBase autentica via cookie HttpOnly `pocketbase_auth`, não via
+    // header Authorization. `credentials: 'include'` envia o cookie e o
+    // `$apis.requireAuth()` valida automaticamente.
     const response = await fetch(`${API_ENDPOINTS.configStatus}`, {
       method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${pb.authStore.token}`
-      }
+      credentials: 'include'
     });
 
     const data = await response.json();
