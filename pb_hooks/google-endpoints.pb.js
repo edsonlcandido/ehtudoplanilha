@@ -6,16 +6,20 @@
  */
 
 // Endpoint para obter variáveis de ambiente do Google OAuth
+// NOTA: sem requireAuth() — GOOGLE_CLIENT_ID e GOOGLE_REDIRECT_URI são
+// informação pública (não-sensível). Exigir auth aqui quebra o fluxo
+// quando o user loga via PWA e depois abre o dashboard legado, porque
+// o legado tem instância `pb` separada e o `authStore.token` não
+// necessariamente é sincronizado entre o PWA e o legado (storage keys
+// podem diferir entre versões do SDK). O secret real (CLIENT_SECRET)
+// continua SÓ no backend e nunca é exposto.
 routerAdd("GET", "/env-variables", (c) => {
-  const authUser = c.auth;
-  console.log("Auth User:", authUser.id);
-  // IMPORTANTE: Não retornar CLIENT_SECRET para o frontend!
   return c.json(200, {
     GOOGLE_CLIENT_ID: $os.getenv("GOOGLE_CLIENT_ID"),
     GOOGLE_REDIRECT_URI: $os.getenv("GOOGLE_REDIRECT_URI")
     // CLIENT_SECRET é usado APENAS no backend
   })
-}, $apis.requireAuth())
+})
 
 // Endpoint para verificar se usuário possui refresh token
 routerAdd("GET", "/check-refresh-token", (c) => {
