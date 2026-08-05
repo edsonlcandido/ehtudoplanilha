@@ -46,16 +46,11 @@ class LancamentosService {
     // Busca do servidor
     try {
       console.log('[LancamentosService] Buscando dados do servidor');
-      // PocketBase autentica via cookie HttpOnly `pocketbase_auth`, não via
-      // header Authorization. O header Bearer só é necessário para clients
-      // não-browser (mobile). Em browser, `credentials: 'include'` envia o
-      // cookie e o `$apis.requireAuth()` valida automaticamente.
-      const response = await fetch(`${pb.baseURL}/get-sheet-entries?limit=${limit}`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        }
+      // Usa `pb.send()` para que o SDK adicione automaticamente o header
+      // `Authorization: <authStore.token>` (lido do localStorage).
+      // PB autentica via esse header (não via cookie).
+      const response = await pb.send(`${pb.baseURL}/get-sheet-entries?limit=${limit}`, {
+        method: 'GET'
       });
 
       const data = await response.json();
@@ -94,12 +89,8 @@ class LancamentosService {
     }
 
     try {
-      const response = await fetch(`${pb.baseUrl}/edit-sheet-entry`, {
+      const response = await pb.send(`${pb.baseUrl}/edit-sheet-entry`, {
         method: 'PUT',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        },
         body: JSON.stringify({
           rowIndex,
           ...entry
@@ -131,12 +122,8 @@ class LancamentosService {
     }
 
     try {
-      const response = await fetch(`${pb.baseUrl}/delete-sheet-entry`, {
+      const response = await pb.send(`${pb.baseUrl}/delete-sheet-entry`, {
         method: 'DELETE',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        },
         body: JSON.stringify({ rowIndex })
       });
 

@@ -70,87 +70,43 @@ export function onAuthChange(callback: (isAuth: boolean) => void): void {
 }
 
 /**
- * Faz bootstrap do token via cookie HttpOnly.
- *
- * POR QUE EXISTE: o PB JS SDK NÃO carrega `authStore` do localStorage
- * automaticamente quando a instância `pb` é criada. Se o user logar pelo
- * PWA (Vue) e depois abrir uma página da app web (Vite/TS), a nova
- * instância `pb` tem `authStore.token` vazio — mesmo que o cookie
- * HttpOnly `pocketbase_auth` esteja válido e o localStorage tenha o
- * token (em teoria a storage key é a mesma, mas o SDK não popula
- * sozinho no construtor).
- *
- * COMO FUNCIONA: usa `fetch()` direto pra `/api/collections/users/auth-refresh`
- * com `credentials: 'include'` (envia o cookie HttpOnly). Se o server
- * validar o cookie e retornar 200 com `{ token, record }`, popula
- * `pb.authStore` e retorna true. Se 401, retorna false.
- *
- * POR QUE NÃO USA `pb.collection('users').authRefresh()`: o SDK
- * automaticamente chama `authStore.clear()` em caso de 401. Isso era
- * a causa do bug original de deletar o token. Usando `fetch()` direto
- * temos controle total sobre o que fazer em cada caso.
- *
- * Deve ser chamado quando o `authStore.token` local está vazio mas
- * o cookie HttpOnly pode estar válido (ex: cross-app login).
- */
-export async function bootstrapAuthFromCookie(): Promise<boolean> {
-  try {
-    console.log('[Auth] Bootstrap via cookie HttpOnly...');
-    const response = await fetch('/api/collections/users/auth-refresh', {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-
-    if (response.status === 200) {
-      const data = await response.json();
-      // data = { token, record }
-      if (data?.token && data?.record) {
-        pb.authStore.save(data.token, data.record);
-        console.log('[Auth] Bootstrap OK ✓ token carregado do cookie');
-        return true;
-      }
-      console.warn('[Auth] Bootstrap retornou 200 mas sem token/record');
-      return false;
-    }
-
-    console.log(`[Auth] Bootstrap falhou (status ${response.status})`);
-    return false;
-  } catch (error) {
-    console.error('[Auth] Erro no bootstrap:', error);
-    return false;
-  }
-}
-
-/**
  * Verifica se o token do PocketBase é válido
  *
  * Fluxo:
- * 1. TENTA bootstrap via cookie HttpOnly PRIMEIRO (sempre)
- *    - O cookie HttpOnly é a fonte de verdade de auth
- *    - O JWT no localStorage pode estar expirado/inválido
- *    - O cookie é o que o PB server usa pra validar $apis.requireAuth()
- * 2. Se bootstrap OK, retorna true (token e model populados)
- * 3. Se bootstrap falhou, redireciona pro / e retorna false
+ * 1. Se `authStore.isValid` local (token + model populados), retorna true
+ * 2. Se NÃO, tenta `pb.collection('users').authRefresh()` pra obter
+ *    um token novo a partir do localStorage
+ * 3. Se refresh OK, retorna true
+ * 4. Se refresh falhou, redireciona pro / e retorna false
  *
- * POR QUE SEMPRE TENTA BOOTSTRAP: o JWT do localStorage pode estar
- * "válido" pela checagem local (isValid = !isTokenExpired), mas o
- * server pode rejeitar por outros motivos (token revogado, JWT
- * dessincronizado do cookie, etc). O cookie HttpOnly é mais confiável.
+ * IMPORTANTE: PocketBase autentica via header `Authorization: <token>`
+ * (lido do localStorage com chave `pocketbase_auth`). NÃO usa cookie
+ * (confirmado via /debug-auth). O `pb.send` adiciona o header
+ * automaticamente quando o `authStore.token` é truthy.
  *
- * NÃO chama `pb.collection('users').authRefresh()` (que auto-limpa o
- * store em caso de 401). Em vez disso usa `bootstrapAuthFromCookie()`
- * com `fetch()` direto.
+ * POR QUE NÃO CHAMA authRefresh EM TODO LOAD: o bug original era
+ * `authRefresh()` falhando e o app redirecionando pro login. Agora
+ * só chamamos se o token local NÃO é válido (isValid = false), que
+ * é o cenário onde o token provavelmente está expirado mesmo.
  *
  * Deve ser chamado no início do carregamento de páginas protegidas.
  */
 export async function verifyTokenValidity(): Promise<boolean> {
-  console.log('[Auth] Verificando auth via cookie...');
-  const ok = await bootstrapAuthFromCookie();
-  if (ok) {
+  if (isAuthenticated()) {
+    console.log('[Auth] Token válido localmente ✓');
     return true;
+  }
+
+  console.log('[Auth] Token local inválido, tentando refresh via SDK...');
+  try {
+    const authData = await pb.collection('users').authRefresh();
+    if (authData?.token) {
+      console.log('[Auth] Refresh OK ✓');
+      return true;
+    }
+    console.warn('[Auth] Refresh retornou sem token');
+  } catch (e: any) {
+    console.warn('[Auth] Refresh falhou:', e?.status, e?.message);
   }
 
   console.warn('[Auth] Não autenticado, redirecionando para /');

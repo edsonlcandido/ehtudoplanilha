@@ -134,12 +134,12 @@ async function init(): Promise<void> {
  */
 async function checkConfiguration(): Promise<{ isValid: boolean }> {
   try {
-    // PocketBase autentica via cookie HttpOnly `pocketbase_auth`, não via
-    // header Authorization. `credentials: 'include'` envia o cookie e o
-    // `$apis.requireAuth()` valida automaticamente.
-    const response = await fetch(`${API_ENDPOINTS.configStatus}`, {
-      method: 'GET',
-      credentials: 'include'
+    // Usa `pb.send()` (NÃO fetch puro) porque o PB SDK adiciona
+    // automaticamente o header `Authorization: <authStore.token>`
+    // (lido do localStorage). PocketBase autentica via esse header
+    // — não usa cookie (cookie.hasPbAuth do /debug-auth = false).
+    const response = await pb.send(`${API_ENDPOINTS.configStatus}`, {
+      method: 'GET'
     });
 
     const data = await response.json();
