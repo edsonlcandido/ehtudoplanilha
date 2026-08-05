@@ -14,6 +14,8 @@
  * Vue Router recebe o pathname correto (`/pwa/login`) e o LoginPage
  * consegue ler o `code` e `state` do callback OAuth.
  *
+ * IMPORTANTE: PB usa path-to-regexp — wildcard é `{*rest}`, NÃO `*`.
+ *
  * Assets estáticos (`.js`, `.css`, `.svg`, etc) são passados adiante
  * via `c.next()` pro static file serving padrão do PB.
  */
@@ -23,26 +25,24 @@ const PWA_INDEX_PATH = 'pb_public/pwa/index.html';
 const ASSET_EXTENSIONS = [
   '.js', '.css', '.svg', '.png', '.jpg', '.jpeg', '.ico',
   '.json', '.webmanifest', '.woff', '.woff2', '.ttf', '.map',
-  '.png', '.gif', '.webp', '.txt', '.xml'
+  '.gif', '.webp', '.txt', '.xml', '.zip', '.wasm'
 ];
 
 function hasAssetExtension(path) {
+  if (!path) return false;
   const lower = path.toLowerCase();
-  // Pega o último '.' do path; se for uma das extensões conhecidas, é asset
   const dotIdx = lower.lastIndexOf('.');
   if (dotIdx < 0) return false;
-  // Se tem '/' depois do último '.', não é extensão
   const slashAfterDot = lower.indexOf('/', dotIdx);
-  if (slashAfterDot >= 0 && slashAfterDot < lower.length - 1) {
-    // Pode ter extensão ainda (e.g. /foo.json/bar), mas é raro
-    // Tratar como não-asset nesse caso
+  // Se tem '/' DEPOIS do último '.', não é extensão (ex: /foo.json/bar)
+  if (slashAfterDot >= 0 && slashAfterDot > dotIdx) {
     return false;
   }
   const ext = lower.substring(dotIdx);
   return ASSET_EXTENSIONS.indexOf(ext) >= 0;
 }
 
-routerAdd('GET', '/pwa/*', (c) => {
+routerAdd('GET', '/pwa/{*rest}', (c) => {
   try {
     const path = (c.requestInfo && c.requestInfo().path) || '';
 
@@ -56,23 +56,21 @@ routerAdd('GET', '/pwa/*', (c) => {
     try {
       content = $filesystem.readFile(PWA_INDEX_PATH);
     } catch (e) {
-      // PWA index.html não existe no filesystem — passa pro próximo
-      console.log('[pwa-spa-fallback] PWA index.html não encontrado em', PWA_INDEX_PATH);
+      console.log('[pwa-spa-fallback] PWA index.html não encontrado em', PWA_INDEX_PATH, '-', e && e.message);
       return c.next();
     }
 
-    // Conteúdo como string; goja aceita string direto
-    const body = typeof content === 'string' ? content : new TextDecoder().decode(content);
+    // Converte bytes -> string se necessário
+    const body = typeof content === 'string'
+      ? content
+      : new TextDecoder('utf-8').decode(content);
 
-    return new Response(body, {
-      status: 200,
-      headers: {
-        'Content-Type': 'text/html; charset=utf-8',
-        'Cache-Control': 'no-cache'
-      }
+    return c.string(200, body, {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'no-cache'
     });
   } catch (e) {
-    console.log('[pwa-spa-fallback] Erro:', e && e.message);
+    console.log('[pwa-spa-fallback] EXCEÇÃO:', e && e.message, e && e.stack);
     return c.next();
   }
 });
