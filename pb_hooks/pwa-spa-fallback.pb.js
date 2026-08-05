@@ -42,7 +42,7 @@ function hasAssetExtension(path) {
   return ASSET_EXTENSIONS.indexOf(ext) >= 0;
 }
 
-routerAdd('GET', '/pwa/{*rest}', (c) => {
+routerAdd('GET', '/pwa/{path...}', (c) => {
   try {
     const path = (c.requestInfo && c.requestInfo().path) || '';
 
