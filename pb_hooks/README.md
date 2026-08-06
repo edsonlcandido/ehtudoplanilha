@@ -8,8 +8,8 @@ Este conjunto de arquivos implementa a integração com Google OAuth para obter 
 
 #### 1. `pb_hooks/google-oauth-callback.pb.js`
 Hook para o callback do Google OAuth:
-- **Endpoint GET `/google-oauth-callback`**: Recebe o código de autorização do Google e troca por tokens
-- Provisiona planilha template automaticamente após autorização
+- **Endpoint GET `/google-oauth-callback`**: Recebe o código de autorização do Google e troca por tokens (access + refresh) e salva em `google_infos`.
+- **NÃO cria planilha** — isso é responsabilidade do frontend, que chama `/provision-sheet` logo após.
 
 #### 2. `pb_hooks/google-refresh-token.pb.js`
 Hook para renovação de tokens:
@@ -23,8 +23,13 @@ Endpoints auxiliares para integração Google:
 - **Endpoint POST `/save-sheet-id`**: Salva planilha selecionada
 
 #### 4. `pb_hooks/provision-sheet.pb.js`
-Hook para provisionamento de planilhas:
-- **Endpoint POST `/provision-sheet`**: Copia planilha template para o usuário
+Hook para **criar planilha programaticamente** no Drive do usuário:
+- **Endpoint POST `/provision-sheet`**: Cria planilha do zero via Sheets API
+  com as abas `Lançamentos` e `Categorias` hardcoded (parte do contrato do
+  produto — não configurável, não usa template, não copia do nosso Drive).
+  Popula header de `Lançamentos!A1:G1` e a lista padrão de categorias em
+  `Categorias!A1:B<n>`. Salva `sheet_id` em `google_infos`. Idempotente
+  (se já tem `sheet_id`, retorna `action: existing`).
 
 #### 5. `pb_hooks/get-sheet-categories.pb.js`
 Hook para buscar categorias da planilha:
@@ -48,34 +53,15 @@ Hook para buscar categorias completas da planilha:
 - Filtra apenas categorias do tipo DESPESA com orçamento > 0 para análise de orçamento
 - Implementa refresh token automático igual aos outros endpoints
 
-### Frontend Modules (pb_public/js)
-
-#### 1. `pb_public/js/google/oauth-service.js`
-Módulo ES6 para serviços OAuth:
-- Gerencia fluxo de autenticação OAuth
-- Verifica status de refresh token
-- Inicia fluxo de autorização
-
-#### 2. `pb_public/js/google/sheets-api.js`
-Módulo ES6 para API Sheets:
-- Lista planilhas do usuário
-- Salva planilha selecionada
-- Provisiona templates
-- Formata dados para exibição
-
-#### 3. `pb_public/js/config/api-config.js`
-Configurações da API e OAuth:
-- URLs base da aplicação
-- Configurações OAuth do Google
-- Endpoints da API
-
-### Páginas Atualizadas
-
-#### 1. `pb_public/oauth-test.html`
-Página de teste refatorada para usar módulos ES6
-
-#### 2. `pb_public/dashboard/configuracao.html`
-Página de configuração usando módulos ES6 para gerenciamento de planilhas
+> ℹ️ **Frontend mudou**: este README ainda menciona `pb_public/js/google/oauth-service.js`
+> e `pb_public/js/google/sheets-api.js` como módulos ES6 usados pelo frontend.
+> **Esses arquivos não existem mais** — o frontend foi migrado pra Vite + TypeScript
+> em `src/services/` (vide `AGENTS.md` §9 e `README.md` do projeto).
+>
+> Para exemplos atuais de uso do OAuth Sheets, ver:
+> - `src/services/google-oauth.ts` (login do user via Google)
+> - `src/services/sheets.ts` (operações sobre Sheets/Drive)
+> - `pwa/src/services/auth-oauth.ts` (login OAuth dentro do PWA)
 
 ## Configuração Necessária
 
@@ -192,48 +178,18 @@ curl -X POST http://localhost:8090/google-refresh-token \
 
 ## Integração com Frontend
 
-### JavaScript Example (usando módulos ES6)
-```javascript
-// Importar serviços
-import googleOAuthService from './js/google/oauth-service.js';
-import googleSheetsService from './js/google/sheets-api.js';
+O frontend (em `src/` e `pwa/`) chama esses endpoints HTTP normalmente — vide
+`AGENTS.md` §6 (tabela de endpoints) e os serviços correspondentes em
+`src/services/sheets.ts` e `pwa/src/services/auth-oauth.ts`.
 
-// Inicializar serviços
-googleOAuthService.init(pb);
-googleSheetsService.init(pb);
-
-// Iniciar OAuth
-async function startGoogleAuth() {
-  try {
-    await googleOAuthService.startOAuthFlow();
-  } catch (error) {
-    console.error('Erro OAuth:', error);
-  }
-}
-
-// Listar planilhas
-async function listSheets() {
-  try {
-    const data = await googleSheetsService.listUserSheets();
-    console.log('Planilhas:', data.sheets);
-  } catch (error) {
-    console.error('Erro ao listar planilhas:', error);
-  }
-}
-```
-
-## Vantagens da Estrutura Modular
-
-1. **Separação de responsabilidades**: Cada arquivo tem uma função específica
-2. **Manutenibilidade**: Mais fácil de entender e modificar
-3. **Reutilização**: Módulos podem ser importados em diferentes páginas
-4. **Testabilidade**: Cada módulo pode ser testado independentemente
-5. **Escalabilidade**: Fácil adicionar novos módulos ou funcionalidades
+**Não há mais módulos JS em `pb_public/js/`** — esse caminho era usado quando
+o frontend era JS puro (antes da migração pra Vite + TypeScript). O conteúdo
+foi removido do repo em 2026-08-06.
 
 ## Próximos Passos
 
-1. **Testes automatizados**: Implementar testes unitários para os módulos
-2. **Validação de tipos**: Adicionar TypeScript para maior segurança
-3. **Cache de tokens**: Implementar cache local para melhor performance
-4. **Error handling**: Melhorar tratamento de erros com retry automático
-5. **Documentação**: Expandir JSDoc nos módulos
+1. **Testes automatizados**: implementar testes unitários nos hooks
+2. **Documentação**: expandir JSDoc nos hooks de `pb_hooks/`
+3. **Migrations**: revisar `pb_migrations/` se ainda bate com o schema atual
+4. (A migração pra TypeScript e o cache local já foram feitos — itens 2 e 3
+   da versão antiga deste README não se aplicam mais)

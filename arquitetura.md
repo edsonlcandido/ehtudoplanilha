@@ -155,10 +155,24 @@ Regras recomendadas:
 5. Hook valida state, troca code por tokens, salva tokens + `expires_at`.
 
 ### 4.2 Provisionamento da Planilha
-1. Usuário aciona `POST /provision-sheet`.
-2. Hook verifica se já existe `sheet_id`; se existir pode retornar 409 ou reutilizar.
-3. Copia template (Drive API).
-4. Atualiza `sheet_id` no registro.
+1. Usuário aciona `POST /provision-sheet` (geralmente o frontend chama após
+   o OAuth do Google retornar tokens).
+2. Hook verifica se já existe `sheet_id` em `google_infos`:
+   - Se existir → retorna `action: existing` (idempotente, não recria).
+   - Se não existir → segue pro passo 3.
+3. Hook **cria a planilha do zero** via Sheets API
+   (`POST /v4/spreadsheets`) com as abas `Lançamentos` e `Categorias`
+   **hardcoded** (nomes fazem parte do contrato do produto — não é
+   configurável, não usa template, não copia do nosso Drive).
+4. Hook popula o cabeçalho de `Lançamentos!A1:G1` e a lista padrão de
+   categorias em `Categorias!A1:B<n>`.
+5. Hook salva `sheet_id` + `sheet_name` em `google_infos` e retorna
+   `action: created` pro frontend.
+
+> ⚠️ Se o usuário renomear qualquer das duas abas (`Lançamentos` ou
+> `Categorias`) na planilha, o sistema quebra — elas são parte do
+> contrato. Os hooks sempre usam `gsheets.SHEET_NAME_DEFAULT` (helper
+> `_google-sheets-helper.js`) e nunca leem `google_infos.sheet_name`.
 
 ### 4.3 Inserção de Lançamentos
 
@@ -291,7 +305,7 @@ Regras recomendadas:
 ## 5. Endpoints Custom (Resumo)
 - `GET /google-oauth-callback`
 - `POST /google-refresh-token`
-- `POST /provision-sheet`
+- `POST /provision-sheet` (cria planilha do zero, ver §4.2)
 - `POST /append-entry`
 
 ## 6. Segurança
