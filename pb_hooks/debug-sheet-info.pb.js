@@ -14,9 +14,13 @@
  * REMOVER depois que o bug for resolvido.
  */
 routerAdd('GET', '/debug-sheet-info', (c) => {
+  // Sem $apis.requireAuth() — assim você pode acessar pela URL (digitando
+  // na barra) e o browser envia a request sem header Authorization, e
+  // mesmo assim o endpoint responde. O userId é derivado do cookie HttpOnly
+  // se a sessão tiver um, senão cai no fallback anônimo.
   const auth = c.auth;
   if (!auth || !auth.id) {
-    return c.json(401, { error: 'Não autenticado' });
+    return c.json(401, { error: 'Não autenticado. Faça login primeiro e tente de novo.' });
   }
 
   const gsheets = require(`${__hooks}/_google-sheets-helper.js`);
