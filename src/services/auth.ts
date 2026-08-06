@@ -26,7 +26,7 @@ export function logout(): void {
   // Limpa todos os caches antes de fazer logout
   console.log('[Auth] Limpando caches ao fazer logout');
   CacheService.clearAll();
-  
+
   pb.authStore.clear();
 }
 
@@ -71,43 +71,47 @@ export function onAuthChange(callback: (isAuth: boolean) => void): void {
 
 /**
  * Verifica se o token do PocketBase é válido
- * Usa a melhor prática do PocketBase:
- * 1. Verifica pb.authStore.isValid
- * 2. Chama pb.collection('users').authRefresh() para validar com o servidor
- * 3. Se falhar, limpa o authStore
- * 4. Se inválido após refresh, redireciona para /
- * 
- * Deve ser chamado no início do carregamento de páginas protegidas
+ *
+ * Fluxo:
+ * 1. Se `authStore.isValid` local (token + model populados), retorna true
+ * 2. Se NÃO, tenta `pb.collection('users').authRefresh()` pra obter
+ *    um token novo a partir do localStorage
+ * 3. Se refresh OK, retorna true
+ * 4. Se refresh falhou, redireciona pro / e retorna false
+ *
+ * IMPORTANTE: PocketBase autentica via header `Authorization: <token>`
+ * (lido do localStorage com chave `pocketbase_auth`). NÃO usa cookie
+ * (confirmado via /debug-auth). O `pb.send` adiciona o header
+ * automaticamente quando o `authStore.token` é truthy.
+ *
+ * POR QUE NÃO CHAMA authRefresh EM TODO LOAD: o bug original era
+ * `authRefresh()` falhando e o app redirecionando pro login. Agora
+ * só chamamos se o token local NÃO é válido (isValid = false), que
+ * é o cenário onde o token provavelmente está expirado mesmo.
+ *
+ * Deve ser chamado no início do carregamento de páginas protegidas.
  */
 export async function verifyTokenValidity(): Promise<boolean> {
-  // Passo 1: Verificar se está autenticado localmente
-  if (!isAuthenticated()) {
-    console.warn('[Auth] Usuário não autenticado localmente');
-    redirectToHome();
-    return false;
-  }
-
-  try {
-    // Passo 2: Validar token com o servidor usando authRefresh()
-    console.log('[Auth] Validando token com o servidor...');
-    await pb.collection('users').authRefresh();
-    
-    // Passo 3: Verificar novamente após refresh
-    if (!isAuthenticated()) {
-      console.warn('[Auth] Token inválido após refresh');
-      redirectToHome();
-      return false;
-    }
-
-    console.log('[Auth] Token válido ✓');
+  if (isAuthenticated()) {
+    console.log('[Auth] Token válido localmente ✓');
     return true;
-  } catch (error) {
-    // Passo 4: Se houver erro (ex: 401), limpar o authStore e redirecionar
-    console.error('[Auth] Erro ao validar token:', error);
-    logout();
-    redirectToHome();
-    return false;
   }
+
+  console.log('[Auth] Token local inválido, tentando refresh via SDK...');
+  try {
+    const authData = await pb.collection('users').authRefresh();
+    if (authData?.token) {
+      console.log('[Auth] Refresh OK ✓');
+      return true;
+    }
+    console.warn('[Auth] Refresh retornou sem token');
+  } catch (e: any) {
+    console.warn('[Auth] Refresh falhou:', e?.status, e?.message);
+  }
+
+  console.warn('[Auth] Não autenticado, redirecionando para /');
+  redirectToHome();
+  return false;
 }
 
 /**

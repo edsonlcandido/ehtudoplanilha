@@ -1,84 +1,96 @@
-ARG BUILD_DIR=/tmp/pb_build # Diretório temporário para o build
+# ============================================================================
+# Dockerfile - Build do frontend (src/) + PWA (pwa/) + PocketBase
+# ============================================================================
+# Constrói tudo num único `docker build`:
+# 1. Estágio 1: builda o frontend Vite/TypeScript de /src → /build/dist
+# 2. Estágio 2: builda o PWA Vue 3 de /pwa → /build/pwa
+# 3. Estágio 3: imagem final com PocketBase + artefatos de 1 e 2
+#
+# O diretório /pwa (source) precisa estar presente no contexto do build.
+# O output do build (pwa/pwa/, src/dist/) é regenerado a cada build, não
+# precisa estar commitado.
+# ============================================================================
 
-# Estágio de BASE
-# Define a imagem base para os outros estágios
-FROM alpine:3.22.1 AS base
+# ----------------------------------------------------------------------------
+# Estágio 1: BUILD FRONTEND (src/)
+# ----------------------------------------------------------------------------
+FROM node:22-alpine AS frontend-builder
 
-# Instala pacotes essenciais que serão necessários em estágios futuros.
-# ca-certificates é para HTTPS, curl para baixar arquivos.
-RUN apk add --no-cache ca-certificates curl tzdata
+WORKDIR /build
 
-# Estágio de BUILD
-# Este estágio é responsável por baixar e descompactar o PocketBase.
-FROM base AS build
+# Copiar apenas package.json pra cache de deps
+COPY src/package.json src/package-lock.json* ./
 
-# Instala unzip, que só é necessário para descompactar o PocketBase.
-# Ele NÃO estará na imagem final.
-RUN apk add --no-cache unzip git
+RUN npm ci --only=production || npm install
 
-ARG PB_VERSION=0.30.0
-ARG BUILD_DIR=/tmp/pb_build # Diretório temporário para o build
-ARG REPO_DIR #<--- Diretório temporário para o clone GLOBAL
+# Copiar source do frontend
+COPY src/ ./
 
-# Baixa o PocketBase e o descompacta no diretório temporário.
-# Fixamos para linux_amd64, já que você não precisa da verificação de arquitetura.
-RUN curl -fsSL -o /tmp/pocketbase.zip \
-    https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_linux_amd64.zip \
-    && unzip /tmp/pocketbase.zip -d $BUILD_DIR/
+# Build do Vite/TypeScript → /build/dist
+RUN npm run build
 
-# Estágio FINAL
-# Este estágio cria a imagem final, leve e segura.
-FROM base AS final
 
-# Define argumentos para o usuário/grupo e diretórios
-ARG UID=1001
-ARG GID=1001
-ARG USER=pocketbase
-ARG GROUP=pocketbase
-ARG PB_WORKDIR=/pocketbase # Diretório de trabalho para os dados do PocketBase
-ARG PB_HOME=/opt/pocketbase # Onde o executável do PocketBase será copiado
-ARG BUILD_DIR # Diretório temporário para o build GLOBAL
-ARG REPO_DIR # <--- Diretório temporário para o clone GLOBAL
+# ----------------------------------------------------------------------------
+# Estágio 2: BUILD PWA (pwa/)
+# ----------------------------------------------------------------------------
+FROM node:22-alpine AS pwa-builder
 
-# Define variáveis de ambiente para a aplicação
+WORKDIR /build
+
+# Copiar package.json do PWA
+COPY pwa/package.json pwa/package-lock.json* ./
+
+RUN npm ci --only=production || npm install
+
+# Copiar source do PWA
+COPY pwa/ ./
+
+# Build do Vite (Vue 3 + vite-plugin-pwa) → /build/pwa
+RUN npm run build
+
+
+# ----------------------------------------------------------------------------
+# Estágio 3: IMAGEM FINAL (PocketBase + artefatos)
+# ----------------------------------------------------------------------------
+FROM alpine:3.22.1
+
+RUN apk add --no-cache ca-certificates tzdata
+
+RUN addgroup -g 1001 pocketbase \
+    && adduser -u 1001 -G pocketbase -s /bin/sh -D pocketbase
+
+WORKDIR /app
+
+# PocketBase pré-compilado
+COPY pocketbase /app/pocketbase
+RUN chmod +x /app/pocketbase
+
+# Estrutura de diretórios
+RUN mkdir -p /app/pb_public /app/pb_hooks /app/pb_migrations /app/pb_data \
+    && chown -R pocketbase:pocketbase /app
+
+# Copiar build do frontend (src/dist/) → /app/pb_public/
+COPY --from=frontend-builder --chown=pocketbase:pocketbase /build/dist/ /app/pb_public/
+
+# Copiar build do PWA (pwa/pwa/) → /app/pb_public/pwa/
+COPY --from=pwa-builder --chown=pocketbase:pocketbase /build/pwa/ /app/pb_public/pwa/
+
+# Hooks e migrations
+COPY --chown=pocketbase:pocketbase pb_hooks/ /app/pb_hooks/
+COPY --chown=pocketbase:pocketbase pb_migrations/ /app/pb_migrations/
+
+# Env vars
 ENV TZ=America/Sao_Paulo \
     PB_PORT=8090 \
-    PB_WORKDIR=$PB_WORKDIR \
-    PB_HOME=$PB_HOME \
-    # Variáveis de ambiente para configuração do Google OAuth
-    GOOGLE_CLIENT_ID=SEU_CLIENT_ID.apps.googleusercontent.com \
-    GOOGLE_CLIENT_SECRET=SEU_CLIENT_SECRET \
-    GOOGLE_REDIRECT_URI=http://localhost:8090/google-oauth-callback \
-    SHEET_TEMPLATE_ID=SHEET_TEMPLATE_ID
+    GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID} \
+    GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET} \
+    GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI} \
+    SHEET_TEMPLATE_ID=${SHEET_TEMPLATE_ID}
 
-EXPOSE $PB_PORT
+EXPOSE 8090
 
-# Cria o grupo e usuário não-root.
-# Cria os diretórios necessários e ajusta permissões.
-RUN addgroup -g ${GID} ${GROUP} \
-    && adduser -u ${UID} -G ${GROUP} -s /bin/sh -D ${USER} \
-    && mkdir -p "$PB_HOME" \
-    && mkdir -p -m 777 "$PB_WORKDIR" \
-    && chown ${USER}:${GROUP} "$PB_WORKDIR"
+VOLUME ["/app/pb_data"]
 
-# Copia APENAS o executável do PocketBase do estágio de build para o estágio final.
-COPY --from=build $BUILD_DIR/pocketbase $PB_HOME/pocketbase
+USER pocketbase
 
-# Garante que o executável tenha permissões corretas e cria um symlink
-# para que possa ser executado facilmente de qualquer lugar.
-RUN chmod 755 "$PB_HOME/pocketbase" \
-    && ln -s "$PB_HOME/pocketbase" /usr/local/bin/pocketbase
-
-# Define o usuário que vai executar o comando padrão.
-USER ${USER}
-
-# Define o diretório de trabalho padrão para o container.
-WORKDIR "$PB_WORKDIR"
-
-# Comando para iniciar o PocketBase.
-CMD ["pocketbase", "serve", "--http=0.0.0.0:8090"]
-
-# Opcional: Se você tiver migrations ou hooks, descomente e copie
-COPY ./pb_public $PB_WORKDIR/pb_public
-COPY ./pb_migrations $PB_WORKDIR/pb_migrations
-COPY ./pb_hooks $PB_WORKDIR/pb_hooks
+CMD ["/app/pocketbase", "serve", "--http=0.0.0.0:8090"]

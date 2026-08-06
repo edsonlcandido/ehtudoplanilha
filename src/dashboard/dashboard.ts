@@ -134,14 +134,16 @@ async function init(): Promise<void> {
  */
 async function checkConfiguration(): Promise<{ isValid: boolean }> {
   try {
-    const response = await fetch(`${API_ENDPOINTS.configStatus}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${pb.authStore.token}`
-      }
+    // Usa `pb.send()` (NÃO fetch puro) porque o PB SDK adiciona
+    // automaticamente o header `Authorization: <authStore.token>`
+    // (lido do localStorage). PocketBase autentica via esse header
+    // — não usa cookie (cookie.hasPbAuth do /debug-auth = false).
+    //
+    // IMPORTANTE: `pb.send()` JÁ retorna o JSON parseado. Se der
+    // 401/4xx/5xx, o SDK joga `ClientResponseError`.
+    const data = await pb.send(`${API_ENDPOINTS.configStatus}`, {
+      method: 'GET'
     });
-
-    const data = await response.json();
     return {
       isValid: data.hasRefreshToken && data.hasSheetId
     };

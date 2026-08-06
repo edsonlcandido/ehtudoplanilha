@@ -1,0 +1,73 @@
+name: Create PWA Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release tag name (e.g., v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+      release_name:
+        description: 'Release name'
+        required: true
+        default: 'PWA Release'
+      release_body:
+        description: 'Release description'
+        required: false
+        default: 'PWA build ready for distribution'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build PWA
+      run: npm run build
+        
+    - name: Create PWA ZIP
+      run: |
+        cd pwa
+        zip -r ../pwa.zip .
+        cd ..
+        ls -la pwa.zip
+        
+    - name: Get current date
+      id: date
+      run: echo "date=$(date +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_OUTPUT
+        
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ github.event.inputs.tag_name }}
+        name: ${{ github.event.inputs.release_name }}
+        body: |
+          ${{ github.event.inputs.release_body }}
+          
+          ## PWA Build Information
+          - Built on: ${{ steps.date.outputs.date }}
+          - Commit SHA: ${{ github.sha }}
+          - Branch: ${{ github.ref_name }}
+          
+          ## Installation
+          1. Download the `pwa.zip` file
+          2. Extract it to your web server
+          3. The PWA is ready to be served
+          
+        draft: false
+        prerelease: false
+        files: |
+          pwa.zip

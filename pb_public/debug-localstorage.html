@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Debug localStorage - PocketBase</title>
+  <style>
+    body { font-family: monospace; padding: 2rem; background: #1e1e1e; color: #d4d4d4; }
+    pre { background: #252526; padding: 1rem; border-radius: 4px; overflow-x: auto; }
+    h2 { color: #4ec9b0; }
+    .ok { color: #4ec9b0; }
+    .err { color: #f48771; }
+  </style>
+</head>
+<body>
+  <h1>🔍 Debug - localStorage & PocketBase</h1>
+  <pre id="out">Carregando...</pre>
+
+  <script type="module">
+    import PocketBase from '/assets/pocketbase.es.js'
+
+    const out = document.getElementById('out')
+    const log = (label, value, ok = null) => {
+      const cls = ok === true ? 'ok' : ok === false ? 'err' : ''
+      out.innerHTML += `<span class="${cls}"><strong>${label}:</strong> ${value}\n</span>`
+    }
+
+    try {
+      const pb = new PocketBase(window.location.origin)
+
+      // 1. localStorage bruto
+      const raw = localStorage.getItem('pocketbase_auth')
+      log('1. localStorage["pocketbase_auth"]', raw ? `<span class="ok">EXISTS</span> (${raw.length} chars)` : '<span class="err">NULL/EMPTY</span>')
+
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw)
+          log('   - token (mascarado)', parsed.token ? `${parsed.token.substring(0, 30)}... (len=${parsed.token.length})` : '<span class="err">vazio</span>')
+          log('   - record.email', parsed.record?.email || '<span class="err">vazio</span>')
+          log('   - record.id', parsed.record?.id || '<span class="err">vazio</span>')
+        } catch (e) {
+          log('   - parse error', e.message, false)
+        }
+      }
+
+      // 2. authStore da instância
+      log('2. pb.authStore.token (via getter)', pb.authStore.token ? `<span class="ok">${pb.authStore.token.substring(0, 30)}... (len=${pb.authStore.token.length})</span>` : '<span class="err">VAZIO</span>')
+      log('   pb.authStore.isValid', String(pb.authStore.isValid), pb.authStore.isValid)
+      log('   pb.authStore.model', pb.authStore.model ? `${pb.authStore.model.email} (${pb.authStore.model.id})` : '<span class="err">null</span>')
+
+      // 3. Decode do token pra ver expiração
+      if (pb.authStore.token) {
+        try {
+          const parts = pb.authStore.token.split('.')
+          if (parts.length === 3) {
+            const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')))
+            const expDate = new Date(payload.exp * 1000)
+            const now = new Date()
+            const expired = expDate < now
+            log('3. JWT payload.exp', `${expDate.toISOString()} (${expired ? '<span class="err">EXPIRADO</span>' : '<span class="ok">válido</span>'})`)
+            log('   JWT payload.iat', payload.iat ? new Date(payload.iat * 1000).toISOString() : 'N/A')
+            log('   JWT payload.type', payload.type || 'N/A')
+            log('   JWT payload.id', payload.id || 'N/A')
+          }
+        } catch (e) {
+          log('3. JWT decode error', e.message, false)
+        }
+      }
+
+      // 4. Testa fazer um send autenticado
+      log('4. Testando pb.send("/api/collections/users/auth-refresh")...')
+      try {
+        const data = await pb.collection('users').authRefresh()
+        log('   ✓ authRefresh OK', JSON.stringify({
+          hasToken: !!data.token,
+          email: data.record?.email
+        }), true)
+      } catch (e) {
+        log('   ✗ authRefresh falhou', `${e.status} ${e.message}`, false)
+      }
+
+    } catch (err) {
+      log('ERRO GERAL', err.message, false)
+      console.error(err)
+    }
+  </script>
+</body>
+</html>

@@ -8,15 +8,17 @@ pb_data/
 pb_public_backup/
 pb_public_/
 
-# Node modules (será instalado no container)
-node_modules/
-src/node_modules/
-**/node_modules/
-
-# Builds locais
+# Builds locais antigos (Docker vai regenerar)
 src/dist/
+src/node_modules/
+pwa/pwa/         # output do build do PWA
+pwa/node_modules/
 dist/
 build/
+
+# PB_PUBLIC vai ser montado a partir dos builds do Docker (src/dist + pwa/pwa)
+# Mas mantemos o source de pb_public/ fora pra evitar duplicar arquivos
+pb_public/
 
 # Arquivos de desenvolvimento
 .env
@@ -39,15 +41,10 @@ yarn-error.log*
 *.temp
 .cache/
 
-# Documentação de desenvolvimento (opcional)
+# Documentação de desenvolvimento
 *.md
 !README.md
 
-# Scripts locais que não são necessários no container
+# Scripts locais
 build-and-deploy.sh
 iniciar-pb.sh
-
-# Executáveis locais do PocketBase
-
-# Package lock files (npm ci usará o que existe)
-# src/package-lock.json será copiado

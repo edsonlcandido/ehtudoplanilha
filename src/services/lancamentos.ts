@@ -25,15 +25,16 @@ class LancamentosService {
     }
 
     // Se não for forceRefresh, tenta usar o cache
+    // IMPORTANTE: só usa cache se tem dados (entries.length > 0).
+    // Cache vazio (0 entries) significa que o servidor retornou vazio numa
+    // chamada anterior — não cachear pra forçar nova tentativa.
     if (!forceRefresh) {
       const cacheKey = CACHE_KEYS.SHEET_ENTRIES;
       const cached = CacheService.get<SheetEntriesResponse>(cacheKey);
-      
-      if (cached) {
+
+      if (cached && cached.entries && cached.entries.length > 0) {
         console.log('[LancamentosService] Usando dados do cache');
-        // Se limit > 0 e o cache tem mais entradas, retorna apenas o necessário
-        // Se limit === 0, retorna todas as entradas do cache
-        if (limit > 0 && cached.entries && cached.entries.length > limit) {
+        if (limit > 0 && cached.entries.length > limit) {
           return {
             ...cached,
             entries: cached.entries.slice(0, limit),
@@ -46,28 +47,30 @@ class LancamentosService {
     // Busca do servidor
     try {
       console.log('[LancamentosService] Buscando dados do servidor');
-      const response = await fetch(`${pb.baseURL}/get-sheet-entries?limit=${limit}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${pb.authStore.token}`,
-          'Content-Type': 'application/json'
-        }
+      // Usa `pb.send()` para que o SDK adicione automaticamente o header
+      // `Authorization: <authStore.token>` (lido do localStorage).
+      // PB autentica via esse header (não via cookie).
+      //
+      // IMPORTANTE: passar SÓ o path (sem `pb.baseURL`) — o SDK já prepende
+      // o baseURL automaticamente. Passar `pb.baseURL` aqui causaria URL
+      // duplicada tipo `https://host/https://host/path` e o PB não rotearia.
+      //
+      // Também: `pb.send()` JÁ retorna o JSON parseado (NÃO o Response).
+      // Se der 401/4xx/5xx, o SDK joga `ClientResponseError`.
+      const data = await pb.send(`/get-sheet-entries?limit=${limit}`, {
+        method: 'GET'
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Erro ao carregar entradas da planilha');
-      }
 
       // Salva no cache (sempre salva o resultado completo)
       const cacheKey = CACHE_KEYS.SHEET_ENTRIES;
       CacheService.set(cacheKey, data);
 
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao buscar entradas da planilha:', error);
-      throw error;
+      // ClientResponseError tem .data com a response do server
+      const msg = error?.data?.message || error?.message || 'Erro ao carregar entradas da planilha';
+      throw new Error(msg);
     }
   }
 
@@ -90,31 +93,25 @@ class LancamentosService {
     }
 
     try {
-      const response = await fetch(`${pb.baseUrl}/edit-sheet-entry`, {
+      // `pb.send()` retorna o JSON parseado. Erros 4xx/5xx viram
+      // `ClientResponseError` lançado pelo SDK.
+      // Passar SÓ o path — SDK já prepende `pb.baseURL`.
+      const data = await pb.send('/edit-sheet-entry', {
         method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${pb.authStore.token}`,
-          'Content-Type': 'application/json'
-        },
         body: JSON.stringify({
           rowIndex,
           ...entry
         })
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Erro ao editar lançamento');
-      }
-
       // Invalida o cache após edição bem-sucedida
       this.invalidateCache();
 
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao editar lançamento:', error);
-      throw error;
+      const msg = error?.data?.message || error?.message || 'Erro ao editar lançamento';
+      throw new Error(msg);
     }
   }
 
@@ -127,28 +124,22 @@ class LancamentosService {
     }
 
     try {
-      const response = await fetch(`${pb.baseUrl}/delete-sheet-entry`, {
+      // `pb.send()` retorna o JSON parseado. Erros 4xx/5xx viram
+      // `ClientResponseError` lançado pelo SDK.
+      // Passar SÓ o path — SDK já prepende `pb.baseURL`.
+      const data = await pb.send('/delete-sheet-entry', {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${pb.authStore.token}`,
-          'Content-Type': 'application/json'
-        },
         body: JSON.stringify({ rowIndex })
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Erro ao deletar lançamento');
-      }
 
       // Invalida o cache após deleção bem-sucedida
       this.invalidateCache();
 
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao deletar lançamento:', error);
-      throw error;
+      const msg = error?.data?.message || error?.message || 'Erro ao deletar lançamento';
+      throw new Error(msg);
     }
   }
 
