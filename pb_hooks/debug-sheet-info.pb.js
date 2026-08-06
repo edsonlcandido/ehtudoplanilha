@@ -15,37 +15,47 @@
  */
 routerAdd('GET', '/debug-sheet-info', (c) => {
   // Aceita auth via:
-  // 1) requireAuth() (se o browser enviar Authorization header)
+  // 1) Header Authorization (se o browser enviar)
   // 2) Query string ?token=<jwt> (pra acessar pela URL sem header)
-  //
-  // Se nenhum dos dois, retorna 401 com instrução.
   const headerToken = c.requestInfo().headers["Authorization"] || "";
   const queryToken = c.requestInfo().query?.token || "";
   let userId = c.auth?.id;
 
+  // DEBUG: log de tudo que recebemos
+  console.log("[debug-sheet-info] request:", JSON.stringify({
+    hasAuth: !!c.auth,
+    authId: c.auth?.id,
+    headerToken: headerToken ? "present" : "missing",
+    queryTokenLength: queryToken.length,
+    queryRaw: JSON.stringify(c.requestInfo().query),
+    allHeaders: Object.keys(c.requestInfo().headers || {})
+  }));
+
   if (!userId && queryToken) {
     try {
-      // Valida o JWT manualmente decodificando o payload (sem verificar assinatura
-      // pois o token vem do próprio PocketBase que emite)
       const cleanToken = queryToken.startsWith("Bearer ") ? queryToken.substring(7) : queryToken;
       const parts = cleanToken.split(".");
       if (parts.length === 3) {
         const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
-        // Verifica se não expirou
         if (payload.exp && payload.exp > Date.now() / 1000) {
           userId = payload.id;
         }
       }
     } catch (e) {
-      // Ignora — vai cair no 401 abaixo
+      console.log("[debug-sheet-info] Token decode error:", e && e.message);
     }
   }
 
   if (!userId) {
     return c.json(401, {
       error: 'Não autenticado',
-      hint: 'Acesse logado (Authorization header) ou passe ?token=<seu-jwt-do-pocketbase>',
-      help: 'O JWT do PocketBase está em localStorage["pocketbase_auth"] no DevTools'
+      debug: {
+        hasAuth: !!c.auth,
+        headerTokenPresent: !!headerToken,
+        queryTokenLength: queryToken.length,
+        queryRaw: c.requestInfo().query
+      },
+      hint: 'Acesse logado (Authorization header) ou passe ?token=<seu-jwt-do-pocketbase>'
     });
   }
 
