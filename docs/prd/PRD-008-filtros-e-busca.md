@@ -137,7 +137,52 @@ User aplica: conta="Nubank" + categoria="Delivery" + período=nov/2025
   → botão "Limpar filtros" aparece
 ```
 
-## Edge cases
+## Diagrama de sequência
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant F as Frontend
+    participant C as Cache
+    participant PB as PocketBase
+    participant S as Sheets API
+
+    Note over U,S: Carregamento inicial (1 vez)
+    U->>F: abre /dashboard/lancamentos
+    F->>C: get SHEET_ENTRIES
+    alt cache válido
+        C-->>F: entries
+    else cache vazio
+        F->>PB: GET /get-sheet-entries?limit=100
+        PB->>S: GET values Lançamentos!A:G
+        S-->>PB: rows
+        PB->>PB: converte seriais<br/>→ datas (ou devolve raw?)
+        PB-->>F: { entries }
+        F->>C: set SHEET_ENTRIES
+    end
+    F-->>U: lista renderizada
+
+    rect rgb(230, 245, 255)
+    Note over U,F: Filtros aplicados (client-side, sem rede)
+    U->>F: digita "uber" no campo busca
+    F->>F: debounce 200ms
+    F->>F: filtra array<br/>(descricao.includes("uber"))
+    F->>F: aplica filtros ativos<br/>(conta, categoria, período)
+    F->>F: ordena (default data desc)
+    F-->>U: lista filtrada,<br/>contador "X encontrados"
+    end
+```
+
+**Atores:** User, Frontend, Cache, PB, Sheets API.
+
+**Highlights:**
+- **Filtros rodam 100% client-side** após o load inicial — zero requests novos
+- Busca tem **debounce de 200ms** (evita re-render a cada tecla)
+- Performance: V8 filtra arrays grandes rápido (<50ms com 1000 entries)
+- Acima de **10k entries** o client-side começa a ficar lento — roadmap: virtual scroll
+- Filtros aplicam **em AND** (busca + conta + categoria + período + tipo)
+- Datas filtradas por **data efetiva** (coluna A), não orçamento (coluna F) — vide decisão MVP
 
 - **Filtro que retorna 0 resultados**: mensagem "Nenhum lançamento
   encontrado com esses filtros" + botão "Limpar".

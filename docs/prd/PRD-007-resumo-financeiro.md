@@ -103,7 +103,51 @@ User clica no seletor de mês → escolhe "Outubro 2025"
   → mesma lógica, retorna dados de outubro
 ```
 
-## Edge cases
+## Diagrama de sequência
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant F as Frontend<br/>(Dashboard)
+    participant C as Cache
+    participant PB as PocketBase
+    participant S as Sheets API
+
+    U->>F: abre /dashboard/index.html
+    F->>F: default período = mês corrente
+    par carregar meses disponíveis
+        F->>PB: GET /get-available-months
+        PB->>S: GET values Lançamentos!A:A
+        S-->>PB: { values: [[serial, ...]] }
+        PB->>PB: agrupa por mês (MM/YYYY)
+        PB-->>F: { meses: ["2025-08", "2025-09", ...] }
+    and carregar agregado
+        F->>PB: GET /get-financial-summary?inicio=...&fim=...
+        PB->>S: GET values Lançamentos!A:G<br/>(com filtro de período)
+        S-->>PB: rows
+        PB->>PB: agrega totais,<br/>filtra "Transferência",<br/>calcula por categoria
+        PB-->>F: { totalReceitas, totalDespesas, saldo,<br/>porCategoria, porConta }
+    end
+    F->>F: renderiza cards<br/>(Receitas, Despesas, Saldo)
+    F->>F: renderiza top 5 categorias
+    F-->>U: dashboard pronto
+
+    U->>F: clica seletor de mês → "Out/2025"
+    F->>PB: GET /get-financial-summary?inicio=2025-10-01&fim=2025-10-31
+    Note right of F: cache invalidado se<br/>forceRefresh=true
+    PB-->>F: { ... } (dados de outubro)
+    F->>F: re-renderiza
+```
+
+**Atores:** User, Frontend, Cache, PB, Sheets API.
+
+**Highlights:**
+- O hook `get-financial-summary` (508 linhas no repo) faz **toda a agregação no backend** buscando os entries da planilha
+- Categoria `"Transferência"` é **filtrada** dos totais de receita/despesa
+- 2 requests em paralelo (meses + agregado) com `par` no Mermaid
+- Performance: tempo de resposta é **proporcional ao volume de entries** (sem cache de agregado)
+- Roadmap: agregação server-side com cache maior para suportar >10k entries
 
 - **Mês sem lançamentos**: cards zerados, mensagem "Sem dados
   neste mês".

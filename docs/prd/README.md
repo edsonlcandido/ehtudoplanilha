@@ -31,7 +31,8 @@ Cada PRD tem 9 seções (algumas opcionais):
 | **Personas** | Quem usa. Tipos de usuário. |
 | **User Stories** | "Como [persona], quero [ação], para [benefício]". Cada história é uma entrega pequena. |
 | **Critérios de aceite** | Checklist verificável. Quando tudo aqui está ✅, a feature tá pronta. |
-| **Fluxo de uso** | Passo a passo do happy path. Às vezes tem fluxos alternativos. |
+| **Fluxo de uso** | Passo a passo do happy path (texto). |
+| **Diagrama de sequência** | Versão visual do fluxo: quem chama quem, em que ordem, com branches. Em **Mermaid** — renderiza no GitHub, VS Code, etc. |
 | **Edge cases** | O que acontece nos cantos: dados vazios, erros, race conditions, etc. |
 | **Métricas de sucesso** | Como medir se a feature tá sendo usada e entregando valor. |
 
@@ -88,6 +89,9 @@ Então [resultado esperado].
 - Se você é **dev** implementando uma feature: leia o PRD inteiro antes de
   codar. Critérios de aceite viram checklist do PR.
 - Se você é **designer**: foque em Personas, User Stories e Fluxo de uso.
+- Se você está **aprendendo a arquitetura** do projeto: comece pelo
+  **diagrama de sequência** de cada PRD. Ele mostra visualmente quem
+  chama quem — ótimo pra entender o fluxo de dados antes de ler o código.
 
 ## Notas sobre estas specs
 

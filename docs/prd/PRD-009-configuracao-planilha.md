@@ -140,7 +140,76 @@ User em /dashboard/configuracao.html
   → CTA: "Conectar Google" (re-autoriza)
 ```
 
-## Edge cases
+## Diagrama de sequência
+
+### Trocar planilha
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant F as Frontend
+    participant PB as PocketBase
+    participant G as Google<br/>Drive API
+    participant DB as SQLite
+
+    U->>F: clica "Trocar planilha"
+    F->>PB: GET /config-status
+    PB->>DB: SELECT google_infos
+    DB-->>PB: { sheet_id, sheet_name, hasRefreshToken }
+    PB-->>F: status atual
+    F->>PB: GET /list-google-sheets
+    PB->>G: GET drive/v3/files?q=mimeType=spreadsheet
+    G-->>PB: { files: [{id, name, modifiedTime}, ...] }
+    PB-->>F: lista de planilhas
+    F-->>U: renderiza lista
+
+    U->>F: clica em "Minha Viagem"
+    F->>F: modal "Trocar pra essa planilha?"
+    U->>F: confirma
+    F->>PB: POST /save-sheet-id<br/>{ sheet_id, sheet_name }
+    PB->>DB: UPDATE google_infos
+    DB-->>PB: ok
+    PB-->>F: 200 { success }
+    F->>F: cache.clear(SHEET_ENTRIES)
+    F->>F: cache.clear(SHEET_CATEGORIES)
+    F->>F: recarrega dashboard
+    F-->>U: exibe nova planilha ativa
+```
+
+### Revogar acesso Google
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant F as Frontend
+    participant PB as PocketBase
+    participant G as Google<br/>(revoke endpoint)
+    participant DB as SQLite
+
+    U->>F: clica "Revogar acesso Google"
+    F->>F: modal de confirmação
+    U->>F: confirma
+    F->>PB: POST /revoke-google-access
+    PB->>DB: SELECT google_infos
+    DB-->>PB: { refresh_token, access_token }
+    PB->>G: POST oauth2.googleapis.com/revoke<br/>(token=refresh_token)
+    G-->>PB: 200 (ou 400 invalid_token)
+    PB->>DB: UPDATE google_infos<br/>SET access_token="", refresh_token="",<br/>    sheet_id="", sheet_name=""
+    DB-->>PB: ok
+    PB-->>F: 200 { success }
+    F->>F: cache.clearAll()
+    F-->>U: estado zerado,<br/>botão "Conectar Google" aparece
+```
+
+**Atores:** User, Frontend, PB, Google (Drive API + revoke endpoint), SQLite.
+
+**Highlights:**
+- `GET /env-variables` é **público** (sem auth) — expõe só `CLIENT_ID` (não é sensível) e `REDIRECT_URI`. `CLIENT_SECRET` nunca sai do PB
+- Revogação **prefere revogar `refresh_token`** quando existe (mais abrangente)
+- 400 `invalid_token` no revoke é **tratado como sucesso** (token já estava revogado)
+- Após revogar, `cache.clearAll()` limpa tudo — front fica em estado "precisa re-autorizar"
 
 - **Token expirado ao listar planilhas**: hook tenta refresh
   automático. Se refresh falhar, retorna 401 → frontend

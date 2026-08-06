@@ -150,7 +150,69 @@ User na lista → clica no ícone de deletar
   → cache invalidado, lista recarregada
 ```
 
-## Edge cases
+## Diagrama de sequência
+
+### Criar lançamento
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant F as Frontend
+    participant PB as PocketBase
+    participant S as Sheets API
+    participant DB as SQLite
+
+    U->>F: clica "+" → preenche form
+    F->>F: formata datas<br/>DD/MM/YYYY HH:mm
+    F->>F: valida (valor ≠ 0, descricao ≠ "")
+    F->>PB: POST /append-entry<br/>{ data, conta, valor, descricao, categoria, orcamento }
+    PB->>DB: SELECT google_infos WHERE user_id
+    DB-->>PB: { access_token, refresh_token }
+    alt token expirado (401)
+        PB->>G: POST oauth2.googleapis.com/token<br/>(refresh_token)
+        G-->>PB: novo access_token
+        PB->>DB: UPDATE access_token
+    end
+    PB->>S: POST values.append<br/>Lançamentos!A:G<br/>(USER_ENTERED + INSERT_ROWS)
+    S-->>PB: 200 { updatedRange: "Lançamentos!A50:G50" }
+    PB->>DB: UPDATE last_success_append_at
+    PB-->>F: 200 { success, rowIndex: 50 }
+    F->>F: CacheService.clear(SHEET_ENTRIES)
+    F->>F: CacheService.clear(SHEET_CATEGORIES)
+    F->>F: recarrega lista
+    F-->>U: toast "Lançamento adicionado"
+```
+
+### Editar / Deletar (mesmo formato, endpoints diferentes)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant F as Frontend
+    participant PB as PocketBase
+    participant S as Sheets API
+
+    U->>F: clica "editar" linha 50
+    F->>F: modal pré-preenchido
+    U->>F: muda valor → submit
+    F->>PB: POST /edit-sheet-entry<br/>{ rowIndex: 50, valor, ... }
+    PB->>S: PUT values.update<br/>Lançamentos!A50:G50
+    S-->>PB: 200
+    PB-->>F: 200 { success }
+    F->>F: cache.clear + recarrega
+    F-->>U: toast "Atualizado"
+```
+
+**Atores:** User, Frontend, PB, Sheets API, SQLite (mesmo padrão do PRD-002).
+
+**Highlights:**
+- `values.append` é **atômico** (sem race condition de GET+PUT)
+- Refresh automático de token **dentro do handler** (helper `callWithRefresh`)
+- Cache invalidado **client-side** após mutation (TTL 5min, vide `services/cache.ts`)
+- `rowIndex` extraído do `updatedRange` retornado pelo Sheets (ex: `Lançamentos!A50:G50` → `50`)
+- Datas enviadas como **string BR** (`DD/MM/YYYY HH:mm`); Sheets converte pra serial Excel com `USER_ENTERED`
 
 - **Duplicidade por retry**: se o user clica submit 2x, o primeiro
   sucesso invalida o cache, mas o segundo POST cria duplicata.

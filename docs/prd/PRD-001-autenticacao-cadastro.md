@@ -119,7 +119,57 @@ User clica no menu → "Sair"
   → window.location.href = '/'
 ```
 
-## Edge cases
+## Diagrama de sequência
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant F as Frontend<br/>(Vite/TS)
+    participant PB as PocketBase
+
+    rect rgb(230, 245, 255)
+    Note over U,PB: Cadastro
+    U->>F: preenche email + senha
+    F->>PB: POST /api/collections/users/records
+    alt email já existe
+        PB-->>F: 400 email duplicado
+        F-->>U: toast "email já cadastrado"
+    else sucesso
+        PB-->>F: 200 user record
+        F->>F: authStore.set(token, model)
+        F-->>U: redirect /dashboard/index.html
+    end
+    end
+
+    rect rgb(230, 255, 230)
+    Note over U,PB: Login
+    U->>F: preenche email + senha
+    F->>PB: POST /api/collections/users/auth-with-password
+    PB-->>F: 200 { token, record }
+    F->>F: authStore.set(token, model)
+    F->>F: verifyTokenValidity()
+    F-->>U: redirect /dashboard/index.html
+    end
+
+    rect rgb(255, 245, 230)
+    Note over U,PB: Logout
+    U->>F: clica "Sair" → confirma
+    F->>F: CacheService.clearAll()
+    F->>F: authStore.clear()
+    F-->>U: redirect /
+    end
+```
+
+**Atores:**
+- **User** — pessoa no browser
+- **Frontend** — código Vite/TypeScript em `src/`
+- **PocketBase** — backend (`./pocketbase`)
+
+**Highlights:**
+- Cadastro e login são **request/response** simples; o `authStore` é populado pelo SDK no client
+- `verifyTokenValidity()` roda em **toda página protegida** (não mostrado)
+- Logout **limpa cache ANTES do authStore** (ordem importa — vide critério de aceite)
 
 - **Token expirado + offline**: `authRefresh()` falha. App mostra
   "Sessão expirada, faça login novamente" e botão de login.

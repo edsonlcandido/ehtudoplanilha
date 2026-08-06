@@ -143,7 +143,61 @@ User tenta lançar → 401 do hook
   → botão → fluxo de OAuth de novo
 ```
 
-## Edge cases
+## Diagrama de sequência
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant F as Frontend
+    participant G as Google OAuth
+    participant PB as PocketBase
+    participant S as Google<br/>Sheets API
+    participant DB as SQLite<br/>(google_infos)
+
+    Note over U,DB: Parte 1 — OAuth
+    U->>F: clica "Conectar Google"
+    F->>F: gera state PKCE<br/>(code_verifier + code_challenge)
+    F->>F: salva state + verifier<br/>no localStorage
+    F-->>G: redirect pra /o/oauth2/auth<br/>(com state + code_challenge)
+    U->>G: autoriza escopos<br/>(Sheets + Drive.file)
+    G-->>PB: GET /google-oauth-callback?code=X&state=Y
+    PB->>G: POST oauth2.googleapis.com/token<br/>(code + client_secret)
+    G-->>PB: 200 { access_token, refresh_token, expires_in }
+    PB->>DB: UPSERT google_infos<br/>(user_id, access_token, refresh_token)
+    DB-->>PB: ok
+    PB-->>F: 302 redirect /dashboard/configuracao.html?success=true
+
+    Note over U,DB: Parte 2 — Provisionamento (criar planilha)
+    F->>PB: POST /provision-sheet
+    PB->>DB: SELECT google_infos WHERE user_id
+    DB-->>PB: { access_token, refresh_token }
+    PB->>S: POST /v4/spreadsheets<br/>(sheets: Lancamentos, Categorias)
+    S-->>PB: 200 { spreadsheetId, spreadsheetUrl }
+    PB->>S: PUT values Lançamentos!A1:G1<br/>(header)
+    S-->>PB: 200
+    PB->>S: PUT values Categorias!A1:B<n><br/>(45+ categorias padrão)
+    S-->>PB: 200
+    PB->>DB: UPDATE google_infos<br/>SET sheet_id, sheet_name
+    DB-->>PB: ok
+    PB-->>F: 200 { success, sheet_id, action: "created" }
+    F-->>U: toast "Planilha criada"
+```
+
+**Atores:**
+- **User** — pessoa no browser
+- **Frontend** — `src/services/google-oauth.ts` + `src/services/sheets.ts`
+- **Google OAuth** — endpoint de autorização/token
+- **PocketBase** — hooks `google-oauth-callback.pb.js` + `provision-sheet.pb.js`
+- **Google Sheets API** — `POST /v4/spreadsheets`, `PUT values`
+- **SQLite** — collection `google_infos` (1:1 com user)
+
+**Highlights:**
+- OAuth: **PKCE** (state + code_verifier) protege contra CSRF
+- `client_secret` **nunca** sai do PB (vide `env-variables` que só expõe `client_id`)
+- Planilha é **criada do zero** com 2 abas hardcoded — `Lançamentos` e `Categorias` (contrato!)
+- `values.append` (PUT em range) popula header + categorias em 2 chamadas separadas
+- Idempotência: se `sheet_id` já existe, hook retorna `action: "existing"` sem criar
 
 - **User revoga acesso no Google**: o `refresh_token` para de funcionar.
   Próxima chamada falha. User precisa re-autorizar.

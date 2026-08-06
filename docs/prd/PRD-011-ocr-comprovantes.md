@@ -128,7 +128,52 @@ User compartilha imagem
   → se "manualmente": form vazio com imagem anexada (referência)
 ```
 
-## Edge cases
+## Diagrama de sequência
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant PWA as PWA Vue
+    participant Cache as Cache API
+    participant N8N as n8n<br/>(webhook externo)
+    participant LLM as LLM/Vision<br/>(dentro do n8n)
+    participant PB as PocketBase
+    participant S as Sheets API
+
+    Note over PWA,Cache: Continua do PRD-010<br/>(imagem já no cache)
+    U->>PWA: toca "Processar" no preview
+    PWA->>PWA: loading state
+    PWA->>N8N: POST /webhook/v1/planilha-eh-tudo-analise-upload<br/>multipart (imagem)
+    N8N->>LLM: envia imagem pra OCR
+    LLM-->>N8N: dados extraídos
+    N8N-->>PWA: { cartoes: [{data, conta, valor,<br/>  descricao, categoria, orcamento,<br/>  observacao}] }
+
+    alt sucesso
+        PWA->>PWA: lookup categoria inteligente<br/>(histórico local)
+        PWA-->>U: form pré-preenchido,<br/>categoria sugerida destacada
+        U->>PWA: revisa, ajusta, confirma
+        PWA->>PB: POST /append-entry<br/>(PRD-003 — fluxo normal)
+        PB->>S: values.append
+        S-->>PB: 200
+        PB-->>PWA: { success, rowIndex }
+        PWA->>PWA: salva (descricao, categoria) no<br/>histórico local (localStorage)
+        PWA-->>U: toast "Lançamento criado"
+    else erro OCR
+        N8N-->>PWA: 5xx ou timeout
+        PWA-->>U: toast "Não conseguimos processar"<br/>botões "Tentar de novo" / "Manual"
+    end
+```
+
+**Atores:** User, PWA Vue, Cache API, n8n (externo), LLM/Vision (dentro do n8n), PB, Sheets API.
+
+**Highlights:**
+- O **LLM não roda no nosso app** — é serviço externo via webhook n8n
+- O **histórico de categorias** fica **client-side** (localStorage), não no backend
+- O fluxo de "salvar" depois do OCR é o **mesmo** `POST /append-entry` do PRD-003 (reuso!)
+- n8n é **infra do próprio user** (mesma VPS do app), não terceiro — dados financeiros não vão pra API pública
+- Timeout no webhook: precisa definir (PRD sugere 30s)
+- Categorização "inteligente" é **substring match** no histórico — não é ML de verdade
 
 - **Imagem borrada / ilegível**: OCR pode retornar lixo. App deve
   mostrar confiança por campo e pedir confirmação se confiança < 80%.

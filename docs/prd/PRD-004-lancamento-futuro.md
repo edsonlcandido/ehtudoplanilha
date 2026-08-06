@@ -116,7 +116,51 @@ User na lista → clica no lançamento futuro
   → lista mostra sem badge "planejado"
 ```
 
-## Edge cases
+## Diagrama de sequência
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant F as Frontend
+    participant PB as PocketBase
+    participant S as Sheets API
+
+    rect rgb(255, 250, 230)
+    Note over U,S: Criar lançamento futuro
+    U->>F: clica FAB → "Lançamento futuro"
+    F->>F: modal simplificado<br/>(sem data, sem conta)
+    U->>F: valor, descricao, categoria, orcamento
+    F->>F: data = "", conta = ""<br/>(campos escondidos)
+    F->>PB: POST /append-entry<br/>{ data: "", conta: "", valor, ... }
+    PB->>S: values.append<br/>Lançamentos!A:G
+    Note right of S: linha gravada com<br/>col A e B vazias
+    S-->>PB: 200 { updatedRange }
+    PB-->>F: 200 { success, rowIndex }
+    F->>F: cache.clear + recarrega
+    F-->>U: exibe com badge "planejado"
+    end
+
+    rect rgb(230, 250, 255)
+    Note over U,S: Completar (transformar em efetivo)
+    U->>F: clica no badge "planejado"
+    F->>F: modal de edição<br/>(data e conta vazios)
+    U->>F: preenche data efetiva + conta
+    F->>PB: POST /edit-sheet-entry<br/>{ rowIndex, data, conta, ... }
+    PB->>S: values.update<br/>Lançamentos!A{row}:G{row}
+    S-->>PB: 200
+    PB-->>F: 200 { success }
+    F->>F: cache.clear + recarrega
+    F-->>U: badge "planejado" some
+    end
+```
+
+**Highlights:**
+- O hook `append-entry` **não exige** data/conta na validação — só valor e descrição são obrigatórios
+- A "diferença" do futuro tá **toda no frontend** (esconde campos, exibe badge)
+- O backend é o mesmo do CRUD normal — o que muda é o que o frontend envia
+- A linha na planilha é idêntica a um lançamento normal, só com A e B vazios
+- Detecção de "futuro" no frontend: `!row.data || !row.conta`
 
 - **Lançamento futuro "eterno"**: user cria e nunca completa. Vai
   aparecer pra sempre no agregado. Decisão: warning quando

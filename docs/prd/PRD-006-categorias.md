@@ -154,7 +154,51 @@ User na lista de categorias
   → cache invalidated, recarrega
 ```
 
-## Edge cases
+## Diagrama de sequência
+
+### Adicionar categoria
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant F as Frontend
+    participant C as Cache<br/>(localStorage)
+    participant PB as PocketBase
+    participant S as Sheets API
+
+    U->>F: abre página Categorias
+    F->>C: get SHEET_CATEGORIES_COMPLETE
+    alt cache válido (< 5min)
+        C-->>F: categorias cacheadas
+    else cache vazio/expirado
+        F->>PB: GET /get-sheet-categories-complete
+        PB->>S: GET values Categorias!A:C
+        S-->>PB: { values: [[nome, tipo, limite], ...] }
+        PB-->>F: { categoriesComplete }
+        F->>C: set SHEET_CATEGORIES_COMPLETE
+    end
+    F-->>U: lista renderizada
+
+    U->>F: clica "+" → preenche form
+    F->>F: valida nome não-duplicado
+    F->>PB: POST /post-categories<br/>{ categories: [lista completa + nova] }
+    Note right of PB: hook SOBRESCREVE<br/>a aba Categorias inteira<br/>(não é append)
+    PB->>S: PUT values Categorias!A:C<br/>(array completo)
+    S-->>PB: 200
+    PB-->>F: 200 { success }
+    F->>C: clear SHEET_CATEGORIES_COMPLETE
+    F-->>U: lista atualizada
+```
+
+**Atores:** User, Frontend, Cache local, PB, Sheets API.
+
+**Highlights:**
+- `POST /post-categories` **NÃO é append** — é sobrescrita completa da aba Categorias
+- O frontend **busca a lista atual, adiciona/edita/remove a categoria, e envia a lista toda** de volta
+- Cache invalidado após mutation (TTL 5min, vide `cache.ts`)
+- Validação de duplicidade é **client-side** (compara com lista carregada)
+- Categorias deletadas com lançamentos em uso: hoje o sistema **não atualiza retroativamente** os lançamentos (PRD-005 transferências continuam contando como "Transferência", mas se user renomear, param de contar)
 
 - **User edita nome de categoria em uso**: lançamentos antigos
   continuam com nome antigo (string solta, sem referência).

@@ -124,7 +124,53 @@ User: "Como eu adiciono uma categoria nova?"
     imediatamente."
 ```
 
-## Edge cases
+## Diagrama de sequência
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant F as PWA ChatFAB<br/>(componente Vue)
+    participant H as Histórico<br/>(estado local)
+    participant N8N as n8n<br/>(webhook chat)
+    participant LLM as LLM
+    participant PB as PocketBase<br/>(opcional)
+
+    U->>F: toca FAB de chat
+    F-->>U: painel de chat abre
+
+    U->>F: digita "Quanto gastei em delivery em out/2025?"
+    F->>F: adiciona msg ao histórico
+    F->>F: monta contexto:<br/>{ mensagem, historico[],<br/>  entries_out2025[],<br/>  categorias[] }
+
+    F->>N8N: POST /webhook/v1/planilha-eh-tudo-analise-chat<br/>{ mensagem, historico, contexto }
+    N8N->>N8N: prompt + contexto → LLM
+    N8N->>LLM: "user: ... , contexto: ..."
+    LLM-->>N8N: resposta
+    N8N-->>F: { resposta: "Você gastou R$ 234,50..." }
+
+    F->>F: adiciona resposta ao histórico
+    F-->>U: exibe resposta no chat
+
+    rect rgb(240, 240, 255)
+    Note over F,H: Multi-turn (contexto)
+    U->>F: "E o maior deles?"
+    F->>F: envia { mensagem, historico[anterior+nova] }
+    F->>N8N: POST com histórico completo
+    N8N-->>F: resposta contextualizada
+    end
+```
+
+**Atores:** User, ChatFAB (Vue), Histórico (estado local), n8n (externo), LLM, PB (opcional).
+
+**Highlights:**
+- O histórico é **estado local** (memória do componente) — não persiste entre reloads
+- O contexto enviado inclui **dados reais do user** (entries, categorias) — o LLM "vê" as finanças
+- O **multi-turn** funciona porque o frontend envia o histórico inteiro a cada pergunta
+- Privacidade: dados vão pro n8n (que é do próprio user) — não pra API pública de LLM diretamente
+- Diferente do OCR (que é stateless), o chat **precisa de contexto** (histórico)
+- **Sem streaming** hoje: resposta chega inteira, UX é "tudo ou nada"
+- O `resposta` é texto livre (markdown?), não estruturado (PRD não especifica — pode ser limitação)
 
 - **Webhook offline**: chat mostra "Chat temporariamente indisponível.
   Tenta de novo em alguns minutos."

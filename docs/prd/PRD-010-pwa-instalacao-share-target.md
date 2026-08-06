@@ -150,7 +150,85 @@ User abre galeria, escolhe print de comprovante
   → PRD-011 (OCR) começa
 ```
 
-## Edge cases
+## Diagrama de sequência
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant Gal as App de<br/>Galeria
+    participant And as Android<br/>(SO)
+    participant SW as Service Worker<br/>(pwa/src/sw.js)
+    participant Cache as Cache API<br/>(share-target-cache)
+    participant V as Vue App<br/>(HomePage.vue)
+
+    Note over U,V: Fase 1 — Compartilhar
+    U->>Gal: escolhe print do comprovante
+    U->>Gal: toca "Compartilhar"
+    Gal-->>And: intent: ACTION_SEND<br/>+ imagem anexada
+    And->>And: lista share targets<br/>(do manifest)
+    And-->>U: "Planilha Eh Tudo" aparece
+    U->>And: seleciona
+    And->>SW: POST /pwa/<br/>multipart/form-data<br/>(file: blob)
+
+    Note over SW: SW está vivo mesmo com app fechado!<br/>(onBackgroundFetch equivalente)
+
+    SW->>SW: event.request.method === 'POST'<br/>&& url.pathname === '/pwa/'
+    SW->>SW: formData.get('file')<br/>(também title, text, url)
+    SW->>Cache: open('share-target-cache')
+    SW->>Cache: put('/pwa/shared-file-{ts}',<br/>  Response(blob))
+    SW->>Cache: put('/pwa/shared-data',<br/>  Response(JSON{title, text, ts}))
+    SW-->>And: 303 redirect → /pwa/?share=true
+
+    Note over And,V: Fase 2 — Browser segue o redirect
+    And->>V: GET /pwa/?share=true
+    V->>V: router monta HomePage
+    V->>V: route.query.share === 'true'
+    V->>Cache: match('/pwa/shared-data')
+    Cache-->>V: { title, text, ts }
+    V->>Cache: match('/pwa/shared-file-{ts}')
+    Cache-->>V: blob da imagem
+    V-->>U: exibe preview +<br/>botões "Processar" / "Cancelar"
+
+    Note over U,V: Fase 3 — OCR (PRD-011)
+    U->>V: toca "Processar"
+    V->>N8N: POST webhook n8n<br/>(multipart com imagem)
+    N8N-->>V: { cartoes: [{valor, data, ...}] }
+    V-->>U: form pré-preenchido
+```
+
+### Por que o SW NÃO intercepta o `/pwa/login` (mesmo princípio)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant G as Google OAuth
+    participant PB as PocketBase
+    participant SW as Service Worker
+    participant V as Vue App
+
+    U->>G: autoriza login
+    G-->>PB: GET /api/oauth2-redirect?code=X&state=Y
+    PB->>PB: processa OAuth,<br/>gera auth token
+    PB-->>V: 302 redirect → /pwa/login?code=X&state=Y
+    Note over V: SEM denylist: SW interceptaria,<br/>serviria index.html, perderia params
+    V->>V: LoginPage lê ?code=X&state=Y<br/>(preservados pelo denylist)
+    V->>PB: authWithOAuth2Code(code, verifier)
+    PB-->>V: { token, model }
+    V->>V: authStore.set(...)
+    V-->>U: redirect home
+```
+
+**Atores:** User, App de Galeria, Android, **Service Worker** (pivô!), Cache API, Vue App, opcionalmente n8n (PRD-011), Google OAuth (no 2º diagrama).
+
+**Highlights:**
+- O **SW é o pivô** — ele recebe o POST do share ANTES da app Vue. Sem ele, share não funciona
+- O SW roda **mesmo com app fechado** (é por isso que o cache persiste)
+- 303 redirect força browser a fazer **GET** na URL nova (não reenvia o POST)
+- **Denylist `/\/pwa\/login/`** é o que impede o SW de quebrar o OAuth callback
+- O OAuth login **não passa pelo SW** porque a URL está no denylist
+- O caminho `/pwa/?share=true` é o **mesmo SPA**, mas com query param que o Vue Router detecta
 
 - **Compartilhar múltiplas imagens**: o manifest aceita só 1 file
   por vez (`files[0]`). Pra múltiplas, user compartilha uma por

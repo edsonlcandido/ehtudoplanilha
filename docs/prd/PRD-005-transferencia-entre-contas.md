@@ -91,7 +91,50 @@ User abre modal e fecha sem submit
   → nada acontece, sem confirmação (mudanças não persistem)
 ```
 
-## Edge cases
+## Diagrama de sequência
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant F as Frontend
+    participant PB as PocketBase
+    participant S as Sheets API
+
+    U->>F: clica FAB → "Transferência"
+    F->>F: modal pede data, origem, destino, valor
+    F->>F: valida origem ≠ destino,<br/>valor > 0
+    F->>F: monta 2 payloads<br/>(saída: -X, entrada: +X)<br/>categoria forçada = "Transferência"
+
+    Note over F,PB: ⚠️ Não é atômico (2 POSTs separados)
+
+    F->>PB: POST /append-entry (saída)<br/>{ valor: -X, conta: origem }
+    alt 1º POST falha
+        PB-->>F: 4xx/5xx
+        F-->>U: toast "Erro"<br/>nada foi criado
+    else 1º POST ok
+        PB-->>F: 200 { rowIndex: 50 }
+        F->>PB: POST /append-entry (entrada)<br/>{ valor: +X, conta: destino }
+        alt 2º POST falha
+            PB-->>F: 4xx/5xx
+            F-->>U: toast erro +<br/>"Deletar lançamento criado por engano"
+            Note right of U: lançamento órfão<br/>(saída sem entrada)
+        else 2º POST ok
+            PB-->>F: 200 { rowIndex: 51 }
+            F->>F: cache.clear + recarrega
+            F-->>U: toast "Transferência registrada"
+        end
+    end
+```
+
+**Atores:** User, Frontend, PB, Sheets API.
+
+**Highlights:**
+- **NÃO há endpoint `/append-transfer` único** — são 2 POSTs em `/append-entry`
+- A "atomicidade" é só **na UX** (frontend trata 2º como opcional se 1º falhou)
+- O caso de **órfão** (1º ok, 2º falha) deixa um lançamento "saída" sem "entrada" correspondente — o saldo fica distorcido
+- Trade-off documentado: **simplicidade vs garantia real**. Atomicidade real exigiria transação no hook
+- Categoria `"Transferência"` é **fixa** (select desabilitado no modal) — usada pra excluir de relatórios
 
 - **Origem = destino**: erro de validação no client (nem chega no
   backend).
