@@ -14,9 +14,32 @@
  * REMOVER depois que o bug for resolvido.
  */
 routerAdd('GET', '/debug-sheet-info', (c) => {
+  // Implementação manual de atob — o goja (engine JS do PB) não tem
+  // atob global. Decodifica base64 → string.
+  function atob(input) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+    const str = String(input).replace(/=+$/, '');
+    let output = '';
+    for (let i = 0; i < str.length; i += 4) {
+      const c1 = chars.indexOf(str.charAt(i));
+      const c2 = chars.indexOf(str.charAt(i + 1));
+      const c3 = chars.indexOf(str.charAt(i + 2));
+      const c4 = chars.indexOf(str.charAt(i + 3));
+      if (c1 < 0 || c2 < 0) continue;
+      output += String.fromCharCode((c1 << 2) | (c2 >> 4));
+      if (c3 >= 0 && c3 < 64) {
+        output += String.fromCharCode(((c2 & 15) << 4) | (c3 >> 2));
+      }
+      if (c4 >= 0 && c4 < 64) {
+        output += String.fromCharCode(((c3 & 3) << 6) | c4);
+      }
+    }
+    return output;
+  }
+
   // Aceita auth via:
   // 1) Header Authorization (se o browser enviar)
-  // 2) Query string ?token=<jwt> (pra acessar pela URL sem header)
+  // 2) Query string ?token=<jwt-do-pocketbase> (NÃO provider_token do Google)
   const info = c.requestInfo();
   const headers = info.headers || {};
   const query = info.query || {};
@@ -24,26 +47,24 @@ routerAdd('GET', '/debug-sheet-info', (c) => {
   const queryToken = query.token || "";
   let userId = c.auth?.id;
 
-  // DEBUG: log de tudo que recebemos
-  console.log("[debug-sheet-info] request:", JSON.stringify({
-    hasAuth: !!c.auth,
-    authId: c.auth?.id,
-    headerTokenPresent: !!headerToken,
-    queryType: typeof query,
-    queryKeys: Object.keys(query),
-    queryTokenLength: queryToken.length,
-    queryTokenFirst30: queryToken.substring(0, 30),
-    queryStringified: JSON.stringify(query).substring(0, 200)
-  }));
-
   if (!userId && queryToken) {
     try {
       const cleanToken = queryToken.startsWith("Bearer ") ? queryToken.substring(7) : queryToken;
       const parts = cleanToken.split(".");
       if (parts.length === 3) {
-        const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
-        if (payload.exp && payload.exp > Date.now() / 1000) {
+        const payloadStr = atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'));
+        const payload = JSON.parse(payloadStr);
+        // JWT do PocketBase tem { id, exp, iat, type } — não o provider_token do Google
+        // que tem { collect_cid, name, email, ... }
+        if (payload.id && payload.exp && payload.exp > Date.now() / 1000) {
           userId = payload.id;
+        } else if (payload.collect_cid) {
+          // É o provider_token do Google, não o JWT do PB
+          return c.json(400, {
+            error: 'Token enviado é o provider_token do Google, não o JWT do PocketBase',
+            hint: 'No DevTools → Application → Local Storage → pocketbase_auth → copie o campo "token"',
+            providerTokenPayload: payload
+          });
         }
       }
     } catch (e) {
@@ -53,17 +74,15 @@ routerAdd('GET', '/debug-sheet-info', (c) => {
 
   if (!userId) {
     return c.json(401, {
-      error: 'Não autenticado',
+      error: 'Não autenticado. Forneça um JWT válido do PocketBase (não o provider_token do Google)',
+      hint: 'Acesse logado (Authorization header do pb.send) ou passe ?token=<jwt-do-pocketbase>',
+      help: 'DevTools → Application → Local Storage → pocketbase_auth → campo "token"',
       debug: {
         hasAuth: !!c.auth,
         headerTokenPresent: !!headerToken,
-        queryType: typeof query,
-        queryKeys: Object.keys(query),
         queryTokenLength: queryToken.length,
-        queryTokenFirst30: queryToken.substring(0, 30),
-        queryStringified: JSON.stringify(query).substring(0, 200)
-      },
-      hint: 'Acesse logado (Authorization header) ou passe ?token=<seu-jwt-do-pocketbase>'
+        queryTokenFirst30: queryToken.substring(0, 30)
+      }
     });
   }
 
