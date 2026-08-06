@@ -25,15 +25,16 @@ class LancamentosService {
     }
 
     // Se não for forceRefresh, tenta usar o cache
+    // IMPORTANTE: só usa cache se tem dados (entries.length > 0).
+    // Cache vazio (0 entries) significa que o servidor retornou vazio numa
+    // chamada anterior — não cachear pra forçar nova tentativa.
     if (!forceRefresh) {
       const cacheKey = CACHE_KEYS.SHEET_ENTRIES;
       const cached = CacheService.get<SheetEntriesResponse>(cacheKey);
-      
-      if (cached) {
+
+      if (cached && cached.entries && cached.entries.length > 0) {
         console.log('[LancamentosService] Usando dados do cache');
-        // Se limit > 0 e o cache tem mais entradas, retorna apenas o necessário
-        // Se limit === 0, retorna todas as entradas do cache
-        if (limit > 0 && cached.entries && cached.entries.length > limit) {
+        if (limit > 0 && cached.entries.length > limit) {
           return {
             ...cached,
             entries: cached.entries.slice(0, limit),
