@@ -62,12 +62,24 @@ routerAdd('GET', '/get-sheet-entries', (c) => {
     }
 
     const data = result.data;
-    if (!data.values || data.values.length === 0) {
+    if (!data || !data.values || data.values.length === 0) {
+      // DEBUG temporário: log o que o Google retornou
+      console.log('[get-sheet-entries] data.values vazio. Debug:', JSON.stringify({
+        dataIsNull: data === null,
+        dataKeys: data ? Object.keys(data) : null,
+        range: data?.range,
+        valuesLength: data?.values?.length,
+        sheetId: googleInfo.get('sheet_id')
+      }));
       return c.json(200, {
         success: true,
         entries: [],
         total: 0,
-        message: 'Nenhum lançamento encontrado na planilha'
+        message: 'Nenhum lançamento encontrado na planilha',
+        debug: {
+          range: data?.range,
+          sheetId: googleInfo.get('sheet_id')?.substring(0, 10) + '...'
+        }
       });
     }
 
