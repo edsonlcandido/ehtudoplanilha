@@ -17,18 +17,23 @@ routerAdd('GET', '/debug-sheet-info', (c) => {
   // Aceita auth via:
   // 1) Header Authorization (se o browser enviar)
   // 2) Query string ?token=<jwt> (pra acessar pela URL sem header)
-  const headerToken = c.requestInfo().headers["Authorization"] || "";
-  const queryToken = c.requestInfo().query?.token || "";
+  const info = c.requestInfo();
+  const headers = info.headers || {};
+  const query = info.query || {};
+  const headerToken = headers["Authorization"] || "";
+  const queryToken = query.token || "";
   let userId = c.auth?.id;
 
   // DEBUG: log de tudo que recebemos
   console.log("[debug-sheet-info] request:", JSON.stringify({
     hasAuth: !!c.auth,
     authId: c.auth?.id,
-    headerToken: headerToken ? "present" : "missing",
+    headerTokenPresent: !!headerToken,
+    queryType: typeof query,
+    queryKeys: Object.keys(query),
     queryTokenLength: queryToken.length,
-    queryRaw: JSON.stringify(c.requestInfo().query),
-    allHeaders: Object.keys(c.requestInfo().headers || {})
+    queryTokenFirst30: queryToken.substring(0, 30),
+    queryStringified: JSON.stringify(query).substring(0, 200)
   }));
 
   if (!userId && queryToken) {
@@ -52,8 +57,11 @@ routerAdd('GET', '/debug-sheet-info', (c) => {
       debug: {
         hasAuth: !!c.auth,
         headerTokenPresent: !!headerToken,
+        queryType: typeof query,
+        queryKeys: Object.keys(query),
         queryTokenLength: queryToken.length,
-        queryRaw: c.requestInfo().query
+        queryTokenFirst30: queryToken.substring(0, 30),
+        queryStringified: JSON.stringify(query).substring(0, 200)
       },
       hint: 'Acesse logado (Authorization header) ou passe ?token=<seu-jwt-do-pocketbase>'
     });
