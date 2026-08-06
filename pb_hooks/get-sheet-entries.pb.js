@@ -1,5 +1,8 @@
 /// <reference path="../pb_data/types.d.ts" />
 
+// DEBUG: confirma se o PB está executando este arquivo
+console.log('[get-sheet-entries.pb.js] HOOK CARREGADO — versão 2026-08-05');
+
 /**
  * Hook para buscar as últimas entradas da planilha do usuário
  * Endpoint: GET /get-sheet-entries
@@ -10,6 +13,7 @@
  */
 
 routerAdd('GET', '/get-sheet-entries', (c) => {
+  console.log('[get-sheet-entries] HANDLER chamado!');
   try {
     const gsheets = require(`${__hooks}/_google-sheets-helper.js`);
 
