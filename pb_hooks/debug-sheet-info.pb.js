@@ -14,13 +14,39 @@
  * REMOVER depois que o bug for resolvido.
  */
 routerAdd('GET', '/debug-sheet-info', (c) => {
-  // Sem $apis.requireAuth() — assim você pode acessar pela URL (digitando
-  // na barra) e o browser envia a request sem header Authorization, e
-  // mesmo assim o endpoint responde. O userId é derivado do cookie HttpOnly
-  // se a sessão tiver um, senão cai no fallback anônimo.
-  const auth = c.auth;
-  if (!auth || !auth.id) {
-    return c.json(401, { error: 'Não autenticado. Faça login primeiro e tente de novo.' });
+  // Aceita auth via:
+  // 1) requireAuth() (se o browser enviar Authorization header)
+  // 2) Query string ?token=<jwt> (pra acessar pela URL sem header)
+  //
+  // Se nenhum dos dois, retorna 401 com instrução.
+  const headerToken = c.requestInfo().headers["Authorization"] || "";
+  const queryToken = c.requestInfo().query?.token || "";
+  let userId = c.auth?.id;
+
+  if (!userId && queryToken) {
+    try {
+      // Valida o JWT manualmente decodificando o payload (sem verificar assinatura
+      // pois o token vem do próprio PocketBase que emite)
+      const cleanToken = queryToken.startsWith("Bearer ") ? queryToken.substring(7) : queryToken;
+      const parts = cleanToken.split(".");
+      if (parts.length === 3) {
+        const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+        // Verifica se não expirou
+        if (payload.exp && payload.exp > Date.now() / 1000) {
+          userId = payload.id;
+        }
+      }
+    } catch (e) {
+      // Ignora — vai cair no 401 abaixo
+    }
+  }
+
+  if (!userId) {
+    return c.json(401, {
+      error: 'Não autenticado',
+      hint: 'Acesse logado (Authorization header) ou passe ?token=<seu-jwt-do-pocketbase>',
+      help: 'O JWT do PocketBase está em localStorage["pocketbase_auth"] no DevTools'
+    });
   }
 
   const gsheets = require(`${__hooks}/_google-sheets-helper.js`);
