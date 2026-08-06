@@ -51,9 +51,13 @@ class LancamentosService {
       // `Authorization: <authStore.token>` (lido do localStorage).
       // PB autentica via esse header (não via cookie).
       //
-      // IMPORTANTE: `pb.send()` JÁ retorna o JSON parseado (NÃO o Response).
+      // IMPORTANTE: passar SÓ o path (sem `pb.baseURL`) — o SDK já prepende
+      // o baseURL automaticamente. Passar `pb.baseURL` aqui causaria URL
+      // duplicada tipo `https://host/https://host/path` e o PB não rotearia.
+      //
+      // Também: `pb.send()` JÁ retorna o JSON parseado (NÃO o Response).
       // Se der 401/4xx/5xx, o SDK joga `ClientResponseError`.
-      const data = await pb.send(`${pb.baseURL}/get-sheet-entries?limit=${limit}`, {
+      const data = await pb.send(`/get-sheet-entries?limit=${limit}`, {
         method: 'GET'
       });
 
@@ -91,7 +95,8 @@ class LancamentosService {
     try {
       // `pb.send()` retorna o JSON parseado. Erros 4xx/5xx viram
       // `ClientResponseError` lançado pelo SDK.
-      const data = await pb.send(`${pb.baseUrl}/edit-sheet-entry`, {
+      // Passar SÓ o path — SDK já prepende `pb.baseURL`.
+      const data = await pb.send('/edit-sheet-entry', {
         method: 'PUT',
         body: JSON.stringify({
           rowIndex,
@@ -121,7 +126,8 @@ class LancamentosService {
     try {
       // `pb.send()` retorna o JSON parseado. Erros 4xx/5xx viram
       // `ClientResponseError` lançado pelo SDK.
-      const data = await pb.send(`${pb.baseUrl}/delete-sheet-entry`, {
+      // Passar SÓ o path — SDK já prepende `pb.baseURL`.
+      const data = await pb.send('/delete-sheet-entry', {
         method: 'DELETE',
         body: JSON.stringify({ rowIndex })
       });
