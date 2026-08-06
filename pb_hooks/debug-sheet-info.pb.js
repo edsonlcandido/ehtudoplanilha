@@ -133,4 +133,4 @@ routerAdd('GET', '/debug-sheet-info', (c) => {
       }
     }
   });
-}, $apis.requireAuth())
+})
