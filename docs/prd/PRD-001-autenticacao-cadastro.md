@@ -200,5 +200,3 @@ sequenceDiagram
 
 - Recuperação de senha não está implementada na UI (PB suporta)
 - 2FA não está no roadmap
-- `pb_hooks/oauth-redirect.pb.js` referenciado no `pwa/OAUTH_CONFIG.md`
-  não existe (mas o login OAuth via PB nativo funciona — **NÃO MEXER**)
