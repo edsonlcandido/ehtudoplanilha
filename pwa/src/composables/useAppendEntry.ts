@@ -42,9 +42,9 @@ export const useAppendEntry = () => {
       return
     }
     
-    const appendEntryUrl = import.meta.env.VITE_APPEND_ENTRY_URL
+    const appendEntryUrl = '/append-entry'
     if (!appendEntryUrl) {
-      console.warn('VITE_APPEND_ENTRY_URL não configurada')
+      console.warn('endpoint /append-entry indisponível')
       options?.onSuccess?.()
       return
     }

@@ -87,7 +87,8 @@ ehtudoplanilha/
 - **State**: composables (`pwa/src/composables/useAppendEntry.ts`)
 - **Config**: `pwa/vite.config.js` define `base: '/pwa/'` e `outDir: 'pwa'`
 - **Build**: `pwa/pwa/` → copiado para `pb_public/pwa/` pelo Dockerfile
-- **Dev**: roda em `:5173`, proxy `/api` → PB em `:8090` (vide `vite.config.js`)
+- **Dev**: roda em `:5174` (porta fixa), proxy `/api` e os 21 custom
+  endpoints do PB → PB em `:8090` (vide `vite.config.js`)
 
 ### Por que dois apps?
 
@@ -165,12 +166,12 @@ configurada **diretamente no PocketBase Admin UI** (`/_/`), não no `.env`.
 # 2) Dev do dashboard (src/)
 cd src
 npm install
-npm run dev          # http://localhost:5173
+npm run dev          # http://localhost:5173 (dashboard, porta fixa)
 
 # 3) Dev do PWA (pwa/)
 cd pwa
 npm install
-npm run dev          # http://localhost:5173 (porta diferente se já tiver dashboard)
+npm run dev          # http://localhost:5174 (PWA, porta fixa)
 ```
 
 ### Build local (sem Docker)
@@ -505,16 +506,30 @@ export class SheetsService {
 - **Callback URL no Google Console**: `https://planilha.ehtudo.app/api/oauth2-redirect`
   (NÃO `/pwa/login` direto)
 
-### Variáveis (Vite)
-Definidas em `pwa/.env.development` e `pwa/.env.production`:
-- `VITE_API_URL` — URL do PB
-- `VITE_DASHBOARD_URL` — link pro dashboard legado (`src/`)
-- `VITE_WEBHOOK_URL` — webhook n8n pra análise de upload (OCR)
-- `VITE_WEBHOOK_CHAT` — webhook n8n pro ChatFAB
-- `VITE_APPEND_ENTRY_URL`, `VITE_GET_ENTRIES_URL`, `VITE_GET_CATEGORIES_URL`
+### Variáveis (Vite) — estratégia "Opção C", **zero .env files**
 
-URLs `VITE_*_URL` em prod apontam pro domínio público.
-Em dev, `VITE_DASHBOARD_URL` aponta pro dev local (5173).
+**Não existem `pwa/.env.development` nem `pwa/.env.production`.** Todas
+as URLs são derivadas em `pwa/src/config.ts` baseado em
+`import.meta.env.DEV`:
+
+- **PocketBase**: SDK recebe `POCKETBASE_URL = ''` (vazio) → usa
+  `window.location.origin` (que é a origem do PWA). Em dev, isso
+  é `http://localhost:5174`; as chamadas `/api/*` e os 21 custom
+  endpoints vão via Vite proxy pro PB em `:8090`. Em prod, é
+  `https://planilha.ehtudo.app`; PB serve direto no mesmo domínio.
+- **Dashboard URLs** (`DASHBOARD_URL`, etc): em dev apontam pra
+  `http://localhost:5173/`; em prod usam paths relativos
+  (`/dashboard/...`).
+- **Webhooks n8n** (OCR/Chat): hardcoded em `config.ts` (mesmo em
+  dev e prod, n8n é hospedado e acessível).
+- **Endpoints PB** (`/get-sheet-entries`, etc): usados como paths
+  relativos (sem `https://...`), mesma lógica do PB base.
+
+Se precisar override temporário em dev (ex: webhook local), é
+só editar `pwa/src/config.ts` — não precisa de env file.
+
+O único var de Vite injetado é `APP_VERSION` (via `define` no
+`vite.config.js`, lendo do `package.json`).
 
 ---
 
@@ -593,10 +608,13 @@ Frontend faz **DOIS POSTs** sequenciais em `/append-entry`:
 3. Se precisar de auth, setar `meta: { requiresAuth: true }`
 4. Proteger com `meta.requiresAuth` no `beforeEach` (já existe o padrão)
 
-### Adicionar nova env var
-1. Adicionar em `pwa/.env.development` E `pwa/.env.production`
-2. Adicionar em `pwa/src/env.d.ts` (interface `ImportMetaEnv`)
-3. Usar como `import.meta.env.VITE_<NOME>`
+### Adicionar nova URL/config
+1. Adicionar constante em `pwa/src/config.ts` (com fallback
+   baseado em `import.meta.env.DEV`)
+2. Importar e usar nos componentes
+3. Se for endpoint do PB que vai ser chamado via fetch direto
+   (não via SDK), usar path relativo (Vite proxy cuida em dev,
+   PB serve em prod)
 
 ### Debugar cache do frontend
 - Abrir `http://localhost:8090/debug-localstorage.html` (servido pelo PB)
@@ -628,7 +646,10 @@ Frontend faz **DOIS POSTs** sequenciais em `/append-entry`:
 | **CLIENT_SECRET** | Só no PB (env var ou Admin UI). Nunca no frontend. |
 | **Token no localStorage** | Chave `pocketbase_auth` (gerenciado pelo SDK). NÃO cookie. |
 | **`authWithOAuth2()` automático** | Dá timeout (EventSource connect too long). Usar fluxo manual com `listAuthMethods()` + `authWithOAuth2Code()`. |
-| **dev vs prod env** | `pwa/.env.development` e `pwa/.env.production` têm URLs diferentes. Em prod, tudo aponta pro `https://planilha.ehtudo.app`. |
+| **dev vs prod env** | PWA usa estratégia "Opção C" — **zero .env files**,
+URLs derivadas em `pwa/src/config.ts` baseado em
+`import.meta.env.DEV`. Dev: localhost:5174 + proxy → PB:8090.
+Prod: relativo → mesmo domínio. Vide §10. |
 | **Easypanel** | Termina TLS, mas NÃO envia `X-Forwarded-Host` (só `X-Forwarded-Proto`). Em prod, `request.url` chega como `localhost:3000` no Next.js — mas isso é problema de outro projeto (arvio), aqui não tem isso. |
 
 ---
@@ -706,7 +727,7 @@ npm install
 npm run build         # gera pwa/pwa/
 
 # Dev PWA
-npm run dev           # http://localhost:5173 (porta diferente do dashboard)
+npm run dev           # http://localhost:5174 (PWA, porta fixa)
 ```
 
 ---

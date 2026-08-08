@@ -8,14 +8,21 @@ import CartaoItem from './CartaoItem.vue'
 import EntryModal from './EntryModal.vue'
 import ChatFAB from './ChatFAB.vue'
 import type { CartaoData, SheetEntry, GetCategoriesResponse } from '../types'
+import {
+  DASHBOARD_URL,
+  DASHBOARD_LANCAMENTOS_URL,
+  DASHBOARD_CATEGORIAS_URL,
+  DASHBOARD_CELULAR_URL,
+  WEBHOOK_OCR_URL,
+} from '../config'
 
 const router = useRouter()
 
-// Navigation URLs
-const dashboardUrl = import.meta.env.VITE_DASHBOARD_URL
-const lancamentosUrl = import.meta.env.VITE_DASHBOARD_LANCAMENTOS_URL
-const categoriasUrl = import.meta.env.VITE_DASHBOARD_CATEGORIAS_URL
-const celularUrl = import.meta.env.VITE_DASHBOARD_CELULAR_URL
+// Navigation URLs (derivadas em config.ts baseado em import.meta.env.DEV)
+const dashboardUrl = DASHBOARD_URL
+const lancamentosUrl = DASHBOARD_LANCAMENTOS_URL
+const categoriasUrl = DASHBOARD_CATEGORIAS_URL
+const celularUrl = DASHBOARD_CELULAR_URL
 
 // PWA Install related states
 const deferredPrompt = ref<any>(null)
@@ -57,7 +64,7 @@ const categorias = computed(() => {
 // Upload configuration
 const uploadCollection = 'uploads'
 const fileFieldName = 'file'
-const webhookUrl = import.meta.env.VITE_WEBHOOK_URL
+const webhookUrl = WEBHOOK_OCR_URL
 
 const currentUserId = computed(() => {
   // Para login de teste, usa um ID fictício
@@ -180,9 +187,9 @@ const installPWA = async () => {
 
 // Busca entries da API
 const fetchEntries = async (): Promise<SheetEntry[]> => {
-  const entriesUrl = import.meta.env.VITE_GET_ENTRIES_URL
+  const entriesUrl = '/get-sheet-entries'
   if (!entriesUrl) {
-    console.warn('VITE_GET_ENTRIES_URL não configurada')
+    console.warn('endpoint /get-sheet-entries indisponível')
     return []
   }
 
@@ -216,9 +223,9 @@ const fetchEntries = async (): Promise<SheetEntry[]> => {
 
 // Busca categorias da API
 const fetchCategorias = async (): Promise<string[]> => {
-  const categoriesUrl = import.meta.env.VITE_GET_CATEGORIES_URL
+  const categoriesUrl = '/get-sheet-categories'
   if (!categoriesUrl) {
-    console.warn('VITE_GET_CATEGORIES_URL não configurada')
+    console.warn('endpoint /get-sheet-categories indisponível')
     return []
   }
 

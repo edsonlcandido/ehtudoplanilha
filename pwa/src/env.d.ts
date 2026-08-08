@@ -1,12 +1,11 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-  readonly VITE_API_URL: string
-  readonly VITE_WEBHOOK_URL: string
-  readonly VITE_GET_ENTRIES_URL: string
-  readonly VITE_GET_CATEGORIES_URL: string
-  readonly VITE_APPEND_ENTRY_URL: string
-  readonly VITE_DASHBOARD_URL: string
+  // Apenas vars nativas do Vite + a que o vite.config.js injeta via define.
+  // Todas as URLs do PWA são derivadas em pwa/src/config.ts
+  // (estratégia "Opção C": zero .env files, derivado de import.meta.env.DEV)
+  readonly DEV: boolean
+  readonly PROD: boolean
   readonly APP_VERSION?: string
 }
 

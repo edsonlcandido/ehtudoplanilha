@@ -26,9 +26,9 @@ const isLoadingCategorias = ref(false)
 
 // Buscar contas únicas da API de entries
 const fetchContas = async () => {
-  const entriesUrl = import.meta.env.VITE_GET_ENTRIES_URL
+  const entriesUrl = '/get-sheet-entries'
   if (!entriesUrl) {
-    console.warn('VITE_GET_ENTRIES_URL não configurada')
+    console.warn('endpoint /get-sheet-entries indisponível')
     return
   }
 
@@ -76,9 +76,9 @@ const fetchContas = async () => {
 
 // Buscar categorias da API
 const fetchCategorias = async () => {
-  const categoriesUrl = import.meta.env.VITE_GET_CATEGORIES_URL
+  const categoriesUrl = '/get-sheet-categories'
   if (!categoriesUrl) {
-    console.warn('VITE_GET_CATEGORIES_URL não configurada')
+    console.warn('endpoint /get-sheet-categories indisponível')
     return
   }
 
@@ -260,9 +260,9 @@ const handleSubmit = async () => {
   }
   
   // Send data to append-entry endpoint
-  const appendEntryUrl = import.meta.env.VITE_APPEND_ENTRY_URL
+  const appendEntryUrl = '/append-entry'
   if (!appendEntryUrl) {
-    console.warn('VITE_APPEND_ENTRY_URL não configurada')
+    console.warn('endpoint /append-entry indisponível')
     emit('save', dataToSave)
     return
   }
