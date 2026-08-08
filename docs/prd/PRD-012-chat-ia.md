@@ -1,127 +1,248 @@
-# PRD-012 — Chat com IA (ChatFAB)
+# PRD-012 — Chat: Agente de Lançamentos (ChatFAB)
 
 ## Contexto
 
-Além de lançar (PRD-003) e processar imagem (PRD-011), o user
-**pode ter dúvidas** sobre o app ou sobre suas finanças:
-- "Quanto gastei em delivery em outubro?"
-- "Como eu adiciono uma categoria nova?"
-- "Qual a diferença entre lançamento futuro e transferência?"
+Além de lançar pelo form (PRD-003) e por imagem (PRD-011), o user
+pode **digitar em linguagem natural** o que quer lançar. O chat não
+é conversacional (não responde "quanto gastei em X") — é um **agente
+que converte texto em array de lançamentos JSON**, pronto pra
+revisar e salvar.
 
-Solução: um **chat flutuante** no PWA que responde essas perguntas
-usando LLM (via webhook n8n). O user clica no FAB (Floating Action
-Button), digita, recebe resposta.
+O agente (LLM rodando no n8n) tem acesso a 6 ferramentas (tools)
+que consultam dados do user em tempo real: histórico de pares
+descrição↔categoria, lista de categorias, lista de contas, lista de
+orçamentos disponíveis. Com isso ele classifica corretamente cada
+lançamento e usa nomenclatura consistente com o que o user já fez.
 
-Diferente do OCR (que extrai dados de imagem), o chat é **conversa
-livre**.
+**Importante:** o chat serve **só pra extrair lançamentos**, não pra
+conversar. Insights sobre gastos, perguntas sobre o app, conversa
+geral — fora do escopo. Se o user fizer uma pergunta dessas, o agente
+provavelmente vai tentar encaixar como lançamento (e o user tem que
+dizer "isso não é um lançamento" pra cancelar).
 
 ## Objetivos
 
-- Oferecer chat sempre acessível (FAB no canto da tela)
-- Responder perguntas sobre os próprios dados do user
-- Responder perguntas sobre como usar o app
-- Manter contexto da conversa (multi-turn)
-- Resposta rápida (<5s típico)
+- Converter **texto em linguagem natural** em array JSON de
+  lançamentos estruturados
+- Suportar os 3 tipos: **lançamento normal** (data+conta), **futuro**
+  (data e conta vazias, com orçamento), **transferência** (2 entradas)
+- Suportar **lote** — uma única mensagem com vários lançamentos
+  vira array com N entradas
+- Consultar ferramentas pra classificar corretamente
+  (categoria, conta, orçamento) baseado no histórico do user
+- User **sempre revisa e confirma** antes de salvar (não é salvamento
+  automático)
+- Toast claro: "X lançamentos extraídos, confira antes de salvar"
 
 ## Não-objetivos
 
-- **Resposta em tempo real com streaming** (SSE) — fora
+- **Conversa natural** — o agente não responde "oi", "tudo bem?"
+- **Insights sobre gastos** ("quanto gastei em delivery?") — fora
+- **Perguntas sobre o app** ("como faço Y?") — fora
+- **Resposta em streaming** (SSE) — fora
+- **Agente que age** (criar/editar sem confirmação) — **perigoso, sempre exige confirmação**
 - **Voz (audio input/output)** — fora
-- **Agente que faz ações** (criar lançamento via chat) — fora
-  (seria perigoso sem confirmação)
-- **Histórico persistente cross-device** — fora (chat é por sessão)
+- **Histórico de chat persistente** cross-device — fora (sessão)
+
+## ⚠️ Princípio de segurança
+
+> O agente **NUNCA** salva lançamento automaticamente. O retorno é
+> sempre um array JSON que o user **revisa** (modal/form) e
+> **confirma explicitamente** antes do `POST /append-entry`.
 
 ## Personas
 
-- **Usuário autenticado do PWA** — tem dúvida, quer resposta rápida
+- **Usuário autenticado do PWA** — quer lançar sem abrir form, prefere
+  digitar uma frase a tocar 6 campos
 
 ## User Stories
 
-### US-12.1 — Abrir chat
+### US-12.1 — Lançamento normal via texto
 
 **Como** usuário,
-** quero** tocar num botão flutuante e abrir o chat,
-** para** tirar dúvidas sem sair da tela atual.
+** quero** digitar "gastei 250 na Clinica Pghini ontem" e ver o
+ formulário preenchido,
+** para** não ter que tocar em 6 campos.
 
 **Critérios de aceite:**
-- [ ] FAB visível em todas as páginas (exceto modal aberto)
-- [ ] Cor distinta dos outros FABs (lançar, etc)
-- [ ] Ícone de chat (balão)
-- [ ] Tocar abre painel de chat
-- [ ] Animação suave (slide up)
+- [ ] User digita texto livre no chat
+- [ ] Envia pro webhook n8n (`VITE_WEBHOOK_CHAT`)
+- [ ] n8n/LLM classifica como "lançamento normal" (com data e conta)
+- [ ] Webhook retorna array JSON:
+      ```json
+      [{
+        "data": "09/12/2025 16:07",
+        "conta": "Conta",
+        "valor": -250.00,
+        "descricao": "Clinica Pghini",
+        "categoria": "Médico",
+        "orcamento": "31/12/2025",
+        "observacao": "Observação útil pra referência futura"
+      }]
+      ```
+- [ ] App exibe modal com campos pré-preenchidos
+- [ ] User revisa, ajusta se quiser, confirma
+- [ ] Cada vira um `POST /append-entry` (PRD-003)
 
-### US-12.2 — Enviar pergunta
+### US-12.2 — Lançamento futuro via texto
 
 **Como** usuário,
-** quero** digitar uma pergunta e receber resposta,
-** para** tirar a dúvida.
+** quero** digitar "salário desse mês 4000" e o agente entender
+ que é planejado,
+** para** registrar sem data/conta efetivos.
 
 **Critérios de aceite:**
-- [ ] Input de texto no painel
-- [ ] Botão de enviar (ou Enter)
-- [ ] Mensagem do user aparece no histórico
-- [ ] Loading indicator enquanto processa
-- [ ] Resposta do assistente aparece
-- [ ] Timestamp em cada mensagem
+- [ ] User digita texto livre
+- [ ] Agente identifica como **lançamento futuro** (vide exemplos do prompt)
+- [ ] Webhook retorna:
+      ```json
+      [{
+        "data": "",
+        "conta": "",
+        "valor": 4000,
+        "descricao": "Salario",
+        "categoria": "Salário",
+        "orcamento": "24/09/2025",
+        "observacao": "Salario 4000 mes de setembro"
+      }]
+      ```
+- [ ] App trata como lançamento futuro (data e conta vazias,
+      vide PRD-004)
 
-### US-12.3 — Conversa multi-turn
+### US-12.3 — Transferência via texto
 
 **Como** usuário,
-** quero** que o chat lembre das mensagens anteriores,
-** para** fazer perguntas de follow-up.
+** quero** digitar "transferi 181 do ITAU pra NUCONTA",
+** para** registrar movimento entre contas sem fazer 2 lançamentos
+ manuais.
 
 **Critérios de aceite:**
-- [ ] Contexto da conversa é enviado junto com cada nova pergunta
-- [ ] Histórico visível na tela (scroll up pra ver mais)
-- [ ] Limite de contexto: últimas N mensagens (ex: 10)
-- [ ] User pode limpar conversa
+- [ ] Agente identifica como **transferência**
+- [ ] Webhook retorna **2 entradas** (negativa na origem, positiva
+      no destino):
+      ```json
+      [
+        {
+          "data": "10/12/2025 16:07",
+          "conta": "ITAU",
+          "valor": -181.00,
+          "descricao": "Transferência para NUCONTA",
+          "categoria": "Transferência",
+          "orcamento": "31/12/2025",
+          "observacao": "Envio de R$181 para NUCONTA"
+        },
+        {
+          "data": "10/12/2025 16:07",
+          "conta": "NUCONTA",
+          "valor": 181.00,
+          "descricao": "Transferência de ITAU",
+          "categoria": "Transferência",
+          "orcamento": "31/12/2025",
+          "observacao": "Recebido R$181 da conta ITAU"
+        }
+      ]
+      ```
+- [ ] Categoria `"Transferência"` é fixa (PRD-005)
+- [ ] App trata como transferência (vide PRD-005)
 
-### US-12.4 — Perguntas sobre dados próprios
+### US-12.4 — Lote de lançamentos
 
 **Como** usuário,
-** quero** perguntar "quanto gastei em X categoria no mês Y" e
- receber resposta precisa,
-** para** não ter que navegar pelo dashboard.
+** quero** digitar vários lançamentos numa só mensagem
+ (ex: "Salario 4000 mes de dezembro, 56 google youtube desse mês,
+ reservar 80 reais para o presente do Arthur"),
+** para** lançar várias coisas de uma vez.
 
 **Critérios de aceite:**
-- [ ] Webhook recebe contexto dos dados do user (período selecionado,
-      categorias, totais)
-- [ ] Resposta é baseada em dados reais, não em chute
-- [ ] Se a pergunta for ambígua, chat pede clarificação
+- [ ] Agente identifica **múltiplos lançamentos** no mesmo texto
+- [ ] Webhook retorna array com **N entradas** (não 1)
+- [ ] Pode misturar tipos (ex: 2 futuros + 1 normal)
+- [ ] App exibe todos num modal, user revisa um por um (ou todos
+      de uma vez) e confirma
+- [ ] Cada vira um `POST /append-entry` (ou 2, no caso de transferência)
 
-### US-12.5 — Perguntas sobre o app
+### US-12.5 — Lote de extrato/CSV colado
 
 **Como** usuário,
-** quero** perguntar "como faço X" e receber instrução,
-** para** aprender a usar o app.
+** quero** colar um trecho de extrato (ex: linhas CSV
+ "2025-12-17,Daiso Brasil Comercio,55.95") e o agente extrair
+ cada linha,
+** para** não digitar 1 por 1.
 
 **Critérios de aceite:**
-- [ ] Webhook recebe contexto sobre features do app
-- [ ] Resposta é um passo-a-passo
-- [ ] Se a feature não existe, chat diz "isso ainda não tá
-      disponível" (não inventa)
+- [ ] User cola texto com várias linhas (CSV, print de extrato, etc)
+- [ ] Agente identifica cada linha como um lançamento
+- [ ] Mesma data pra todos (do extrato) e mesma conta (a que
+      user mencionou ou a mais comum)
+- [ ] `observacao` contém a linha original como referência futura
+
+## Regras de formatação (do prompt do agente)
+
+| Regra | Detalhe |
+|---|---|
+| **valor** | Negativo = débito/compra. Positivo = receita/entrada. Se imagem mostra "-", é negativo |
+| **data** | Sempre data e hora (`DD/MM/YYYY HH:mm`). Se não tiver hora, usar `{{$now.format('dd/LL/yyyy HH:mm')}}` |
+| **observacao** | Mensagem útil pra referência futura (não o texto original do user) |
+| **conta** | Usar `lista_contas_tool` (nomenclatura consistente) |
+| **categoria** | Priorizar `lista_descricao_categoria_tool` (histórico). Se não achar, usar `lista_categorias_tool` (categoria existente) |
+| **orcamento** | Usar `lista_orcamento_unicos_tool` (orçamentos disponíveis), pegar o mais próximo de hoje |
+
+## Ferramentas (tools) do agente
+
+| Tool | Função |
+|---|---|
+| `lancamento_tool` | Modelo pra despesa/receita com data+conta |
+| `lancamento_futuro_tool` | Modelo pra despesa/receita sem data/conta (só orçamento) |
+| `transferencia_tool` | Modelo pra 2 lançamentos (origem/destino) |
+| `lista_descricao_categoria_tool` | Histórico de pares (descrição, categoria) do user |
+| `lista_categorias_tool` | Lista de categorias válidas |
+| `lista_contas_tool` | Lista de contas existentes |
+| `lista_orcamento_unicos_tool` | Lista de orçamentos disponíveis (pegar o mais próximo) |
 
 ## Fluxo de uso
 
-### Conversa simples
+### Happy path (lançamento simples)
 ```
-User toca no FAB de chat
-  → painel abre
-  → user digita "Quanto gastei em delivery em outubro?"
-  → app envia pro webhook n8n: { mensagem, contexto: { entries, mes, ... } }
-  → loading
-  → webhook responde: "Você gastou R$ 234,50 em Delivery em outubro,
-    distribuídos em 8 lançamentos. O maior foi R$ 67 no iFood dia 15."
-  → resposta aparece no chat
-  → user pode perguntar follow-up
+User no PWA → toca FAB de chat
+  → digita "gastei 250 na Clinica Pghini ontem"
+  → envia
+  → POST webhook n8n /webhook/v1/planilha-eh-tudo-analise-chat
+  → n8n/LLM processa:
+     - identifica tipo: lançamento normal
+     - consulta lista_contas_tool → "Conta"
+     - consulta lista_descricao_categoria_tool → "Clinica Pghini" não tem,
+       consulta lista_categorias_tool → "Médico"
+     - consulta lista_orcamento_unicos_tool → "31/12/2025"
+     - monta JSON com data de ontem
+  → n8n retorna array JSON com 1 entrada
+  → app exibe modal pré-preenchido
+  → user revisa, ajusta se quiser
+  → confirma
+  → POST /append-entry (PRD-003) com 1 entrada
+  → toast "Lançamento adicionado"
 ```
 
-### Conversa sobre o app
+### Lote
 ```
-User: "Como eu adiciono uma categoria nova?"
-  → webhook responde: "Abre o menu Categorias, clica em +, preenche
-    nome e tipo, e salva. A categoria fica disponível nos lançamentos
-    imediatamente."
+User: "Salario 4000 mes de dezembro, 56 google youtube desse mês,
+       reservar 80 reais para o presente do Arthur"
+  → agente identifica 3 lançamentos futuros (data/conta vazias)
+  → retorna array com 3 entradas
+  → app exibe modal com 3 cards
+  → user revisa cada um (ou todos)
+  → confirma
+  → 3x POST /append-entry
+  → toast "3 lançamentos adicionados"
+```
+
+### Pergunta fora do escopo
+```
+User: "quanto gastei em delivery esse mês?"
+  → agente tenta encaixar como lançamento (não tem data, não tem valor)
+  → provavelmente retorna array vazio ou 1 entrada esquisita
+  → app vê array vazio/lixo
+  → toast "Não foi possível extrair lançamentos. Use o dashboard
+     pra ver resumos."
 ```
 
 ## Diagrama de sequência
@@ -130,101 +251,149 @@ User: "Como eu adiciono uma categoria nova?"
 sequenceDiagram
     autonumber
     actor U as User
-    participant F as PWA ChatFAB<br/>(componente Vue)
-    participant H as Histórico<br/>(estado local)
+    participant PWA as PWA ChatFAB
     participant N8N as n8n<br/>(webhook chat)
     participant LLM as LLM
-    participant PB as PocketBase<br/>(opcional)
+    participant Tools as Tools<br/>(lista_*_tool)
+    participant PB as PocketBase
+    participant S as Sheets API
 
-    U->>F: toca FAB de chat
-    F-->>U: painel de chat abre
+    U->>PWA: toca FAB
+    PWA-->>U: painel abre
+    U->>PWA: digita texto
+    PWA->>N8N: POST /webhook/v1/planilha-eh-tudo-analise-chat<br/>{ mensagem }
+    N8N->>Tools: lista_contas_tool
+    Tools-->>N8N: contas disponíveis
+    N8N->>Tools: lista_descricao_categoria_tool
+    Tools-->>N8N: histórico do user
+    N8N->>Tools: lista_categorias_tool
+    Tools-->>N8N: categorias válidas
+    N8N->>Tools: lista_orcamento_unicos_tool
+    Tools-->>N8N: orçamentos disponíveis
+    N8N->>LLM: prompt + tools
+    LLM-->>N8N: array de lançamentos JSON
+    N8N-->>PWA: { cartoes: [...] }
 
-    U->>F: digita "Quanto gastei em delivery em out/2025?"
-    F->>F: adiciona msg ao histórico
-    F->>F: monta contexto:<br/>{ mensagem, historico[],<br/>  entries_out2025[],<br/>  categorias[] }
-
-    F->>N8N: POST /webhook/v1/planilha-eh-tudo-analise-chat<br/>{ mensagem, historico, contexto }
-    N8N->>N8N: prompt + contexto → LLM
-    N8N->>LLM: "user: ... , contexto: ..."
-    LLM-->>N8N: resposta
-    N8N-->>F: { resposta: "Você gastou R$ 234,50..." }
-
-    F->>F: adiciona resposta ao histórico
-    F-->>U: exibe resposta no chat
-
-    rect rgb(240, 240, 255)
-    Note over F,H: Multi-turn (contexto)
-    U->>F: "E o maior deles?"
-    F->>F: envia { mensagem, historico[anterior+nova] }
-    F->>N8N: POST com histórico completo
-    N8N-->>F: resposta contextualizada
+    PWA->>PWA: parse array
+    PWA-->>U: modal com cards (1 ou N)
+    loop cada lançamento
+        U->>PWA: revisa
+        U->>PWA: confirma
+        PWA->>PB: POST /append-entry
+        PB->>S: values.append
+        S-->>PB: 200
+        PB-->>PWA: { success }
     end
+    PWA-->>U: toast "N lançamento(s) adicionado(s)"
 ```
 
-**Atores:** User, ChatFAB (Vue), Histórico (estado local), n8n (externo), LLM, PB (opcional).
+**Atores:** User, PWA ChatFAB, n8n (externo), LLM, Tools (consultam dados do user), PB, Sheets API.
 
 **Highlights:**
-- O histórico é **estado local** (memória do componente) — não persiste entre reloads
-- O contexto enviado inclui **dados reais do user** (entries, categorias) — o LLM "vê" as finanças
-- O **multi-turn** funciona porque o frontend envia o histórico inteiro a cada pergunta
-- Privacidade: dados vão pro n8n (que é do próprio user) — não pra API pública de LLM diretamente
-- Diferente do OCR (que é stateless), o chat **precisa de contexto** (histórico)
-- **Sem streaming** hoje: resposta chega inteira, UX é "tudo ou nada"
-- O `resposta` é texto livre (markdown?), não estruturado (PRD não especifica — pode ser limitação)
+- O **LLM roda no n8n** (não no app). App só envia texto e recebe array
+- Tools consultam **dados reais do user** (não genéricos)
+- **Sempre confirmação** antes de salvar (segurança)
+- Pode ser 1 ou N lançamentos num único envio
+- Tipos suportados: normal, futuro, transferência
+- **Perguntas não-lançamento** viram array vazio/lixo (UX ruim, mas o
+  user precisa aprender a usar como extração)
 
-- **Webhook offline**: chat mostra "Chat temporariamente indisponível.
-  Tenta de novo em alguns minutos."
-- **Resposta vazia**: "Não entendi. Pode reformular?"
-- **Mensagem muito longa**: trunca input em N caracteres
-- **Pergunta fora do escopo** (ex: "vai chover amanhã?"): chat
-  responde "Sou especializado em finanças e no app. Posso te ajudar
-  com outra coisa?"
-- **User faz pergunta sobre user errado** (multi-conta): contexto
-  sempre do user logado, sem ambiguidade
-- **Histórico muito grande**: scroll infinito OU virtual scroll
-  (depende de volume)
+## Edge cases
+
+- **Texto ambíguo** ("gastei 50" sem info adicional): agente
+  retorna o que conseguir (provavelmente categoria "Outros", conta
+  da mais comum). User revisa e ajusta.
+- **Texto com data relativa** ("ontem", "semana passada"): agente
+  calcula a data. Pode errar.
+- **Texto longo / só pergunta** ("oi, quanto gastei?"): agente
+  tenta encaixar como lançamento, retorna lixo. UX ruim.
+  Roadmap: detectar "não é lançamento" e responder como chat.
+- **Conta não existe** (user digitou "XPTO" e não tá na lista):
+  agente usa a mais comum ou "Conta". User revisa.
+- **Categoria nova** (não tá em `lista_categorias_tool`): agente
+  inventa ou usa a mais próxima. User revisa.
+- **Orçamento não existe** (descrição do user não bate com nenhum):
+  agente usa o mais próximo de hoje. User revisa.
+- **Lote grande** (10+ lançamentos): app exibe todos, user revisa
+  um por um. Cansativo mas funciona.
+- **Erro do n8n** (timeout, 5xx): toast "Chat temporariamente
+  indisponível. Tente de novo."
+- **Token expirado** (PB nativo): app redireciona pro login (PRD-001)
+- **Concorrência**: user processa 2 chats em paralelo. Decisão:
+  processar um por vez (fila)
 
 ## Requisitos técnicos
 
-- **Webhook n8n** externo (diferente do OCR):
+- **Webhook n8n** externo (não roda no nosso servidor):
   - URL: `https://ehtudo-n8n.pfdgdz.easypanel.host/webhook/v1/planilha-eh-tudo-analise-chat`
-  - Input: `{ mensagem: string, historico: [...], contexto: { entries,
-    categorias, ... } }`
-  - Output: `{ resposta: string }`
-- **Componente PWA**:
-  - `pwa/src/components/ChatFAB.vue` (345 linhas no repo)
-  - Estado local (não persistente)
-- **Contexto enviado**:
-  - Lista de entries do período (compacta)
-  - Categorias disponíveis
-  - Resumo financeiro (totais)
-- **Privacidade**:
-  - Dados enviados pro n8n são os do user logado
-  - n8n é servidor do user (mesma infra), não terceiro
-  - Mas documentar: dados financeiros saem do client pro n8n
-- **Performance**:
-  - Resposta típica: 2-5s
-  - Loading com animação (não travar UI)
+  - Input: `{ mensagem: string }`
+  - Output: `{ cartoes: [LancamentoJSON, ...] }` (sempre array)
+- **Prompt do agente** (definido no n8n, não no app): o texto
+  completo que tu mostrou — define comportamento, ferramentas,
+  regras. Mudanças no prompt são feitas no n8n.
+- **Ferramentas (tools)**: 6 tools que consultam dados reais do
+  user via PB (lista_contas, lista_categorias, etc). Cada tool
+  provavelmente é um Code node no n8n que faz uma chamada ao
+  PocketBase.
+- **Componente PWA**: `pwa/src/components/ChatFAB.vue` (345 linhas)
+- **Tipo de retorno** (no prompt):
+  ```typescript
+  interface LancamentoExtraido {
+    data: string         // "09/12/2025 16:07" ou ""
+    conta: string        // "" se futuro
+    valor: number        // positivo ou negativo
+    descricao: string
+    categoria: string
+    orcamento: string    // "31/12/2025"
+    observacao: string
+  }
+  type ChatResponse = LancamentoExtraido[]  // sempre array
+  ```
+- **Fluxo de salvar**: pra cada item do array, um `POST /append-entry`
+  separado (mesmo do PRD-003)
 
 ## Métricas de sucesso
 
-- **% de users que usam o chat** — baseline (deve ser menor que
-  lançamentos, é uso pontual)
-- **Mensagens por sessão** — engajamento
-- **Taxa de respostas úteis** — survey ou feedback implícito
-  ("útil" / "não útil")
-- **Tempo médio de resposta** — meta: <5s
+- **Taxa de acerto de extração** — % de lançamentos que o user aceita
+  sem editar (meta: >60% em uso normal)
+- **% de uso do chat** — % de lançamentos criados via chat (vs form
+  manual, vs share) (meta: >15% em 3 meses)
+- **% de perguntas fora do escopo** — input que o agente não
+  consegue classificar como lançamento (baseline: alto no início,
+  meta: <30% à medida que user aprende a usar)
+- **Tempo médio de resposta** — do clique "Enviar" até modal
+  pré-preenchido (meta: <5s)
 - **Erros do webhook** — meta: <3%
 
 ## Notas / Pendências
 
+- O **prompt completo do agente** está no n8n (não versionado no
+  repo). Pra mudar comportamento do agente, editar lá.
+- **Histórico de chat** é só estado local (memória do componente).
+  Não persiste entre reloads. Roadmap: persistir.
 - **Streaming** (resposta aparecendo enquanto é gerada) é roadmap.
   Hoje resposta chega inteira.
-- **Multi-idioma** é roadmap (hoje PT-BR).
-- **Histórico persistente** é roadmap (cross-session).
-- **Agente que age** (cria/edita lançamento via chat) é **perigoso**
-  e exige confirmação explícita. Roadmap com cuidado.
-- **Rate limit** é roadmap (evitar abuse / custo).
-- **Premium-only?** Roadmap: free tem N msgs/mês, premium
-  ilimitado. Hoje todo mundo tem acesso.
-- **Custo por chamada** (LLM API) é relevante. Roadmap: monitorar.
+- **Detecção de "não é lançamento"** (pergunta, conversa) é
+  roadmap. Hoje agente sempre tenta encaixar como lançamento.
+- **Agente que age** (criar/editar sem confirmação) é **perigoso**
+  e explicitamente fora do escopo. O user **sempre** revisa.
+- **Custo por chamada** (LLM API) é relevante. Roadmap: rate limit
+  por user (ex: 50 chamadas/dia free, ilimitado premium).
+- **Premium-only?** Roadmap: gating por plano.
+
+## Anexo: prompt do agente (referência)
+
+O prompt que o agente (LLM no n8n) recebe está descrito em
+`n8n workflow` (fora deste repo). Mudanças no prompt mudam
+comportamento do agente e devem ser refletidas neste PRD.
+
+> **Resumo do prompt** (extraído do texto que tu colou):
+>
+> Você é um assistente de uma planilha financeira onde deve sempre
+> entender o contexto e extrair o máximo de informações possíveis
+> para ser inserido numa planilha.
+>
+> O retorno é sempre um **array** (pode ter vários lançamentos
+> num único input). Use as ferramentas `lista_*_tool` para
+> classificar corretamente. Regras: valor +/- (débito/crédito),
+> data sempre com hora, categoria limitada às existentes.
