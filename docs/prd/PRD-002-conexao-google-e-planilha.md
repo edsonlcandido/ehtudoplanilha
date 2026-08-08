@@ -23,7 +23,10 @@ Após isso, o user está pronto pra lançar (PRD-003).
 - Salvar `access_token` e `refresh_token` em `google_infos`
 - Criar uma planilha do zero no Drive do user
 - Popular as abas `Lançamentos` (header) e `Categorias` (lista padrão)
-- Tornar a operação **idempotente** (se já tem planilha, não recria)
+- Hoje a operação é **idempotente** (se já tem `sheet_id`, não recria).
+  Limitação: no futuro, o user poderá criar uma planilha nova via PRD-009
+  (atualmente só é possível selecionar uma já existente ou desvincular
+  a atual)
 - Tratar expiração de token via refresh automático
 
 ## Não-objetivos
@@ -204,9 +207,9 @@ sequenceDiagram
 - **User deleta a planilha no Drive**: `sheet_id` salvo fica apontando
   pra planilha inexistente. Frontend precisa detectar e oferecer
   recriar (PRD-009).
-- **User renomeia a planilha**: `google_infos.sheet_name` diverge
-  do real. Sistema **não** lê esse campo pra decidir, então não
-  quebra. Mas o display fica errado.
+- **User renomeia a planilha**: o nome diverge do `google_infos.sheet_name`
+  salvo. Sistema **não** lê esse campo pra decidir nada, então não quebra.
+  Mas o display (página de config) pode ficar errado.
 - **User renomeia as abas**: **sistema quebra**. Display mostra
   planilha vazia, todas as escritas vão pra lugar errado.
 - **Race condition no provision**: dois devices do mesmo user
@@ -243,7 +246,12 @@ sequenceDiagram
   planilha deletada**. Se o user deletar a planilha e clicar "conectar"
   de novo, o hook retorna `existing` com `sheet_id` inválido.
   Solução: frontend precisa checar 404 do Sheets e oferecer recriar.
-- Não há UI pra "mudar de planilha" (PRD-009 cobre listar/selecionar
-  de planilhas existentes, mas o fluxo de "criar nova" depois de ter
-  uma é manual).
-- `google_infos.sheet_name` é só display — **NUNCA** usado em lógica.
+- O user **pode mudar de planilha** pela página de config (PRD-009
+  § US-9.3), que lista todas as planilhas do Drive dele — incluindo
+  planilhas criadas em sessões anteriores, após revoke + nova
+  autorização, ou trazidas de outro setup. O PRD-009 cobre
+  listar/selecionar/desvincular/revogar.
+- `google_infos.sheet_name` é usado em **display** (página de config
+  mostra "Planilha atual: [nome]") mas **nunca em lógica** — os hooks
+  sempre usam a constante `SHEET_NAME_DEFAULT` e `sheet_id` pra
+  escrever.
