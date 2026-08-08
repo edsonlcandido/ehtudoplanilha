@@ -14,7 +14,7 @@ Cada categoria tem um **tipo** que classifica o que ela representa:
 | `QUERO` | Despesa supérflua | Delivery, Restaurantes, Viagens |
 | `INVESTIMENTOS` | Aporte/investimento | Aposentadoria, CDB |
 | `TRANSFERÊNCIA` | Movimentação interna | Transferência entre contas |
-| `SALDO` | Item de saldo (legado?) | — |
+| `SALDO` | Saldo inicial da conta ou correção de saldo | "Saldo inicial Carteira 500", "Ajuste inventário Nubank" |
 
 Categorias **PRECISO** podem ter um **limite mensal** (orçamento),
 ex: `Supermercado: R$ 800/mês`. O agregado (PRD-007) compara
@@ -29,13 +29,15 @@ gasto real vs limite.
   antigos referenciam o nome)
 - Expor categorias pra autocomplete no form de lançamento
 - Cache local pra evitar buscar toda hora
+- **Permitir o usuário reordenar a ordem de display das categorias**
+  (drag-and-drop ou setas de subir/descer). Hoje a ordem é alfabética.
+  Vai exigir adicionar coluna `ordem` no schema da aba Categorias.
 
 ## Não-objetivos
 
 - **Validação obrigatória** de categoria no append (hoje aceita qualquer
   string, mesmo que não exista na aba). Roadmap: validar.
 - **Subcategorias** (Alimentação > Supermercado). Fora.
-- **Reordenação** de categorias (ordem alfabética no MVP).
 - **Importar/exportar** lista de categorias.
 
 ## ⚠️ Risco: categoria deletada
@@ -207,8 +209,11 @@ sequenceDiagram
 - **User edita limite de PRECISO para um valor menor que o gasto
   atual do mês**: não impedir. Apenas mostra que estourou no
   agregado.
-- **User cria categoria tipo SALDO**: hoje permitido mas sem uso
-  claro. Roadmap: remover tipo SALDO.
+- **User cria categoria tipo SALDO**: é tipo **real e válido** —
+  usado para o **saldo inicial da conta** (ex: "Saldo inicial Carteira
+  R$ 500") ou **correção de saldo** (ex: "Ajuste inventário Nubank
+  R$ 30"). Aparece nos agregados como receita ou despesa normal
+  (depende do sinal do valor).
 - **User cria categoria com tipo não previsto** (ex: "EXTRA"):
   aceito. Sistema não valida. Aparece no badge com cor padrão.
 - **Limite 0 ou negativo**: erro de validação.
