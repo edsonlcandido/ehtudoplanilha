@@ -245,5 +245,12 @@ sequenceDiagram
   existe em `Categorias!A:A` antes de inserir.
 - Schema da aba Categorias tem 3 colunas hoje (A=nome, B=tipo, C=limite).
   Schema pode crescer no futuro (cor, ícone, ordem).
-- `get-sheet-categories` (sem "complete") é legado. Só retorna
-  nomes. Mantido pra retrocompatibilidade.
+- `get-sheet-categories` (sem "complete") é **legado mas mantido**.
+  Só retorna nomes (sem tipo/limite). Hoje é usado como **fallback**
+  dentro de `SheetsService.getSheetCategoriesComplete()` no frontend
+  (`src/services/sheets.ts`): se o endpoint completo falhar (ex:
+  Sheets API fora), o app ainda consegue listar pelo menos os nomes
+  das categorias, mesmo sem tipo/limite. **Não é "retrocompatibilidade"
+  genérica — tem propósito ativo.** Se algum dia decidir remover,
+  precisa antes remover o fallback no frontend (perderia a rede de
+  segurança contra falha do Sheets API).
