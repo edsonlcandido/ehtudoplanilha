@@ -5,9 +5,12 @@
 Após a primeira conexão (PRD-002), o user tem uma planilha ativa e
 tudo funciona. Mas o user pode precisar:
 
-- Trocar a planilha ativa (se tem várias no Drive)
+- Trocar a planilha ativa (se tem várias no Drive, criadas pela aplicação)
 - Listar planilhas que o app tem acesso
-- Desvincular a planilha atual (voltar ao estado "sem planilha")
+- Desvincular a planilha atual (voltar ao estado "sem planilha") — **UI
+  ainda não implementada; hoje a única forma de "desvincular" é
+  revogar o acesso (que zera tokens + planilha) e re-autorizar
+  via OAuth de novo. Vide US-9.4.**
 - Revogar acesso do app ao Google (logout OAuth)
 
 Este PRD cobre essas operações de "gestão da conexão".
@@ -17,7 +20,8 @@ Este PRD cobre essas operações de "gestão da conexão".
 - Mostrar status atual: tem planilha? qual? qual o nome?
 - Listar planilhas do Google Drive que o app tem acesso
 - Permitir escolher uma planilha diferente (vai substituir `sheet_id`)
-- Permitir desvincular (zera `sheet_id` mas mantém tokens)
+- Permitir desvincular (zera `sheet_id` mas mantém tokens) — **NÃO
+  IMPLEMENTADO NA UI**, vide US-9.4
 - Permitir revogar completamente (zera tokens + planilha)
 - Mostrar feedback claro de cada ação
 
@@ -47,7 +51,7 @@ Este PRD cobre essas operações de "gestão da conexão".
 - [ ] Card mostra: tokens válidos? (sim/não, baseado em
       `expires_at`)
 - [ ] Botão "Trocar planilha" (visível se tem planilha)
-- [ ] Botão "Desvincular" (visível se tem planilha)
+- [ ] Botão "Desvincular" (visível se tem planilha) — **NÃO IMPLEMENTADO**
 - [ ] Botão "Revogar acesso Google" (sempre visível)
 
 ### US-9.2 — Listar planilhas disponíveis
@@ -82,12 +86,25 @@ Este PRD cobre essas operações de "gestão da conexão".
 
 ### US-9.4 — Desvincular planilha atual
 
+> ⚠️ **NÃO IMPLEMENTADO NA UI** (2026-08-08). O hook backend
+> (`POST /delete-sheet-config`) **existe** e está implementado em
+> `google-endpoints.pb.js` — mas o frontend não tem botão nem
+> fluxo que o chame. **Hoje a única forma de "desvincular" a
+> planilha é revogar o acesso Google** (US-9.5), que zera tokens
+> também, e re-autorizar via OAuth de novo.
+>
+> Esta US fica como **roadmap**: o endpoint está pronto, falta
+> só expor na UI.
+
 **Como** usuário,
 ** quero** desvincular a planilha atual (sem revogar o Google),
 ** para** parar de usar sem perder o acesso a Google.
 
-**Critérios de aceite:**
-- [ ] Botão "Desvincular" abre confirmação
+**Critérios de aceite (propostos — a implementar):**
+- [ ] Botão "Desvincular" visível na página de config (se tem planilha)
+- [ ] Click abre confirmação: "Desvincular a planilha atual? Sua
+      conexão com Google é mantida — você pode vincular outra
+      planilha depois sem re-autorizar."
 - [ ] Confirma: `POST /delete-sheet-config` (zera `sheet_id` e
       `sheet_name`, mas mantém tokens)
 - [ ] Frontend redireciona pra estado "sem planilha" → mostra botão
