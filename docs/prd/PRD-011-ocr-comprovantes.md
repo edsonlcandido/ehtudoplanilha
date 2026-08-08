@@ -14,9 +14,26 @@ Pipeline:
 1. Imagem chega no app via Share Target (PRD-010)
 2. App envia pro webhook n8n (`VITE_WEBHOOK_URL`)
 3. n8n faz OCR (Tesseract / Google Vision / LLM vision)
-4. n8n retorna JSON estruturado com os campos
-5. App preenche o form de lançamento (PRD-003)
-6. User revisa, ajusta categoria se preciso, confirma
+4. n8n retorna **array de JSONs** com os campos (1 imagem pode
+   gerar 1+ lançamentos se for extrato, vários comprovantes, etc)
+5. App exibe cada item num modal de revisão
+6. **User sempre revisa e confirma** cada item antes de salvar
+7. Cada item vira um `POST /append-entry` separado (PRD-003)
+
+## ⚠️ Princípio de segurança
+
+> O **agente n8n NUNCA salva nada direto** na planilha. O retorno
+> é sempre um **array JSON** que o user **revisa um por um** (ou
+> todos de uma vez) e **confirma explicitamente** antes de cada
+> `POST /append-entry`.
+>
+> Esse mesmo princípio vale pros dois webhooks do app:
+> - **OCR** (este PRD) — webhook de upload (`VITE_WEBHOOK_URL`)
+> - **Chat** (PRD-012) — webhook de chat (`VITE_WEBHOOK_CHAT`)
+>
+> A diferença entre os dois é só o input (imagem vs texto natural).
+> O contrato de saída é o mesmo: **array de lançamentos pra
+> revisar e confirmar**.
 
 ## Objetivos
 
@@ -54,11 +71,13 @@ Pipeline:
 - [ ] Após share, preview aparece (PRD-010)
 - [ ] Botão "Processar" envia imagem pro webhook n8n
 - [ ] Loading spinner durante processamento (pode demorar 3-10s)
-- [ ] Webhook retorna: `{ cartoes: [{ data, conta, valor, descricao,
-      categoria, orcamento, observacao }] }`
-- [ ] App preenche form de lançamento com os dados extraídos
-- [ ] User revisa, ajusta se preciso, confirma (vai pro PRD-003)
-- [ ] Toast "Dados extraídos, confira antes de salvar"
+- [ ] Webhook retorna: `{ cartoes: [Lancamento, ...] }` — sempre
+      array (pode ter 1+ entradas; 1 imagem pode gerar várias se
+      for extrato com vários lançamentos)
+- [ ] App exibe cada item num modal de revisão
+- [ ] User revisa, ajusta se preciso, confirma **cada item**
+- [ ] Cada item vira um `POST /append-entry` separado (PRD-003)
+- [ ] Toast "X lançamento(s) extraído(s), confira antes de salvar"
 
 ### US-11.2 — Categorização (vinda do n8n)
 
@@ -172,11 +191,17 @@ sequenceDiagram
 - O fluxo de "salvar" depois do OCR é o **mesmo** `POST /append-entry` do PRD-003 (reuso!)
 - n8n é **infra do próprio user** (mesma VPS do app), não terceiro — dados financeiros não vão pra API pública
 - Timeout no webhook: precisa definir (PRD sugere 30s)
+- **Princípio de segurança**: agente NUNCA salva direto. Sempre
+  retorna **array JSON** que o user revisa e confirma. Mesmo
+  princípio do PRD-012 (chat). Uma imagem pode gerar N
+  lançamentos (extrato com várias linhas)
 
 - **Imagem borrada / ilegível**: OCR pode retornar lixo. App deve
   mostrar confiança por campo e pedir confirmação se confiança < 80%.
-- **Múltiplos comprovantes numa imagem**: 1ª implementação pode
-  processar só 1. Roadmap: multi-recibo.
+- **Múltiplos comprovantes numa imagem** (extrato com várias linhas):
+  o retorno é um array com N entradas (mesma estrutura do PRD-012
+  de lote). User revisa cada um e confirma. App faz N
+  `POST /append-entry`.
 - **PDF grande**: PDF foi removido do share target (vide PRD-010),
   então hoje não chega. Se voltar no futuro, timeout de 30s.
 - **Webhook n8n offline**: erro 503. Mensagem clara.
