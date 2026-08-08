@@ -473,7 +473,11 @@ export class SheetsService {
 - **`share_target` no manifest** é o coração do app: permite o user
   **compartilhar imagem do app de galeria/fotos** direto pro PWA
   (vide `vite.config.js`)
-- Aceita: `image/jpeg`, `image/png`, `image/gif`, `image/webp`, `application/pdf`
+- Aceita: `image/jpeg`, `image/png`, `image/gif`, `image/webp`
+  (PDF **removido do manifest em 2026-08-08** — o agente n8n não tá
+  preparado pra ler PDF. **Ideia em aberto** pra reativar no futuro:
+  melhorar OCR pra extrair texto de PDF, então readicionar
+  `application/pdf` aqui e em `pwa/vite.config.js`)
 
 ### Service Worker
 - `pwa/src/sw.js` usa `workbox-precaching` + `workbox-routing`

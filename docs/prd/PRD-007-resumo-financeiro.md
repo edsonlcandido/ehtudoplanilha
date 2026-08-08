@@ -15,7 +15,7 @@ agregados, não linha por linha. O dashboard deve mostrar:
 ## Objetivos
 
 - Calcular agregados a partir dos lançamentos
-- Filtrar por período (mês, intervalo custom)
+- Filtrar por período (mês corrente)
 - Excluir transferências do cálculo de receita/despesa
 - Performance: agregado < 2s com 1000 lançamentos
 
@@ -71,16 +71,17 @@ agregados, não linha por linha. O dashboard deve mostrar:
       (gasto / limite)
 - [ ] Cor da barra: verde (<70%), amarelo (70-100%), vermelho (>100%)
 
-### US-7.4 — Intervalo customizado
+### US-7.3 — Trocar mês
 
 **Como** usuário,
-** quero** filtrar por intervalo de datas (ex: 15/mar a 15/abr),
-** para** análises específicas (ex: ver gasto total da viagem).
+** quero** navegar entre meses passados,
+** para** comparar e revisar histórico.
 
 **Critérios de aceite:**
-- [ ] Dois date pickers (início, fim)
-- [ ] Default: mês corrente
-- [ ] Ao aplicar, recarrega agregado
+- [ ] Seletor de mês (dropdown ou calendário)
+- [ ] Lista de meses disponíveis vem de `GET /get-available-months`
+- [ ] Default: mês atual
+- [ ] Ao trocar, recarrega agregado
 
 ## Fluxo de uso
 

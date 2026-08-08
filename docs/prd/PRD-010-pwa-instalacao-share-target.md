@@ -19,7 +19,8 @@ O PWA (Progressive Web App) resolve os dois:
 ## Objetivos
 
 - PWA **instalável** no Android e iOS (com limitações do iOS)
-- Aparece como **opção de share** pra `image/*` e `application/pdf`
+- Aparece como **opção de share** pra `image/*` (PDF foi removido
+  do manifest em 2026-08-08 — vide pendências)
 - Recebe a imagem compartilhada via **POST com multipart**
 - Service Worker intercepta o POST, guarda no **Cache API**
 - Redireciona pro app (`/pwa/?share=true`)
@@ -77,8 +78,8 @@ O PWA (Progressive Web App) resolve os dois:
 
 **Critérios de aceite:**
 - [ ] PWA aparece na lista de share targets do Android
-- [ ] Aceita: `image/jpeg`, `image/png`, `image/gif`, `image/webp`,
-      `application/pdf`
+- [ ] Aceita: `image/jpeg`, `image/png`, `image/gif`, `image/webp`
+      (PDF removido, vide pendências)
 - [ ] POST multipart vai pro `/pwa/`
 - [ ] Service Worker intercepta o POST (`event.request.method === 'POST'`)
 - [ ] Lê `formData.get('file')` (também `title`, `text`, `url`)
@@ -235,9 +236,12 @@ sequenceDiagram
   vez. Roadmap.
 - **Compartilhar sem app aberto**: SW recebe o POST mesmo sem app
   rodando. Cache persiste. User abre depois e vê o preview.
-- **PDF**: o manifest inclui `application/pdf` no `accept`. PDF vai
-  pro OCR (que precisa saber extrair texto de PDF — pode falhar).
-  Roadmap: avisar "PDFs podem ter resultado pior que imagens".
+- **PDF**: foi **removido do manifest** em 2026-08-08. O agente n8n
+  (OCR) não está preparado pra extrair texto de PDF, então aceitar
+  PDF no share target só gerava frustração (image quebrada, OCR
+  vazio). **Ideia em aberto**: reativar no futuro quando o OCR souber
+  extrair texto de PDF, aí readicionar `application/pdf` em
+  `pwa/vite.config.js` e no AGENTS.md §10.
 - **Imagem muito grande (>10MB)**: Cache API tem limite (~50MB total
   por origem). Pode falhar. Roadmap: comprimir antes de cachear.
 - **iOS share de imagem**: iOS tem suporte limitado a Share Target
@@ -283,8 +287,8 @@ sequenceDiagram
 
 - **iOS Share Target** tem suporte limitado (Saiu em 2024 mas
   com bugs). Validar com user real.
-- **PDFs** dependem do OCR aceitar PDF — webhook n8n precisa
-  saber. Roadmap: validar.
+- **PDFs** foram removidos do share target em 2026-08-08. Ideia em
+  aberto: reativar no futuro quando o OCR souber extrair texto de PDF.
 - **Múltiplas imagens** num share — fora do MVP.
 - **Background sync** pra offline-first — fora.
 - **Push notifications** — fora.

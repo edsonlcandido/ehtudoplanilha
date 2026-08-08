@@ -82,7 +82,7 @@ export default defineConfig({
             files: [
               {
                 name: 'file', // Use a generic name for files
-                accept: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'],
+                accept: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
               },
             ],
           },

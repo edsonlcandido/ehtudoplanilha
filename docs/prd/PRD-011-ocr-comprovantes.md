@@ -25,7 +25,9 @@ Pipeline:
 - Permitir user revisar antes de salvar
 - Categorizar com base no histórico do user (categoria mais usada
   pra descrição similar)
-- Funcionar com `image/jpeg`, `image/png`, `image/webp`, `application/pdf`
+- Funcionar com `image/jpeg`, `image/png`, `image/webp`
+  (PDF **removido do share target** em 2026-08-08 — vide PRD-010.
+  Ideia em aberto: reativar quando OCR souber extrair texto de PDF)
 
 ## Não-objetivos
 
@@ -179,7 +181,8 @@ sequenceDiagram
   mostrar confiança por campo e pedir confirmação se confiança < 80%.
 - **Múltiplos comprovantes numa imagem**: 1ª implementação pode
   processar só 1. Roadmap: multi-recibo.
-- **PDF grande**: pode demorar muito. Timeout de 30s no webhook.
+- **PDF grande**: PDF foi removido do share target (vide PRD-010),
+  então hoje não chega. Se voltar no futuro, timeout de 30s.
 - **Webhook n8n offline**: erro 503. Mensagem clara.
 - **Descrição vazia**: app sugere "Sem descrição" e permite editar.
 - **Data futura**: aceita (pode ser agendamento).
@@ -236,7 +239,7 @@ sequenceDiagram
 
 - Webhook é **externo** (n8n em outro host). Se n8n cair, feature
   quebra. Fallback: digitar manualmente.
-- **PDFs** dependem de o n8n saber extrair. Validar.
+- **PDFs** removidos do share target (vide PRD-010). Ideia em aberto.
 - **Multi-recibo** (uma foto com 2+ recibos) — fora do MVP.
 - **Treinamento de categoria** é client-side (localStorage). Se user
   limpa cache, perde histórico. Roadmap: opcionalmente subir pro

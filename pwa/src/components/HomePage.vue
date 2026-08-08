@@ -670,7 +670,6 @@ const appVersion = import.meta.env.APP_VERSION || ''
               <span class="file-type">({{ file.type }})</span>
               <img v-if="getFilePreviewUrl(file)" :src="getFilePreviewUrl(file)!" alt="File preview"
                 class="file-preview-image" />
-              <span v-else-if="file.type === 'application/pdf'" class="file-icon">📄 PDF</span>
               <span v-else class="file-icon">📁 File</span>
             </li>
           </ul>
