@@ -255,3 +255,10 @@ sequenceDiagram
   mostra "Planilha atual: [nome]") mas **nunca em lógica** — os hooks
   sempre usam a constante `SHEET_NAME_DEFAULT` e `sheet_id` pra
   escrever.
+
+**Ideias em aberto (sem compromisso):**
+- Adicionar uma função de **"criar nova planilha"** na página de
+  config (PRD-009), além da seleção de planilhas existentes. Caso
+  de uso ainda não está claro, mas o user quer explorar. Hoje só
+  é possível selecionar uma planilha já existente ou desvincular
+  a atual.

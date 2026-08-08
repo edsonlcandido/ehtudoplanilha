@@ -23,7 +23,9 @@ Este PRD cobre essas operações de "gestão da conexão".
 
 ## Não-objetivos
 
-- **Criar planilha nova do zero** (PRD-002 faz no fluxo de onboarding)
+- **Criar planilha nova do zero a partir da config** — hoje só é
+  possível no fluxo de onboarding (PRD-002). Roadmap: oferecer essa
+  opção também aqui (ideia em aberto, caso de uso ainda não está claro).
 - **Importar dados** de outra planilha
 - **Múltiplas planilhas ativas simultaneamente** — só uma por vez
 
@@ -265,4 +267,6 @@ sequenceDiagram
 - **Re-autorização não limpa `sheet_id` antigo** — pode causar
   inconsistência. Roadmap.
 - **Sem UI pra "criar planilha nova do zero"** (só no fluxo
-  de onboarding). Roadmap: oferecer no config também.
+  de onboarding). Roadmap: oferecer no config também — **ideia
+  em aberto, caso de uso ainda não está claro** mas o user quer
+  explorar a feature.
