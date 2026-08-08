@@ -20,21 +20,6 @@ Pipeline:
 6. **User sempre revisa e confirma** cada item antes de salvar
 7. Cada item vira um `POST /append-entry` separado (PRD-003)
 
-## ⚠️ Princípio de segurança
-
-> O **agente n8n NUNCA salva nada direto** na planilha. O retorno
-> é sempre um **array JSON** que o user **revisa um por um** (ou
-> todos de uma vez) e **confirma explicitamente** antes de cada
-> `POST /append-entry`.
->
-> Esse mesmo princípio vale pros dois webhooks do app:
-> - **OCR** (este PRD) — webhook de upload (`VITE_WEBHOOK_URL`)
-> - **Chat** (PRD-012) — webhook de chat (`VITE_WEBHOOK_CHAT`)
->
-> A diferença entre os dois é só o input (imagem vs texto natural).
-> O contrato de saída é o mesmo: **array de lançamentos pra
-> revisar e confirmar**.
-
 ## Objetivos
 
 - Extrair: valor, data, descrição, categoria provável

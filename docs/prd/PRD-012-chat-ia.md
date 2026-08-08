@@ -8,7 +8,7 @@ pode **digitar em linguagem natural** o que quer lançar. O chat não
 que converte texto em array de lançamentos JSON**, pronto pra
 revisar e salvar.
 
-O agente (LLM rodando no n8n) tem acesso a 6 ferramentas (tools)
+O agente tem acesso a 6 ferramentas (tools)
 que consultam dados do user em tempo real: histórico de pares
 descrição↔categoria, lista de categorias, lista de contas, lista de
 orçamentos disponíveis. Com isso ele classifica corretamente cada
@@ -380,20 +380,3 @@ sequenceDiagram
 - **Custo por chamada** (LLM API) é relevante. Roadmap: rate limit
   por user (ex: 50 chamadas/dia free, ilimitado premium).
 - **Premium-only?** Roadmap: gating por plano.
-
-## Anexo: prompt do agente (referência)
-
-O prompt que o agente (LLM no n8n) recebe está descrito em
-`n8n workflow` (fora deste repo). Mudanças no prompt mudam
-comportamento do agente e devem ser refletidas neste PRD.
-
-> **Resumo do prompt** (extraído do texto que tu colou):
->
-> Você é um assistente de uma planilha financeira onde deve sempre
-> entender o contexto e extrair o máximo de informações possíveis
-> para ser inserido numa planilha.
->
-> O retorno é sempre um **array** (pode ter vários lançamentos
-> num único input). Use as ferramentas `lista_*_tool` para
-> classificar corretamente. Regras: valor +/- (débito/crédito),
-> data sempre com hora, categoria limitada às existentes.
