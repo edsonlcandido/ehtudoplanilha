@@ -319,6 +319,18 @@ routerAdd('POST', '/append-entry', (c) => {
   1. **Login OAuth do user** (PB nativo) → `/api/oauth2-redirect` → hook redireciona pro `/pwa/login` (vide `pwa/OAUTH_CONFIG.md`)
   2. **OAuth pra Sheets/Drive** (custom) → `/google-oauth-callback` → hook troca code por tokens → salva em `google_infos`
 
+- **Por que existem DOIS Client IDs no projeto?** São duas apps OAuth
+  distintas no Google Cloud Console — uma pro login, outra pra permissão
+  Sheets/Drive. Cada uma tem seu próprio Client ID e Client Secret
+  configurados em lugares diferentes (valores **NÃO** commitados por
+  segurança, vide `SECRETS.md` se existir):
+  | Client OAuth | Onde é usado | Onde fica configurado |
+  |---|---|---|
+  | **Login** (PB nativo, `listAuthMethods()`) | OAuth login do user | PB Admin UI → `users` collection → Options → OAuth2 |
+  | **Sheets/Drive** (custom, hook `google-oauth-callback.pb.js`) | Permissão pra ler/escrever na planilha + listar/criar planilhas no Drive | `.env` na raiz do repo (`GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`) |
+  Se você ver "dois Client IDs diferentes" em logs/devtools, é isso.
+  **NÃO** são versões obsoletas — é assim por design.
+
 ### Google Sheets API
 
 - **Base URL**: `https://sheets.googleapis.com/v4/spreadsheets`
@@ -512,11 +524,20 @@ export class SheetsService {
 as URLs são derivadas em `pwa/src/config.ts` baseado em
 `import.meta.env.DEV`:
 
-- **PocketBase**: SDK recebe `POCKETBASE_URL = ''` (vazio) → usa
-  `window.location.origin` (que é a origem do PWA). Em dev, isso
-  é `http://localhost:5174`; as chamadas `/api/*` e os 21 custom
-  endpoints vão via Vite proxy pro PB em `:8090`. Em prod, é
-  `https://planilha.ehtudo.app`; PB serve direto no mesmo domínio.
+- **PocketBase**: SDK recebe `POCKETBASE_URL` **absoluto** baseado em
+  `isDev`:
+  - Dev: `http://localhost:5174/` → Vite proxy do PWA intercepta
+    `/api/*` e os 21 custom endpoints, repassando pro PB em `:8090`.
+  - Prod: `https://planilha.ehtudo.app/` → PB serve no mesmo domínio.
+  - **⚠️ NÃO passar `''` (vazio):** o `buildURL()` do
+    `pocketbase@0.26.x` (vide `pocketbase.es.mjs:1`) trata URL
+    vazia/relativa como `window.location.origin +
+    window.location.pathname + baseURL + path`. Como o PWA roda em
+    `/pwa/login` (subpath), isso monta
+    `http://host/pwa/login/api/...` em vez de `http://host/api/...` e
+    quebra **todas** as chamadas do SDK. **Esse bug também quebraria
+    em prod** se o PWA tentasse fazer chamadas via SDK a partir de uma
+    rota em `/pwa/...`. A regra é: sempre URL absoluta.
 - **Dashboard URLs** (`DASHBOARD_URL`, etc): em dev apontam pra
   `http://localhost:5173/`; em prod usam paths relativos
   (`/dashboard/...`).
@@ -649,7 +670,8 @@ Frontend faz **DOIS POSTs** sequenciais em `/append-entry`:
 | **dev vs prod env** | PWA usa estratégia "Opção C" — **zero .env files**,
 URLs derivadas em `pwa/src/config.ts` baseado em
 `import.meta.env.DEV`. Dev: localhost:5174 + proxy → PB:8090.
-Prod: relativo → mesmo domínio. Vide §10. |
+Prod: relativo → mesmo domínio. **POCKETBASE_URL sempre absoluto**
+(vide §10 — URL vazia quebra o `buildURL` do pocketbase@0.26.x). |
 | **Easypanel** | Termina TLS, mas NÃO envia `X-Forwarded-Host` (só `X-Forwarded-Proto`). Em prod, `request.url` chega como `localhost:3000` no Next.js — mas isso é problema de outro projeto (arvio), aqui não tem isso. |
 
 ---

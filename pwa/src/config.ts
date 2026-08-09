@@ -1,11 +1,16 @@
 /**
  * Configuração de URLs e endpoints do PWA.
  *
- * Estratégia "Opção C" — **zero .env files**:
- * - **PocketBase**: SDK usa `window.location.origin` (default quando
- *   nenhum base URL é passado). Em dev, Vite proxy redireciona
- *   `/api/*` e os custom endpoints pro PB em :8090. Em prod, PB serve
- *   tudo no mesmo domínio.
+ * Estratégia "Opção C" — **zero .env files**, mas com URL **absoluta**
+ * pro PocketBase (não vazia) por causa de uma armadilha do SDK
+ * (vide `POCKETBASE_URL` abaixo).
+ *
+ * Em dev: POCKETBASE_URL = `http://localhost:5174/` → Vite proxy do PWA
+ *         intercepta `/api/*` e os custom endpoints, repassando pro PB
+ *         em `http://localhost:8090`.
+ * Em prod: POCKETBASE_URL = `https://planilha.ehtudo.app/` → PB serve
+ *          tudo no mesmo domínio.
+ *
  * - **Dashboard**: derivado do `window.location` + `/dashboard/...` em
  *   prod, ou `http://localhost:5173/dashboard/...` em dev.
  * - **Webhooks n8n** (OCR/chat): hardcoded, mesmo em dev e prod
@@ -24,17 +29,26 @@ const isDev = import.meta.env.DEV
 /**
  * URL do PocketBase.
  *
- * - Em dev: vazio → SDK usa `window.location.origin` (que é
- *   `http://localhost:5174`) → chamadas `/api/*` vão pro Vite proxy
- *   → repassa pra PB em `http://localhost:8090`.
- * - Em prod: vazio → SDK usa `window.location.origin` (que é
- *   `https://planilha.ehtudo.app`) → PB serve direto no mesmo
- *   domínio.
+ * ⚠️ **DEVE ser absoluta.** Não passar `''` (vazio).
  *
- * Se passar uma URL aqui, sobrescreve o comportamento default.
- * Útil pra apontar pra outro ambiente de dev.
+ * Armadilha do SDK: `pocketbase@0.26.x` tem um `buildURL()` que, quando
+ * recebe URL vazia/relativa, monta a URL final como
+ * `window.location.origin + window.location.pathname + baseURL + path`.
+ * Como o PWA roda em `/pwa/login` (subpath), isso vira
+ * `http://host/pwa/login/api/...` em vez de `http://host/api/...` —
+ * quebra todas as chamadas. Source: `pocketbase.es.mjs:1`, função
+ * `buildURL`. Esse comportamento **também quebraria em prod** se o PWA
+ * tentasse fazer chamadas via SDK a partir de uma rota em `/pwa/...`.
+ *
+ * - Em dev: `http://localhost:5174/` → Vite proxy intercepta `/api/*`
+ *   e os custom endpoints, repassando pro PB em `:8090`.
+ * - Em prod: `https://planilha.ehtudo.app/` → PB serve no mesmo domínio.
+ *
+ * Se quiser apontar pra outro ambiente, sobrescreve aqui.
  */
-export const POCKETBASE_URL: string = ''
+export const POCKETBASE_URL: string = isDev
+  ? 'http://localhost:5174/'
+  : 'https://planilha.ehtudo.app/'
 
 // ─────────────────────────────────────────────────────────────────────
 // Dashboard

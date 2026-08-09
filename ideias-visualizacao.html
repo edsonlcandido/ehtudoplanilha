@@ -1,0 +1,1078 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ideias de visualização · lançamentos</title>
+<style>
+  /* ---------- reset & tokens ---------- */
+  *,*::before,*::after{box-sizing:border-box}
+  :root{
+    --bg:#0b0d12;
+    --bg-2:#11141b;
+    --bg-3:#171b25;
+    --line:#222837;
+    --line-2:#2c3344;
+    --text:#e6e9f2;
+    --text-2:#9aa3b8;
+    --text-3:#5e6679;
+    --accent:#7c5cff;
+    --accent-2:#5b8cff;
+    --green:#22c55e;
+    --green-2:#16a34a;
+    --red:#ef4444;
+    --red-2:#dc2626;
+    --amber:#f59e0b;
+    --blue:#3b82f6;
+    --cyan:#06b6d4;
+    --pink:#ec4899;
+    --radius:12px;
+    --radius-sm:8px;
+    --shadow:0 4px 24px -8px rgba(0,0,0,.5);
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+  input,select{font:inherit;color:inherit}
+
+  /* ---------- layout ---------- */
+  .wrap{max-width:1280px;margin:0 auto;padding:24px}
+  header.top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;letter-spacing:-.01em}
+  .brand .dot{width:10px;height:10px;border-radius:3px;background:linear-gradient(135deg,var(--accent),var(--accent-2))}
+  .spacer{flex:1}
+  .filters{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg-3);border:1px solid var(--line);border-radius:999px;font-size:12.5px;color:var(--text-2);transition:.15s}
+  .chip:hover{border-color:var(--line-2);color:var(--text)}
+  .chip.active{background:rgba(124,92,255,.15);border-color:rgba(124,92,255,.5);color:#cdbfff}
+  .chip select{background:none;border:0;color:inherit;outline:0;font:inherit;cursor:pointer}
+  .chip select option{background:var(--bg-3);color:var(--text)}
+
+  /* tabs */
+  .tabs{display:flex;gap:4px;background:var(--bg-2);padding:4px;border-radius:12px;border:1px solid var(--line);overflow-x:auto;margin-bottom:20px;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{padding:9px 14px;border-radius:8px;color:var(--text-2);font-size:13px;white-space:nowrap;font-weight:500;transition:.15s}
+  .tab:hover{color:var(--text)}
+  .tab.active{background:var(--bg-3);color:var(--text);box-shadow:0 1px 0 rgba(255,255,255,.04) inset}
+
+  /* panel */
+  .panel{background:var(--bg-2);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:20px;box-shadow:var(--shadow)}
+  .panel h2{margin:0 0 4px;font-size:15px;font-weight:600;letter-spacing:-.01em}
+  .panel .sub{color:var(--text-3);font-size:12.5px;margin-bottom:16px}
+  .grid{display:grid;gap:16px}
+  .g-2{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  .g-3{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+  .g-4{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+
+  /* ---------- kpi cards ---------- */
+  .kpi{background:var(--bg-3);border:1px solid var(--line);border-radius:var(--radius);padding:16px;position:relative;overflow:hidden}
+  .kpi .label{font-size:12px;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+  .kpi .value{font-size:26px;font-weight:600;letter-spacing:-.02em;margin-top:6px;font-feature-settings:"tnum"}
+  .kpi .delta{font-size:12px;margin-top:4px;color:var(--text-2)}
+  .kpi.income .value{color:var(--green)}
+  .kpi.expense .value{color:var(--red)}
+  .kpi.balance .value{color:var(--text)}
+  .kpi.balance.positive .value{color:var(--green)}
+  .kpi.balance.negative .value{color:var(--red)}
+  .kpi::after{content:"";position:absolute;right:-20px;top:-20px;width:80px;height:80px;border-radius:50%;opacity:.06;background:currentColor}
+
+  /* ---------- table ---------- */
+  .tbl{width:100%;border-collapse:collapse;font-size:13px}
+  .tbl th,.tbl td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line)}
+  .tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);font-weight:600;background:var(--bg-3);position:sticky;top:0}
+  .tbl tr:hover td{background:rgba(255,255,255,.015)}
+  .tbl .num{text-align:right;font-variant-numeric:tabular-nums;font-family:var(--mono);font-size:12.5px}
+  .tbl .pos{color:var(--green)}
+  .tbl .neg{color:var(--red)}
+  .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:500;background:var(--bg-3);border:1px solid var(--line);color:var(--text-2)}
+  .pill.preciso{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.3);color:var(--amber)}
+
+  /* ---------- timeline ---------- */
+  .day{margin-bottom:18px}
+  .day-head{display:flex;align-items:baseline;gap:12px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px dashed var(--line)}
+  .day-head .d{font-weight:600;font-size:13px}
+  .day-head .d .rel{color:var(--text-3);font-weight:400;margin-left:6px;font-size:12px}
+  .day-head .sum{margin-left:auto;font-size:12px;color:var(--text-2);font-variant-numeric:tabular-nums}
+  .day-head .sum b{color:var(--text);font-weight:600}
+  .row{display:grid;grid-template-columns:28px 1fr auto auto;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;background:var(--bg-3);border:1px solid var(--line);margin-bottom:6px;transition:.15s}
+  .row:hover{border-color:var(--line-2);transform:translateX(2px)}
+  .row .ico{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-size:14px;background:var(--bg-2);border:1px solid var(--line)}
+  .row .ico.income{color:var(--green);background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.2)}
+  .row .ico.expense{color:var(--red);background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.2)}
+  .row .ico.transf{color:var(--blue);background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.2)}
+  .row .desc strong{font-weight:500}
+  .row .desc small{display:block;color:var(--text-3);font-size:11.5px;margin-top:2px}
+  .row .val{font-weight:600;font-variant-numeric:tabular-nums;font-family:var(--mono);font-size:13.5px}
+  .row .val.income{color:var(--green)}
+  .row .val.expense{color:var(--red)}
+  .row .val.transf{color:var(--blue)}
+
+  /* ---------- bar chart (categorias) ---------- */
+  .bars{display:flex;flex-direction:column;gap:14px}
+  .bar-row{display:grid;grid-template-columns:140px 1fr 90px;align-items:center;gap:12px}
+  .bar-row .name{font-size:13px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bar-row .name .badge{font-size:10px;color:var(--amber);margin-left:4px}
+  .bar-track{height:24px;background:var(--bg-3);border-radius:6px;overflow:hidden;position:relative;border:1px solid var(--line)}
+  .bar-fill{height:100%;border-radius:5px;transition:width .4s cubic-bezier(.4,0,.2,1);position:relative}
+  .bar-fill.budget{background:linear-gradient(90deg,var(--blue),var(--accent))}
+  .bar-fill.warn-ok{background:linear-gradient(90deg,var(--green),var(--green-2))}
+  .bar-fill.warn-mid{background:linear-gradient(90deg,var(--amber),#d97706)}
+  .bar-fill.warn-bad{background:linear-gradient(90deg,var(--red),var(--red-2))}
+  .bar-fill.over{background:repeating-linear-gradient(45deg,var(--red),var(--red) 6px,var(--red-2) 6px,var(--red-2) 12px)}
+  .bar-track .limit{position:absolute;top:-2px;bottom:-2px;width:2px;background:#fff;opacity:.6;box-shadow:0 0 0 1px rgba(0,0,0,.5)}
+  .bar-row .amt{text-align:right;font-size:12.5px;font-variant-numeric:tabular-nums;color:var(--text-2);font-family:var(--mono)}
+  .bar-row .amt b{color:var(--text);font-weight:600}
+
+  /* ---------- donut ---------- */
+  .donut-wrap{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+  .donut{position:relative;width:200px;height:200px;flex-shrink:0}
+  .donut svg{transform:rotate(-90deg)}
+  .donut .center{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+  .donut .center .l{font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+  .donut .center .v{font-size:22px;font-weight:600;letter-spacing:-.02em;margin-top:2px;font-variant-numeric:tabular-nums}
+  .legend{display:flex;flex-direction:column;gap:8px;flex:1;min-width:200px}
+  .legend-row{display:grid;grid-template-columns:14px 1fr auto auto;gap:10px;align-items:center;font-size:13px}
+  .legend-row .sw{width:12px;height:12px;border-radius:3px}
+  .legend-row .nm{color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .legend-row .pct{color:var(--text-3);font-size:11.5px;font-variant-numeric:tabular-nums}
+  .legend-row .vl{font-variant-numeric:tabular-nums;font-family:var(--mono);font-size:12.5px}
+
+  /* ---------- heatmap calendar ---------- */
+  .heat-cal{display:grid;grid-template-columns:auto repeat(7,1fr);gap:4px;font-size:11px}
+  .heat-cal .h{color:var(--text-3);text-align:center;padding:4px 0;font-weight:500}
+  .heat-cal .lbl{color:var(--text-3);padding:6px 6px 6px 0;text-align:right;font-variant-numeric:tabular-nums}
+  .heat-cal .c{aspect-ratio:1;border-radius:4px;background:var(--bg-3);border:1px solid var(--line);cursor:pointer;position:relative;transition:.15s;min-height:24px}
+  .heat-cal .c:hover{transform:scale(1.15);z-index:2;border-color:var(--accent)}
+  .heat-cal .c.empty{background:transparent;border:0;cursor:default}
+  .heat-cal .c.empty:hover{transform:none}
+  .heat-cal .c[data-l="1"]{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.25)}
+  .heat-cal .c[data-l="2"]{background:rgba(239,68,68,.3);border-color:rgba(239,68,68,.4)}
+  .heat-cal .c[data-l="3"]{background:rgba(239,68,68,.5);border-color:rgba(239,68,68,.6)}
+  .heat-cal .c[data-l="4"]{background:rgba(239,68,68,.75);border-color:rgba(239,68,68,.85)}
+  .heat-cal .c[data-l="5"]{background:rgba(239,68,68,1);border-color:#fff}
+  .heat-cal .c[data-i="1"]{background:rgba(34,197,94,.3);border-color:rgba(34,197,94,.4)}
+  .heat-cal .c[data-i="2"]{background:rgba(34,197,94,.6);border-color:rgba(34,197,94,.7)}
+  .heat-cal .c[data-i="3"]{background:rgba(34,197,94,1);border-color:#fff}
+  .heat-cal .month-row{grid-column:2 / -1;color:var(--text-3);font-weight:500;font-size:11px;padding:4px 0}
+  .heat-legend{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:11px;color:var(--text-3);justify-content:flex-end}
+
+  /* ---------- sankey / contas ---------- */
+  .accounts{display:grid;gap:12px}
+  .acc{background:var(--bg-3);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+  .acc-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .acc-head .nm{font-weight:600;font-size:14px}
+  .acc-head .nm .ct{color:var(--text-3);font-weight:400;font-size:12px;margin-left:6px}
+  .acc-head .bal{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:600;font-size:15px}
+  .acc-head .bal.pos{color:var(--green)}
+  .acc-head .bal.neg{color:var(--red)}
+  .acc-bar{height:6px;background:var(--bg-2);border-radius:3px;overflow:hidden;margin-bottom:10px}
+  .acc-bar .used{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));border-radius:3px}
+  .acc-list{display:flex;flex-direction:column;gap:4px}
+  .acc-list .item{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:6px 8px;border-radius:6px;background:var(--bg-2)}
+  .acc-list .item:hover{background:rgba(255,255,255,.02)}
+  .acc-list .item .cat{color:var(--text-2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .acc-list .item .vl{font-variant-numeric:tabular-nums;font-family:var(--mono);color:var(--red);font-size:12px}
+  .acc-list .item .vl.inc{color:var(--green)}
+  .acc-list .item .vl.tr{color:var(--blue)}
+
+  /* ---------- view visibility ---------- */
+  .view{display:none}
+  .view.active{display:block}
+
+  /* utility */
+  .pos{color:var(--green)}
+  .neg{color:var(--red)}
+  .tr{color:var(--blue)}
+  .muted{color:var(--text-3)}
+  .right{text-align:right}
+  .small{font-size:11.5px}
+  .mono{font-family:var(--mono)}
+
+  /* responsive */
+  @media (max-width:680px){
+    .wrap{padding:14px}
+    .bar-row{grid-template-columns:90px 1fr 70px;gap:8px}
+    .bar-row .name{font-size:12px}
+    .donut{width:160px;height:160px}
+    .donut .center .v{font-size:18px}
+  }
+
+  /* tooltip */
+  .tip{position:fixed;background:#000;color:#fff;padding:6px 10px;border-radius:6px;font-size:11.5px;pointer-events:none;z-index:100;opacity:0;transition:opacity .12s;border:1px solid var(--line-2);max-width:240px}
+  .tip.on{opacity:1}
+  .tip b{color:var(--amber)}
+
+  /* ---------- waterfall ---------- */
+  .wf-head{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;background:var(--bg-3);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:12px}
+  .wf-head > div{font-size:13px;line-height:1.3}
+  .wf-head b{font-size:18px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .wf-toggle{display:flex;align-items:center;gap:6px;margin-bottom:14px}
+  .wf-toggle button{padding:6px 12px;background:var(--bg-3);border:1px solid var(--line);border-radius:8px;color:var(--text-2);font-size:12.5px;cursor:pointer;transition:.15s}
+  .wf-toggle button:hover{color:var(--text);border-color:var(--line-2)}
+  .wf-toggle button.on{background:rgba(124,92,255,.15);border-color:rgba(124,92,255,.5);color:#cdbfff}
+  .wf-svg{background:var(--bg-3);border:1px solid var(--line);border-radius:var(--radius);padding:8px;overflow-x:auto;overflow-y:hidden}
+  .wf-svg svg{display:block;min-width:100%}
+  .wf-svg .wf-bar{cursor:pointer;transition:opacity .15s}
+  .wf-svg .wf-bar:hover rect{opacity:1}
+  .wf-svg .wf-bar:hover{filter:drop-shadow(0 0 6px currentColor)}
+  .wf-svg text{pointer-events:none}
+  .wf-legend{display:flex;align-items:center;gap:16px;margin-top:10px;padding:0 4px;font-size:11.5px;color:var(--text-3);flex-wrap:wrap}
+  .wf-legend .it{display:flex;align-items:center;gap:6px}
+  .wf-legend .sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+  @media (max-width:680px){
+    .wf-head{grid-template-columns:repeat(2,1fr)}
+    .wf-head b{font-size:15px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand"><span class="dot"></span>ideias · lançamentos</div>
+    <div class="spacer"></div>
+    <div class="filters" id="filters">
+      <span class="chip">mês
+        <select id="f-mes">
+          <option value="all">todos</option>
+        </select>
+      </span>
+      <span class="chip">conta
+        <select id="f-conta"><option value="all">todas</option></select>
+      </span>
+      <span class="chip">categoria
+        <select id="f-cat"><option value="all">todas</option></select>
+      </span>
+      <span class="chip active" id="f-transf" title="incluir transferências">⊘ transferências: incluídas</span>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-v="dashboard">1 · dashboard</button>
+    <button class="tab" data-v="timeline">2 · timeline</button>
+    <button class="tab" data-v="categorias">3 · categorias &amp; orçamento</button>
+    <button class="tab" data-v="contas">4 · contas</button>
+    <button class="tab" data-v="calendario">5 · calendário heatmap</button>
+    <button class="tab" data-v="tabela">6 · tabela densa</button>
+    <button class="tab" data-v="waterfall">7 · waterfall</button>
+  </nav>
+
+  <!-- ========== view 1: dashboard ========== -->
+  <section class="view active" data-view="dashboard">
+    <div class="grid g-4" id="kpiRow"></div>
+
+    <div class="grid g-2" style="margin-top:20px">
+      <div class="panel">
+        <h2>despesas por categoria</h2>
+        <div class="sub">top categorias que mais consomem no período (exclui transferências)</div>
+        <div class="donut-wrap" id="donutWrap"></div>
+      </div>
+      <div class="panel">
+        <h2>saldo por conta</h2>
+        <div class="sub">distribuição do saldo entre as contas (receitas - despesas no período)</div>
+        <div id="contasResumo"></div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:20px">
+      <h2>últimos lançamentos</h2>
+      <div class="sub">os 8 mais recentes</div>
+      <div id="ultimosLanc"></div>
+    </div>
+  </section>
+
+  <!-- ========== view 2: timeline ========== -->
+  <section class="view" data-view="timeline">
+    <div class="panel">
+      <h2>timeline por dia</h2>
+      <div class="sub">agrupado por data, do mais recente pro mais antigo.Transferência destacada em azul</div>
+      <div id="timelineBody"></div>
+    </div>
+  </section>
+
+  <!-- ========== view 3: categorias ========== -->
+  <section class="view" data-view="categorias">
+    <div class="panel">
+      <h2>categorias &amp; orçamento</h2>
+      <div class="sub">barra verde &lt;70% · amarelo 70-100% · vermelho &gt;100% do limite. <span class="pill preciso">PRECISO</span> = categoria com limite</div>
+      <div class="bars" id="barCategorias"></div>
+    </div>
+  </section>
+
+  <!-- ========== view 4: contas ========== -->
+  <section class="view" data-view="contas">
+    <div class="panel">
+      <h2>extrato por conta</h2>
+      <div class="sub">gastos de cada conta no período, com % do saldo consumido</div>
+      <div class="accounts" id="accList"></div>
+    </div>
+  </section>
+
+  <!-- ========== view 5: calendario ========== -->
+  <section class="view" data-view="calendario">
+    <div class="panel">
+      <h2>heatmap calendário</h2>
+      <div class="sub">intensidade de despesa por dia (vermelho) e receita (verde)</div>
+      <div id="calBody"></div>
+      <div class="heat-legend">
+        menos
+        <span class="heat-cal"><span class="c" data-l="1" style="width:14px;height:14px"></span></span>
+        <span class="heat-cal"><span class="c" data-l="2" style="width:14px;height:14px"></span></span>
+        <span class="heat-cal"><span class="c" data-l="3" style="width:14px;height:14px"></span></span>
+        <span class="heat-cal"><span class="c" data-l="4" style="width:14px;height:14px"></span></span>
+        <span class="heat-cal"><span class="c" data-l="5" style="width:14px;height:14px"></span></span>
+        mais
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== view 6: tabela ========== -->
+  <section class="view" data-view="tabela">
+    <div class="panel" style="padding:0;overflow:hidden">
+      <div style="padding:16px 20px;border-bottom:1px solid var(--line)">
+        <h2 style="margin:0">tabela densa</h2>
+        <div class="sub" style="margin:4px 0 0">referência - como provavelmente é hoje. mais info por linha, menos escaneável</div>
+      </div>
+      <div style="max-height:600px;overflow:auto">
+        <table class="tbl" id="tbl">
+          <thead>
+            <tr>
+              <th>data</th>
+              <th>conta</th>
+              <th>descrição</th>
+              <th>categoria</th>
+              <th>orçamento</th>
+              <th class="num">valor</th>
+              <th>obs</th>
+            </tr>
+          </thead>
+          <tbody id="tblBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== view 7: waterfall ========== -->
+  <section class="view" data-view="waterfall">
+    <div class="panel">
+      <h2>fluxo de caixa · waterfall</h2>
+      <div class="sub">cada barra é um delta (receita verde, despesa vermelho, transferência azul). conectores tracejados ligam os saldos parciais. transferências só aparecem se você deixou o toggle ligado no header.</div>
+      <div id="wfBody"></div>
+    </div>
+  </section>
+
+</div>
+
+<div class="tip" id="tip"></div>
+
+<script>
+/* =========================================================================
+   MOCK DATA — sheet entries no mesmo shape do /get-sheet-entries
+   ========================================================================= */
+const ENTRIES = [
+  // ---- nov 2025 ----
+  {rowIndex:60,data:"2025-11-30",conta:"Nubank",valor:-89.90,descricao:"iFood - jantar japonês",categoria:"Alimentação",orcamento:"",obs:""},
+  {rowIndex:59,data:"2025-11-29",conta:"Carteira",valor:-35.00,descricao:"Uber pra casa",categoria:"Transporte",orcamento:"PRECISO",obs:""},
+  {rowIndex:58,data:"2025-11-29",conta:"Itaú",valor:-1200.00,descricao:"aluguel",categoria:"Moradia",orcamento:"PRECISO",obs:"novembro"},
+  {rowIndex:57,data:"2025-11-28",conta:"Nubank",valor:8500.00,descricao:"salário",categoria:"Salário",orcamento:"",obs:""},
+  {rowIndex:56,data:"2025-11-28",conta:"Itaú",valor:-1500.00,descricao:"Nubank",categoria:"Transferência",orcamento:"",obs:"reserva"},
+  {rowIndex:55,data:"2025-11-27",conta:"Nubank",valor:-42.50,descricao:"Netflix + Spotify",categoria:"Assinaturas",orcamento:"PRECISO",obs:""},
+  {rowIndex:54,data:"2025-11-26",conta:"Nubank",valor:-15.00,descricao:"corte cabelo",categoria:"Pessoal",orcamento:"PRECISO",obs:""},
+  {rowIndex:53,data:"2025-11-25",conta:"Carteira",valor:-78.40,descricao:"compras da semana",categoria:"Mercado",orcamento:"PRECISO",obs:""},
+  {rowIndex:52,data:"2025-11-22",conta:"Nubank",valor:-180.00,descricao:"presente mãe",categoria:"Presentes",orcamento:"",obs:"aniversário"},
+  {rowIndex:51,data:"2025-11-20",conta:"Nubank",valor:-49.90,descricao:"farmácia",categoria:"Saúde",orcamento:"PRECISO",obs:""},
+  {rowIndex:50,data:"2025-11-18",conta:"Itaú",valor:250.00,descricao:"freela design",categoria:"Extra",orcamento:"",obs:"logo cliente"},
+  {rowIndex:49,data:"2025-11-15",conta:"Nubank",valor:-250.00,descricao:"conta de luz",categoria:"Moradia",orcamento:"PRECISO",obs:""},
+  {rowIndex:48,data:"2025-11-12",conta:"Carteira",valor:-22.00,descricao:"almoço trabalho",categoria:"Alimentação",orcamento:"",obs:""},
+  {rowIndex:47,data:"2025-11-10",conta:"Nubank",valor:-89.90,descricao:"internet + celular",categoria:"Contas",orcamento:"PRECISO",obs:""},
+  {rowIndex:46,data:"2025-11-08",conta:"Nubank",valor:-145.00,descricao:"jantar com amigos",categoria:"Alimentação",orcamento:"",obs:"rodízio"},
+  {rowIndex:45,data:"2025-11-05",conta:"Itaú",valor:-1200.00,descricao:"aluguel",categoria:"Moradia",orcamento:"PRECISO",obs:""},
+  {rowIndex:44,data:"2025-11-05",conta:"Itaú",valor:8500.00,descricao:"salário",categoria:"Salário",orcamento:"",obs:""},
+
+  // ---- out 2025 ----
+  {rowIndex:43,data:"2025-10-30",conta:"Nubank",valor:-320.00,descricao:"compras mercado grande",categoria:"Mercado",orcamento:"PRECISO",obs:"estoque mês"},
+  {rowIndex:42,data:"2025-10-28",conta:"Itaú",valor:-1200.00,descricao:"aluguel",categoria:"Moradia",orcamento:"PRECISO",obs:""},
+  {rowIndex:41,data:"2025-10-25",conta:"Nubank",valor:-450.00,descricao:"roupas nova coleção",categoria:"Pessoal",orcamento:"PRECISO",obs:""},
+  {rowIndex:40,data:"2025-10-22",conta:"Nubank",valor:120.00,descricao:"cashback cartão",categoria:"Extra",orcamento:"",obs:""},
+  {rowIndex:39,data:"2025-10-20",conta:"Carteira",valor:-18.00,descricao:"cappuccino padaria",categoria:"Alimentação",orcamento:"",obs:""},
+  {rowIndex:38,data:"2025-10-18",conta:"Nubank",valor:-89.00,descricao:"plano saúde",categoria:"Saúde",orcamento:"PRECISO",obs:""},
+  {rowIndex:37,data:"2025-10-15",conta:"Itaú",valor:-220.00,descricao:"conta luz",categoria:"Moradia",orcamento:"PRECISO",obs:""},
+  {rowIndex:36,data:"2025-10-12",conta:"Nubank",valor:-42.50,descricao:"Netflix + Spotify",categoria:"Assinaturas",orcamento:"PRECISO",obs:""},
+  {rowIndex:35,data:"2025-10-10",conta:"Nubank",valor:-67.00,descricao:"combustível",categoria:"Transporte",orcamento:"PRECISO",obs:""},
+  {rowIndex:34,data:"2025-10-08",conta:"Itaú",valor:8500.00,descricao:"salário",categoria:"Salário",orcamento:"",obs:""},
+  {rowIndex:33,data:"2025-10-05",conta:"Itaú",valor:-1200.00,descricao:"aluguel",categoria:"Moradia",orcamento:"PRECISO",obs:""},
+  {rowIndex:32,data:"2025-10-05",conta:"Itaú",valor:8500.00,descricao:"salário",categoria:"Salário",orcamento:"",obs:""},
+  {rowIndex:31,data:"2025-10-03",conta:"Itaú",valor:-1500.00,descricao:"Nubank",categoria:"Transferência",orcamento:"",obs:"reserva"},
+
+  // ---- set 2025 ----
+  {rowIndex:30,data:"2025-09-28",conta:"Itaú",valor:-1200.00,descricao:"aluguel",categoria:"Moradia",orcamento:"PRECISO",obs:""},
+  {rowIndex:29,data:"2025-09-25",conta:"Carteira",valor:-95.00,descricao:"compras da semana",categoria:"Mercado",orcamento:"PRECISO",obs:""},
+  {rowIndex:28,data:"2025-09-20",conta:"Nubank",valor:-180.00,descricao:"presente pai",categoria:"Presentes",orcamento:"",obs:"dia dos pais"},
+  {rowIndex:27,data:"2025-09-18",conta:"Nubank",valor:-42.50,descricao:"Netflix + Spotify",categoria:"Assinaturas",orcamento:"PRECISO",obs:""},
+  {rowIndex:26,data:"2025-09-15",conta:"Itaú",valor:-200.00,descricao:"conta luz",categoria:"Moradia",orcamento:"PRECISO",obs:""},
+  {rowIndex:25,data:"2025-09-12",conta:"Nubank",valor:-380.00,descricao:"manutenção carro",categoria:"Transporte",orcamento:"PRECISO",obs:"troca óleo"},
+  {rowIndex:24,data:"2025-09-10",conta:"Itaú",valor:500.00,descricao:"freela dev",categoria:"Extra",orcamento:"",obs:""},
+  {rowIndex:23,data:"2025-09-08",conta:"Itaú",valor:8500.00,descricao:"salário",categoria:"Salário",orcamento:"",obs:""},
+  {rowIndex:22,data:"2025-09-05",conta:"Itaú",valor:-1200.00,descricao:"aluguel",categoria:"Moradia",orcamento:"PRECISO",obs:""},
+  {rowIndex:21,data:"2025-09-03",conta:"Itaú",valor:-1500.00,descricao:"Nubank",categoria:"Transferência",orcamento:"",obs:"reserva"},
+  {rowIndex:20,data:"2025-09-02",conta:"Nubank",valor:-67.00,descricao:"almoço",categoria:"Alimentação",orcamento:"",obs:""},
+
+  // ago
+  {rowIndex:19,data:"2025-08-28",conta:"Itaú",valor:-1200.00,descricao:"aluguel",categoria:"Moradia",orcamento:"PRECISO",obs:""},
+  {rowIndex:18,data:"2025-08-20",conta:"Nubank",valor:-150.00,descricao:"roupa",categoria:"Pessoal",orcamento:"PRECISO",obs:""},
+  {rowIndex:17,data:"2025-08-15",conta:"Itaú",valor:-210.00,descricao:"conta luz",categoria:"Moradia",orcamento:"PRECISO",obs:""},
+  {rowIndex:16,data:"2025-08-10",conta:"Itaú",valor:8500.00,descricao:"salário",categoria:"Salário",orcamento:"",obs:""},
+  {rowIndex:15,data:"2025-08-08",conta:"Nubank",valor:-42.50,descricao:"Netflix + Spotify",categoria:"Assinaturas",orcamento:"PRECISO",obs:""},
+  {rowIndex:14,data:"2025-08-05",conta:"Itaú",valor:-1200.00,descricao:"aluguel",categoria:"Moradia",orcamento:"PRECISO",obs:""},
+  {rowIndex:13,data:"2025-08-05",conta:"Itaú",valor:-1500.00,descricao:"Nubank",categoria:"Transferência",orcamento:"",obs:""},
+  {rowIndex:12,data:"2025-08-02",conta:"Nubank",valor:-89.00,descricao:"plano saúde",categoria:"Saúde",orcamento:"PRECISO",obs:""},
+];
+
+/* limites das categorias PRECISO (orçamento mensal) */
+const LIMITES = {
+  "Moradia":1700,
+  "Mercado":600,
+  "Alimentação":500,
+  "Transporte":400,
+  "Assinaturas":60,
+  "Saúde":120,
+  "Pessoal":300,
+  "Contas":120,
+};
+
+/* =========================================================================
+   HELPERS
+   ========================================================================= */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const fmtBRL = v => v.toLocaleString("pt-BR",{style:"currency",currency:"BRL",maximumFractionDigits:2});
+const fmtDate = d => new Date(d+"T00:00:00").toLocaleDateString("pt-BR",{day:"2-digit",month:"short",year:"numeric"});
+const fmtDateShort = d => new Date(d+"T00:00:00").toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"});
+const ym = d => d.slice(0,7);
+const mesLabel = y => {
+  const [y_,m_] = y.split("-");
+  const dt = new Date(+y_, +m_-1, 1);
+  return dt.toLocaleDateString("pt-BR",{month:"long",year:"numeric"});
+};
+const isTransf = e => e.categoria === "Transferência";
+const isPreciso = e => e.orcamento === "PRECISO";
+const icon = e => isTransf(e) ? "⇄" : e.valor > 0 ? "↗" : "↘";
+const iconCls = e => isTransf(e) ? "transf" : e.valor > 0 ? "income" : "expense";
+const valCls = e => isTransf(e) ? "transf" : e.valor > 0 ? "income" : "expense";
+const relLabel = d => {
+  const today = new Date("2025-11-30"); // data "hoje" congelada pros dados mock
+  const dt = new Date(d+"T00:00:00");
+  const diff = Math.round((today - dt) / 86400000);
+  if (diff === 0) return "hoje";
+  if (diff === 1) return "ontem";
+  if (diff < 7) return `há ${diff} dias`;
+  if (diff < 30) return `há ${Math.floor(diff/7)} sem`;
+  return `há ${Math.floor(diff/30)} mês`;
+};
+const colorPalette = ["#7c5cff","#5b8cff","#06b6d4","#22c55e","#f59e0b","#ec4899","#3b82f6","#84cc16","#a855f7","#14b8a6"];
+
+/* =========================================================================
+   STATE + FILTERS
+   ========================================================================= */
+const state = {
+  mes:"all",
+  conta:"all",
+  cat:"all",
+  comTransf:true,
+  wfModo:"categoria",
+};
+
+function applyFilters(){
+  return ENTRIES.filter(e => {
+    if (state.mes !== "all" && ym(e.data) !== state.mes) return false;
+    if (state.conta !== "all" && e.conta !== state.conta) return false;
+    if (state.cat !== "all" && e.categoria !== state.cat) return false;
+    if (!state.comTransf && isTransf(e)) return false;
+    return true;
+  });
+}
+
+/* popular selects */
+function setupFilters(){
+  const meses = [...new Set(ENTRIES.map(e => ym(e.data)))].sort().reverse();
+  const fMes = $("#f-mes");
+  meses.forEach(m => {
+    const o = document.createElement("option");
+    o.value = m; o.textContent = mesLabel(m);
+    fMes.appendChild(o);
+  });
+  [...new Set(ENTRIES.map(e => e.conta))].sort().forEach(c => {
+    const o = document.createElement("option");
+    o.value = c; o.textContent = c;
+    $("#f-conta").appendChild(o);
+  });
+  [...new Set(ENTRIES.map(e => e.categoria))].sort().forEach(c => {
+    const o = document.createElement("option");
+    o.value = c; o.textContent = c;
+    $("#f-cat").appendChild(o);
+  });
+  fMes.onchange = e => { state.mes = e.target.value; renderAll(); };
+  $("#f-conta").onchange = e => { state.conta = e.target.value; renderAll(); };
+  $("#f-cat").onchange = e => { state.cat = e.target.value; renderAll(); };
+  $("#f-transf").onclick = e => {
+    state.comTransf = !state.comTransf;
+    e.currentTarget.classList.toggle("active", state.comTransf);
+    e.currentTarget.textContent = state.comTransf ? "⊘ transferências: incluídas" : "⊘ transferências: ocultas";
+    renderAll();
+  };
+}
+
+/* =========================================================================
+   VIEW 1 — DASHBOARD
+   ========================================================================= */
+function renderDashboard(){
+  const list = applyFilters();
+  const semTransf = list.filter(e => !isTransf(e));
+  const receitas = semTransf.filter(e => e.valor > 0).reduce((s,e)=>s+e.valor,0);
+  const despesas = semTransf.filter(e => e.valor < 0).reduce((s,e)=>s+Math.abs(e.valor),0);
+  const saldo = receitas - despesas;
+  const totalMov = list.length;
+
+  // KPI
+  const kpis = [
+    {label:"receitas", value:fmtBRL(receitas), cls:"income", delta:`${semTransf.filter(e=>e.valor>0).length} lançamentos`},
+    {label:"despesas", value:fmtBRL(despesas), cls:"expense", delta:`${semTransf.filter(e=>e.valor<0).length} lançamentos`},
+    {label:"saldo", value:fmtBRL(saldo), cls:"balance " + (saldo>=0?"positive":"negative"), delta:`taxa de economia: ${receitas?Math.round(saldo/receitas*100):0}%`},
+    {label:"lançamentos", value:totalMov, cls:"", delta:`${state.comTransf?"com":"sem"} transferências`},
+  ];
+  $("#kpiRow").innerHTML = kpis.map(k => `
+    <div class="kpi ${k.cls}">
+      <div class="label">${k.label}</div>
+      <div class="value">${k.value}</div>
+      <div class="delta">${k.delta}</div>
+    </div>
+  `).join("");
+
+  // DONUT — despesas por categoria
+  const porCat = {};
+  list.filter(e => e.valor<0 && !isTransf(e)).forEach(e => {
+    porCat[e.categoria] = (porCat[e.categoria]||0) + Math.abs(e.valor);
+  });
+  const catsOrdenadas = Object.entries(porCat).sort((a,b)=>b[1]-a[1]);
+  renderDonut(catsOrdenadas, despesas);
+
+  // SALDO POR CONTA
+  const porConta = {};
+  list.filter(e => !isTransf(e)).forEach(e => {
+    porConta[e.conta] = (porConta[e.conta]||0) + e.valor;
+  });
+  const totalContaAbs = Object.values(porConta).reduce((s,v)=>s+Math.abs(v),0) || 1;
+  $("#contasResumo").innerHTML = Object.entries(porConta)
+    .sort((a,b)=>Math.abs(b[1])-Math.abs(a[1]))
+    .map(([c,v]) => {
+      const pct = Math.abs(v)/totalContaAbs*100;
+      return `
+        <div class="acc-head" style="margin-bottom:6px">
+          <span class="nm">${c}</span>
+          <span class="bal ${v>=0?"pos":"neg"}">${fmtBRL(v)}</span>
+        </div>
+        <div class="acc-bar"><div class="used" style="width:${pct}%"></div></div>
+      `;
+    }).join("");
+
+  // ÚLTIMOS
+  const ult = [...list].sort((a,b)=>b.rowIndex - a.rowIndex).slice(0,8);
+  $("#ultimosLanc").innerHTML = ult.map(e => `
+    <div class="row">
+      <div class="ico ${iconCls(e)}">${icon(e)}</div>
+      <div class="desc">
+        <strong>${e.descricao}</strong>
+        <small>${fmtDate(e.data)} · ${e.conta} · <span class="pill">${e.categoria}</span>${isPreciso(e)?' <span class="pill preciso">PRECISO</span>':''}</small>
+      </div>
+      <div></div>
+      <div class="val ${valCls(e)}">${fmtBRL(e.valor)}</div>
+    </div>
+  `).join("");
+}
+
+function renderDonut(data, total){
+  if (!data.length){
+    $("#donutWrap").innerHTML = `<div class="muted small">sem despesas no período</div>`;
+    return;
+  }
+  const r=70, cx=100, cy=100, circ=2*Math.PI*r;
+  let acc=0;
+  const segs = data.map(([cat,v],i) => {
+    const pct = v/total;
+    const dash = pct*circ;
+    const gap = circ-dash;
+    const seg = `<circle r="${r}" cx="${cx}" cy="${cy}" fill="none" stroke="${colorPalette[i%colorPalette.length]}" stroke-width="32" stroke-dasharray="${dash} ${gap}" stroke-dashoffset="${-acc}" />`;
+    acc += dash;
+    return {seg, pct, color:colorPalette[i%colorPalette.length]};
+  });
+  const svg = `<div class="donut">
+    <svg viewBox="0 0 200 200" width="200" height="200">
+      <circle r="${r}" cx="${cx}" cy="${cy}" fill="none" stroke="var(--bg-3)" stroke-width="32" />
+      ${segs.map(s=>s.seg).join("")}
+    </svg>
+    <div class="center">
+      <div>
+        <div class="l">despesas</div>
+        <div class="v">${fmtBRL(total)}</div>
+      </div>
+    </div>
+  </div>`;
+  const leg = `<div class="legend">
+    ${data.slice(0,8).map(([cat,v],i) => `
+      <div class="legend-row">
+        <span class="sw" style="background:${colorPalette[i%colorPalette.length]}"></span>
+        <span class="nm">${cat}</span>
+        <span class="pct">${(v/total*100).toFixed(1)}%</span>
+        <span class="vl">${fmtBRL(v)}</span>
+      </div>
+    `).join("")}
+  </div>`;
+  $("#donutWrap").innerHTML = svg + leg;
+}
+
+/* =========================================================================
+   VIEW 2 — TIMELINE
+   ========================================================================= */
+function renderTimeline(){
+  const list = applyFilters();
+  const byDay = {};
+  list.forEach(e => {
+    (byDay[e.data] = byDay[e.data] || []).push(e);
+  });
+  const days = Object.keys(byDay).sort((a,b)=>b.localeCompare(a));
+  $("#timelineBody").innerHTML = days.length ? days.map(d => {
+    const items = byDay[d].sort((a,b)=>b.rowIndex - a.rowIndex);
+    const sum = items.reduce((s,e)=>s+e.valor,0);
+    const sumInc = items.filter(e=>e.valor>0).reduce((s,e)=>s+e.valor,0);
+    const sumExp = items.filter(e=>e.valor<0).reduce((s,e)=>s+Math.abs(e.valor),0);
+    return `
+      <div class="day">
+        <div class="day-head">
+          <span class="d">${fmtDate(d)} <span class="rel">${relLabel(d)}</span></span>
+          <span class="sum">${sumInc?`<span class="pos">+${fmtBRL(sumInc)}</span> `:""}${sumExp?`<span class="neg">-${fmtBRL(sumExp)}</span> `:""}<b>${fmtBRL(sum)}</b></span>
+        </div>
+        ${items.map(e => `
+          <div class="row">
+            <div class="ico ${iconCls(e)}">${icon(e)}</div>
+            <div class="desc">
+              <strong>${e.descricao}</strong>
+              <small>${e.conta} · <span class="pill">${e.categoria}</span>${isPreciso(e)?' <span class="pill preciso">PRECISO</span>':''}${e.obs?' · <span class="muted">'+e.obs+'</span>':''}</small>
+            </div>
+            <div></div>
+            <div class="val ${valCls(e)}">${fmtBRL(e.valor)}</div>
+          </div>
+        `).join("")}
+      </div>
+    `;
+  }).join("") : `<div class="muted">nada no período</div>`;
+}
+
+/* =========================================================================
+   VIEW 3 — CATEGORIAS & ORÇAMENTO
+   ========================================================================= */
+function renderCategorias(){
+  const list = applyFilters().filter(e => !isTransf(e));
+  // agrega por categoria
+  const porCat = {};
+  list.forEach(e => {
+    if (!porCat[e.categoria]) porCat[e.categoria] = {gasto:0,receita:0,isP:isPreciso(e)};
+    if (e.valor<0) porCat[e.categoria].gasto += Math.abs(e.valor);
+    else porCat[e.categoria].receita += e.valor;
+  });
+  const arr = Object.entries(porCat)
+    .map(([cat,v]) => ({cat, ...v, lim: LIMITES[cat]||0}))
+    .sort((a,b)=>b.gasto-a.gasto);
+
+  // escala: maior gasto = 100% da barra
+  const maxGasto = Math.max(...arr.map(x=>x.gasto), 1);
+  $("#barCategorias").innerHTML = arr.map(c => {
+    const pctGasto = c.gasto/maxGasto*100;
+    const cls = !c.isP ? "budget" :
+      c.lim === 0 ? "warn-ok" :
+      c.gasto/c.lim > 1 ? "over" :
+      c.gasto/c.lim > 0.7 ? "warn-mid" : "warn-ok";
+    // marca limite se for preciso
+    let limitMark = "";
+    if (c.isP && c.lim > 0) {
+      const limPct = c.lim/maxGasto*100;
+      limitMark = `<div class="limit" style="left:${limPct}%" title="limite: ${fmtBRL(c.lim)}"></div>`;
+    }
+    return `
+      <div class="bar-row">
+        <div class="name">${c.cat}${c.isP?'<span class="badge">●</span>':''}</div>
+        <div class="bar-track">
+          <div class="bar-fill ${cls}" style="width:${pctGasto}%"></div>
+          ${limitMark}
+        </div>
+        <div class="amt">${fmtBRL(c.gasto)} ${c.lim?`<span class="muted">/ ${fmtBRL(c.lim)}</span>`:''}</div>
+      </div>
+    `;
+  }).join("");
+}
+
+/* =========================================================================
+   VIEW 4 — CONTAS
+   ========================================================================= */
+function renderContas(){
+  const list = applyFilters();
+  const porConta = {};
+  list.forEach(e => {
+    (porConta[e.conta] = porConta[e.conta] || {items:[], saldo:0}).items.push(e);
+    if (!isTransf(e)) porConta[e.conta].saldo += e.valor;
+  });
+  $("#accList").innerHTML = Object.entries(porConta)
+    .sort((a,b)=>Math.abs(b[1].saldo)-Math.abs(a[1].saldo))
+    .map(([c, info]) => {
+      const items = info.items.sort((a,b)=>b.rowIndex-a.rowIndex).slice(0,6);
+      const ct = info.items.length;
+      return `
+        <div class="acc">
+          <div class="acc-head">
+            <span class="nm">${c} <span class="ct">· ${ct} lançamentos</span></span>
+            <span class="bal ${info.saldo>=0?"pos":"neg"}">${fmtBRL(info.saldo)}</span>
+          </div>
+          <div class="acc-list">
+            ${items.map(e=>`
+              <div class="item">
+                <span>${icon(e)}</span>
+                <span class="cat">${e.descricao}</span>
+                <span class="vl ${isTransf(e)?"tr":e.valor>0?"inc":""}">${fmtBRL(e.valor)}</span>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      `;
+    }).join("");
+}
+
+/* =========================================================================
+   VIEW 5 — CALENDÁRIO HEATMAP
+   ========================================================================= */
+function renderCalendario(){
+  const list = applyFilters();
+  // pega range
+  if (!list.length) { $("#calBody").innerHTML = `<div class="muted">sem dados</div>`; return; }
+  const sorted = [...list].sort((a,b)=>a.data.localeCompare(b.data));
+  const ini = new Date(sorted[0].data+"T00:00:00");
+  const fim = new Date(sorted[sorted.length-1].data+"T00:00:00");
+
+  // monta grid: 7 colunas (domingo a sábado), linhas por semana
+  // alinhar pra começar no domingo
+  const start = new Date(ini);
+  start.setDate(start.getDate() - start.getDay());
+  const end = new Date(fim);
+  end.setDate(end.getDate() + (6 - end.getDay()));
+
+  // agrega por dia
+  const byDay = {};
+  list.forEach(e => {
+    const k = e.data;
+    byDay[k] = byDay[k] || {d:0,i:0};
+    if (isTransf(e)) return;
+    if (e.valor < 0) byDay[k].d += Math.abs(e.valor);
+    else byDay[k].i += e.valor;
+  });
+
+  // escala: max despesa diária
+  const maxD = Math.max(...Object.values(byDay).map(v=>v.d), 1);
+
+  // agrupa por mês pra mostrar label
+  const cells = [];
+  const monthLabels = []; // {idx, label}
+  let lastMonth = -1;
+  let cellIdx = 0;
+  const headers = ["D","S","T","Q","Q","S","S"];
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate()+1)){
+    const m = d.getMonth();
+    if (m !== lastMonth){
+      monthLabels.push({at: cellIdx, label: d.toLocaleDateString("pt-BR",{month:"short"})});
+      lastMonth = m;
+    }
+    const key = d.toISOString().slice(0,10);
+    const info = byDay[key];
+    const inRange = d >= ini && d <= fim;
+    if (!inRange) {
+      cells.push(`<div class="c empty"></div>`);
+    } else if (!info) {
+      cells.push(`<div class="c" data-tip="sem lançamento"></div>`);
+    } else {
+      const lvl = info.d ? Math.min(5, Math.ceil(info.d/maxD*5)) : 0;
+      const ilvl = info.i ? Math.min(3, Math.ceil(info.i/maxD*3)) : 0;
+      const tip = `${fmtDateShort(key)}<br>despesas: <b>${fmtBRL(info.d)}</b>${info.i?`<br>receitas: <b class="pos">${fmtBRL(info.i)}</b>`:""}`;
+      cells.push(`<div class="c" data-l="${lvl||''}" data-i="${ilvl||''}" data-tip="${tip}"></div>`);
+    }
+    cellIdx++;
+  }
+
+  // monta grid 8 colunas (1 label + 7 dias), linhas = ceil(cells/7)
+  const rows = Math.ceil(cells.length/7);
+  // injeta mês label
+  const grid = ["<div class='h'></div>"];
+  for (let r=0; r<rows; r++){
+    // semana label
+    const firstDay = new Date(start); firstDay.setDate(firstDay.getDate()+r*7);
+    grid.push(`<div class="lbl">${firstDay.getDate()}/${(firstDay.getMonth()+1).toString().padStart(2,"0")}</div>`);
+    for (let c=0;c<7;c++){
+      const i = r*7+c;
+      grid.push(cells[i] || `<div class="c empty"></div>`);
+    }
+  }
+  // cabeçalho
+  const head = headers.map(h => `<div class="h">${h}</div>`).join("");
+  $("#calBody").innerHTML = `<div class="heat-cal" style="grid-template-columns:auto repeat(7,1fr)">
+    <div class="h"></div>${head}${grid.slice(1).join("")}
+  </div>`;
+
+  // tooltips
+  const tip = $("#tip");
+  $$(".heat-cal .c[data-tip]").forEach(el => {
+    el.onmouseenter = e => {
+      tip.innerHTML = el.dataset.tip;
+      tip.classList.add("on");
+    };
+    el.onmousemove = e => {
+      tip.style.left = (e.clientX+12)+"px";
+      tip.style.top = (e.clientY+12)+"px";
+    };
+    el.onmouseleave = () => tip.classList.remove("on");
+  });
+}
+
+/* =========================================================================
+   VIEW 6 — TABELA
+   ========================================================================= */
+function renderTabela(){
+  const list = [...applyFilters()].sort((a,b)=>b.rowIndex-a.rowIndex);
+  $("#tblBody").innerHTML = list.map(e => `
+    <tr>
+      <td>${fmtDateShort(e.data)}</td>
+      <td>${e.conta}</td>
+      <td>${e.descricao}</td>
+      <td><span class="pill">${e.categoria}</span>${isPreciso(e)?' <span class="pill preciso">PRECISO</span>':''}</td>
+      <td>${e.orcamento||'<span class="muted">—</span>'}</td>
+      <td class="num ${isTransf(e)?"tr":e.valor>0?"pos":"neg"}">${fmtBRL(e.valor)}</td>
+      <td class="muted small">${e.obs||''}</td>
+    </tr>
+  `).join("");
+}
+
+/* =========================================================================
+   VIEW 7 — WATERFALL (fluxo de caixa)
+   ========================================================================= */
+function renderWaterfall(){
+  const list = applyFilters();
+  if (!list.length){
+    $("#wfBody").innerHTML = `<div class="muted">sem lançamentos no período</div>`;
+    return;
+  }
+
+  // ----- monta steps (categoria ou dia) -----
+  let steps = [];
+  if (state.wfModo === "categoria") {
+    // ordem de primeira aparição dos entries filtrados
+    const ordem = [];
+    const seen = new Set();
+    [...list].sort((a,b)=>a.rowIndex - b.rowIndex).forEach(e => {
+      if (!seen.has(e.categoria)) { seen.add(e.categoria); ordem.push(e.categoria); }
+    });
+    // agrega por categoria
+    const porCat = {};
+    list.forEach(e => {
+      if (!porCat[e.categoria]) porCat[e.categoria] = {cat:e.categoria, total:0, isTransf:isTransf(e), itens:0};
+      porCat[e.categoria].total += e.valor;
+      porCat[e.categoria].itens++;
+    });
+    // ordem: receitas (positivo) primeiro, depois despesas, depois transf zeradas
+    const rec = ordem.filter(c => porCat[c].total > 0).map(c => porCat[c]);
+    const desp = ordem.filter(c => porCat[c].total < 0).map(c => porCat[c]);
+    const tr = ordem.filter(c => porCat[c].total === 0 && porCat[c].isTransf).map(c => porCat[c]);
+    steps = [...rec, ...desp, ...tr];
+  } else {
+    // modo dia
+    const byDay = {};
+    list.forEach(e => {
+      if (!byDay[e.data]) byDay[e.data] = {dia:e.data, total:0, itens:0, transf:0};
+      byDay[e.data].total += e.valor;
+      byDay[e.data].itens++;
+      if (isTransf(e)) byDay[e.data].transf++;
+    });
+    steps = Object.values(byDay).sort((a,b)=>a.dia.localeCompare(b.dia));
+  }
+
+  if (!steps.length){
+    $("#wfBody").innerHTML = `<div class="muted">nada pra mostrar</div>`;
+    return;
+  }
+
+  // ----- saldo corrente por step -----
+  let saldo = 0;
+  const processed = steps.map(s => {
+    const prev = saldo;
+    const delta = s.total;
+    const next = +(saldo + delta).toFixed(2);
+    saldo = next;
+    return {...s, prev, next, delta, isTransf: s.isTransf || (s.transf>0 && s.transf===s.itens)};
+  });
+
+  // ----- eixos -----
+  const vals = [0, ...processed.flatMap(p => [p.prev, p.next])];
+  const yMin = Math.min(...vals);
+  const yMax = Math.max(...vals);
+  const yRange = yMax - yMin || 1;
+  const yPad = yRange * 0.1;
+  const yLow = yMin - yPad;
+  const yHigh = yMax + yPad;
+  const yR = yHigh - yLow;
+
+  // ----- SVG dims (responsivo, com min) -----
+  const containerW = ($("#wfBody").clientWidth || 1100) - 16;
+  const W = Math.max(720, containerW);
+  const H = 380;
+  const m = {top:30, right:20, bottom:90, left:80};
+  const cW = W - m.left - m.right;
+  const cH = H - m.top - m.bottom;
+  const n = processed.length;
+  const gap = 6;
+  const barW = Math.max(22, (cW - gap*(n-1)) / n);
+
+  const yScale = v => m.top + cH - ((v - yLow) / yR) * cH;
+  const zeroY = yScale(0);
+
+  // ----- grid lines + labels do eixo Y -----
+  const ticks = 5;
+  let gridLines = "";
+  for (let i = 0; i <= ticks; i++){
+    const v = yLow + (yR * i / ticks);
+    const y = yScale(v);
+    const lbl = fmtBRL(v).replace(/R\$\s?/,"");
+    gridLines += `
+      <line x1="${m.left}" y1="${y}" x2="${m.left+cW}" y2="${y}" stroke="var(--line)" stroke-dasharray="2 4" opacity="0.35" />
+      <text x="${m.left-8}" y="${y+3.5}" fill="var(--text-3)" font-size="10.5" text-anchor="end" font-family="${getMono()}">${lbl}</text>
+    `;
+  }
+  const zeroLine = `<line x1="${m.left}" y1="${zeroY}" x2="${m.left+cW}" y2="${zeroY}" stroke="var(--text-3)" stroke-width="1" opacity="0.6" />`;
+
+  // ----- barras + conectores -----
+  let cursorX = m.left;
+  let cursorY = zeroY;
+  const bars = processed.map((p, i) => {
+    const x = m.left + i * (barW + gap);
+    const yTop = yScale(Math.max(p.prev, p.next));
+    const yBot = yScale(Math.min(p.prev, p.next));
+    const h = Math.max(1, yBot - yTop);
+    const cor = p.isTransf ? "var(--blue)" : p.delta >= 0 ? "var(--green)" : "var(--red)";
+
+    // label embaixo (rotacionado)
+    const labelText = state.wfModo === "categoria" ? p.cat : fmtDateShort(p.dia);
+    const lblY = m.top + cH + 18;
+    const lblTrunc = labelText.length > 14 ? labelText.slice(0,12)+"…" : labelText;
+    const label = `<text x="${x+barW/2}" y="${lblY}" fill="var(--text-2)" font-size="10.5" text-anchor="end" transform="rotate(-40 ${x+barW/2} ${lblY})">${escapeHtml(lblTrunc)}</text>`;
+
+    // valor (delta) em cima
+    const valY = yTop - 6;
+    const valTxt = (p.delta > 0 ? "+" : "") + (p.isTransf ? "⇄" : fmtBRL(p.delta).replace(/R\$\s?/,""));
+    const valLabel = `<text x="${x+barW/2}" y="${valY}" fill="${cor}" font-size="10" font-weight="600" text-anchor="middle" font-family="${getMono()}">${valTxt}</text>`;
+
+    // saldo parcial acima do label
+    const saldoTxt = fmtBRL(p.next).replace(/R\$\s?/,"");
+    const saldoLabel = `<text x="${x+barW/2}" y="${lblY-2}" fill="var(--text-3)" font-size="9" text-anchor="middle" font-family="${getMono()}">${saldoTxt}</text>`;
+
+    // conector tracejado
+    const conn = i > 0
+      ? `<line x1="${cursorX}" y1="${cursorY}" x2="${x}" y2="${cursorY}" stroke="var(--text-3)" stroke-dasharray="3 3" opacity="0.5" />`
+      : "";
+
+    cursorX = x + barW;
+    cursorY = (p.next >= p.prev) ? yTop : yBot;
+
+    return `
+      <g class="wf-bar" data-tip="<b>${escapeHtml(labelText)}</b><br>delta: ${fmtBRL(p.delta)}<br>saldo: ${fmtBRL(p.next)}">
+        ${conn}
+        <rect x="${x}" y="${yTop}" width="${barW}" height="${h}" fill="${cor}" opacity="0.9" rx="3" />
+        ${valLabel}
+        ${saldoLabel}
+        ${label}
+      </g>
+    `;
+  }).join("");
+
+  // ----- header com totais -----
+  const totalRec = processed.filter(p=>p.delta>0 && !p.isTransf).reduce((s,p)=>s+p.delta,0);
+  const totalDesp = processed.filter(p=>p.delta<0 && !p.isTransf).reduce((s,p)=>s+Math.abs(p.delta),0);
+  const final = processed.length ? processed[processed.length-1].next : 0;
+  const head = `
+    <div class="wf-head">
+      <div><span class="muted small">saldo inicial</span><div><b>R$ 0,00</b></div></div>
+      <div><span class="muted small">receitas</span><div><b class="pos">+${fmtBRL(totalRec)}</b></div></div>
+      <div><span class="muted small">despesas</span><div><b class="neg">-${fmtBRL(totalDesp)}</b></div></div>
+      <div><span class="muted small">saldo final</span><div><b class="${final>=0?"pos":"neg"}">${fmtBRL(final)}</b></div></div>
+    </div>
+  `;
+
+  // ----- toggle modo -----
+  const toggle = `
+    <div class="wf-toggle">
+      <span class="muted small">modo:</span>
+      <button data-wf="categoria" class="${state.wfModo==='categoria'?'on':''}">por categoria</button>
+      <button data-wf="dia" class="${state.wfModo==='dia'?'on':''}">por dia</button>
+    </div>
+  `;
+
+  // ----- legenda -----
+  const leg = `
+    <div class="wf-legend">
+      <span class="it"><span class="sw" style="background:var(--green)"></span> receita</span>
+      <span class="it"><span class="sw" style="background:var(--red)"></span> despesa</span>
+      <span class="it"><span class="sw" style="background:var(--blue)"></span> transferência</span>
+      <span class="it" style="margin-left:auto">↕ scroll horizontal se houver muitas barras</span>
+    </div>
+  `;
+
+  $("#wfBody").innerHTML = head + toggle + `<div class="wf-svg"><svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" preserveAspectRatio="xMinYMid meet">${gridLines}${zeroLine}${bars}</svg></div>` + leg;
+
+  // ----- tooltips nas barras -----
+  const tip = $("#tip");
+  $$(".wf-bar").forEach(el => {
+    el.onmouseenter = () => { tip.innerHTML = el.dataset.tip; tip.classList.add("on"); };
+    el.onmousemove = e => { tip.style.left = (e.clientX+12)+"px"; tip.style.top = (e.clientY+12)+"px"; };
+    el.onmouseleave = () => tip.classList.remove("on");
+  });
+
+  // ----- bind toggle -----
+  $$(".wf-toggle button").forEach(b => b.onclick = () => {
+    state.wfModo = b.dataset.wf;
+    renderWaterfall();
+  });
+}
+
+function getMono(){ return getComputedStyle(document.documentElement).getPropertyValue("--mono").trim() || "monospace"; }
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+}
+
+/* =========================================================================
+   INIT
+   ========================================================================= */
+function renderAll(){
+  renderDashboard();
+  renderTimeline();
+  renderCategorias();
+  renderContas();
+  renderCalendario();
+  renderTabela();
+  renderWaterfall();
+}
+
+$$(".tab").forEach(t => t.onclick = () => {
+  $$(".tab").forEach(x => x.classList.remove("active"));
+  t.classList.add("active");
+  $$(".view").forEach(v => v.classList.toggle("active", v.dataset.view === t.dataset.v));
+});
+
+setupFilters();
+renderAll();
+</script>
+</body>
+</html>
