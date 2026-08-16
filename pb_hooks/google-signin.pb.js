@@ -71,7 +71,7 @@ routerAdd("POST", "/api/custom/google-signin", (e) => {
         if (!resp || resp.statusCode !== 200) {
             throw new BadRequestError(
                 "Google tokeninfo retornou status " + (resp ? resp.statusCode : "null")
-                + ": " + respBody.substring(0, 200),
+                + ": " + String(respBody).substring(0, 200),
                 { code: 502 }
             );
         }
@@ -85,7 +85,7 @@ routerAdd("POST", "/api/custom/google-signin", (e) => {
             googleInfo = JSON.parse(respBody);
         } catch (err) {
             console.log("[google-signin] JSON.parse falhou: " + err.message
-                + ". body=" + respBody.substring(0, 300));
+                + ". body=" + String(respBody).substring(0, 300));
             throw new BadRequestError("Resposta do Google nao e JSON: " + err.message, { code: 502 });
         }
         console.log("[google-signin] tokeninfo parseado. email=" + googleInfo.email
