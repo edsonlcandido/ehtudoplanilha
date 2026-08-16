@@ -183,11 +183,18 @@ routerAdd("POST", "/api/custom/google-signin", (e) => {
         }
 
         // -------- 6. Gerar PB auth token --------
+        // PB v0.23+ REMOVEU o global `$tokens` junto com o `$app.dao()`. Os
+        // metodos de geracao de token foram movidos pra dentro do proprio
+        // Record. A doc oficial (js-records) diz:
+        //   $tokens.recordAuthToken($app, record)  ->  record.newAuthToken()
+        //   $tokens.recordVerifyToken($app, record) ->  record.newVerificationToken()
+        //   $tokens.recordFileToken($app, record)   ->  record.newFileToken()
+        //   $tokens.recordResetPasswordToken(...)   ->  record.newPasswordResetToken()
+        //   $tokens.recordChangeEmailToken(rec,em)  ->  record.newEmailChangeToken(em)
+        // Erro classico em PB >= 0.23: $tokens is not defined.
         let token;
         try {
-            // generateAuthToken retorna o token JWT-like do PB. O user fica
-            // logado no PB ate o token expirar (configuravel no Admin).
-            token = $tokens.generateAuthToken(user);
+            token = user.newAuthToken();
             console.log("[google-signin] Token gerado (len=" + token.length + ")");
         } catch (err) {
             console.log("[google-signin] FALHA ao gerar token: " + err.message);
