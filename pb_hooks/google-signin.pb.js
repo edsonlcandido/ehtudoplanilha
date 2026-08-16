@@ -48,9 +48,21 @@ routerAdd("POST", "/api/custom/google-signin", (e) => {
         console.log("[google-signin] Recebido idToken (len=" + idToken.length + ")");
 
         // -------- 2. Chamar Google tokeninfo --------
-        // $http.send e' SINCRONO no JSVM do PB - retorna direto
-        // { statusCode, headers, body, raw }. NAO precisa de await/Promise.
-        // timeout em segundos (10 era curto pra chamadas cross-region).
+        // $http.send e' SINCRONO no JSVM do PB. NAO precisa de await/Promise.
+        // timeout em segundos.
+        //
+        // DESDE A v0.27.0 (release notes + doc oficial):
+        //   resp.body  = Uint8Array (BYTES, nao string) - e' SEMPRE assim
+        //   resp.json  = objeto JS ja parseado (se Content-Type=application/json)
+        //   toString(resp.body) = helper global pra converter bytes -> string
+        //
+        // ANTES (ate v0.26.x) existia resp.raw que ja era string. Foi soft-
+        // deprecado justamente pq a conversao Go->JS string perdia bytes
+        // binarios. Hoje o caminho certo e' SEMPRE via toString() ou .json.
+        //
+        // ERRO CLASSICO que eu jah cometi: concatenar resp.body direto
+        // vira "123,10,32,32,..." (Array.toString()), ai JSON.parse falha
+        // com "Unexpected token at the end: <nil>". Nao fazer isso.
         let resp;
         try {
             resp = $http.send({
@@ -62,31 +74,41 @@ routerAdd("POST", "/api/custom/google-signin", (e) => {
             console.log("[google-signin] $http.send EXCECAO: " + err.message);
             throw new BadRequestError("Falha HTTP ao chamar Google: " + err.message, { code: 502 });
         }
-
-        // Log do response pra debug (sai no console do PB)
-        const respBody = (resp && resp.body) ? resp.body : "";
-        console.log("[google-signin] Google respondeu status=" + (resp ? resp.statusCode : "null")
-            + " body_len=" + respBody.length);
+        console.log("[google-signin] Google respondeu status=" + (resp ? resp.statusCode : "null"));
 
         if (!resp || resp.statusCode !== 200) {
+            // Loga o body como string pra debug (toString converte bytes)
+            let bodyPreview = "";
+            try { bodyPreview = toString(resp.body).substring(0, 300); } catch (e) {}
             throw new BadRequestError(
                 "Google tokeninfo retornou status " + (resp ? resp.statusCode : "null")
-                + ": " + String(respBody).substring(0, 200),
+                + ": " + bodyPreview,
                 { code: 502 }
             );
         }
-        if (!respBody) {
-            throw new BadRequestError("Google retornou body vazio", { code: 502 });
-        }
 
         // -------- 3. Parsear JSON --------
-        let googleInfo;
-        try {
-            googleInfo = JSON.parse(respBody);
-        } catch (err) {
-            console.log("[google-signin] JSON.parse falhou: " + err.message
-                + ". body=" + String(respBody).substring(0, 300));
-            throw new BadRequestError("Resposta do Google nao e JSON: " + err.message, { code: 502 });
+        // Caminho oficial: resp.json ja vem parseado (Content-Type do Google
+        // e' application/json). Se nao vier objeto, fallback com toString
+        // + JSON.parse pra mensagem de erro melhor.
+        let googleInfo = null;
+        if (resp.json && typeof resp.json === "object") {
+            googleInfo = resp.json;
+        } else {
+            let bodyStr = "";
+            try { bodyStr = toString(resp.body); } catch (e) {
+                throw new BadRequestError("Google retornou body ilegivel: " + e.message, { code: 502 });
+            }
+            if (!bodyStr) {
+                throw new BadRequestError("Google retornou body vazio", { code: 502 });
+            }
+            try {
+                googleInfo = JSON.parse(bodyStr);
+            } catch (err) {
+                console.log("[google-signin] JSON.parse falhou: " + err.message
+                    + ". body=" + bodyStr.substring(0, 300));
+                throw new BadRequestError("Resposta do Google nao e JSON: " + err.message, { code: 502 });
+            }
         }
         console.log("[google-signin] tokeninfo parseado. email=" + googleInfo.email
             + " aud=" + googleInfo.aud
