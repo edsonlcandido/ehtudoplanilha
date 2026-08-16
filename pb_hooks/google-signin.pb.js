@@ -159,6 +159,7 @@ routerAdd("POST", "/api/custom/google-signin", (e) => {
         );
     }
 
+    console.log("[google-signin] SUCESSO total. Retornando 200 com token + record.");
     return e.json(200, {
         token: token,
         record: user.publicExport(),
