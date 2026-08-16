@@ -134,11 +134,19 @@ routerAdd("POST", "/api/custom/google-signin", (e) => {
         }
 
         // -------- 5. Achar/criar user na collection `users` --------
-        const usersCol = $app.dao().findCollectionByNameOrId("users");
+        // PB v0.23+ REMOVEU o `$app.dao()`: os metodos do Dao foram movidos
+        // direto pro `$app`. A doc oficial (js-records) usa `$app.findXxx`:
+        //   $app.dao().findCollectionByNameOrId("users")  -> $app.findCollectionByNameOrId("users")
+        //   $app.dao().findFirstRecordByFilter(col, ...)  -> $app.findFirstRecordByFilter("users", ...)
+        //   $app.dao().saveRecord(record)                 -> $app.save(record)
+        // Alem disso, findFirstRecordByFilter recebe o NOME da collection
+        // (string), nao o objeto collection, como primeiro argumento.
+        // Erro classico: $app.dao().X() em PB >= 0.23 -> "Object has no member 'dao'".
+        const usersCol = $app.findCollectionByNameOrId("users");
         let user;
         try {
-            user = $app.dao().findFirstRecordByFilter(
-                usersCol,
+            user = $app.findFirstRecordByFilter(
+                "users",
                 "email = {:email}",
                 { email: googleInfo.email }
             );
@@ -162,7 +170,7 @@ routerAdd("POST", "/api/custom/google-signin", (e) => {
                 user.set("verified", true);
                 // name/avatar vem do Google se quiser setar (tokeninfo NAO
                 // retorna mais; precisaria chamar userinfo endpoint)
-                $app.dao().saveRecord(user);
+                $app.save(user);
                 console.log("[google-signin] User criado: " + googleInfo.email);
             } catch (err) {
                 console.log("[google-signin] FALHA ao criar user: " + err.message);
