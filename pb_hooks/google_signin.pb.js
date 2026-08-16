@@ -19,47 +19,72 @@
 //   - avatar (url, optional - vem do Google)
 //
 // Variavel de ambiente (opcional, no PB Admin > Settings > Env):
-//   GOOGLE_CLIENT_ID = "112797749973-d88gnelprhbe2m4pr9fn1fq6iq6oteig.apps.googleusercontent.com"
-//   Se nao setar, usa o client_id hardcoded abaixo.
+//   GOOGLE_CLIENT_ANDROID_ID = "112797749973-d88gnelprhbe2m4pr9fn1fq6iq6oteig.apps.googleusercontent.com"
+//   Fallback: GOOGLE_CLIENT_ID (aceito por compatibilidade)
+//   Se nenhuma setada, usa o client_id hardcoded abaixo.
 //
 // IMPORTANTE: o client_id hardcoded aqui e' o MESMO que esta no
 // key.properties do Android (BuildConfig.GOOGLE_WEB_CLIENT_ID).
 // =====================================================================
 
-routerAdd("POST", "/api/custom/google-signin", async (e) => {
-    // -------- 1. Extrair idToken --------
+routerAdd("POST", "/api/custom/google-signin", (e) => {
     // Declarado DENTRO do handler porque variaveis top-level NAO sao
     // visiveis no callback (cada handler cai num runtime separado do
     // pool do PB). Erro classico do JSVM do PB.
-    const GOOGLE_CLIENT_ANDROID_ID = $os.getenv("GOOGLE_CLIENT_ANDROID_ID") ||
-        "112797749973-d88gnelprhbe2m4pr9fn1fq6iq6oteig.apps.googleusercontent.com";
+    const GOOGLE_CLIENT_ANDROID_ID = $os.getenv("GOOGLE_CLIENT_ANDROID_ID")
+        || $os.getenv("GOOGLE_CLIENT_ID")
+        || "112797749973-d88gnelprhbe2m4pr9fn1fq6iq6oteig.apps.googleusercontent.com";
 
+    // -------- 1. Extrair idToken --------
     const body = e.requestInfo().body || {};
     const idToken = body.idToken;
     if (!idToken || typeof idToken !== "string") {
         throw new BadRequestError("idToken obrigatorio", { code: 400 });
     }
 
-    // -------- 2. Validar idToken com Google (tokeninfo) --------
-    // $http.send() e' sincrono no JSVM do PB - retorna { statusCode, body }.
-    // (NÃO tem fetch nativo, NUNCA use require('node-fetch').)
-    let googleInfo;
+    // -------- 2. Chamar Google tokeninfo --------
+    // $http.send e' SINCRONO no JSVM do PB - retorna direto
+    // { statusCode, headers, body, raw }. NAO precisa de await/Promise.
+    // timeout em segundos (10 era curto pra chamadas cross-region).
+    let resp;
     try {
-        const resp = $http.send({
+        resp = $http.send({
             url: "https://oauth2.googleapis.com/tokeninfo?id_token=" + encodeURIComponent(idToken),
             method: "GET",
-            timeout: 10, // segundos
+            timeout: 30,
         });
-        if (resp.statusCode !== 200) {
-            throw new Error("Google tokeninfo status " + resp.statusCode);
-        }
-        googleInfo = JSON.parse(resp.body);
     } catch (err) {
-        console.log("[google-signin] Falha ao chamar Google: " + err.message);
-        throw new BadRequestError("Falha ao validar idToken com Google", { code: 502 });
+        console.log("[google-signin] $http.send EXCECAO: " + err.message);
+        throw new BadRequestError("Falha HTTP ao chamar Google: " + err.message, { code: 502 });
     }
 
-    // -------- 3. Sanity checks do response do Google --------
+    // Log do response pra debug (sai no console do PB)
+    const respBody = (resp && resp.body) ? resp.body : "";
+    console.log("[google-signin] Google respondeu status=" + (resp ? resp.statusCode : "null")
+        + " body_len=" + respBody.length);
+
+    if (!resp || resp.statusCode !== 200) {
+        throw new BadRequestError(
+            "Google tokeninfo retornou status " + (resp ? resp.statusCode : "null")
+            + ": " + respBody.substring(0, 200),
+            { code: 502 }
+        );
+    }
+    if (!respBody) {
+        throw new BadRequestError("Google retornou body vazio", { code: 502 });
+    }
+
+    // -------- 3. Parsear JSON --------
+    let googleInfo;
+    try {
+        googleInfo = JSON.parse(respBody);
+    } catch (err) {
+        console.log("[google-signin] JSON.parse falhou: " + err.message
+            + ". body=" + respBody.substring(0, 300));
+        throw new BadRequestError("Resposta do Google nao e JSON: " + err.message, { code: 502 });
+    }
+
+    // -------- 4. Sanity checks do response do Google --------
     if (!googleInfo.email) {
         throw new BadRequestError("Token sem email", { code: 401 });
     }
@@ -78,7 +103,7 @@ routerAdd("POST", "/api/custom/google-signin", async (e) => {
         throw new BadRequestError("idToken expirado", { code: 401 });
     }
 
-    // -------- 4. Achar/criar user na collection `users` --------
+    // -------- 5. Achar/criar user na collection `users` --------
     const usersCol = $app.dao().findCollectionByNameOrId("users");
     let user;
     try {
@@ -108,7 +133,7 @@ routerAdd("POST", "/api/custom/google-signin", async (e) => {
         console.log("[google-signin] User criado: " + googleInfo.email);
     }
 
-    // -------- 5. Gerar PB auth token --------
+    // -------- 6. Gerar PB auth token --------
     // generateAuthToken retorna o token JWT-like do PB. O user fica
     // logado no PB ate o token expirar (configuravel no Admin).
     const token = $tokens.generateAuthToken(user);
