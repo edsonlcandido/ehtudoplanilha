@@ -112,31 +112,52 @@ routerAdd("POST", "/api/custom/google-signin", (e) => {
             "email = {:email}",
             { email: googleInfo.email }
         );
-    } catch (_err) {
+        console.log("[google-signin] User encontrado por email: " + googleInfo.email);
+    } catch (err) {
         // findFirstRecordByFilter lanca 404 se nao encontrar
+        console.log("[google-signin] Nenhum user com esse email, vou criar");
         user = null;
     }
 
     if (!user) {
-        // Cria novo user SEM password (auth so via Google)
-        user = new Record(usersCol);
-        user.set("email", googleInfo.email);
-        // username = parte do email antes do @ (PB exige username unico
-        // se o campo estiver marcado como required na collection)
-        const username = googleInfo.email.split("@")[0].replace(/[^a-zA-Z0-9_.-]/g, "_");
-        user.set("username", username);
-        user.set("emailVisibility", true);
-        user.set("verified", true);
-        // name/avatar vem do Google se quiser setar (tokeninfo NAO
-        // retorna mais; precisaria chamar userinfo endpoint)
-        $app.dao().saveRecord(user);
-        console.log("[google-signin] User criado: " + googleInfo.email);
+        try {
+            // Cria novo user SEM password (auth so via Google)
+            user = new Record(usersCol);
+            user.set("email", googleInfo.email);
+            // username = parte do email antes do @ (PB exige username unico
+            // se o campo estiver marcado como required na collection)
+            const username = googleInfo.email.split("@")[0].replace(/[^a-zA-Z0-9_.-]/g, "_");
+            user.set("username", username);
+            user.set("emailVisibility", true);
+            user.set("verified", true);
+            // name/avatar vem do Google se quiser setar (tokeninfo NAO
+            // retorna mais; precisaria chamar userinfo endpoint)
+            $app.dao().saveRecord(user);
+            console.log("[google-signin] User criado: " + googleInfo.email);
+        } catch (err) {
+            console.log("[google-signin] FALHA ao criar user: " + err.message);
+            console.log("[google-signin] err.stack: " + (err.stack || "sem stack"));
+            throw new BadRequestError(
+                "PB nao conseguiu criar user: " + err.message,
+                { code: 500 }
+            );
+        }
     }
 
     // -------- 6. Gerar PB auth token --------
-    // generateAuthToken retorna o token JWT-like do PB. O user fica
-    // logado no PB ate o token expirar (configuravel no Admin).
-    const token = $tokens.generateAuthToken(user);
+    let token;
+    try {
+        // generateAuthToken retorna o token JWT-like do PB. O user fica
+        // logado no PB ate o token expirar (configuravel no Admin).
+        token = $tokens.generateAuthToken(user);
+        console.log("[google-signin] Token gerado (len=" + token.length + ")");
+    } catch (err) {
+        console.log("[google-signin] FALHA ao gerar token: " + err.message);
+        throw new BadRequestError(
+            "PB nao conseguiu gerar token: " + err.message,
+            { code: 500 }
+        );
+    }
 
     return e.json(200, {
         token: token,
