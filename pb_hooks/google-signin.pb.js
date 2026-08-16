@@ -204,11 +204,13 @@ routerAdd("POST", "/api/custom/google-signin", (e) => {
             );
         }
 
-        console.log("[google-signin] SUCESSO total. Retornando 200 com token + record.");
-        return e.json(200, {
-            token: token,
-            record: user.publicExport(),
-        });
+        // -------- 7. Retornar resposta minimalista --------
+        // O app Android ja tem email/avatar/name do Google (GoogleSignInAccount)
+        // e o id do user vem embutido no JWT do PB (claim `sub`). O unico
+        // dado que o app precisa do PB e' o proprio token. Resposta com
+        // 1 campo = 0 problema de serializacao / emailVisibility / etc.
+        console.log("[google-signin] SUCESSO total. Retornando 200 com token.");
+        return e.json(200, { token: token });
     } catch (err) {
         // Catch GERAL - loga QUALQUER exception nao tratada, com stack.
         // Sem isso a gente fica cego quando quebra em lugar inesperado.
