@@ -11,9 +11,11 @@ import { initFutureEntryModal, openFutureEntryModal } from '../components/future
 import { initTransferEntryModal, openTransferEntryModal } from '../components/transfer-entry-modal';
 import { initFabMenu } from '../components/fab-menu';
 import { renderEntries } from '../components/lancamentos-list';
+import { renderGroupedSummary } from '../components/grouped-summary';
 import lancamentosService from '../services/lancamentos';
 import type { SortType, LancamentosState, SheetEntry } from '../types';
 import { excelSerialToDateTimeLabel, excelSerialToDate } from '../utils/date-helpers';
+import { groupEntriesByBudgetAndAccount, hasActiveFilters } from '../utils/grouping';
 import { showSuccessToast, showErrorToast, showInfoToast } from '../components/toast';
 
 // ============================================================================
@@ -28,6 +30,7 @@ const state: LancamentosState = {
   sortBy: 'original',
   showConsolidated: true,
   showFuture: false,
+  showGroupedSummary: true,
   isLoading: false,
   filters: {
     conta: '',
@@ -201,10 +204,21 @@ function renderEntriesList(): void {
 
   // Sempre usa filteredEntries, que já contém o resultado dos filtros aplicados
   const entriesToRender = state.filteredEntries;
-  
+
   // Limita aos 100 primeiros itens
   const limitedEntries = entriesToRender.slice(0, 100);
-  
+
+  // Renderiza o resumo agrupado (só se houver filtro ativo E toggle ligado)
+  const summaryContainer = document.getElementById('groupedSummaryContainer');
+  if (summaryContainer) {
+    if (hasActiveFilters(state) && state.showGroupedSummary) {
+      const summary = groupEntriesByBudgetAndAccount(entriesToRender);
+      summaryContainer.innerHTML = renderGroupedSummary(summary);
+    } else {
+      summaryContainer.innerHTML = '';
+    }
+  }
+
   container.innerHTML = renderEntries(limitedEntries);
 }
 
@@ -234,6 +248,14 @@ function handleShowConsolidatedChange(show: boolean): void {
 function handleShowFutureChange(show: boolean): void {
   state.showFuture = show;
   applySortingAndFilters();
+}
+
+/**
+ * Manipula mudança de checkbox do resumo agrupado
+ */
+function handleShowGroupedSummaryChange(show: boolean): void {
+  state.showGroupedSummary = show;
+  renderEntriesList();
 }
 
 /**
@@ -849,6 +871,15 @@ async function init(): Promise<void> {
     showFutureCheck.checked = state.showFuture;
     showFutureCheck.addEventListener('change', (e) => {
       handleShowFutureChange((e.target as HTMLInputElement).checked);
+    });
+  }
+
+  // Configura checkbox do resumo agrupado
+  const showGroupedSummaryCheck = document.getElementById('showGroupedSummaryCheck') as HTMLInputElement;
+  if (showGroupedSummaryCheck) {
+    showGroupedSummaryCheck.checked = state.showGroupedSummary;
+    showGroupedSummaryCheck.addEventListener('change', (e) => {
+      handleShowGroupedSummaryChange((e.target as HTMLInputElement).checked);
     });
   }
 

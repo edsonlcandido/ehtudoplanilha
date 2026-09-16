@@ -106,8 +106,17 @@
                                     <span class="checkable">Mostrar lançamentos futuros</span>
                                 </label>
                             </div>
+                            <div class="lancamentos__sorting-group form-group">
+                                <label class="lancamentos__sorting-checkbox checkable">
+                                    <input type="checkbox" id="showGroupedSummaryCheck" name="showGroupedSummary" checked>
+                                    <span class="checkable"><strong>📊 Resumo por orçamento/conta</strong></span>
+                                </label>
+                            </div>
                         </div>
                     </div>
+
+                    <!-- 🆕 Resumo agrupado (exibido quando há filtro ativo) -->
+                    <div id="groupedSummaryContainer"></div>
 
                     <!-- Container principal dos lançamentos -->
                     <div id="entriesContainer" class="lancamentos__container entries-container">

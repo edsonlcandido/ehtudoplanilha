@@ -112,6 +112,7 @@ export interface LancamentosState {
   sortBy: SortType;
   showConsolidated: boolean;
   showFuture: boolean;
+  showGroupedSummary: boolean;
   isLoading: boolean;
   filters: LancamentosFilters;
   filterPanelOpen: boolean;
@@ -123,6 +124,84 @@ export interface LancamentosState {
 export interface SheetEntriesResponse {
   entries: SheetEntry[];
   total?: number;
+}
+
+/**
+ * Agrupamento de uma conta dentro de um orçamento
+ * Usado pelo resumo agrupado Orçamento → Conta
+ */
+export interface AccountGroup {
+  conta: string;
+  receitas: number;
+  despesas: number;
+  saldo: number;
+  count: number;
+  entries: SheetEntry[];
+}
+
+/**
+ * Agrupamento de um orçamento contendo várias contas
+ * Usado pelo resumo agrupado Orçamento → Conta
+ */
+export interface BudgetGroup {
+  orcamento: string;        // chave normalizada (ex: "10/2025")
+  orcamentoLabel: string;   // label exibido (ex: "Outubro/2025")
+  receitas: number;
+  despesas: number;
+  saldo: number;
+  count: number;
+  accounts: AccountGroup[];
+}
+
+/**
+ * Resultado do agrupamento completo das entradas filtradas
+ */
+export interface GroupedSummary {
+  groups: BudgetGroup[];
+  totals: {
+    receitas: number;
+    despesas: number;
+    saldo: number;
+    count: number;
+  };
+}
+
+/**
+ * Agrupamento de uma conta dentro de um orçamento
+ */
+export interface AccountGroup {
+  conta: string;
+  receitas: number;
+  despesas: number;
+  saldo: number;
+  count: number;
+  entries: SheetEntry[];
+}
+
+/**
+ * Agrupamento de um orçamento contendo várias contas
+ */
+export interface BudgetGroup {
+  orcamento: string;
+  orcamentoLabel: string;
+  receitas: number;
+  despesas: number;
+  saldo: number;
+  count: number;
+  accounts: AccountGroup[];
+}
+
+/**
+ * Resultado do agrupamento completo
+ */
+export interface GroupedSummary {
+  groups: BudgetGroup[];
+  totals: {
+    receitas: number;
+    despesas: number;
+    saldo: number;
+    count: number;
+  };
 }
 
 /**
