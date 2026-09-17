@@ -51,7 +51,7 @@ Padrões e convenções do projeto
 Fluxos e endpoints relevantes (exemplos concretos)
 - OAuth callback: GET `/google-oauth-callback` (arquivo: `pb_hooks/google-oauth-callback.pb.js`) — troca code por tokens e salva em `google_infos`.
 - Refresh token: POST `/google-refresh-token` (renova `access_token` usando `refresh_token`).
-- Provisionar planilha: POST `/provision-sheet` (copia template e grava `sheet_id`).
+- Provisionar planilha: POST `/provision-sheet` (cria planilha do zero no Drive do user com abas `Lançamentos` + `Categorias` hardcoded, grava `sheet_id`). Idempotente.
 - Inserir lançamento: POST `/append-entry` — payload contém campos como `data`, `conta`, `valor`, `descricao`, `categoria`; hook escreve em `LANCAMENTOS!A:G`.
 
 Dados e regras importantes

@@ -2,6 +2,7 @@
 import { useRouter, useRoute } from 'vue-router'
 import pb from './pocketbase' // Import PocketBase instance
 import { computed } from 'vue'
+import { DASHBOARD_URL } from './config'
 
 const router = useRouter()
 const route = useRoute()
@@ -22,8 +23,8 @@ router.isReady().then(() => {
   }
 })
 
-// Dashboard URL from environment variable
-const dashboardUrl = import.meta.env.VITE_DASHBOARD_URL || 'https://dev.planilha.ehtudo.app/dashboard/'
+// Dashboard URL derivado (dev=localhost:5173, prod=relativo)
+const dashboardUrl = DASHBOARD_URL
 
 // Check if user is logged in to show menu
 // Using route.path to make it reactive to navigation changes

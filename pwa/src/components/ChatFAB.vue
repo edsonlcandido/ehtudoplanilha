@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import type { CartaoData, SheetEntry } from '../types'
+import { WEBHOOK_CHAT_URL } from '../config'
 
 // Props
 const props = defineProps<{
@@ -19,7 +20,7 @@ const isOpen = ref(false)
 const userMessage = ref('')
 const sending = ref(false)
 
-const webhookChatUrl = import.meta.env.VITE_WEBHOOK_CHAT
+const webhookChatUrl = WEBHOOK_CHAT_URL
 
 console.log('ChatFAB - Webhook URL configurada:', webhookChatUrl)
 

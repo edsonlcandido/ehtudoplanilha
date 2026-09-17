@@ -799,3 +799,96 @@ body {
     flex: 1;
   }
 }
+
+/* ===================================
+   🆕 RESUMO DOS FILTROS APLICADOS
+   Mostra pills com filtros ativos + linha de totais
+   =================================== */
+.grouped-summary {
+  background: var(--card-bg, #fff);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  padding: 12px 16px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  animation: grouped-summary-slide-down 0.25s ease;
+}
+
+@keyframes grouped-summary-slide-down {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.grouped-summary__title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-light, #666);
+  margin: 0 0 10px;
+}
+
+.grouped-summary__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.grouped-summary__filter-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  background: var(--light-gray, #f8f9fa);
+  border: 1px solid var(--border-color, #e1e4e8);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  color: var(--text-color, #333);
+}
+
+.grouped-summary__filter-pill strong {
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+.grouped-summary__totals {
+  padding-top: 10px;
+  border-top: 1px dashed var(--border-color, #e1e4e8);
+}
+
+.grouped-summary__total {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.grouped-summary__total-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-light, #666);
+  font-weight: 600;
+}
+
+.grouped-summary__total-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.grouped-summary__total-count {
+  font-size: 0.8rem;
+  color: var(--text-light, #777);
+  font-weight: 500;
+}
+
+.grouped-summary__saldo--positive { color: var(--success-color, #27ae60); }
+.grouped-summary__saldo--negative { color: var(--danger-color, #e74c3c); }
+.grouped-summary__saldo--neutral  { color: var(--text-light, #666); }
+
+@media (max-width: 768px) {
+  .grouped-summary__total-value {
+    font-size: 1.4rem;
+  }
+}

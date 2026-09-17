@@ -4,6 +4,7 @@ import pb from '../pocketbase';
 import CartaoItem from './CartaoItem.vue';
 import EntryModal from './EntryModal.vue';
 import type { CartaoData, ProcessImageResponse, GetEntriesResponse, GetCategoriesResponse, SheetEntry } from '../types';
+import { WEBHOOK_OCR_URL } from '../config';
 
 const files = ref<File[]>([]);
 const uploadStatus = ref<'idle' | 'uploading' | 'analyzing' | 'success' | 'error'>('idle');
@@ -24,9 +25,9 @@ const isLoadingCategorias = ref(false);
 
 // Buscar entries da API
 const fetchEntries = async () => {
-  const entriesUrl = import.meta.env.VITE_GET_ENTRIES_URL
+  const entriesUrl = '/get-sheet-entries'
   if (!entriesUrl) {
-    console.warn('VITE_GET_ENTRIES_URL não configurada')
+    console.warn('endpoint /get-sheet-entries indisponível')
     return
   }
 
@@ -65,9 +66,9 @@ const fetchEntries = async () => {
 
 // Buscar categorias da API
 const fetchCategorias = async () => {
-  const categoriesUrl = import.meta.env.VITE_GET_CATEGORIES_URL
+  const categoriesUrl = '/get-sheet-categories'
   if (!categoriesUrl) {
-    console.warn('VITE_GET_CATEGORIES_URL não configurada')
+    console.warn('endpoint /get-sheet-categories indisponível')
     return
   }
 
@@ -126,7 +127,7 @@ const categorias = computed(() => {
 
 const uploadCollection = 'uploads';
 const fileFieldName = 'file';
-const webhookUrl = import.meta.env.VITE_WEBHOOK_URL;
+const webhookUrl = WEBHOOK_OCR_URL;
 
 const currentUserId = computed(() => {
   // Para login de teste, usa um ID fictício

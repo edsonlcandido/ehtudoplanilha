@@ -11,9 +11,11 @@ import { initFutureEntryModal, openFutureEntryModal } from '../components/future
 import { initTransferEntryModal, openTransferEntryModal } from '../components/transfer-entry-modal';
 import { initFabMenu } from '../components/fab-menu';
 import { renderEntries } from '../components/lancamentos-list';
+import { renderGroupedSummary } from '../components/grouped-summary';
 import lancamentosService from '../services/lancamentos';
 import type { SortType, LancamentosState, SheetEntry } from '../types';
 import { excelSerialToDateTimeLabel, excelSerialToDate } from '../utils/date-helpers';
+import { groupEntriesByBudgetAndAccount, hasActiveFilters } from '../utils/grouping';
 import { showSuccessToast, showErrorToast, showInfoToast } from '../components/toast';
 
 // ============================================================================
@@ -201,10 +203,28 @@ function renderEntriesList(): void {
 
   // Sempre usa filteredEntries, que já contém o resultado dos filtros aplicados
   const entriesToRender = state.filteredEntries;
-  
+
   // Limita aos 100 primeiros itens
   const limitedEntries = entriesToRender.slice(0, 100);
-  
+
+  // Renderiza o resumo dos filtros sempre que houver filtro ativo
+  const summaryContainer = document.getElementById('groupedSummaryContainer');
+  if (summaryContainer) {
+    if (hasActiveFilters(state)) {
+      const summary = groupEntriesByBudgetAndAccount(entriesToRender);
+      summaryContainer.innerHTML = renderGroupedSummary(summary, {
+        conta: state.filters.conta,
+        dataInicio: state.filters.dataInicio,
+        dataFim: state.filters.dataFim,
+        orcamento: state.filters.orcamento,
+        categoria: state.filters.categoria,
+        searchTerm: state.searchTerm
+      });
+    } else {
+      summaryContainer.innerHTML = '';
+    }
+  }
+
   container.innerHTML = renderEntries(limitedEntries);
 }
 

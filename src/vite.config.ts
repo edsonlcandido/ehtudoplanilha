@@ -110,7 +110,9 @@ export default defineConfig({
   },
   plugins: [htmlTransformPlugin()],
   server: {
+    // Dashboard sempre em 5173 em dev (PWA em 5174, PB em 8090)
     port: 5173,
+    strictPort: true,
     open: true,
     proxy: generateProxyConfig(),
   },

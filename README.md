@@ -66,7 +66,7 @@ Una a flexibilidade do Google Sheets com a velocidade de lançar gastos em segun
 ### Integrações
 - **Google OAuth 2.0** - Autenticação segura com PKCE
 - **Google Sheets API v4** - Leitura e escrita de dados
-- **Google Drive API v3** - Cópia de planilha template
+- **Google Drive API v3** - Listagem de planilhas do Drive do usuário
 
 ### Infraestrutura & DevOps
 - **Docker** - Containerização da aplicação

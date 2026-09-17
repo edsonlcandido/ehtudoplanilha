@@ -126,6 +126,87 @@ export interface SheetEntriesResponse {
 }
 
 /**
+ * Agrupamento de uma conta dentro de um orçamento
+ * Mantido pelo helper de grouping; o componente de resumo dos
+ * filtros atualmente consome apenas os `totals` do GroupedSummary.
+ */
+export interface AccountGroup {
+  conta: string;
+  receitas: number;
+  despesas: number;
+  saldo: number;
+  count: number;
+  entries: SheetEntry[];
+}
+
+/**
+ * Agrupamento de um orçamento contendo várias contas
+ * Mantido pelo helper de grouping; o componente de resumo dos
+ * filtros atualmente consome apenas os `totals` do GroupedSummary.
+ */
+export interface BudgetGroup {
+  orcamento: string;        // chave normalizada (ex: "10/2025")
+  orcamentoLabel: string;   // label exibido (ex: "Outubro/2025")
+  receitas: number;
+  despesas: number;
+  saldo: number;
+  count: number;
+  accounts: AccountGroup[];
+}
+
+/**
+ * Resultado do agrupamento das entradas filtradas.
+ * O componente `grouped-summary.ts` consome apenas o campo `totals`.
+ */
+export interface GroupedSummary {
+  groups: BudgetGroup[];
+  totals: {
+    receitas: number;
+    despesas: number;
+    saldo: number;
+    count: number;
+  };
+}
+
+/**
+ * Agrupamento de uma conta dentro de um orçamento
+ */
+export interface AccountGroup {
+  conta: string;
+  receitas: number;
+  despesas: number;
+  saldo: number;
+  count: number;
+  entries: SheetEntry[];
+}
+
+/**
+ * Agrupamento de um orçamento contendo várias contas
+ */
+export interface BudgetGroup {
+  orcamento: string;
+  orcamentoLabel: string;
+  receitas: number;
+  despesas: number;
+  saldo: number;
+  count: number;
+  accounts: AccountGroup[];
+}
+
+/**
+ * Resultado do agrupamento completo
+ */
+export interface GroupedSummary {
+  groups: BudgetGroup[];
+  totals: {
+    receitas: number;
+    despesas: number;
+    saldo: number;
+    count: number;
+  };
+}
+
+/**
  * Instância global do PocketBase
  */
 export type PocketBaseInstance = PocketBase;
