@@ -1,0 +1,1 @@
+import{c as i}from"./auth.js";import{i as n}from"./user-menu.js";function e(){i.isDevelopment&&console.log("[Index] Página inicializada em modo desenvolvimento"),n()}document.readyState==="loading"?document.addEventListener("DOMContentLoaded",e):e();

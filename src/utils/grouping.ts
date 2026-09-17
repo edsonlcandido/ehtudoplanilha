@@ -1,7 +1,12 @@
 /**
  * Utilitários de agrupamento de lançamentos
- * Usado para gerar o resumo agrupado por Orçamento → Conta
- * exibido na página de Lançamentos quando há filtros aplicados.
+ * Usado para gerar os totais exibidos no resumo dos filtros aplicados
+ * na página de Lançamentos quando há filtros ativos.
+ *
+ * Mantém o agrupamento por Orçamento → Conta para que o helper
+ * `groupEntriesByBudgetAndAccount` continue útil caso futuras
+ * funcionalidades precisem dessa granularidade. Hoje, o componente
+ * `grouped-summary.ts` consome apenas os `totals`.
  */
 
 import type { SheetEntry, BudgetGroup, AccountGroup, GroupedSummary } from '../types';

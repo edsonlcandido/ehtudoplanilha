@@ -112,7 +112,6 @@ export interface LancamentosState {
   sortBy: SortType;
   showConsolidated: boolean;
   showFuture: boolean;
-  showGroupedSummary: boolean;
   isLoading: boolean;
   filters: LancamentosFilters;
   filterPanelOpen: boolean;
@@ -128,7 +127,8 @@ export interface SheetEntriesResponse {
 
 /**
  * Agrupamento de uma conta dentro de um orçamento
- * Usado pelo resumo agrupado Orçamento → Conta
+ * Mantido pelo helper de grouping; o componente de resumo dos
+ * filtros atualmente consome apenas os `totals` do GroupedSummary.
  */
 export interface AccountGroup {
   conta: string;
@@ -141,7 +141,8 @@ export interface AccountGroup {
 
 /**
  * Agrupamento de um orçamento contendo várias contas
- * Usado pelo resumo agrupado Orçamento → Conta
+ * Mantido pelo helper de grouping; o componente de resumo dos
+ * filtros atualmente consome apenas os `totals` do GroupedSummary.
  */
 export interface BudgetGroup {
   orcamento: string;        // chave normalizada (ex: "10/2025")
@@ -154,7 +155,8 @@ export interface BudgetGroup {
 }
 
 /**
- * Resultado do agrupamento completo das entradas filtradas
+ * Resultado do agrupamento das entradas filtradas.
+ * O componente `grouped-summary.ts` consome apenas o campo `totals`.
  */
 export interface GroupedSummary {
   groups: BudgetGroup[];

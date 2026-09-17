@@ -1,10 +1,16 @@
 /**
- * Componente de Resumo Agrupado (versão simples)
- * Renderiza pills inline agrupadas por Orçamento → Conta
- * Exibido na página de Lançamentos quando há filtros aplicados
+ * Componente de Resumo dos Filtros (versão simples)
+ * Exibido na página de Lançamentos quando há filtros aplicados.
+ *
+ * Mostra:
+ * - Pills com os filtros ativos (conta, período, categoria, orçamento, busca)
+ * - Totais simples (receitas, despesas, saldo e quantidade)
+ *
+ * NÃO agrupa por orçamento/conta — apenas exibe o consolidado
+ * dos lançamentos que passaram pelos filtros.
  */
 
-import type { GroupedSummary, AccountGroup } from '../types';
+import type { GroupedSummary } from '../types';
 
 const currencyFormatter = new Intl.NumberFormat('pt-BR', {
   style: 'currency',
@@ -31,44 +37,88 @@ function escapeHtml(str: string): string {
 }
 
 /**
- * Pill de uma conta: nome + saldo, nada mais
+ * Converte data no formato YYYY-MM-DD (input HTML5) para DD/MM/YYYY.
+ * Retorna string vazia se inválida.
  */
-function renderAccountPill(account: AccountGroup): string {
-  return `
-    <span class="grouped-summary__account" title="${escapeHtml(account.conta)} — ${account.count} lanç.">
-      <span class="grouped-summary__account-name">${escapeHtml(account.conta)}</span>
-      <span class="grouped-summary__account-saldo ${saldoClass(account.saldo)}">${formatCurrency(account.saldo)}</span>
-    </span>`;
+function formatIsoDateToBr(iso: string): string {
+  if (!iso) return '';
+  const parts = iso.split('-');
+  if (parts.length !== 3) return iso;
+  const [yyyy, mm, dd] = parts;
+  return `${dd}/${mm}/${yyyy}`;
 }
 
 /**
- * Linha de um orçamento: label + pills de contas + total à direita
+ * Renderiza os pills dos filtros que estão aplicados.
+ * Retorna string vazia se nenhum filtro estiver ativo.
  */
-function renderBudgetGroup(group: { orcamentoLabel: string; saldo: number; accounts: AccountGroup[] }): string {
-  return `
-    <div class="grouped-summary__budget">
-      <span class="grouped-summary__budget-label">📅 ${escapeHtml(group.orcamentoLabel)}</span>
-      <div class="grouped-summary__accounts">
-        ${group.accounts.map(renderAccountPill).join('')}
-      </div>
-      <span class="grouped-summary__budget-total ${saldoClass(group.saldo)}">${formatCurrency(group.saldo)}</span>
-    </div>`;
+function renderActiveFilters(filters: ActiveFilters): string {
+  const pills: string[] = [];
+
+  if (filters.conta) {
+    pills.push(`<span class="grouped-summary__filter-pill">Conta: <strong>${escapeHtml(filters.conta)}</strong></span>`);
+  }
+  if (filters.categoria) {
+    pills.push(`<span class="grouped-summary__filter-pill">Categoria: <strong>${escapeHtml(filters.categoria)}</strong></span>`);
+  }
+  if (filters.orcamento) {
+    pills.push(`<span class="grouped-summary__filter-pill">Orçamento: <strong>${escapeHtml(filters.orcamento)}</strong></span>`);
+  }
+  if (filters.dataInicio || filters.dataFim) {
+    const inicio = filters.dataInicio ? formatIsoDateToBr(filters.dataInicio) : '...';
+    const fim = filters.dataFim ? formatIsoDateToBr(filters.dataFim) : '...';
+    pills.push(`<span class="grouped-summary__filter-pill">Período: <strong>${escapeHtml(inicio)} — ${escapeHtml(fim)}</strong></span>`);
+  }
+  if (filters.searchTerm) {
+    pills.push(`<span class="grouped-summary__filter-pill">Busca: <strong>&quot;${escapeHtml(filters.searchTerm)}&quot;</strong></span>`);
+  }
+
+  return pills.join('');
+}
+
+export interface ActiveFilters {
+  conta: string;
+  dataInicio: string;
+  dataFim: string;
+  orcamento: string;
+  categoria: string;
+  searchTerm: string;
 }
 
 /**
- * Renderiza o resumo agrupado completo.
- * Retorna string vazia se não houver dados.
+ * Renderiza o resumo simplificado dos filtros.
+ * Retorna string vazia se não houver dados ou nenhum filtro ativo.
  */
-export function renderGroupedSummary(summary: GroupedSummary): string {
-  if (!summary || summary.groups.length === 0 || summary.totals.count === 0) {
+export function renderGroupedSummary(summary: GroupedSummary, filters: ActiveFilters): string {
+  if (!summary || summary.totals.count === 0) {
     return '';
   }
 
+  const filtersHtml = renderActiveFilters(filters);
+
   return `
-    <section class="grouped-summary" aria-label="Resumo por orçamento e conta">
-      <h2 class="grouped-summary__title">📊 Resumo por orçamento &amp; conta</h2>
-      <div class="grouped-summary__budgets">
-        ${summary.groups.map(renderBudgetGroup).join('')}
+    <section class="grouped-summary" aria-label="Resumo dos filtros aplicados">
+      <h2 class="grouped-summary__title">📊 Filtros aplicados</h2>
+      <div class="grouped-summary__filters">
+        ${filtersHtml}
+      </div>
+      <div class="grouped-summary__totals">
+        <span class="grouped-summary__total-item">
+          <span class="grouped-summary__total-label">Receitas</span>
+          <span class="grouped-summary__total-value ${saldoClass(summary.totals.receitas)}">${formatCurrency(summary.totals.receitas)}</span>
+        </span>
+        <span class="grouped-summary__total-item">
+          <span class="grouped-summary__total-label">Despesas</span>
+          <span class="grouped-summary__total-value ${saldoClass(summary.totals.despesas)}">${formatCurrency(summary.totals.despesas)}</span>
+        </span>
+        <span class="grouped-summary__total-item grouped-summary__total-item--highlight">
+          <span class="grouped-summary__total-label">Saldo</span>
+          <span class="grouped-summary__total-value ${saldoClass(summary.totals.saldo)}">${formatCurrency(summary.totals.saldo)}</span>
+        </span>
+        <span class="grouped-summary__total-item">
+          <span class="grouped-summary__total-label">Lançamentos</span>
+          <span class="grouped-summary__total-value grouped-summary__saldo--neutral">${summary.totals.count}</span>
+        </span>
       </div>
     </section>
   `;

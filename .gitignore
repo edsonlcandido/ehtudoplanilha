@@ -12,3 +12,4 @@ src/dist/
 pwa/node_modules/
 pwa/pwa/
 pwa/dist/
+.playwright-mcp/

@@ -30,7 +30,6 @@ const state: LancamentosState = {
   sortBy: 'original',
   showConsolidated: true,
   showFuture: false,
-  showGroupedSummary: true,
   isLoading: false,
   filters: {
     conta: '',
@@ -208,12 +207,19 @@ function renderEntriesList(): void {
   // Limita aos 100 primeiros itens
   const limitedEntries = entriesToRender.slice(0, 100);
 
-  // Renderiza o resumo agrupado (só se houver filtro ativo E toggle ligado)
+  // Renderiza o resumo dos filtros sempre que houver filtro ativo
   const summaryContainer = document.getElementById('groupedSummaryContainer');
   if (summaryContainer) {
-    if (hasActiveFilters(state) && state.showGroupedSummary) {
+    if (hasActiveFilters(state)) {
       const summary = groupEntriesByBudgetAndAccount(entriesToRender);
-      summaryContainer.innerHTML = renderGroupedSummary(summary);
+      summaryContainer.innerHTML = renderGroupedSummary(summary, {
+        conta: state.filters.conta,
+        dataInicio: state.filters.dataInicio,
+        dataFim: state.filters.dataFim,
+        orcamento: state.filters.orcamento,
+        categoria: state.filters.categoria,
+        searchTerm: state.searchTerm
+      });
     } else {
       summaryContainer.innerHTML = '';
     }
@@ -248,14 +254,6 @@ function handleShowConsolidatedChange(show: boolean): void {
 function handleShowFutureChange(show: boolean): void {
   state.showFuture = show;
   applySortingAndFilters();
-}
-
-/**
- * Manipula mudança de checkbox do resumo agrupado
- */
-function handleShowGroupedSummaryChange(show: boolean): void {
-  state.showGroupedSummary = show;
-  renderEntriesList();
 }
 
 /**
@@ -871,15 +869,6 @@ async function init(): Promise<void> {
     showFutureCheck.checked = state.showFuture;
     showFutureCheck.addEventListener('change', (e) => {
       handleShowFutureChange((e.target as HTMLInputElement).checked);
-    });
-  }
-
-  // Configura checkbox do resumo agrupado
-  const showGroupedSummaryCheck = document.getElementById('showGroupedSummaryCheck') as HTMLInputElement;
-  if (showGroupedSummaryCheck) {
-    showGroupedSummaryCheck.checked = state.showGroupedSummary;
-    showGroupedSummaryCheck.addEventListener('change', (e) => {
-      handleShowGroupedSummaryChange((e.target as HTMLInputElement).checked);
     });
   }
 
