@@ -852,35 +852,35 @@ body {
 }
 
 .grouped-summary__totals {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px 18px;
-  padding-top: 8px;
+  padding-top: 10px;
   border-top: 1px dashed var(--border-color, #e1e4e8);
 }
 
-.grouped-summary__total-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+.grouped-summary__total {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
 }
 
 .grouped-summary__total-label {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   color: var(--text-light, #666);
   font-weight: 600;
 }
 
 .grouped-summary__total-value {
-  font-size: 0.95rem;
+  font-size: 1.6rem;
   font-weight: 700;
+  line-height: 1.1;
 }
 
-.grouped-summary__total-item--highlight .grouped-summary__total-value {
-  font-size: 1.05rem;
+.grouped-summary__total-count {
+  font-size: 0.8rem;
+  color: var(--text-light, #777);
+  font-weight: 500;
 }
 
 .grouped-summary__saldo--positive { color: var(--success-color, #27ae60); }
@@ -888,10 +888,7 @@ body {
 .grouped-summary__saldo--neutral  { color: var(--text-light, #666); }
 
 @media (max-width: 768px) {
-  .grouped-summary__totals {
-    gap: 8px 14px;
-  }
   .grouped-summary__total-value {
-    font-size: 0.9rem;
+    font-size: 1.4rem;
   }
 }

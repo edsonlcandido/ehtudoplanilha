@@ -88,6 +88,9 @@ export interface ActiveFilters {
 /**
  * Renderiza o resumo simplificado dos filtros.
  * Retorna string vazia se não houver dados ou nenhum filtro ativo.
+ *
+ * Mostra apenas o Total (saldo) e a quantidade de lançamentos,
+ * em layout vertical (label, valor, contagem).
  */
 export function renderGroupedSummary(summary: GroupedSummary, filters: ActiveFilters): string {
   if (!summary || summary.totals.count === 0) {
@@ -95,6 +98,7 @@ export function renderGroupedSummary(summary: GroupedSummary, filters: ActiveFil
   }
 
   const filtersHtml = renderActiveFilters(filters);
+  const countLabel = summary.totals.count === 1 ? 'lançamento' : 'lançamentos';
 
   return `
     <section class="grouped-summary" aria-label="Resumo dos filtros aplicados">
@@ -103,22 +107,11 @@ export function renderGroupedSummary(summary: GroupedSummary, filters: ActiveFil
         ${filtersHtml}
       </div>
       <div class="grouped-summary__totals">
-        <span class="grouped-summary__total-item">
-          <span class="grouped-summary__total-label">Receitas</span>
-          <span class="grouped-summary__total-value ${saldoClass(summary.totals.receitas)}">${formatCurrency(summary.totals.receitas)}</span>
-        </span>
-        <span class="grouped-summary__total-item">
-          <span class="grouped-summary__total-label">Despesas</span>
-          <span class="grouped-summary__total-value ${saldoClass(summary.totals.despesas)}">${formatCurrency(summary.totals.despesas)}</span>
-        </span>
-        <span class="grouped-summary__total-item grouped-summary__total-item--highlight">
-          <span class="grouped-summary__total-label">Saldo</span>
+        <div class="grouped-summary__total">
+          <span class="grouped-summary__total-label">Total</span>
           <span class="grouped-summary__total-value ${saldoClass(summary.totals.saldo)}">${formatCurrency(summary.totals.saldo)}</span>
-        </span>
-        <span class="grouped-summary__total-item">
-          <span class="grouped-summary__total-label">Lançamentos</span>
-          <span class="grouped-summary__total-value grouped-summary__saldo--neutral">${summary.totals.count}</span>
-        </span>
+          <span class="grouped-summary__total-count">${summary.totals.count} ${countLabel}</span>
+        </div>
       </div>
     </section>
   `;
