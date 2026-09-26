@@ -1,103 +1,77 @@
-/* Design System overrides */
-:root {
-  --white-color: var(--color-white);
-  --primary-color: var(--color-primary-500);
-  --border-light: var(--color-gray-200);
-  --text-color: var(--color-gray-700);
-  --text-muted: var(--color-gray-400);
-  --light-gray: var(--color-primary-100);
-  --sidebar-width: 220px;
-}
-
 /**
- * Sidebar Menu
- * Menu lateral fixo (desktop) e inferior (mobile)
+ * Sidebar - Menu lateral
  */
 
-/* ========== Sidebar Container ========== */
-.sidebar-menu {
+.sidebar {
   position: fixed;
   left: 0;
   top: var(--nav-height);
   bottom: 0;
   width: var(--sidebar-width);
-  background: var(--color-white);
+  background-color: var(--color-white);
   border-right: 1px solid var(--color-gray-200);
   display: flex;
   flex-direction: column;
-  align-items: stretch;
   padding: var(--spacing-md) 0;
-  gap: var(--spacing-md);
-  z-index: var(--z-fixed);
-  box-shadow: var(--shadow-sm);
+  z-index: 50;
 }
 
-/* ========== Sidebar Links ========== */
-.sidebar-menu a {
+.sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding: 0 var(--spacing-sm);
+}
+
+.sidebar__link {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  width: auto;
-  height: 40px;
-  border-radius: var(--radius-md);
-  text-decoration: none;
-  font-size: var(--font-size-sm);
-  transition: all var(--transition-base);
-  color: var(--text-color);
-  padding: 0 var(--spacing-sm);
-  margin: 0 var(--spacing-sm);
   gap: var(--spacing-sm);
-}
-
-.sidebar-menu a .menu-icon {
-  font-size: var(--font-size-lg);
-  flex-shrink: 0;
-}
-
-.sidebar-menu a .menu-text {
+  padding: var(--spacing-sm) var(--spacing-md);
   font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  white-space: nowrap;
+  font-weight: 500;
+  color: var(--color-gray-600);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  transition: all var(--transition-fast);
 }
 
-/* ========== States ========== */
-.sidebar-menu a:hover {
-  background-color: var(--color-primary-50);
-  color: var(--color-primary-700);
+.sidebar__link:hover {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-900);
   text-decoration: none;
 }
 
-.sidebar-menu a:active,
-.sidebar-menu a:visited,
-.sidebar-menu a:focus {
-  text-decoration: none;
-}
-
-.sidebar-menu a.active {
-  background-color: var(--color-primary-500);
-  color: var(--color-white);
-  font-weight: 600;
-}
-
-.sidebar-menu a.active .menu-icon,
-.sidebar-menu a.active .menu-text {
+.sidebar__link--active {
+  background-color: var(--color-primary);
   color: var(--color-white);
 }
 
-.sidebar-menu a.sidebar-link--disabled {
+.sidebar__link--active:hover {
+  background-color: var(--color-primary-dark);
+  color: var(--color-white);
+}
+
+.sidebar__link--disabled {
+  opacity: 0.5;
   pointer-events: none;
-  opacity: 0.45;
   cursor: not-allowed;
 }
 
-.sidebar-menu a.sidebar-link--disabled .menu-icon,
-.sidebar-menu a.sidebar-link--disabled .menu-text {
-  color: var(--text-muted);
+.sidebar__icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
 }
 
-/* ========== Mobile - Bottom Navigation ========== */
+.sidebar__text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Mobile - Bottom navigation */
 @media (max-width: 768px) {
-  .sidebar-menu {
+  .sidebar {
     position: fixed;
     left: 0;
     right: 0;
@@ -109,29 +83,28 @@
     justify-content: center;
     border-right: none;
     border-top: 1px solid var(--color-gray-200);
-    padding: var(--spacing-sm) var(--spacing-md);
-    gap: var(--spacing-xl);
-    align-items: stretch;
+    padding: var(--spacing-sm);
   }
-
-  .sidebar-menu a {
+  
+  .sidebar__nav {
+    flex-direction: row;
+    justify-content: space-around;
+    width: 100%;
+    gap: 0;
+    padding: 0;
+  }
+  
+  .sidebar__link {
     flex-direction: column;
     justify-content: center;
-    align-items: center;
-    width: auto;
-    height: auto;
-    padding: var(--spacing-xs) var(--spacing-sm);
-    margin: 0;
-    gap: var(--spacing-xs);
+    padding: var(--spacing-xs);
     min-width: 60px;
-  }
-
-  .sidebar-menu a .menu-icon {
-    font-size: var(--font-size-lg);
-  }
-
-  .sidebar-menu a .menu-text {
+    height: 48px;
     font-size: var(--font-size-xs);
-    line-height: 1;
+    text-align: center;
+  }
+  
+  .sidebar__icon {
+    font-size: 1.25rem;
   }
 }

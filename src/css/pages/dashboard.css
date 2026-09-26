@@ -1,0 +1,133 @@
+/**
+ * Dashboard - Página principal
+ */
+
+.dashboard {
+  /* container principal */
+}
+
+.dashboard__header {
+  margin-bottom: var(--spacing-xl);
+}
+
+.dashboard__title {
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+  color: var(--color-gray-900);
+  margin-bottom: var(--spacing-xs);
+}
+
+.dashboard__subtitle {
+  font-size: var(--font-size-base);
+  color: var(--color-gray-500);
+}
+
+/* Grid de cards */
+.dashboard__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+/* Card resumo */
+.summary-card {
+  background-color: var(--color-white);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow);
+  border-left: 4px solid;
+}
+
+.summary-card--saldo {
+  border-left-color: var(--color-primary);
+}
+
+.summary-card--receitas {
+  border-left-color: var(--color-success);
+}
+
+.summary-card--despesas {
+  border-left-color: var(--color-danger);
+}
+
+.summary-card__label {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-gray-500);
+  margin-bottom: var(--spacing-xs);
+}
+
+.summary-card__value {
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+  color: var(--color-gray-900);
+}
+
+.summary-card__value--success {
+  color: var(--color-success);
+}
+
+.summary-card__value--danger {
+  color: var(--color-danger);
+}
+
+.summary-card__icon {
+  position: absolute;
+  top: var(--spacing-lg);
+  right: var(--spacing-lg);
+  font-size: 2rem;
+  opacity: 0.2;
+}
+
+/* Seções */
+.dashboard__section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.dashboard__section-title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--color-gray-900);
+  margin-bottom: var(--spacing-md);
+}
+
+/* Recent entries */
+.recent-entries {
+  background-color: var(--color-white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.recent-entries__header {
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-gray-100);
+}
+
+.recent-entries__title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-gray-900);
+}
+
+/* Loading state */
+.dashboard--loading {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboard__title {
+    font-size: var(--font-size-2xl);
+  }
+  
+  .dashboard__grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .summary-card__value {
+    font-size: var(--font-size-2xl);
+  }
+}

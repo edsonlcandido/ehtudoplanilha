@@ -1,33 +1,38 @@
 /**
- * Main CSS Bundle
- * Base styles para todas as páginas
- * 
- * Use este arquivo como base em todas as páginas HTML
- * Adicione bundles específicos conforme necessário (auth, dashboard, etc.)
+ * Main CSS Bundle - Design System Puro
+ * Removido Picnic CSS - usando apenas design-system.css
  */
 
-/* ========== Vendor (Framework) ========== */
-@import './picnic.css';
-
-/* ========== Design System (sobrescreve picnic) ========== */
+/* ========== Design System (única fonte de estilos) ========== */
 @import './design-system.css';
 
-/* ========== Base Styles ========== */
+/* ========== Base ========== */
 @import './base/variables.css';
 @import './base/reset.css';
 @import './base/typography.css';
 
 /* ========== Layout ========== */
 @import './layout/navigation.css';
+@import './layout/sidebar.css';
+@import './layout/main.css';
 @import './layout/footer.css';
 
-/* ========== Components (Global) ========== */
+/* ========== Components ========== */
 @import './components/buttons.css';
-@import './components/forms.css';
 @import './components/cards.css';
-@import './components/loading.css';
-@import './components/user-menu.css';
-@import './components/entry-modal.css';
-@import './components/confirm-modal.css';
+@import './components/forms.css';
+@import './components/modals.css';
 @import './components/toast.css';
-@import './components/actions.css';
+@import './components/fab.css';
+@import './components/badges.css';
+@import './components/tables.css';
+@import './components/loading.css';
+
+/* ========== Pages ========== */
+@import './pages/dashboard.css';
+@import './pages/lancamentos.css';
+@import './pages/categorias.css';
+@import './pages/auth.css';
+
+/* ========== Utilities (sobrescreve se necessário) ========== */
+@import './utilities.css';

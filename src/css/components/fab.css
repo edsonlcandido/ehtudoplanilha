@@ -1,57 +1,50 @@
 /**
  * FAB - Floating Action Button
- * Botão flutuante de adicionar lançamento
  */
 
-.fab-button {
+.fab {
   position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  font-size: 2rem;
-  line-height: 1;
-  background: var(--success-color);
-  color: white;
-  border: none;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  z-index: 20000; /* acima do overlay do modal */
-  cursor: pointer;
+  bottom: var(--spacing-lg);
+  right: var(--spacing-lg);
+  width: 56px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  font-size: 1.5rem;
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-lg);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  z-index: 100;
 }
 
-.fab-button:hover {
-  background: var(--success-hover);
-  transform: scale(1.1);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+.fab:hover {
+  background-color: var(--color-primary-dark);
+  transform: scale(1.05);
+  box-shadow: var(--shadow-xl);
 }
 
-.fab-button:active {
+.fab:active {
   transform: scale(0.95);
 }
 
-/* Estado quando modal está aberto */
-.fab-button.modal-open {
-  background: var(--danger-color);
-  transform: rotate(45deg);
+.fab--secondary {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-700);
 }
 
-.fab-button.modal-open:hover {
-  background: var(--danger-hover);
-  transform: rotate(45deg) scale(1.1);
+.fab--secondary:hover {
+  background-color: var(--color-gray-200);
 }
 
-/* Mobile */
+/* Mobile - adjust for bottom nav */
 @media (max-width: 768px) {
-  .fab-button {
-    bottom: 6.5rem; /* acima da navegação inferior */
-    right: 1.5rem;
-    width: 56px;
-    height: 56px;
-    font-size: 1.75rem;
+  .fab {
+    bottom: calc(var(--sidebar-mobile-height) + var(--spacing-md));
+    right: var(--spacing-md);
   }
 }

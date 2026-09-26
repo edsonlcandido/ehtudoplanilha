@@ -1,94 +1,86 @@
-/* Design System overrides */
-:root {
-  --white-color: var(--color-white);
-  --primary-color: var(--color-primary-500);
-  --border-light: var(--color-gray-200);
-  --text-color: var(--color-gray-700);
-}
-
 /**
- * Navigation (Top Bar)
- * Menu superior com logo e links
+ * Navigation - Menu superior
  */
 
-/* ========== Nav ========== */
-nav {
-  flex-shrink: 0;
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--nav-height);
+  padding: 0 var(--spacing-lg);
   background-color: var(--color-white);
   border-bottom: 1px solid var(--color-gray-200);
   box-shadow: var(--shadow-sm);
-  z-index: 30000 !important;
 }
 
-/* Remove estilos de link do brand/logo */
-nav .brand,
-nav a.brand,
-nav a.brand:hover,
-nav a.brand:focus,
-nav a.brand:active {
+.nav__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-gray-900);
   text-decoration: none;
-  color: var(--text-color);
 }
 
-/* Botões do menu - Design System classes */
-nav .menu a.btn:not(.btn--ghost):not(.btn--success):not(.btn--danger):not(.btn--warning) {
-  color: var(--color-white);
-  background-color: var(--color-primary-500);
-  border-color: var(--color-primary-500);
+.nav__brand:hover {
+  text-decoration: none;
+  color: var(--color-gray-900);
 }
 
-nav .menu a.btn:not(.btn--ghost):not(.btn--success):not(.btn--danger):not(.btn--warning):hover,
-nav .menu a.btn:not(.btn--ghost):not(.btn--success):not(.btn--danger):not(.btn--warning):focus {
-  color: var(--color-white);
-  background-color: var(--color-primary-600);
+.nav__brand-icon {
+  font-size: 1.5rem;
 }
 
-/* Compatibilidade com classes antigas do Picnic */
-nav .menu a.button:not(.pseudo):not(.success):not(.error):not(.warning) {
-  color: var(--color-white);
-  background-color: var(--color-primary-500);
-  border-color: var(--color-primary-500);
+.nav__menu {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
 }
 
-nav .menu a.button:not(.pseudo):not(.success):not(.error):not(.warning):hover,
-nav .menu a.button:not(.pseudo):not(.success):not(.error):not(.warning):focus {
-  color: var(--color-white);
-  background-color: var(--color-primary-600);
+.nav__user {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
 }
 
-/* Botão Success (Dashboard) com cor branca */
-nav .menu a.button.success,
-nav .menu a.btn--success {
-  color: var(--color-white);
-  background-color: var(--color-success-600);
+.nav__user:hover {
+  background-color: var(--color-gray-100);
 }
 
-nav .menu a.button.success:hover,
-nav .menu a.button.success:focus,
-nav .menu a.btn--success:hover,
-nav .menu a.btn--success:focus {
-  color: var(--color-white);
-  background-color: var(--color-success-700);
+.nav__user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-gray-200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-gray-600);
 }
 
-/* Botão Error (Sair) com cor branca */
-nav .menu button.button.error,
-nav .menu button.btn--danger,
-nav .menu a.button.error,
-nav .menu a.btn--danger {
-  color: var(--color-white);
-  background-color: var(--color-danger-600);
+.nav__user-name {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-gray-700);
 }
 
-nav .menu button.button.error:hover,
-nav .menu button.button.error:focus,
-nav .menu button.btn--danger:hover,
-nav .menu button.btn--danger:focus,
-nav .menu a.button.error:hover,
-nav .menu a.button.error:focus,
-nav .menu a.btn--danger:hover,
-nav .menu a.btn--danger:focus {
-  color: var(--color-white);
-  background-color: var(--color-danger-700);
+/* Mobile */
+@media (max-width: 768px) {
+  .nav {
+    padding: 0 var(--spacing-md);
+  }
+  
+  .nav__user-name {
+    display: none;
+  }
 }
-

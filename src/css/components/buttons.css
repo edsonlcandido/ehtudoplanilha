@@ -1,86 +1,108 @@
 /**
- * Buttons
- * Extensões e customizações de botões do Picnic CSS
+ * Buttons - Botões do sistema
  */
 
-/* ========== Remove estilos de link dos botões ========== */
-a.button,
-a.button:hover,
-a.button:focus,
-a.button:active {
-  text-decoration: none;
-  color: inherit; /* Mantém a cor definida pela classe do botão */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: 0.5rem 1rem;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  line-height: 1;
+  border-radius: var(--radius-lg);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
 }
 
-/* Garante que botões primary mantenham o texto branco ao passar o mouse */
-.button.primary,
-.button.primary:hover,
-.button.primary:focus,
-.button.primary:active {
-  color: var(--white-color);
+.btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(59 130 246 / 0.3);
 }
 
-/* Remove o box-shadow do Picnic CSS mas permite efeito de clarear */
-button:hover,
-.button:hover,
-[type="submit"]:hover,
-button:focus,
-.button:focus,
-[type="submit"]:focus {
-  box-shadow: inset 0 0 0 99em rgba(255, 255, 255, 0.15) !important;
-  border: 0;
+.btn:disabled,
+.btn--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
-/* ========== Primary Button ========== */
-.button.primary {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
-  color: var(--white-color);
-  font-weight: var(--font-weight-bold);
-  text-transform: uppercase;
-  padding: 0.8em 1.8em;
-  transition: background-color var(--transition-base);
+/* Primary */
+.btn--primary {
+  background-color: var(--color-primary);
+  color: var(--color-white);
 }
 
-.button.primary:hover {
-  background-color: var(--primary-hover);
-  border-color: var(--primary-hover);
+.btn--primary:hover {
+  background-color: var(--color-primary-dark);
 }
 
-/* ========== Button Sizes ========== */
-.button.large {
-  font-size: var(--font-size-lg);
-  padding: 1em 2.5em;
+/* Secondary */
+.btn--secondary {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-700);
+  border-color: var(--color-gray-200);
 }
 
-/* ========== Button Variants ========== */
-.button.success {
-  background-color: var(--success-color);
-  border-color: var(--success-color);
-  color: var(--white-color);
+.btn--secondary:hover {
+  background-color: var(--color-gray-200);
 }
 
-a.button.success,
-a.button.success:hover,
-a.button.success:focus {
-  color: var(--white-color);
+/* Danger */
+.btn--danger {
+  background-color: var(--color-danger);
+  color: var(--color-white);
 }
 
-.button.warning {
-  background-color: var(--warning-color);
-  border-color: var(--warning-color);
-  color: var(--text-color);
+.btn--danger:hover {
+  background-color: #dc2626;
 }
 
-.button.danger,
-.button.error {
-  background-color: var(--danger-color);
-  border-color: var(--danger-color);
-  color: var(--white-color);
+/* Success */
+.btn--success {
+  background-color: var(--color-success);
+  color: var(--color-white);
 }
 
-.button.secondary {
-  background-color: var(--light-gray);
-  border-color: var(--border-color);
-  color: var(--text-color);
+.btn--success:hover {
+  background-color: #16a34a;
+}
+
+/* Ghost */
+.btn--ghost {
+  background-color: transparent;
+  color: var(--color-gray-600);
+}
+
+.btn--ghost:hover {
+  background-color: var(--color-gray-100);
+}
+
+/* Sizes */
+.btn--sm {
+  padding: 0.375rem 0.75rem;
+  font-size: var(--font-size-xs);
+}
+
+.btn--lg {
+  padding: 0.75rem 1.5rem;
+  font-size: var(--font-size-base);
+}
+
+/* Full width */
+.btn--full {
+  width: 100%;
+}
+
+/* Icon only */
+.btn--icon {
+  padding: 0.5rem;
+  aspect-ratio: 1;
+}
+
+.btn--icon.btn--sm {
+  padding: 0.375rem;
 }

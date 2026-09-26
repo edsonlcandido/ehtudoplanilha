@@ -1,0 +1,44 @@
+/**
+ * Main Layout - Estrutura principal da página
+ */
+
+.main-wrapper {
+  display: flex;
+  min-height: calc(100vh - var(--nav-height));
+}
+
+.main-content {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  padding: var(--spacing-lg);
+  padding-bottom: calc(var(--sidebar-mobile-height) + var(--spacing-lg));
+  min-height: calc(100vh - var(--nav-height));
+  max-width: calc(100vw - var(--sidebar-width));
+}
+
+.main-header {
+  margin-bottom: var(--spacing-lg);
+}
+
+.main-title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-gray-900);
+  margin-bottom: var(--spacing-xs);
+}
+
+.main-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    margin-right: 0;
+    padding: var(--spacing-md);
+    padding-bottom: calc(var(--sidebar-mobile-height) + var(--spacing-md));
+    max-width: 100vw;
+  }
+}
