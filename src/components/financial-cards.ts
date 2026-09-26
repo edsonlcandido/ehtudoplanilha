@@ -95,7 +95,7 @@ function criarCardAtivo(item: BudgetSummary): HTMLElement {
     <div class="financial-card__value">${formatarMoeda(item.sum)}</div>
 
     <div class="financial-card__actions">
-      <button class="financial-card__toggle button pseudo" aria-expanded="false">Mostrar detalhes</button>
+      <button class="btn btn--ghost" aria-expanded="false">Mostrar detalhes</button>
     </div>
 
     <div class="financial-card__details financial-card__details--hidden">
@@ -158,7 +158,7 @@ function cardClickHandler(this: HTMLElement): void {
     <div class="financial-card__value">${formatarMoeda(sum)}</div>
 
     <div class="financial-card__actions">
-      <button class="financial-card__toggle button pseudo" aria-expanded="false">Mostrar detalhes</button>
+      <button class="btn btn--ghost" aria-expanded="false">Mostrar detalhes</button>
     </div>
 
     <div class="financial-card__details financial-card__details--hidden">

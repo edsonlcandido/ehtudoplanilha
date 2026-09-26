@@ -272,7 +272,7 @@ body {
 }
 
 .lancamentos__table-row:hover {
-  background-color: #f8f9fa;
+  background-color: transparent;
 }
 
 .lancamentos__table-cell {
@@ -283,7 +283,7 @@ body {
 
 .lancamentos__table-cell--header {
   font-weight: 600;
-  color: #666;
+  color: white;
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;

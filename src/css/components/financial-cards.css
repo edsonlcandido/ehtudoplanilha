@@ -1,7 +1,20 @@
 /**
  * Componente de Cards Financeiros
  * Nomenclatura BEM: financial-card__*
+ * Design System: usa tokens do design-system.css
  */
+
+/* Design System overrides */
+:root {
+  --white-color: var(--color-white);
+  --primary-color: var(--color-primary-600);
+  --danger-color: var(--color-danger-600);
+  --success-color: var(--color-success-600);
+  --border-light: var(--color-gray-200);
+  --text-color: var(--color-gray-600);
+  --text-muted-light: var(--color-gray-400);
+  --light-gray-alt: var(--color-gray-100);
+}
 
 .financial-cards {
   display: flex;
@@ -11,34 +24,43 @@
 }
 
 .financial-card {
-  background-color: var(--white-color);
-  padding: 0.75rem 1.5rem;
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow);
+  background-color: var(--color-white);
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
   border-left: 4px solid;
   margin: 1rem 0;
   text-align: center;
   width: 100%;
   position: relative;
-  transition: opacity 0.2s ease;
+  transition: all 0.2s ease;
+}
+
+.financial-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
 }
 
 /* Modificadores de tipo/status */
 .financial-card--saldo {
-  border-left-color: var(--primary-color);
+  border-left-color: var(--color-primary-500);
+  background: linear-gradient(135deg, var(--color-white) 0%, var(--color-primary-50) 100%);
 }
 
 .financial-card--expenses {
-  border-left-color: var(--danger-color);
+  border-left-color: var(--color-danger-500);
+  background: linear-gradient(135deg, var(--color-white) 0%, var(--color-danger-50) 100%);
 }
 
 .financial-card--incomes {
-  border-left-color: var(--success-color);
+  border-left-color: var(--color-success-500);
+  background: linear-gradient(135deg, var(--color-white) 0%, var(--color-success-50) 100%);
 }
 
 .financial-card--inactive {
-  border-left-color: var(--border-light);
+  border-left-color: var(--color-gray-300);
   opacity: 0.7;
+  background: var(--color-gray-50);
 }
 
 .financial-card--loading {
