@@ -56,7 +56,7 @@
                         <p class="lancamentos__description">Visualize e gerencie todos os seus lançamentos financeiros.</p>
 
                         <div class="lancamentos__actions lancamentos-actions">
-                            <button id="refreshEntriesBtn" class="button">
+                            <button id="refreshEntriesBtn" class="btn">
                                 🔄 Atualizar
                             </button>
                         </div>
@@ -209,10 +209,10 @@
             </div>
 
             <div class="filter-panel__footer">
-                <button type="button" id="clearFiltersBtn" class="button">
+                <button type="button" id="clearFiltersBtn" class="btn">
                     Limpar filtros
                 </button>
-                <button type="button" id="applyFiltersBtn" class="button primary">
+                <button type="button" id="applyFiltersBtn" class="btn btn--primary">
                     Aplicar filtros
                 </button>
             </div>
@@ -252,9 +252,9 @@
                 </div>
 
                 <div class="form-actions" style="margin-top:1.5rem; gap:1rem;">
-                    <button type="button" class="button"
+                    <button type="button" class="btn"
                         onclick="lancamentosManager.closeSplitModal()">Cancelar</button>
-                    <button type="button" class="button primary" onclick="lancamentosManager.confirmSplit()"
+                    <button type="button" class="btn btn--primary" onclick="lancamentosManager.confirmSplit()"
                         id="splitConfirmBtn">Dividir Lançamento</button>
                 </div>
             </form>
@@ -297,8 +297,8 @@
             </div>
             
             <div class="entry-modal__form-actions">
-                <button type="button" class="button" onclick="lancamentosManager.closeDeleteModal()">Cancelar</button>
-                <button type="button" id="deleteConfirmBtn" class="button danger"
+                <button type="button" class="btn" onclick="lancamentosManager.closeDeleteModal()">Cancelar</button>
+                <button type="button" id="deleteConfirmBtn" class="btn btn--danger"
                     onclick="lancamentosManager.confirmDelete()">🗑️ Excluir</button>
             </div>
         </div>
