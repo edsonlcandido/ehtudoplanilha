@@ -9,6 +9,9 @@
 /* ========== Vendor (Framework) ========== */
 @import './picnic.css';
 
+/* ========== Design System (sobrescreve picnic) ========== */
+@import './design-system.css';
+
 /* ========== Base Styles ========== */
 @import './base/variables.css';
 @import './base/reset.css';
