@@ -257,8 +257,9 @@ body {
 }
 
 .lancamentos__table-header {
-  background: #f8f9fa;
-  border-bottom: 2px solid #e6e6e6;
+  background: var(--color-primary-600);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  color: white;
 }
 
 .lancamentos__table-row {
@@ -293,12 +294,20 @@ body {
   font-weight: 600;
 }
 
-.lancamentos__table-cell--expense {
-  color: var(--expense-color);
+/* Design System overrides */
+:root {
+  --expense-color: var(--color-danger-600);
+  --income-color: var(--color-success-600);
 }
 
-.lancamentos__table-cell--income {
-  color: var(--income-color);
+.lancamentos__table-cell--expense,
+.lancamentos__item-value--expense {
+  color: var(--color-danger-600);
+}
+
+.lancamentos__table-cell--income,
+.lancamentos__item-value--income {
+  color: var(--color-success-600);
 }
 
 .lancamentos__table-cell--actions {

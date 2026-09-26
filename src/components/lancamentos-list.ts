@@ -1,6 +1,7 @@
 /**
  * Componente de Lista de Lançamentos
  * Renderiza a visualização de lançamentos em formato tabela (desktop) e lista (mobile)
+ * Design System: BEM + Tailwind-inspired
  */
 
 import type { SheetEntry } from '../types';
@@ -49,16 +50,17 @@ function formatDateSimple(date: string | number | undefined): string {
 
 /**
  * Renderiza botões de ação para um lançamento
+ * Classes: btn btn--sm (design system)
  */
 function renderActions(entry: SheetEntry): string {
   return `
-    <button class="button small" onclick="window.editEntry(${entry.rowIndex})" title="Editar">
+    <button class="btn btn--sm" onclick="window.editEntry(${entry.rowIndex})" title="Editar">
       ✏️
     </button>
-    <button class="button small" onclick="window.copyEntry(${entry.rowIndex})" title="Copiar">
+    <button class="btn btn--sm" onclick="window.copyEntry(${entry.rowIndex})" title="Copiar">
       📑
     </button>
-    <button class="button small danger" onclick="window.deleteEntry(${entry.rowIndex})" title="Excluir">
+    <button class="btn btn--sm btn--danger" onclick="window.deleteEntry(${entry.rowIndex})" title="Excluir">
       🗑️
     </button>
   `;
@@ -66,22 +68,25 @@ function renderActions(entry: SheetEntry): string {
 
 /**
  * Renderiza tabela de lançamentos (Desktop)
+ * Design System: usa classes do lancamentos__* com estilo unificado
  */
 export function renderTable(entries: SheetEntry[]): string {
   if (entries.length === 0) {
     return `
-      <div class="lancamentos__empty">
-        <div class="lancamentos__empty-icon">📋</div>
-        <p class="lancamentos__empty-text">Nenhum lançamento encontrado</p>
-        <p>Adicione seu primeiro lançamento usando o botão "+" no canto inferior direito.</p>
+      <div class="card">
+        <div class="lancamentos__empty">
+          <div class="lancamentos__empty-icon">📋</div>
+          <p class="lancamentos__empty-text">Nenhum lançamento encontrado</p>
+          <p>Adicione seu primeiro lançamento usando o botão "+" no canto inferior direito.</p>
+        </div>
       </div>
     `;
   }
 
   const rows = entries.map(entry => {
     const valorClass = entry.valor < 0 
-      ? 'lancamentos__table-cell--expense' 
-      : 'lancamentos__table-cell--income';
+      ? 'text--danger' 
+      : 'text--success';
 
     return `
       <div class="lancamentos__table-row">
@@ -92,7 +97,7 @@ export function renderTable(entries: SheetEntry[]): string {
           ${formatCurrency(entry.valor)}
         </div>
         <div class="lancamentos__table-cell">${entry.descricao || '-'}</div>
-        <div class="lancamentos__table-cell">${entry.categoria || '-'}</div>
+        <div class="lancamentos__table-cell"><span class="badge badge--gray">${entry.categoria || '-'}</span></div>
         <div class="lancamentos__table-cell">${formatDateSimple(entry.orcamento)}</div>
         <div class="lancamentos__table-cell lancamentos__table-cell--actions">
           ${renderActions(entry)}
@@ -102,20 +107,22 @@ export function renderTable(entries: SheetEntry[]): string {
   }).join('');
 
   return `
-    <div class="lancamentos__table">
-      <div class="lancamentos__table-header">
-        <div class="lancamentos__table-row">
-          <div class="lancamentos__table-cell lancamentos__table-cell--header">#</div>
-          <div class="lancamentos__table-cell lancamentos__table-cell--header">Data</div>
-          <div class="lancamentos__table-cell lancamentos__table-cell--header">Conta</div>
-          <div class="lancamentos__table-cell lancamentos__table-cell--header">Valor</div>
-          <div class="lancamentos__table-cell lancamentos__table-cell--header">Descrição</div>
-          <div class="lancamentos__table-cell lancamentos__table-cell--header">Categoria</div>
-          <div class="lancamentos__table-cell lancamentos__table-cell--header">Orçamento</div>
-          <div class="lancamentos__table-cell lancamentos__table-cell--header">Ações</div>
+    <div class="card">
+      <div class="lancamentos__table">
+        <div class="lancamentos__table-header">
+          <div class="lancamentos__table-row">
+            <div class="lancamentos__table-cell lancamentos__table-cell--header">#</div>
+            <div class="lancamentos__table-cell lancamentos__table-cell--header">Data</div>
+            <div class="lancamentos__table-cell lancamentos__table-cell--header">Conta</div>
+            <div class="lancamentos__table-cell lancamentos__table-cell--header">Valor</div>
+            <div class="lancamentos__table-cell lancamentos__table-cell--header">Descrição</div>
+            <div class="lancamentos__table-cell lancamentos__table-cell--header">Categoria</div>
+            <div class="lancamentos__table-cell lancamentos__table-cell--header">Orçamento</div>
+            <div class="lancamentos__table-cell lancamentos__table-cell--header">Ações</div>
+          </div>
         </div>
+        ${rows}
       </div>
-      ${rows}
     </div>
   `;
 }
