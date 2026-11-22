@@ -21,7 +21,10 @@ WORKDIR /build
 # Copiar apenas package.json pra cache de deps
 COPY src/package.json src/package-lock.json* ./
 
-RUN npm ci --only=production || npm install
+# ⚠️ Estágio de BUILD: precisa das devDependencies (vite, typescript).
+# `--only=production` omitiria devDeps e o build quebraria com
+# "sh: vite: not found" / "sh: tsc: not found".
+RUN npm ci --include=dev || npm install --include=dev
 
 # Copiar source do frontend
 COPY src/ ./
@@ -40,7 +43,8 @@ WORKDIR /build
 # Copiar package.json do PWA
 COPY pwa/package.json pwa/package-lock.json* ./
 
-RUN npm ci --only=production || npm install
+# ⚠️ Estágio de BUILD: precisa das devDependencies (vite, vite-plugin-pwa).
+RUN npm ci --include=dev || npm install --include=dev
 
 # Copiar source do PWA
 COPY pwa/ ./
