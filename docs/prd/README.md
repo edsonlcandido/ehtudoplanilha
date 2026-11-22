@@ -92,6 +92,7 @@ Então [resultado esperado].
 | [PRD-010](./PRD-010-pwa-instalacao-share-target.md) | PWA: Instalação + Share Target | Install no celular, share de **imagens** (PDF removido em 2026-08-08) |
 | [PRD-011](./PRD-011-ocr-comprovantes.md) | OCR de Comprovantes | Upload imagem → webhook n8n → **array** pra revisar e salvar |
 | [PRD-012](./PRD-012-chat-ia.md) | Chat: Agente de Lançamentos | Texto natural → **array** de lançamentos (não conversacional) |
+| [PRD-013](./PRD-013-ajuste-de-saldo.md) | Ajuste de Saldo da Conta | Reconciliação: informa o **novo saldo** e o app cria o lançamento de ajuste |
 
 > **Convenções usadas nos títulos do índice:**
 > - Itens em **negrito** são alertas/limitações importantes

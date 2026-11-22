@@ -21,6 +21,15 @@ class FabMenu {
     return `
       <div id="fabMenuContainer" class="fab-menu" style="display: none;">
         <button 
+          id="fabOptionBalanceAdjust" 
+          class="fab-menu__option" 
+          aria-label="Ajuste de saldo"
+          title="Ajuste de saldo">
+          <span class="fab-menu__icon">⚖️</span>
+          <span class="fab-menu__label">Ajuste de saldo</span>
+        </button>
+
+        <button 
           id="fabOptionTransfer" 
           class="fab-menu__option" 
           aria-label="Transferência"
@@ -56,7 +65,8 @@ class FabMenu {
   init(
     onEntryClick: () => void,
     onFutureClick: () => void,
-    onTransferClick: () => void
+    onTransferClick: () => void,
+    onBalanceAdjustClick?: () => void
   ): void {
     console.log('[FabMenu] Inicializando...');
 
@@ -75,7 +85,7 @@ class FabMenu {
     this.fabButton.innerHTML = '+';
 
     // Event listeners
-    this.setupEventListeners(onEntryClick, onFutureClick, onTransferClick);
+    this.setupEventListeners(onEntryClick, onFutureClick, onTransferClick, onBalanceAdjustClick);
 
     console.log('[FabMenu] ✅ Inicializado com sucesso');
   }
@@ -86,7 +96,8 @@ class FabMenu {
   private setupEventListeners(
     onEntryClick: () => void,
     onFutureClick: () => void,
-    onTransferClick: () => void
+    onTransferClick: () => void,
+    onBalanceAdjustClick?: () => void
   ): void {
     if (!this.fabButton || !this.menuContainer) return;
 
@@ -127,6 +138,14 @@ class FabMenu {
       onTransferClick();
     });
 
+    // Opção: Ajuste de saldo
+    const optionBalanceAdjust = document.getElementById('fabOptionBalanceAdjust');
+    optionBalanceAdjust?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.collapse();
+      onBalanceAdjustClick?.();
+    });
+
     // Fecha o menu ao clicar fora
     document.addEventListener('click', (e) => {
       if (
@@ -154,7 +173,8 @@ class FabMenu {
       document.getElementById('entryModal'),
       document.getElementById('futureEntryModal'),
       document.getElementById('transferEntryModal'),
-      document.getElementById('editEntryModal')
+      document.getElementById('editEntryModal'),
+      document.getElementById('balanceAdjustModal')
     ];
     
     return modals.some(modal => modal && modal.style.display === 'flex');
@@ -168,7 +188,8 @@ class FabMenu {
       { id: 'entryModal', closeBtn: 'closeEntryModal' },
       { id: 'futureEntryModal', closeBtn: 'closeFutureEntryModal' },
       { id: 'transferEntryModal', closeBtn: 'closeTransferEntryModal' },
-      { id: 'editEntryModal', closeBtn: 'closeEditEntryModal' }
+      { id: 'editEntryModal', closeBtn: 'closeEditEntryModal' },
+      { id: 'balanceAdjustModal', closeBtn: 'closeBalanceAdjustModal' }
     ];
     
     modals.forEach(({ id, closeBtn }) => {
@@ -251,7 +272,8 @@ class FabMenu {
 export function initFabMenu(
   onEntryClick: () => void,
   onFutureClick: () => void,
-  onTransferClick: () => void
+  onTransferClick: () => void,
+  onBalanceAdjustClick?: () => void
 ): FabMenu {
   if (fabMenuInstance) {
     console.warn('[FabMenu] Menu já inicializado');
@@ -259,7 +281,7 @@ export function initFabMenu(
   }
 
   fabMenuInstance = new FabMenu();
-  fabMenuInstance.init(onEntryClick, onFutureClick, onTransferClick);
+  fabMenuInstance.init(onEntryClick, onFutureClick, onTransferClick, onBalanceAdjustClick);
   
   return fabMenuInstance;
 }

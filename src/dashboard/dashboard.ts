@@ -10,6 +10,7 @@ import { renderUserMenu } from '../components/user-menu';
 import { initEntryModal, openEntryModal } from '../components/entry-modal';
 import { initFutureEntryModal, openFutureEntryModal } from '../components/future-entry-modal';
 import { initTransferEntryModal, openTransferEntryModal } from '../components/transfer-entry-modal';
+import { initBalanceAdjustModal, openBalanceAdjustModal } from '../components/balance-adjust-modal';
 import { initFabMenu } from '../components/fab-menu';
 import {
   renderizarCards,
@@ -81,12 +82,25 @@ async function init(): Promise<void> {
     window.location.reload();
   });
 
-  // Inicializa o menu FAB com as 3 opções
+  // Inicializa modal de ajuste de saldo
+  await initBalanceAdjustModal(() => {
+    console.log('✅ Saldo ajustado! Recarregue a página para ver as mudanças.');
+    window.location.reload();
+  });
+
+  // Inicializa o menu FAB com as opções
   initFabMenu(
     () => openEntryModal(),         // Receita/despesa
     () => openFutureEntryModal(),   // Lançamento futuro
-    () => openTransferEntryModal()  // Transferência
+    () => openTransferEntryModal(), // Transferência
+    () => openBalanceAdjustModal()  // Ajuste de saldo
   );
+
+  // Atalho disparado pelos cards de conta (seção "Saldo e contas")
+  document.addEventListener('balance:adjust', (e: Event) => {
+    const conta = (e as CustomEvent).detail?.conta;
+    openBalanceAdjustModal(conta);
+  });
 
   // Verifica autenticação
   if (!pb.authStore.isValid) {

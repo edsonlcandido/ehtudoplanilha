@@ -125,7 +125,7 @@
 /* Área dos cartões agregados */
 .details__cards {
     display: grid;
-    grid-template-columns: 240px; /* Largura fixa para os cards */
+    grid-template-columns: 268px; /* Largura fixa para os cards */
     gap: 0.6rem;
     margin-bottom: 0.75rem;
 }
@@ -191,6 +191,35 @@
     color: var(--text-color);
     text-align: right;
     margin-left: auto;
+}
+
+/* Botão de ajuste de saldo nos cards de conta (seção "Saldo e contas") */
+.details__card-adjust {
+    flex-shrink: 0;
+    margin-left: 0.5rem;
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-light, #e0e0e0);
+    background: var(--white-color, #fff);
+    color: var(--text-color, #333);
+    cursor: pointer;
+    font-size: 0.95rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.details__card-adjust:hover {
+    background: var(--light-gray, #f5f5f5);
+    border-color: var(--primary-color, #0074d9);
+}
+
+.details__card-adjust:focus-visible {
+    outline: 2px solid var(--primary-color, #0074d9);
+    outline-offset: 2px;
 }
 
 /* Cards de categorias */

@@ -236,6 +236,22 @@ export async function inicializarDetalhes(entries: Entry[], budgetsInInterval: B
         
         card.appendChild(cardContent);
 
+        // Botão de ajuste de saldo da conta (dispara o modal de ajuste)
+        const adjustBtn = document.createElement('button');
+        adjustBtn.type = 'button';
+        adjustBtn.className = 'details__card-adjust';
+        adjustBtn.title = `Ajustar saldo de ${conta}`;
+        adjustBtn.setAttribute('aria-label', `Ajustar saldo de ${conta}`);
+        adjustBtn.textContent = '⚖️';
+        adjustBtn.addEventListener('click', (e) => {
+          // Evita acionar o toggle de incluir/excluir a conta do saldo
+          e.stopPropagation();
+          document.dispatchEvent(new CustomEvent('balance:adjust', {
+            detail: { conta }
+          }));
+        });
+        card.appendChild(adjustBtn);
+
         // Clique no card para toggle incluir/excluir do saldo
         card.addEventListener('click', () => {
           const iconEl = cardContent.querySelector('.details__card-icon') as HTMLElement;
