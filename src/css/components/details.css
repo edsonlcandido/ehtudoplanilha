@@ -125,7 +125,7 @@
 /* Área dos cartões agregados */
 .details__cards {
     display: grid;
-    grid-template-columns: 268px; /* Largura fixa para os cards */
+    grid-template-columns: 298px; /* Largura fixa para os cards */
     gap: 0.6rem;
     margin-bottom: 0.75rem;
 }
