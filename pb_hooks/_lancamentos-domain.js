@@ -395,7 +395,8 @@ function searchEntries(entries, term) {
 }
 
 /**
- * Filtra por tipo: 'consolidado' (tem data), 'futuro' (sem data) ou 'todos'.
+ * Filtra por tipo: 'consolidado' (tem data), 'futuro' (sem data), 'todos'
+ * (os dois) ou 'nenhum' (nenhum dos dois — os dois checkboxes desmarcados).
  */
 function filterByType(entries, tipo) {
   if (!tipo || tipo === 'todos') return entries;
@@ -404,6 +405,9 @@ function filterByType(entries, tipo) {
   }
   if (tipo === 'futuro') {
     return entries.filter(function (e) { return e.isFuturo; });
+  }
+  if (tipo === 'nenhum') {
+    return [];
   }
   return entries;
 }
@@ -649,20 +653,34 @@ function aggregateByCategory(entries) {
 }
 
 /**
- * Resumo (receitas/despesas/saldo/contagem) com a regra de transferência:
- *  - lançamentos futuros (sem data) NÃO entram
- *  - lançamentos sem orçamento (data-chave) NÃO entram
- *  - transferências entram só no saldo (não contam como receita/despesa)
+ * Resumo (receitas/despesas/saldo/contagem).
  *
- * As três regras reproduzem o agrupamento orçamento→conta do frontend antigo.
+ * Regras:
+ *  - lançamento SEM data (futuro) só entra se `incluirFuturos` for true;
+ *  - lançamento SEM data-chave (orçamento) NÃO entra;
+ *  - transferências entram só no saldo (não contam como receita/despesa).
+ *
+ * As duas últimas regras reproduzem o agrupamento orçamento→conta do
+ * frontend antigo.
+ *
+ * @param {Array<object>} entries conjunto (já filtrado, quando aplicável)
+ * @param {{incluirFuturos?:boolean}} [opts]
+ *        incluirFuturos=true soma também os lançamentos futuros.
+ *        É o que a página de Lançamentos usa: lá o conjunto já vem
+ *        filtrado pela camada de tipo (checkbox "consolidados"/"futuros"),
+ *        então respeitar essa camada é só não descartar os futuros.
+ *        Default false = total só dos EXECUTADOS (usado no dashboard).
  */
-function summarize(entries) {
+function summarize(entries, opts) {
+  const incluirFuturos = !!(opts && opts.incluirFuturos);
+
   let receitas = 0;
   let despesas = 0;
   let count = 0;
 
   (entries || []).forEach(function (e) {
-    if (e.isFuturo) return;
+    // futuro (sem data): só entra se a camada de tipo permitir
+    if (e.isFuturo && !incluirFuturos) return;
     // sem data-chave não entra no resumo
     if (e.orcamentoSerial === null || e.orcamentoSerial === undefined) return;
 

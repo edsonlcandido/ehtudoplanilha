@@ -19,7 +19,7 @@
  *                          também "30/11/2025" e "2025-11-30")
  *   - dataInicio   str  "YYYY-MM-DD"
  *   - dataFim      str  "YYYY-MM-DD"
- *   - tipo         str  'todos' (default) | 'consolidado' | 'futuro'
+ *   - tipo         str  'todos' (default) | 'consolidado' | 'futuro' | 'nenhum'
  *   - sort         str  'original' (default) | 'date' | 'budget_date'
  *   - hoje         str  "YYYY-MM-DD" dia local do cliente (define as datas-chave
  *                            sugeridas nos formulários). Sem ele, usa o dia do
@@ -138,7 +138,15 @@ routerAdd('GET', '/get-sheet-entries', (c) => {
 
     const filtered = domain.applyFilters(allEntries, filtros);
     const sorted = domain.sortEntries(filtered, filtros.sort);
-    const resumo = domain.summarize(filtered);
+
+    // O resumo é a última camada da pilha de filtros: soma exatamente o que
+    // passou pelos filtros. Como o conjunto já vem filtrado pelo `tipo`
+    // (checkbox "consolidados"/"futuros"), basta não descartar os futuros —
+    // assim, se "mostrar futuros" estiver marcado eles entram na soma, e se
+    // só "futuros" estiver marcado a soma é só dos futuros.
+    const resumo = domain.summarize(filtered, {
+      incluirFuturos: filtros.tipo === 'todos' || filtros.tipo === 'futuro'
+    });
 
     // Filtros ativos com o texto pronto pra tela (pills de "Filtros aplicados").
     // O frontend não converte data nem decide o que é "ativo".

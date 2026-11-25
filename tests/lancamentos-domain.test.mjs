@@ -775,4 +775,42 @@ check('meta traz as datas-chave sugeridas já prontas pro formulário', () => {
   assert.equal(meta.orcamentoMesAtual, '2025-11-30');
 });
 
+// --- camada de tipo (checkbox consolidados/futuros) --------------------------
+check('resumo só dos executados (padrão) ignora os futuros', () => {
+  const r = domain.summarize(normalized);
+  // o legado também ignorava: Mercado, Salário, Conta de luz e Café
+  assert.equal(r.count, 4);
+  assert.equal(r.saldo, 1740.92);
+});
+
+check('resumo inclui os futuros quando a camada de tipo permite', () => {
+  const r = domain.summarize(normalized, { incluirFuturos: true });
+  // + Assinatura (futuro, -50)
+  assert.equal(r.count, 5);
+  assert.equal(r.saldo, 1690.92);
+});
+
+check('camada "somente futuros": o resumo soma só os futuros', () => {
+  const futuros = domain.filterByType(normalized, 'futuro');
+  assert.equal(futuros.length, 1);
+  assert.equal(futuros[0].descricao, 'Assinatura');
+
+  const r = domain.summarize(futuros, { incluirFuturos: true });
+  assert.equal(r.count, 1);
+  assert.equal(r.despesas, -50);
+  assert.equal(r.saldo, -50);
+});
+
+check('camada "todos": o resumo soma executados + futuros', () => {
+  const todos = domain.filterByType(normalized, 'todos');
+  assert.equal(todos.length, normalized.length);
+
+  const r = domain.summarize(todos, { incluirFuturos: true });
+  assert.equal(r.count, 5);
+});
+
+check('camada "nenhum": não devolve lançamento nenhum', () => {
+  assert.deepEqual(domain.filterByType(normalized, 'nenhum'), []);
+});
+
 console.log(`\n${passed} verificações passaram.\n`);

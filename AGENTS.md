@@ -350,10 +350,19 @@ routerAdd('POST', '/append-entry', (c) => {
 
 ### Regras que hoje moram no backend (não replique no frontend!)
 
-- **Consolidado x futuro**: sem data → `isFuturo: true`
+- **Consolidado x futuro**: sem data → `isFuturo: true`. A camada de tipo
+  (`tipo`) tem 4 estados: `todos` (os dois checkboxes), `consolidado`,
+  `futuro` e `nenhum` (os dois desmarcados).
+- **Resumo da página de Lançamentos** (`resumo` do `/get-sheet-entries`):
+  é a última camada da pilha de filtros — soma **exatamente o que passou
+  pelos filtros**. Se o checkbox "mostrar futuros" estiver marcado, os
+  futuros entram na soma; se só "futuros" estiver marcado, a soma é só dos
+  futuros. (`summarize(entries, {incluirFuturos: true})`)
+- **Resumo do dashboard**: `summarize(entries)` sem a opção — total só dos
+  EXECUTADOS (comportamento legado, igual ao saldo por conta).
 - **Transferência**: categoria "Transferência" → entra **só no saldo**, não conta
   como receita/despesa nem no `count` do resumo
-- **Resumo** (`resumo`): ignora futuros e lançamentos **sem orçamento**
+- **Resumo** (`resumo`): ignora lançamentos **sem orçamento** (data-chave)
 - **Intervalo do dashboard**: `hoje-5 .. hoje+35`, calculado a partir do
   `hoje` que o **cliente** manda (o fuso do servidor não pode decidir isso)
 - **Gráfico por tipo**: ignora tipos `TRANSFERÊNCIA`, `TRANSFERENCIA`,
@@ -376,7 +385,7 @@ routerAdd('POST', '/append-entry', (c) => {
 `limit` (100 default, 0 = todas), `offset`, `q`, `conta`, `categoria`,
 `orcamento` (serial da data-chave: "45991" — aceita também "30/11/2025" e
 "2025-11-30"), `dataInicio`, `dataFim` (`YYYY-MM-DD`),
-`tipo` (`todos|consolidado|futuro`), `sort` (`original|date|budget_date`),
+`tipo` (`todos|consolidado|futuro|nenhum`), `sort` (`original|date|budget_date`),
 `hoje` (`YYYY-MM-DD`, dia local do cliente), `fresh=1` (ignora o cache do
 servidor).
 

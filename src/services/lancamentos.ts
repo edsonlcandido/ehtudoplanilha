@@ -35,7 +35,7 @@ export interface LancamentosQuery {
   /** "YYYY-MM-DD" */
   dataInicio?: string;
   dataFim?: string;
-  tipo?: 'todos' | 'consolidado' | 'futuro';
+  tipo?: 'todos' | 'consolidado' | 'futuro' | 'nenhum';
   sort?: SortType;
   /** "YYYY-MM-DD" — dia local do cliente (default: hoje no cliente) */
   hoje?: string;

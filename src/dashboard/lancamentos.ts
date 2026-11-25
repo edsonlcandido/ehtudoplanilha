@@ -130,13 +130,16 @@ function buildQuery(fresh: boolean) {
 }
 
 /**
- * Tipo de lançamento conforme os checkboxes (consolidado / futuro)
+ * Tipo de lançamento conforme os checkboxes (consolidado / futuro).
+ *
+ * São 4 estados: os dois marcados = "todos", só um = aquele, nenhum
+ * marcado = "nenhum" (não mostra nenhum tipo).
  */
-function currentTipo(): 'todos' | 'consolidado' | 'futuro' {
+function currentTipo(): 'todos' | 'consolidado' | 'futuro' | 'nenhum' {
   if (state.showConsolidated && state.showFuture) return 'todos';
   if (state.showConsolidated) return 'consolidado';
   if (state.showFuture) return 'futuro';
-  return 'todos';
+  return 'nenhum';
 }
 
 /**
