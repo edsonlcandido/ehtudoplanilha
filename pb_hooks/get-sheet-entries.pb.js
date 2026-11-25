@@ -20,6 +20,9 @@
  *   - dataFim      str  "YYYY-MM-DD"
  *   - tipo         str  'todos' (default) | 'consolidado' | 'futuro'
  *   - sort         str  'original' (default) | 'date' | 'budget_date'
+ *   - hoje         str  "YYYY-MM-DD" dia local do cliente (define as datas-chave
+ *                            sugeridas nos formulários). Sem ele, usa o dia do
+ *                            servidor.
  *   - fresh        '1'  ignora o cache do servidor (botão "atualizar")
  *
  * Resposta:
@@ -27,8 +30,13 @@
  *     success, entries[], total, count, limit, offset,
  *     meta:    { contas[], categorias[], descricoes[], orcamentos[] },
  *     resumo:  { receitas, despesas, saldo, count },
- *     filtros: { ...eco dos filtros aplicados }
+ *     filtros: { ...eco dos filtros aplicados, ativos[] }
  *   }
+ *
+ * `filtros.ativos` é a lista de filtros realmente aplicados, cada um com o
+ * texto pronto pra tela ({tipo, rotulo, valor}). É ela que o frontend usa
+ * pra desenhar os pills de "Filtros aplicados" e pra decidir se mostra o
+ * resumo (lista vazia = nenhum filtro ativo).
  *
  * Helpers:
  *   - _google-sheets-helper.js  (leitura da planilha + cache)
@@ -89,7 +97,13 @@ routerAdd('GET', '/get-sheet-entries', (c) => {
 
     // Normalização: linhas cruas -> DTO (data/label/flags já calculados)
     const allEntries = domain.normalizeRows(sheet.rows);
-    const meta = domain.buildMeta(allEntries);
+
+    // "hoje" do cliente (o fuso do servidor não pode decidir a data-chave
+    // sugerida nos formulários). Sem o param, usa o dia do servidor.
+    const hoje = query.hoje ? String(query.hoje) : domain.formatDateInput(domain.civilToday());
+    const hojeCivil = domain.parseDateValue(hoje) || domain.civilToday();
+
+    const meta = domain.buildMeta(allEntries, hojeCivil);
 
     if (allEntries.length === 0) {
       return c.json(200, {
@@ -103,7 +117,8 @@ routerAdd('GET', '/get-sheet-entries', (c) => {
         resumo: { receitas: 0, despesas: 0, saldo: 0, count: 0 },
         filtros: {
           q: '', conta: '', categoria: '', orcamento: '',
-          dataInicio: '', dataFim: '', tipo: 'todos', sort: 'original'
+          dataInicio: '', dataFim: '', tipo: 'todos', sort: 'original',
+          ativos: []
         }
       });
     }
@@ -123,6 +138,10 @@ routerAdd('GET', '/get-sheet-entries', (c) => {
     const filtered = domain.applyFilters(allEntries, filtros);
     const sorted = domain.sortEntries(filtered, filtros.sort);
     const resumo = domain.summarize(filtered);
+
+    // Filtros ativos com o texto pronto pra tela (pills de "Filtros aplicados").
+    // O frontend não converte data nem decide o que é "ativo".
+    filtros.ativos = domain.buildActiveFilters(filtros, meta);
 
     // Paginação
     const total = sorted.length;

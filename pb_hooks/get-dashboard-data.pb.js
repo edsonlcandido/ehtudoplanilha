@@ -53,10 +53,12 @@ routerAdd('GET', '/get-dashboard-data', (c) => {
     }
 
     const entries = domain.normalizeRows(sheet.rows);
-    const meta = domain.buildMeta(entries);
 
     // Intervalo de referência (orçamentos "em destaque")
     const hoje = query.hoje ? String(query.hoje) : domain.formatDateInput(domain.civilToday());
+    const hojeCivil = domain.parseDateValue(hoje) || domain.civilToday();
+
+    const meta = domain.buildMeta(entries, hojeCivil);
     const intervalo = domain.intervalSerials(hoje);
 
     const entriesInInterval = domain.filterByInterval(entries, intervalo.startSerial, intervalo.endSerial);

@@ -13,6 +13,7 @@ import type {
   SheetEntriesResponse,
   DashboardData,
   DashboardDetails,
+  LancamentosMeta,
   SortType,
   SheetEntry
 } from '../types';
@@ -36,15 +37,48 @@ export interface LancamentosQuery {
   dataFim?: string;
   tipo?: 'todos' | 'consolidado' | 'futuro';
   sort?: SortType;
+  /** "YYYY-MM-DD" — dia local do cliente (default: hoje no cliente) */
+  hoje?: string;
   /** ignora o cache (botão "atualizar") */
   fresh?: boolean;
 }
 
-const META_VAZIA = {
-  contas: [] as string[],
-  categorias: [] as string[],
-  descricoes: [] as string[],
-  orcamentos: [] as any[]
+/**
+ * Dia local no formato "YYYY-MM-DD".
+ *
+ * O backend usa como referência (data-chave sugerida nos formulários,
+ * intervalo dos orçamentos em destaque). TEM que ser o dia local do cliente:
+ * o fuso do servidor não pode decidir isso.
+ */
+export function hojeLocal(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/**
+ * Primeiro dia do mês atual ("YYYY-MM-01").
+ *
+ * Usado só como FALLBACK quando o backend não devolveu a sugestão de
+ * data-chave (falha de rede). A regra em si é do backend
+ * (meta.proximoOrcamento / meta.orcamentoMesAtual).
+ */
+export function primeiroDiaDoMes(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  return `${year}-${month}-01`;
+}
+
+const META_VAZIA: LancamentosMeta = {
+  contas: [],
+  categorias: [],
+  descricoes: [],
+  orcamentos: [],
+  proximoOrcamento: '',
+  orcamentoMesAtual: ''
 };
 
 /**
@@ -63,6 +97,8 @@ function buildQueryString(query: LancamentosQuery): string {
   if (query.dataFim) params.set('dataFim', query.dataFim);
   if (query.tipo && query.tipo !== 'todos') params.set('tipo', query.tipo);
   if (query.sort && query.sort !== 'original') params.set('sort', query.sort);
+  // sempre manda o dia local do cliente (o backend precisa dele)
+  params.set('hoje', query.hoje || hojeLocal());
   if (query.fresh) params.set('fresh', '1');
 
   return params.toString();
@@ -118,7 +154,18 @@ class LancamentosService {
         offset: data.offset ?? 0,
         meta: data.meta || META_VAZIA,
         resumo: data.resumo || { receitas: 0, despesas: 0, saldo: 0, count: 0 },
-        filtros: data.filtros
+        filtros: {
+          q: data.filtros?.q || '',
+          conta: data.filtros?.conta || '',
+          categoria: data.filtros?.categoria || '',
+          orcamento: data.filtros?.orcamento || '',
+          dataInicio: data.filtros?.dataInicio || '',
+          dataFim: data.filtros?.dataFim || '',
+          tipo: data.filtros?.tipo || 'todos',
+          sort: data.filtros?.sort || 'original',
+          // filtros ativos já com o texto pronto (vem pronto do backend)
+          ativos: data.filtros?.ativos || []
+        }
       };
 
       CacheService.set(cacheKey, response);

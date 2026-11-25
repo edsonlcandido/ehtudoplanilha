@@ -14,8 +14,8 @@
  * Exemplo: saldo atual -3200, novo saldo -4000 -> lançamento de -800.
  */
 
-import type { OnEntryAddedCallback, SheetEntry } from '../types';
-import lancamentosService from '../services/lancamentos';
+import type { OnEntryAddedCallback, SheetEntry, LancamentosMeta } from '../types';
+import lancamentosService, { primeiroDiaDoMes } from '../services/lancamentos';
 import { SheetsService } from '../services/sheets';
 import { formatarMoeda } from './financial-cards';
 
@@ -42,6 +42,8 @@ class BalanceAdjustModal {
   private form: HTMLFormElement | null = null;
   private callback: OnEntryAddedCallback | undefined;
   private entries: SheetEntry[] = [];
+  /** opções/datas-chave calculadas pelo backend */
+  private meta: LancamentosMeta | null = null;
   /** Contas disponíveis (para o autocomplete) */
   private accounts: string[] = [];
   /** Saldo atual por conta (mesma base usada pelo dashboard) */
@@ -311,10 +313,12 @@ class BalanceAdjustModal {
     try {
       const response = await lancamentosService.fetchEntries({ limit: 0 });
       this.entries = response?.entries ?? [];
+      this.meta = response?.meta ?? null;
       this.buildSaldoPorConta();
     } catch (error) {
       console.error('[BalanceAdjustModal] ⚠️ Erro ao carregar dados:', error);
       this.entries = [];
+      this.meta = null;
       this.buildSaldoPorConta();
     }
   }
@@ -557,27 +561,12 @@ class BalanceAdjustModal {
 
   /**
    * Resolve a data-chave (orçamento) do lançamento.
-   * Usa a data-chave já existente no mês corrente; se não houver, usa o
-   * primeiro dia do mês corrente.
    *
-   * A data-chave chega pronta do backend em `orcamentoInput` ("YYYY-MM-DD"),
-   * então aqui é só comparação de string (sem matemática de data).
+   * A REGRA é do backend (`meta.orcamentoMesAtual`): usa a data-chave que já
+   * existe no mês corrente; se não houver, o primeiro dia do mês.
    */
   private resolveBudgetDate(): string {
-    const now = new Date();
-    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-
-    const candidates = this.entries
-      .map(entry => entry.orcamentoInput)
-      .filter((value): value is string => !!value)
-      .filter(value => value.slice(0, 7) === currentMonth)
-      .sort();
-
-    if (candidates.length > 0) {
-      return candidates[0];
-    }
-
-    return `${currentMonth}-01`;
+    return this.meta?.orcamentoMesAtual || primeiroDiaDoMes();
   }
 
   /**

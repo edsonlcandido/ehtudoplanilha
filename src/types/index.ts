@@ -104,11 +104,11 @@ export interface ResumoTotais {
  * Opção de orçamento para o filtro (montada pelo backend)
  */
 export interface OrcamentoOption {
-  /** "10/2025" */
+  /** "10/2025" — chave do mês (é o value do <option>) */
   key: string;
-  /** "31/10/2025" */
+  /** "31/10/2025" — DATA COMPLETA, é o texto exibido */
   label: string;
-  /** "Outubro/2025" */
+  /** "Outubro/2025" — label amigável do mês (referência) */
   labelMes: string;
   /** serial Excel */
   serial: number;
@@ -122,6 +122,23 @@ export interface LancamentosMeta {
   categorias: string[];
   descricoes: string[];
   orcamentos: OrcamentoOption[];
+  /** próxima data-chave sugerida ("YYYY-MM-DD") — já pronta pro <input type="date"> */
+  proximoOrcamento: string;
+  /** data-chave já existente no mês corrente ("YYYY-MM-DD") */
+  orcamentoMesAtual: string;
+}
+
+/**
+ * Filtro ativo, já com o texto pronto pra tela.
+ *
+ * O backend decide o que está ativo e como cada um é escrito — o frontend
+ * só desenha o pill. Ex.: { tipo: 'orcamento', rotulo: 'Orçamento',
+ * valor: '30/11/2026' }
+ */
+export interface FiltroAtivo {
+  tipo: 'conta' | 'categoria' | 'orcamento' | 'periodo' | 'busca';
+  rotulo: string;
+  valor: string;
 }
 
 /**
@@ -136,6 +153,8 @@ export interface LancamentosFiltrosBackend {
   dataFim: string;
   tipo: string;
   sort: string;
+  /** filtros realmente aplicados, com o texto pronto pra tela */
+  ativos: FiltroAtivo[];
 }
 
 /**
@@ -301,8 +320,12 @@ export interface LancamentosFilters {
  */
 export interface LancamentosState {
   entries: SheetEntry[];
+  /** total de lançamentos que passaram pelos filtros (o backend pagina) */
+  total: number;
   meta: LancamentosMeta;
   resumo: ResumoTotais;
+  /** filtros ativos com o texto pronto pra tela (vem do backend) */
+  filtrosAtivos: FiltroAtivo[];
   searchTerm: string;
   sortBy: SortType;
   showConsolidated: boolean;

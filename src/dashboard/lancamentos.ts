@@ -26,8 +26,17 @@ import { showSuccessToast, showErrorToast, showInfoToast } from '../components/t
 
 const state: LancamentosState = {
   entries: [],
-  meta: { contas: [], categorias: [], descricoes: [], orcamentos: [] },
+  total: 0,
+  meta: {
+    contas: [],
+    categorias: [],
+    descricoes: [],
+    orcamentos: [],
+    proximoOrcamento: '',
+    orcamentoMesAtual: ''
+  },
   resumo: { receitas: 0, despesas: 0, saldo: 0, count: 0 },
+  filtrosAtivos: [],
   searchTerm: '',
   sortBy: 'original',
   showConsolidated: true,
@@ -88,7 +97,7 @@ function updateSearchResults(): void {
   if (!searchResults || !searchCount || !clearBtn) return;
 
   if (state.searchTerm) {
-    searchCount.textContent = `${state.entries.length} resultado(s) encontrado(s)`;
+    searchCount.textContent = `${state.total} resultado(s) encontrado(s)`;
     searchResults.classList.add('lancamentos__search-results--visible');
     clearBtn.style.display = 'flex';
   } else {
@@ -106,7 +115,8 @@ function updateSearchResults(): void {
  */
 function buildQuery(fresh: boolean) {
   return {
-    limit: 0, // todas as linhas; a página exibe no máximo 100
+    // A página exibe no máximo 100 lançamentos: o corte é feito no servidor.
+    limit: 100,
     q: state.searchTerm,
     conta: state.filters.conta,
     categoria: state.filters.categoria,
@@ -152,8 +162,10 @@ async function loadEntries(forceRefresh = false): Promise<void> {
     const response = await lancamentosService.fetchEntries(buildQuery(forceRefresh));
 
     state.entries = response.entries || [];
+    state.total = response.total ?? state.entries.length;
     state.meta = response.meta || state.meta;
     state.resumo = response.resumo || state.resumo;
+    state.filtrosAtivos = response.filtros?.ativos || [];
 
     // Popula os filtros com as opções disponíveis
     populateContaFilter();
@@ -195,37 +207,21 @@ function renderEntriesList(): void {
   const container = document.getElementById('entriesContainer');
   if (!container) return;
 
-  // Limita aos 100 primeiros itens (limite de exibição)
-  const limitedEntries = state.entries.slice(0, 100);
+  // O corte dos 100 itens já foi feito pelo backend (limit=100)
 
-  // Renderiza o resumo dos filtros sempre que houver filtro ativo
+  // Renderiza o resumo dos filtros sempre que houver filtro ativo.
+  // Quem decide o que está ativo é o backend (filtros.ativos).
   const summaryContainer = document.getElementById('groupedSummaryContainer');
   if (summaryContainer) {
-    if (hasActiveFilters()) {
-      summaryContainer.innerHTML = renderGroupedSummary(state.resumo, {
-        conta: state.filters.conta,
-        dataInicio: state.filters.dataInicio,
-        dataFim: state.filters.dataFim,
-        orcamento: state.filters.orcamento,
-        categoria: state.filters.categoria,
-        searchTerm: state.searchTerm
-      });
+    if (state.filtrosAtivos.length > 0) {
+      summaryContainer.innerHTML = renderGroupedSummary(state.resumo, state.filtrosAtivos);
     } else {
       summaryContainer.innerHTML = '';
     }
   }
 
-  container.innerHTML = renderEntries(limitedEntries);
+  container.innerHTML = renderEntries(state.entries);
   updateSearchResults();
-}
-
-/**
- * Verifica se há pelo menos um filtro aplicado (decide se mostra o resumo)
- */
-function hasActiveFilters(): boolean {
-  if (state.searchTerm && state.searchTerm.trim() !== '') return true;
-  const f = state.filters;
-  return Boolean(f.conta || f.dataInicio || f.dataFim || f.orcamento || f.categoria);
 }
 
 // ============================================================================
@@ -338,11 +334,15 @@ function populateOrcamentoFilter(): void {
   select.innerHTML = '';
   select.appendChild(defaultOption);
 
-  // O backend já devolve do mais recente pro mais antigo
+  // O backend já devolve do mais recente pro mais antigo.
+  // O texto da option é a DATA COMPLETA do orçamento ("30/11/2026") — a mesma
+  // que aparece na coluna Orçamento da lista: filtrar não muda a visualização.
+  // O value continua sendo a chave do mês ("11/2026"), que é o que o backend
+  // usa pra filtrar.
   state.meta.orcamentos.forEach(orc => {
     const option = document.createElement('option');
     option.value = orc.key;
-    option.textContent = orc.labelMes || orc.label;
+    option.textContent = orc.label;
     if (state.filters.orcamento === orc.key) {
       option.selected = true;
     }

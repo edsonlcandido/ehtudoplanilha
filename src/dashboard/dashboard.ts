@@ -21,7 +21,7 @@ import {
   mostrarErro
 } from '../components/financial-cards';
 import { inicializarDetalhes } from '../components/details';
-import lancamentosService from '../services/lancamentos';
+import lancamentosService, { hojeLocal } from '../services/lancamentos';
 
 // ============================================================================
 // Inicialização
@@ -194,18 +194,6 @@ async function refreshDashboard(): Promise<void> {
     console.error('❌ Erro ao atualizar dashboard:', error);
     mostrarErro('Erro ao atualizar dados. Tente novamente.');
   }
-}
-
-/**
- * Dia local no formato "YYYY-MM-DD" (o backend usa como referência do
- * intervalo de orçamentos em destaque)
- */
-function hojeLocal(): string {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
 }
 
 /**

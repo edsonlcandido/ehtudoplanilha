@@ -650,4 +650,86 @@ check('normalizeWriteDate preserva número (serial) e texto livre', () => {
   assert.equal(domain.normalizeWriteDate(undefined, true), '');
 });
 
+// --- filtros ativos (pills de "Filtros aplicados") ---------------------------
+check('buildActiveFilters devolve lista vazia sem filtros', () => {
+  const ativos = domain.buildActiveFilters(
+    { q: '', conta: '', categoria: '', orcamento: '', dataInicio: '', dataFim: '' },
+    domain.buildMeta(normalized)
+  );
+  assert.deepEqual(ativos, []);
+});
+
+check('buildActiveFilters monta os pills com rótulo e valor prontos', () => {
+  const meta = domain.buildMeta(normalized);
+  const ativos = domain.buildActiveFilters(
+    {
+      q: 'mercado',
+      conta: 'Carteira',
+      categoria: 'Alimentação',
+      orcamento: '10/2025',
+      dataInicio: '2025-10-01',
+      dataFim: '2025-10-31'
+    },
+    meta
+  );
+
+  assert.deepEqual(ativos, [
+    { tipo: 'conta', rotulo: 'Conta', valor: 'Carteira' },
+    { tipo: 'categoria', rotulo: 'Categoria', valor: 'Alimentação' },
+    { tipo: 'orcamento', rotulo: 'Orçamento', valor: '31/10/2025' },
+    { tipo: 'periodo', rotulo: 'Período', valor: '01/10/2025 — 31/10/2025' },
+    { tipo: 'busca', rotulo: 'Busca', valor: '"mercado"' }
+  ]);
+});
+
+check('filtro de orçamento mostra a DATA COMPLETA, nunca a chave do mês', () => {
+  const meta = domain.buildMeta(normalized);
+  const ativos = domain.buildActiveFilters({ orcamento: '11/2025' }, meta);
+  assert.equal(ativos[0].valor, '30/11/2025');
+  assert.notEqual(ativos[0].valor, '11/2025');
+  // formato DD/MM/YYYY (nunca MM/YYYY)
+  assert.match(ativos[0].valor, /^\d{2}\/\d{2}\/\d{4}$/);
+});
+
+check('meta: label do orçamento é a data completa', () => {
+  const meta = domain.buildMeta(normalized);
+  const nov2025 = meta.orcamentos.find((o) => o.key === '11/2025');
+  assert.equal(nov2025.label, '30/11/2025');
+  assert.equal(nov2025.labelMes, 'Novembro/2025');
+});
+
+// --- data-chave sugerida (formulários) --------------------------------------
+check('resolveProximoOrcamento usa a primeira data-chave que ainda vem', () => {
+  // 15/11/2025 -> a próxima é 30/11/2025
+  const r = domain.resolveProximoOrcamento(normalized, { y: 2025, m: 11, d: 15 });
+  assert.equal(r, '2025-11-30');
+});
+
+check('resolveProximoOrcamento cai na última data-chave se não houver futura', () => {
+  // 01/12/2025 -> não há mais data-chave; usa a última (30/11/2025)
+  const r = domain.resolveProximoOrcamento(normalized, { y: 2025, m: 12, d: 1 });
+  assert.equal(r, '2025-11-30');
+});
+
+check('resolveProximoOrcamento usa o dia 1 do mês se não houver data-chave', () => {
+  const r = domain.resolveProximoOrcamento([], { y: 2026, m: 3, d: 10 });
+  assert.equal(r, '2026-03-01');
+});
+
+check('resolveOrcamentoMesAtual usa a data-chave já existente no mês', () => {
+  const r = domain.resolveOrcamentoMesAtual(normalized, { y: 2025, m: 10, d: 15 });
+  assert.equal(r, '2025-10-31');
+});
+
+check('resolveOrcamentoMesAtual usa o dia 1 do mês se não houver data-chave no mês', () => {
+  const r = domain.resolveOrcamentoMesAtual(normalized, { y: 2026, m: 3, d: 10 });
+  assert.equal(r, '2026-03-01');
+});
+
+check('meta traz as datas-chave sugeridas já prontas pro formulário', () => {
+  const meta = domain.buildMeta(normalized, { y: 2025, m: 11, d: 15 });
+  assert.equal(meta.proximoOrcamento, '2025-11-30');
+  assert.equal(meta.orcamentoMesAtual, '2025-11-30');
+});
+
 console.log(`\n${passed} verificações passaram.\n`);

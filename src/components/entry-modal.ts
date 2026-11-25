@@ -4,9 +4,9 @@
  */
 
 import { pb } from '../main';
-import type { EntryFormData, EntryPayload, OnEntryAddedCallback, SheetEntry, CategoryComplete } from '../types';
+import type { EntryFormData, EntryPayload, OnEntryAddedCallback, SheetEntry, CategoryComplete, LancamentosMeta } from '../types';
 import { SheetsService } from '../services/sheets';
-import lancamentosService from '../services/lancamentos';
+import lancamentosService, { primeiroDiaDoMes } from '../services/lancamentos';
 
 // Singleton instance
 let modalInstance: EntryModal | null = null;
@@ -23,6 +23,8 @@ class EntryModal {
   private categoriesComplete: CategoryComplete[] = [];
   private descriptions: string[] = [];
   private entries: SheetEntry[] = [];
+  /** opções/datas-chave calculadas pelo backend */
+  private meta: LancamentosMeta | null = null;
 
   /**
    * Template HTML do modal (exatamente como no pb_public_)
@@ -376,6 +378,7 @@ class EntryModal {
       console.log('[EntryModal] Buscando entries com cache (limit=0)...');
       const response = await lancamentosService.fetchEntries({ limit: 0 });
       this.entries = response?.entries ?? [];
+      this.meta = response?.meta ?? null;
       
       console.log('[EntryModal] Entries recebidos:', this.entries.length);
       
@@ -726,38 +729,15 @@ class EntryModal {
   /**
    * Preenche campo de orçamento com a próxima data disponível
    *
-   * As datas-chave chegam prontas do backend em `orcamentoInput`
-   * ("YYYY-MM-DD"), então a comparação é feita por string (ISO).
+   * A REGRA é do backend (`meta.proximoOrcamento`): primeira data-chave que
+   * ainda vai acontecer; se não houver, a última existente; se não existir
+   * nenhuma, o primeiro dia do mês.
    */
   private fillNextBudget(): void {
     const budgetInput = document.getElementById('expenseBudget') as HTMLInputElement;
     if (!budgetInput) return;
 
-    // Extrai datas de orçamento únicas dos entries
-    const budgetDates = [...new Set(
-      this.entries
-        .map(e => e.orcamentoInput)
-        .filter((o): o is string => !!o)
-    )].sort();
-
-    if (budgetDates.length === 0) {
-      // Se não houver datas, usa o primeiro dia do mês atual
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      budgetInput.value = `${year}-${month}-01`;
-      return;
-    }
-
-    // Hoje no mesmo formato (YYYY-MM-DD)
-    const now = new Date();
-    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-
-    // Busca a próxima data maior ou igual a hoje
-    const nextBudget = budgetDates.find(d => d >= today);
-
-    // Se não houver próxima data, usa a última disponível
-    budgetInput.value = nextBudget || budgetDates[budgetDates.length - 1];
+    budgetInput.value = this.meta?.proximoOrcamento || primeiroDiaDoMes();
   }
 }
 

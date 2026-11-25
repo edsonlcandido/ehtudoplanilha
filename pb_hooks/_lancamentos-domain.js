@@ -718,8 +718,11 @@ function summarize(entries) {
 /**
  * Monta as opções de filtro a partir de TODOS os lançamentos (não só dos
  * filtrados), pra lista de opções não mudar conforme o filtro.
+ *
+ * @param {Array<object>} entries
+ * @param {{y,m,d}} [hojeCivil] dia de referência (default: hoje do servidor)
  */
-function buildMeta(entries) {
+function buildMeta(entries, hojeCivil) {
   const contas = new Set();
   const categorias = new Set();
   const descricoes = new Set();
@@ -731,7 +734,10 @@ function buildMeta(entries) {
     if (e.descricao && e.descricao.trim()) descricoes.add(e.descricao.trim());
 
     if (e.orcamentoKey && e.orcamentoSerial !== null) {
-      if (!orcamentos.has(e.orcamentoKey)) {
+      // Mesmo mês pode ter datas diferentes (30/11 e 15/11): fica sempre a
+      // data mais recente do mês, pra label ser determinística.
+      const existente = orcamentos.get(e.orcamentoKey);
+      if (!existente || e.orcamentoSerial > existente.serial) {
         orcamentos.set(e.orcamentoKey, {
           key: e.orcamentoKey,
           label: e.orcamentoLabel,
@@ -749,8 +755,133 @@ function buildMeta(entries) {
     contas: Array.from(contas).sort(compareText),
     categorias: Array.from(categorias).sort(compareText),
     descricoes: Array.from(descricoes).sort(compareText),
-    orcamentos: orcamentosList
+    orcamentos: orcamentosList,
+    // Sugestões de data-chave pros formulários (prontas pro <input type="date">)
+    proximoOrcamento: resolveProximoOrcamento(entries, hojeCivil),
+    orcamentoMesAtual: resolveOrcamentoMesAtual(entries, hojeCivil)
   };
+}
+
+/**
+ * Data de orçamento que o backend sugere para um novo lançamento.
+ *
+ * Regra (era calculada no frontend, em 3 modais):
+ *  - primeira data-chave que ainda vai acontecer (>= hoje);
+ *  - se não houver nenhuma, a última data-chave existente;
+ *  - se não existir data-chave nenhuma, o primeiro dia do mês de hoje.
+ *
+ * @param {Array<object>} entries
+ * @param {{y,m,d}} [hojeCivil]
+ * @returns {string} "YYYY-MM-DD"
+ */
+function resolveProximoOrcamento(entries, hojeCivil) {
+  const hoje = hojeCivil || civilToday();
+
+  const seriais = new Set();
+  (entries || []).forEach(function (e) {
+    if (e.orcamentoSerial !== null && e.orcamentoSerial !== undefined) {
+      seriais.add(e.orcamentoSerial);
+    }
+  });
+
+  const ordenados = Array.from(seriais).sort(function (a, b) { return a - b; });
+  if (ordenados.length === 0) {
+    return formatDateInput({ y: hoje.y, m: hoje.m, d: 1 });
+  }
+
+  const hojeSerial = civilToExcelSerialDia(hoje);
+  const futuros = ordenados.filter(function (s) { return s >= hojeSerial; });
+  const escolhido = futuros.length > 0 ? futuros[0] : ordenados[ordenados.length - 1];
+
+  return formatDateInput(excelSerialToCivil(escolhido));
+}
+
+/**
+ * Data-chave do mês corrente (usada no ajuste de saldo).
+ *  - usa a data-chave que já existe no mês de hoje;
+ *  - se não houver nenhuma, o primeiro dia do mês.
+ *
+ * @param {Array<object>} entries
+ * @param {{y,m,d}} [hojeCivil]
+ * @returns {string} "YYYY-MM-DD"
+ */
+function resolveOrcamentoMesAtual(entries, hojeCivil) {
+  const hoje = hojeCivil || civilToday();
+  const prefixo = hoje.y + '-' + pad2(hoje.m);
+
+  const candidatos = new Set();
+  (entries || []).forEach(function (e) {
+    if (!e.orcamentoInput) return;
+    if (e.orcamentoInput.slice(0, 7) !== prefixo) return;
+    candidatos.add(e.orcamentoInput);
+  });
+
+  const lista = Array.from(candidatos).sort();
+  if (lista.length > 0) return lista[0];
+
+  return prefixo + '-01';
+}
+
+/**
+ * Converte uma data ISO ("YYYY-MM-DD") no label brasileiro ("DD/MM/YYYY").
+ * Usado nos rótulos de filtro (o frontend não deve converter nada).
+ */
+function formatIsoDateLabel(iso) {
+  if (!iso) return '';
+  const civil = parseDateValue(iso);
+  if (!civil) return String(iso);
+  return formatDateLabel(civil);
+}
+
+/**
+ * Monta a lista de filtros ATIVOS já com o texto pronto pra tela.
+ *
+ * É a única fonte do "Filtros aplicados" da página de Lançamentos: o frontend
+ * só desenha os pills e decide se mostra o resumo (quantidade > 0).
+ *
+ * Regra importante: o orçamento aparece SEMPRE como data completa
+ * ("30/11/2026"), nunca como chave de mês ("11/2026") — filtrar por orçamento
+ * não pode mudar a forma como o lançamento é exibido.
+ *
+ * @param {object} filtros filtros interpretados (eco do backend)
+ * @param {object} meta opções de filtro (resolve a chave do orçamento)
+ * @returns {Array<{tipo:string,rotulo:string,valor:string}>}
+ */
+function buildActiveFilters(filtros, meta) {
+  const f = filtros || {};
+  const opcoes = (meta && meta.orcamentos) || [];
+  const ativos = [];
+
+  if (f.conta) {
+    ativos.push({ tipo: 'conta', rotulo: 'Conta', valor: String(f.conta) });
+  }
+
+  if (f.categoria) {
+    ativos.push({ tipo: 'categoria', rotulo: 'Categoria', valor: String(f.categoria) });
+  }
+
+  if (f.orcamento) {
+    const opcao = opcoes.find(function (o) { return o.key === f.orcamento; });
+    // data completa ("30/11/2026"); se não achar a opção, devolve a chave
+    ativos.push({
+      tipo: 'orcamento',
+      rotulo: 'Orçamento',
+      valor: (opcao && opcao.label) || String(f.orcamento)
+    });
+  }
+
+  if (f.dataInicio || f.dataFim) {
+    const inicio = f.dataInicio ? formatIsoDateLabel(f.dataInicio) : '...';
+    const fim = f.dataFim ? formatIsoDateLabel(f.dataFim) : '...';
+    ativos.push({ tipo: 'periodo', rotulo: 'Período', valor: inicio + ' — ' + fim });
+  }
+
+  if (f.q) {
+    // aspas no valor porque o pill é "Busca: "termo""
+    ativos.push({ tipo: 'busca', rotulo: 'Busca', valor: '"' + String(f.q) + '"' });
+  }
+
+  return ativos;
 }
 
 // ============================================================================
@@ -931,5 +1062,9 @@ module.exports = {
 
   // opções e detalhes
   buildMeta: buildMeta,
+  buildActiveFilters: buildActiveFilters,
+  formatIsoDateLabel: formatIsoDateLabel,
+  resolveProximoOrcamento: resolveProximoOrcamento,
+  resolveOrcamentoMesAtual: resolveOrcamentoMesAtual,
   buildDetails: buildDetails
 };

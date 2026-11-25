@@ -319,9 +319,9 @@ routerAdd('POST', '/append-entry', (c) => {
 
 | Arquivo | Papel |
 |---|---|
-| `pb_hooks/_lancamentos-domain.js` | **FONTE ÚNICA** das regras: conversão de data, normalização, classificação, filtros, ordenação, agregações. É JS puro (CommonJS) — sem `$app`/`$http` — então roda/testa fora do PB. |
+| `pb_hooks/_lancamentos-domain.js` | **FONTE ÚNICA** das regras: conversão de data, normalização, classificação, filtros, ordenação, agregações, rótulos de tela (`buildActiveFilters`) e datas-chave sugeridas (`resolveProximoOrcamento` / `resolveOrcamentoMesAtual`). É JS puro (CommonJS) — sem `$app`/`$http` — então roda/testa fora do PB. |
 | `pb_hooks/_google-sheets-helper.js` | Leitura da planilha + cache curto (30s) em `$app.store()`. |
-| `tests/lancamentos-domain.test.mjs` | Teste diferencial: as regras novas precisam bater com as do frontend pré-migração (cópia literal no próprio arquivo). `node tests/lancamentos-domain.test.mjs` |
+| `tests/lancamentos-domain.test.mjs` | Teste diferencial: as regras novas precisam bater com as do frontend pré-migração (cópia literal no próprio arquivo). `node tests/lancamentos-domain.test.mjs` (36 verificações) |
 
 ### DTO do lançamento (o que o backend devolve)
 
@@ -362,6 +362,12 @@ routerAdd('POST', '/append-entry', (c) => {
   `SALDO`, `RENDA`, `RECEITA`; JOIN com a aba Categorias é case-insensitive
   (fallback "Sem Tipo")
 - **Orçamento sem data-chave**: não gera orçamento "31/12/1899" (bug antigo)
+- **Orçamento sempre como DATA COMPLETA** ("30/11/2026"): a chave do mês
+  ("11/2026") é interna (filtro/agregação) e **nunca** aparece na tela —
+  nem na coluna Orçamento, nem no <option> do filtro, nem no pill de filtro.
+  Filtrar por orçamento não pode mudar a visualização do lançamento.
+- **Corte da lista**: a página de Lançamentos mostra no máximo 100 itens —
+  o corte é feito pelo backend (`limit=100`), não no frontend.
 
 ### Endpoints de leitura
 
@@ -369,18 +375,42 @@ routerAdd('POST', '/append-entry', (c) => {
 `limit` (100 default, 0 = todas), `offset`, `q`, `conta`, `categoria`,
 `orcamento` (chave "MM/YYYY"), `dataInicio`, `dataFim` (`YYYY-MM-DD`),
 `tipo` (`todos|consolidado|futuro`), `sort` (`original|date|budget_date`),
-`fresh=1` (ignora o cache do servidor).
+`hoje` (`YYYY-MM-DD`, dia local do cliente), `fresh=1` (ignora o cache do
+servidor).
 
 Resposta: `{ success, entries[], total, count, limit, offset, meta, resumo, filtros }`
-- `meta` = opções dos filtros (`contas`, `categorias`, `descricoes`, `orcamentos`)
-  calculadas sobre **todos** os lançamentos (não só os filtrados)
+- `total` = quantidade que passou pelos filtros (independe do `limit`)
+- `meta` = opções dos filtros (`contas`, `categorias`, `descricoes`,
+  `orcamentos`) calculadas sobre **todos** os lançamentos (não só os filtrados)
+  + `proximoOrcamento` / `orcamentoMesAtual` (datas-chave sugeridas, prontas
+  pro `<input type="date">`)
 - `resumo` = `{ receitas, despesas, saldo, count }` do conjunto filtrado
+- `filtros` = eco dos filtros + `ativos[]`: lista dos filtros realmente
+  aplicados, cada um com `{tipo, rotulo, valor}` já escrito
+  (ex.: `{tipo:'orcamento', rotulo:'Orçamento', valor:'30/11/2026'}`).
+  É ela que o frontend usa pra desenhar os pills de "Filtros aplicados" e
+  pra decidir se mostra o resumo (lista vazia = nenhum filtro ativo).
 
 **`GET /get-dashboard-data?hoje=YYYY-MM-DD`** — `{ budgets[], budgetsInInterval[],
 accounts[], meta, resumo, intervalo }`
 
 **`GET /get-dashboard-details?orcamentos=45961,45963`** — `{ topCategorias[],
 contas[], totalGeral, grafico[], graficoTotal, entradasPorCategoria{} }`
+
+### Datas-chave sugeridas (formulários)
+
+O backend calcula e entrega prontas em `meta`:
+
+| Campo | Regra | Usado em |
+|---|---|---|
+| `meta.proximoOrcamento` | 1ª data-chave que ainda vem (>= hoje); senão a última existente; senão dia 1 do mês | modal de lançamento, lançamento futuro, transferência |
+| `meta.orcamentoMesAtual` | data-chave que já existe no mês corrente; senão dia 1 do mês | modal de ajuste de saldo |
+
+> ⚠️ **Não recalcule isso no frontend.** Antes da migração cada modal fazia a
+> conta por conta própria (e 2 deles converteiam serial Excel pra data com
+> um dia de diferença). O `hoje` do cliente é enviado em toda chamada
+> (`fetchEntries` manda `hoje` automaticamente) — o fuso do servidor não pode
+> decidir a data-chave.
 
 ### Cache
 
@@ -574,9 +604,13 @@ export class SheetsService {
 
 ### Serviço de lançamentos (`src/services/lancamentos.ts`)
 - `fetchEntries(query)` — manda os filtros pro backend e devolve
-  `{ entries, meta, resumo, total, ... }` já prontos
+  `{ entries, meta, resumo, total, filtros.ativos, ... }` já prontos
+  - **manda `hoje` (dia local) automaticamente** — o backend precisa dele pra
+    sugerir a data-chave dos formulários
 - `fetchDashboardData(hoje, fresh)` / `fetchDashboardDetails(orcamentos, fresh)`
 - `invalidateCache()` — limpa por prefixo (as chaves carregam a query)
+- `hojeLocal()` / `primeiroDiaDoMes()` — helpers de data local (o `primeiroDiaDoMes`
+  é só fallback de rede; a regra é do backend)
 
 ### Cache (localStorage)
 
@@ -759,6 +793,14 @@ Frontend faz **DOIS POSTs** sequenciais em `/append-entry`:
 3. Se a regra affecta o DTO, adicionar o campo em `src/types/index.ts`
 4. **Nunca** reintroduzir a regra no `src/` (o frontend só renderiza)
 
+### Mudar o que aparece na tela (label, pill, texto de option)
+- O texto que o usuário lê é decided no **backend**:
+  - `meta.orcamentos[].label` → texto do `<option>` do filtro de orçamento
+  - `filtros.ativos[].valor` → texto do pill em "Filtros aplicados"
+  - `entry.orcamentoLabel` → coluna "Orçamento" da lista
+- Se precisar de um texto novo, calcule no `pb_hooks/_lancamentos-domain.js`
+  e mande pronto no JSON — não monte no componente.
+
 ### Adicionar campo novo no DTO (ex.: novo campo na planilha)
 1. Adicionar a coluna no DTO em `pb_hooks/_lancamentos-domain.js`
    (`normalizeRows`)
@@ -814,6 +856,8 @@ Frontend faz **DOIS POSTs** sequenciais em `/append-entry`:
 | **`pb_public/` é output** | Não editar. Próximo build apaga. |
 | **`pwa/pwa/` commitado** | Output do build do PWA. Commitado pra rodar dev sem buildar, mas em prod o Dockerfile regenera. |
 | **Excel Serial** | Desde 2026-11-25 o **backend converte e devolve o DTO pronto** (`dataLabel`, `dataInput`, `orcamentoKey`...). Frontend não converte mais nada (§6.1). |
+| **Orçamento na tela** | Sempre **data completa** ("30/11/2026"). A chave "MM/YYYY" é interna. Antes de 2026-11-25 a coluna Orçamento usava `excelSerialToMonthLabel` e mostrava "11/2026" — não voltar atrás disso. |
+| **`hoje` do cliente** | Toda chamada que dependa de "hoje" manda `hoje=YYYY-MM-DD` (dia local). O fuso do servidor não pode decidir data-chave nem intervalo. |
 | **`USER_ENTERED` no Sheets** | Permite enviar string `"31/10/2025 14:41"` e Sheets converte automaticamente pra serial. |
 | **OAuth login vs OAuth Sheets** | Dois fluxos distintos. Login usa PB nativo + redirect custom. Sheets/Drive usa hook custom `/google-oauth-callback`. |
 | **CLIENT_SECRET** | Só no PB (env var ou Admin UI). Nunca no frontend. |
