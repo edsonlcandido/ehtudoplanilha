@@ -428,6 +428,12 @@ const handleSave = async (updatedCartao: CartaoData) => {
     // Close modal
     handleModalClose()
 
+    // If no more cards, reset to initial state BEFORE setting the message
+    // (o reset limpa uploadResponse e apagaria a confirmação na hora)
+    if (sharedCartoes.value.length === 0) {
+      resetToInitialState()
+    }
+
     // Show success message
     uploadResponse.value = 'Lançamento enviado com sucesso!'
 
@@ -437,11 +443,6 @@ const handleSave = async (updatedCartao: CartaoData) => {
         uploadResponse.value = null
       }
     }, 3000)
-
-    // If no more cards, reset to initial state
-    if (sharedCartoes.value.length === 0) {
-      resetToInitialState()
-    }
 
   } catch (error: any) {
     console.error('Erro ao salvar:', error)
@@ -450,6 +451,10 @@ const handleSave = async (updatedCartao: CartaoData) => {
 }
 
 // Handle submit directly from CartaoItem without opening modal
+//
+// O salvamento real acontece dentro do CartaoItem (useAppendEntry -> /append-entry).
+// Este handler só é chamado via evento 'submit', emitido pelo CartaoItem APENAS
+// depois que a API respondeu com sucesso - por isso aqui é seguro remover o card.
 const handleSubmitCartao = async (cartao: CartaoData) => {
   try {
     // Find and remove the cartao from the array
@@ -458,9 +463,15 @@ const handleSubmitCartao = async (cartao: CartaoData) => {
       c.descricao === cartao.descricao &&
       c.valor === cartao.valor
     )
-    
+
     if (index >= 0) {
       sharedCartoes.value.splice(index, 1)
+    }
+
+    // If no more cards, reset to initial state BEFORE setting the message
+    // (o reset limpa uploadResponse e apagaria a confirmação na hora)
+    if (sharedCartoes.value.length === 0) {
+      resetToInitialState()
     }
 
     // Show success message
@@ -472,11 +483,6 @@ const handleSubmitCartao = async (cartao: CartaoData) => {
         uploadResponse.value = null
       }
     }, 3000)
-
-    // If no more cards, reset to initial state
-    if (sharedCartoes.value.length === 0) {
-      resetToInitialState()
-    }
 
   } catch (error: any) {
     console.error('Erro ao salvar:', error)
@@ -615,6 +621,9 @@ const handleChatResponse = (cartoes: CartaoData[]) => {
   // Add the new cartoes to the shared cartoes list
   sharedCartoes.value = [...sharedCartoes.value, ...cartoes]
   console.log('HomePage - sharedCartoes atualizado:', sharedCartoes.value)
+  // Limpa o erro de uma tentativa anterior (o erro antigo permanecia na tela
+  // mesmo depois do chat ter respondido com sucesso)
+  uploadError.value = null
   uploadResponse.value = `${cartoes.length} cartão(ões) criado(s) com sucesso!`
   
   // Clear success message after 3 seconds

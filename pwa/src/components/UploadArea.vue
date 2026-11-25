@@ -405,11 +405,17 @@ const handleSave = async (updatedCartao: CartaoData) => {
 
     // Close modal
     handleModalClose();
-    
+
+    // If no more cards, reset BEFORE setting the message (o clearFiles reseta
+    // uploadStatus/uploadMessage e apagaria a confirmação na hora)
+    if (cartoes.value.length === 0) {
+      clearFiles();
+    }
+
     // Show success message
     uploadStatus.value = 'success';
     uploadMessage.value = 'Lançamento enviado com sucesso!';
-    
+
     // Clear success message after 3 seconds
     setTimeout(() => {
       if (uploadStatus.value === 'success') {
@@ -417,11 +423,6 @@ const handleSave = async (updatedCartao: CartaoData) => {
         uploadStatus.value = 'idle';
       }
     }, 3000);
-
-    // If no more cards, reset to initial state
-    if (cartoes.value.length === 0) {
-      clearFiles();
-    }
 
   } catch (error: any) {
     console.error('Erro ao salvar:', error);
@@ -438,9 +439,15 @@ const handleSubmitCartao = async (cartao: CartaoData) => {
       c.descricao === cartao.descricao &&
       c.valor === cartao.valor
     )
-    
+
     if (index >= 0) {
       cartoes.value.splice(index, 1)
+    }
+
+    // If no more cards, reset BEFORE setting the message (o clearFiles reseta
+    // uploadStatus/uploadMessage e apagaria a confirmação na hora)
+    if (cartoes.value.length === 0) {
+      clearFiles()
     }
 
     // Show success message
@@ -454,11 +461,6 @@ const handleSubmitCartao = async (cartao: CartaoData) => {
         uploadStatus.value = 'idle'
       }
     }, 3000)
-
-    // If no more cards, reset to initial state
-    if (cartoes.value.length === 0) {
-      clearFiles()
-    }
 
   } catch (error: any) {
     console.error('Erro ao salvar:', error)

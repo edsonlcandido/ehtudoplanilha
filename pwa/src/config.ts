@@ -97,7 +97,7 @@ export const DASHBOARD_CELULAR_URL: string = isDev
  * PRD-011: recebe imagem, retorna array de lançamentos.
  */
 export const WEBHOOK_OCR_URL: string =
-  'https://ehtudo-n8n.pfdgdz.easypanel.host/webhook/v1/planilha-eh-tudo-analise-upload'
+  'https://ehtudo-n8n-2.pfdgdz.easypanel.host/webhook/v1/planilha-eh-tudo-analise-upload'
 
 /**
  * Webhook de Chat (agente de lançamentos).
@@ -106,7 +106,7 @@ export const WEBHOOK_OCR_URL: string =
  * PRD-012: recebe texto natural, retorna array de lançamentos.
  */
 export const WEBHOOK_CHAT_URL: string =
-  'https://ehtudo-n8n.pfdgdz.easypanel.host/webhook/v1/planilha-eh-tudo-analise-chat'
+  'https://ehtudo-n8n-2.pfdgdz.easypanel.host/webhook/v1/planilha-eh-tudo-analise-chat'
 
 // ─────────────────────────────────────────────────────────────────────
 // Endpoints do PocketBase (paths relativos)
