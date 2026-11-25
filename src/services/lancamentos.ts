@@ -30,7 +30,7 @@ export interface LancamentosQuery {
   q?: string;
   conta?: string;
   categoria?: string;
-  /** chave do orçamento "MM/YYYY" */
+  /** data-chave do orçamento (serial "45991"; aceita também "30/11/2025") */
   orcamento?: string;
   /** "YYYY-MM-DD" */
   dataInicio?: string;

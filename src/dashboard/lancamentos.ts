@@ -337,13 +337,13 @@ function populateOrcamentoFilter(): void {
   // O backend já devolve do mais recente pro mais antigo.
   // O texto da option é a DATA COMPLETA do orçamento ("30/11/2026") — a mesma
   // que aparece na coluna Orçamento da lista: filtrar não muda a visualização.
-  // O value continua sendo a chave do mês ("11/2026"), que é o que o backend
-  // usa pra filtrar.
+  // O value é o serial da data-chave, que é como o backend identifica o
+  // orçamento (não existe chave de mês).
   state.meta.orcamentos.forEach(orc => {
     const option = document.createElement('option');
-    option.value = orc.key;
+    option.value = String(orc.serial);
     option.textContent = orc.label;
-    if (state.filters.orcamento === orc.key) {
+    if (state.filters.orcamento === String(orc.serial)) {
       option.selected = true;
     }
     select.appendChild(option);

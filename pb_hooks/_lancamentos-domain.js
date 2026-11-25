@@ -21,11 +21,6 @@
  * mesmo arquivo serve pros hooks e pros testes.
  */
 
-const MESES_PT = [
-  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-];
-
 const CATEGORIA_TRANSFERENCIA = 'transferência';
 
 const TIPOS_IGNORADOS_NO_GRAFICO = [
@@ -131,28 +126,6 @@ function formatDateInput(civil) {
 function formatDateTimeInput(civil) {
   if (!civil) return null;
   return formatDateInput(civil) + 'T' + pad2(civil.hh) + ':' + pad2(civil.mi);
-}
-
-/**
- * Chave de orçamento "MM/YYYY" (usada nos filtros e nos agrupamentos)
- */
-function civilToMonthKey(civil) {
-  if (!civil) return null;
-  return pad2(civil.m) + '/' + civil.y;
-}
-
-/**
- * Label amigável de um mês "Outubro/2025"
- */
-function monthKeyToLabel(key) {
-  if (!key) return null;
-  const parts = String(key).split('/');
-  if (parts.length !== 2) return String(key);
-  const mm = parseInt(parts[0], 10);
-  const yyyy = parts[1];
-  const idx = mm - 1;
-  if (isNaN(idx) || idx < 0 || idx > 11) return String(key);
-  return MESES_PT[idx] + '/' + yyyy;
 }
 
 /**
@@ -281,7 +254,7 @@ function isBlankRow(row) {
  * O DTO carrega o valor cru (compatibilidade com o PWA e com o payload de
  * escrita) E os campos derivados/prontos pra tela:
  *   dataLabel / dataInput / dataSerial
- *   orcamentoLabel / orcamentoKey / orcamentoLabelMes / orcamentoInput
+ *   orcamentoLabel / orcamentoSerial / orcamentoInput
  *   isFuturo / isTransferencia / isReceita / isDespesa
  *
  * @param {Array<Array<any>>} rows linhas sem o cabeçalho
@@ -306,8 +279,6 @@ function normalizeRows(rows) {
       ? formatDateTimeLabel(dataCivil)
       : (typeof rawData === 'string' && rawData.trim() ? rawData : null);
 
-    const orcamentoKey = orcamentoCivil ? civilToMonthKey(orcamentoCivil) : null;
-
     const categoria = String(row[4] || '');
 
     out.push({
@@ -328,10 +299,10 @@ function normalizeRows(rows) {
       dataCivil: dataCivil,
 
       // --- orçamento derivado ---
+      // A data-chave É a identidade do orçamento (não existe chave de mês):
+      // o serial do dia identifica o orçamento em todos os filtros/agregações.
       orcamentoSerial: orcamentoCivil ? civilToExcelSerialDia(orcamentoCivil) : null,
       orcamentoLabel: orcamentoCivil ? formatDateLabel(orcamentoCivil) : null,
-      orcamentoKey: orcamentoKey,
-      orcamentoLabelMes: orcamentoKey ? monthKeyToLabel(orcamentoKey) : null,
       orcamentoInput: orcamentoCivil ? formatDateInput(orcamentoCivil) : null,
 
       // --- classificação ---
@@ -461,9 +432,14 @@ function applyFilters(entries, filters) {
   }
 
   if (f.orcamento) {
-    out = out.filter(function (e) {
-      return e.orcamentoKey === f.orcamento;
-    });
+    // O orçamento é identificado pela DATA (serial do dia). Aceita o serial
+    // ("45991") ou a data em qualquer formato ("30/11/2025", "2025-11-30").
+    const serial = parseOrcamentoFiltro(f.orcamento);
+    if (serial !== null) {
+      out = out.filter(function (e) {
+        return e.orcamentoSerial === serial;
+      });
+    }
   }
 
   out = filterByPeriod(out, f.dataInicio, f.dataFim);
@@ -573,6 +549,10 @@ function dateSortValue(entry) {
 
 /**
  * Agrega por orçamento (data-chave).
+ *
+ * O orçamento é a DATA: cada data-chave é um orçamento (mensal). Duas datas
+ * diferentes no mesmo mês são DOIS orçamentos.
+ *
  * incomes/expenses seguem o sinal do valor (expenses acumula negativo).
  */
 function aggregateByBudget(entries) {
@@ -599,12 +579,9 @@ function aggregateByBudget(entries) {
   const result = [];
   map.forEach(function (item) {
     const civil = excelSerialToCivil(item.serial);
-    const key = civilToMonthKey(civil);
     result.push({
       serial: item.serial,
-      key: key,
       label: formatDateLabel(civil),
-      labelMes: monthKeyToLabel(key),
       sum: round2(item.sum),
       incomes: round2(item.incomes),
       expenses: round2(item.expenses),
@@ -686,7 +663,8 @@ function summarize(entries) {
 
   (entries || []).forEach(function (e) {
     if (e.isFuturo) return;
-    if (!e.orcamentoKey) return;
+    // sem data-chave não entra no resumo
+    if (e.orcamentoSerial === null || e.orcamentoSerial === undefined) return;
 
     const valor = Number(e.valor) || 0;
 
@@ -733,16 +711,12 @@ function buildMeta(entries, hojeCivil) {
     if (e.categoria && e.categoria.trim()) categorias.add(e.categoria.trim());
     if (e.descricao && e.descricao.trim()) descricoes.add(e.descricao.trim());
 
-    if (e.orcamentoKey && e.orcamentoSerial !== null) {
-      // Mesmo mês pode ter datas diferentes (30/11 e 15/11): fica sempre a
-      // data mais recente do mês, pra label ser determinística.
-      const existente = orcamentos.get(e.orcamentoKey);
-      if (!existente || e.orcamentoSerial > existente.serial) {
-        orcamentos.set(e.orcamentoKey, {
-          key: e.orcamentoKey,
-          label: e.orcamentoLabel,
-          labelMes: e.orcamentoLabelMes,
-          serial: e.orcamentoSerial
+    if (e.orcamentoSerial !== null && e.orcamentoSerial !== undefined) {
+      // Uma opção por DATA-chave (o orçamento é a data, não o mês).
+      if (!orcamentos.has(e.orcamentoSerial)) {
+        orcamentos.set(e.orcamentoSerial, {
+          serial: e.orcamentoSerial,
+          label: e.orcamentoLabel
         });
       }
     }
@@ -834,17 +808,39 @@ function formatIsoDateLabel(iso) {
 }
 
 /**
+ * Interpreta o valor do filtro de orçamento.
+ *
+ * O orçamento é identificado pela DATA (serial Excel do dia). Aceita:
+ *   - "45991"                (serial)
+ *   - "30/11/2025"           (data BR)
+ *   - "2025-11-30"           (data ISO)
+ *
+ * @returns {number|null} serial do dia ou null se não deu pra interpretar
+ */
+function parseOrcamentoFiltro(raw) {
+  if (raw === null || raw === undefined || raw === '') return null;
+
+  const num = Number(raw);
+  if (isFinite(num) && num > 0) return Math.round(num);
+
+  const civil = parseDateValue(raw);
+  if (!civil) return null;
+
+  return civilToExcelSerialDia(civil);
+}
+
+/**
  * Monta a lista de filtros ATIVOS já com o texto pronto pra tela.
  *
  * É a única fonte do "Filtros aplicados" da página de Lançamentos: o frontend
  * só desenha os pills e decide se mostra o resumo (quantidade > 0).
  *
  * Regra importante: o orçamento aparece SEMPRE como data completa
- * ("30/11/2026"), nunca como chave de mês ("11/2026") — filtrar por orçamento
- * não pode mudar a forma como o lançamento é exibido.
+ * ("30/11/2026") — filtrar por orçamento não pode mudar a forma como o
+ * lançamento é exibido.
  *
  * @param {object} filtros filtros interpretados (eco do backend)
- * @param {object} meta opções de filtro (resolve a chave do orçamento)
+ * @param {object} meta opções de filtro (resolve a data do orçamento)
  * @returns {Array<{tipo:string,rotulo:string,valor:string}>}
  */
 function buildActiveFilters(filtros, meta) {
@@ -861,13 +857,15 @@ function buildActiveFilters(filtros, meta) {
   }
 
   if (f.orcamento) {
-    const opcao = opcoes.find(function (o) { return o.key === f.orcamento; });
-    // data completa ("30/11/2026"); se não achar a opção, devolve a chave
-    ativos.push({
-      tipo: 'orcamento',
-      rotulo: 'Orçamento',
-      valor: (opcao && opcao.label) || String(f.orcamento)
-    });
+    const serial = parseOrcamentoFiltro(f.orcamento);
+    const opcao = serial !== null
+      ? opcoes.find(function (o) { return o.serial === serial; })
+      : null;
+    let valor = opcao ? opcao.label : String(f.orcamento);
+    if (!opcao && serial !== null) {
+      valor = formatDateLabel(excelSerialToCivil(serial));
+    }
+    ativos.push({ tipo: 'orcamento', rotulo: 'Orçamento', valor: valor });
   }
 
   if (f.dataInicio || f.dataFim) {
@@ -1031,8 +1029,6 @@ module.exports = {
   formatDateTimeLabel: formatDateTimeLabel,
   formatDateInput: formatDateInput,
   formatDateTimeInput: formatDateTimeInput,
-  civilToMonthKey: civilToMonthKey,
-  monthKeyToLabel: monthKeyToLabel,
   parseDateValue: parseDateValue,
   normalizeWriteDate: normalizeWriteDate,
   toSheetDate: toSheetDate,
@@ -1050,6 +1046,7 @@ module.exports = {
   applyFilters: applyFilters,
   filterByInterval: filterByInterval,
   intervalSerials: intervalSerials,
+  parseOrcamentoFiltro: parseOrcamentoFiltro,
 
   // ordenação
   sortEntries: sortEntries,

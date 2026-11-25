@@ -428,8 +428,11 @@ check('string ISO (input datetime-local) é interpretada', () => {
   assert.equal(out[0].dataLabel, '31/10/2025 14:41');
   assert.equal(out[0].dataInput, '2025-10-31T14:41');
   assert.equal(out[0].orcamentoInput, '2025-10-31');
-  assert.equal(out[0].orcamentoKey, '10/2025');
-  assert.equal(out[0].orcamentoLabelMes, 'Outubro/2025');
+  // o orçamento é a DATA: a identidade é o serial do dia (não existe chave de mês)
+  assert.equal(out[0].orcamentoSerial, SER_OUT_2025);
+  assert.equal(out[0].orcamentoLabel, '31/10/2025');
+  assert.equal(out[0].orcamentoKey, undefined);
+  assert.equal(out[0].orcamentoLabelMes, undefined);
 });
 
 check('lançamento sem data é marcado como futuro', () => {
@@ -443,8 +446,10 @@ check('aggregateByBudget bate com o legado (agrupando pelo mesmo label)', () => 
   // Diferenças INTENCIONAIS do backend novo:
   //  1) o legado criava um grupo FALSO "31/12/1899" (serial 0) pra cada
   //     lançamento sem orçamento — o novo ignora lançamento sem orçamento;
-  //  2) o legado gerava dois grupos quando o mesmo mês aparecia como serial
-  //     e como texto ("31/10/2024") — o novo unifica por mês ("MM/YYYY").
+  //  2) o legado gerava dois grupos quando a mesma data aparecia como serial
+  //     e como texto ("31/10/2024") — o novo unifica pela DATA.
+  // O agrupamento é sempre pela data-chave (o orçamento É a data): duas
+  // datas no mesmo mês são dois orçamentos.
   const legacy = legacyAggregateByBudget(LEGACY_ENTRIES).filter((item) => item.orcamento !== 0);
   const legacyMerged = new Map();
   legacy.forEach((item) => {
@@ -521,8 +526,41 @@ check('filtro por conta/categoria/orçamento funciona', () => {
   const porCategoria = domain.sortEntries(domain.applyFilters(normalized, { categoria: 'Alimentação' }), 'original');
   assert.deepEqual(porCategoria.map((e) => e.rowIndex), [10, 2]);
 
-  const porOrcamento = domain.sortEntries(domain.applyFilters(normalized, { orcamento: '11/2025' }), 'original');
+  const porOrcamento = domain.sortEntries(domain.applyFilters(normalized, { orcamento: String(SER_NOV_2025) }), 'original');
   assert.deepEqual(porOrcamento.map((e) => e.rowIndex), [10, 4, 3]);
+});
+
+check('filtro de orçamento aceita serial, data BR e data ISO', () => {
+  const porSerial = domain.applyFilters(normalized, { orcamento: String(SER_NOV_2025) });
+  const porBr = domain.applyFilters(normalized, { orcamento: '30/11/2025' });
+  const porIso = domain.applyFilters(normalized, { orcamento: '2025-11-30' });
+  assert.deepEqual(porSerial.map((e) => e.rowIndex), porBr.map((e) => e.rowIndex));
+  assert.deepEqual(porSerial.map((e) => e.rowIndex), porIso.map((e) => e.rowIndex));
+  assert.equal(porSerial.length, 3);
+});
+
+check('orçamento é identificado pela DATA: duas datas no mesmo mês são DOIS orçamentos', () => {
+  const rows = [
+    [SER_NOV_2025, 'Carteira', -10, 'A', 'Casa', SER_NOV_2025, ''],       // 30/11/2025
+    [SER_NOV_2025, 'Carteira', -20, 'B', 'Casa', SER_NOV_2025 - 15, '']    // 15/11/2025
+  ];
+  const out = domain.normalizeRows(rows);
+
+  // agregação: um card por data
+  const budgets = domain.aggregateByBudget(out);
+  assert.equal(budgets.length, 2);
+  assert.deepEqual(budgets.map((b) => b.label), ['30/11/2025', '15/11/2025']);
+  assert.deepEqual(budgets.map((b) => b.sum), [-10, -20]);
+
+  // opções do filtro: uma opção por data
+  const meta = domain.buildMeta(out);
+  assert.equal(meta.orcamentos.length, 2);
+  assert.deepEqual(meta.orcamentos.map((o) => o.label), ['30/11/2025', '15/11/2025']);
+
+  // filtro: pega só a data exata
+  const soDia30 = domain.applyFilters(out, { orcamento: String(SER_NOV_2025) });
+  assert.equal(soDia30.length, 1);
+  assert.equal(soDia30[0].descricao, 'A');
 });
 
 check('filtro por período respeita o intervalo', () => {
@@ -595,11 +633,15 @@ check('meta lista contas, categorias e orçamentos', () => {
   const meta = domain.buildMeta(normalized);
   assert.deepEqual(meta.contas, ['Banco', 'Carteira', 'Conta Antiga']);
   assert.deepEqual(meta.categorias, ['Alimentação', 'Casa', 'Lazer', 'Renda', 'Transferência']);
+  // uma opção por DATA (mais recente primeiro)
   assert.deepEqual(
-    meta.orcamentos.map((o) => o.key),
-    ['11/2025', '10/2025', '10/2024']
+    meta.orcamentos.map((o) => o.serial),
+    [SER_NOV_2025, SER_OUT_2025, SER_OUT_2024]
   );
-  assert.equal(meta.orcamentos[0].labelMes, 'Novembro/2025');
+  assert.deepEqual(
+    meta.orcamentos.map((o) => o.label),
+    ['30/11/2025', '31/10/2025', '31/10/2024']
+  );
 });
 
 // --- detalhes ---------------------------------------------------------------
@@ -666,7 +708,7 @@ check('buildActiveFilters monta os pills com rótulo e valor prontos', () => {
       q: 'mercado',
       conta: 'Carteira',
       categoria: 'Alimentação',
-      orcamento: '10/2025',
+      orcamento: String(SER_OUT_2025),
       dataInicio: '2025-10-01',
       dataFim: '2025-10-31'
     },
@@ -684,7 +726,7 @@ check('buildActiveFilters monta os pills com rótulo e valor prontos', () => {
 
 check('filtro de orçamento mostra a DATA COMPLETA, nunca a chave do mês', () => {
   const meta = domain.buildMeta(normalized);
-  const ativos = domain.buildActiveFilters({ orcamento: '11/2025' }, meta);
+  const ativos = domain.buildActiveFilters({ orcamento: String(SER_NOV_2025) }, meta);
   assert.equal(ativos[0].valor, '30/11/2025');
   assert.notEqual(ativos[0].valor, '11/2025');
   // formato DD/MM/YYYY (nunca MM/YYYY)
@@ -693,9 +735,10 @@ check('filtro de orçamento mostra a DATA COMPLETA, nunca a chave do mês', () =
 
 check('meta: label do orçamento é a data completa', () => {
   const meta = domain.buildMeta(normalized);
-  const nov2025 = meta.orcamentos.find((o) => o.key === '11/2025');
+  const nov2025 = meta.orcamentos.find((o) => o.serial === SER_NOV_2025);
   assert.equal(nov2025.label, '30/11/2025');
-  assert.equal(nov2025.labelMes, 'Novembro/2025');
+  assert.equal(nov2025.key, undefined);
+  assert.equal(nov2025.labelMes, undefined);
 });
 
 // --- data-chave sugerida (formulários) --------------------------------------

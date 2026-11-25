@@ -17,8 +17,7 @@
  *   {
  *     success, hoje,
  *     intervalo: { inicioSerial, fimSerial },
- *     budgets: [{ serial, key, label, labelMes, sum, incomes, expenses,
- *                 count, inInterval }],
+ *     budgets: [{ serial, label, sum, incomes, expenses, count, inInterval }],
  *     budgetsInInterval: [serial...],
  *     accounts: [{ conta, total, count }],
  *     meta: { contas[], categorias[], descricoes[], orcamentos[] },
@@ -75,9 +74,7 @@ routerAdd('GET', '/get-dashboard-data', (c) => {
     const budgets = domain.aggregateByBudget(entries).map(function (b) {
       return {
         serial: b.serial,
-        key: b.key,
         label: b.label,
-        labelMes: b.labelMes,
         sum: b.sum,
         incomes: b.incomes,
         expenses: b.expenses,

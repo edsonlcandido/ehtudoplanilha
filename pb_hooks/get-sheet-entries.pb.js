@@ -15,7 +15,8 @@
  *   - q            str  busca textual (data, valor, descrição, categoria, conta, obs)
  *   - conta        str  nome exato da conta
  *   - categoria    str  nome exato da categoria
- *   - orcamento    str  chave do orçamento "MM/YYYY"
+ *   - orcamento    str  data-chave do orçamento (serial "45991"; aceita
+ *                          também "30/11/2025" e "2025-11-30")
  *   - dataInicio   str  "YYYY-MM-DD"
  *   - dataFim      str  "YYYY-MM-DD"
  *   - tipo         str  'todos' (default) | 'consolidado' | 'futuro'

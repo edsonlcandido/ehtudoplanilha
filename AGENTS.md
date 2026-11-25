@@ -337,10 +337,8 @@ routerAdd('POST', '/append-entry', (c) => {
   "descricao": "Mercado",
   "categoria": "Alimentação",
   "orcamento": 45961,              // CRU
-  "orcamentoSerial": 45961,
+  "orcamentoSerial": 45961,        // serial do dia = identidade do orçamento
   "orcamentoLabel": "31/10/2025",
-  "orcamentoKey": "10/2025",       // chave do mês (usada no filtro)
-  "orcamentoLabelMes": "Outubro/2025",
   "orcamentoInput": "2025-10-31",  // pronto pro <input date>
   "obs": "compras",
   "isFuturo": false,               // sem data
@@ -362,10 +360,13 @@ routerAdd('POST', '/append-entry', (c) => {
   `SALDO`, `RENDA`, `RECEITA`; JOIN com a aba Categorias é case-insensitive
   (fallback "Sem Tipo")
 - **Orçamento sem data-chave**: não gera orçamento "31/12/1899" (bug antigo)
-- **Orçamento sempre como DATA COMPLETA** ("30/11/2026"): a chave do mês
-  ("11/2026") é interna (filtro/agregação) e **nunca** aparece na tela —
-  nem na coluna Orçamento, nem no <option> do filtro, nem no pill de filtro.
-  Filtrar por orçamento não pode mudar a visualização do lançamento.
+- **Orçamento É a data**: a identidade do orçamento é a **data-chave** (serial do
+  dia, ex.: 45991 = 30/11/2025). Não existe chave de mês "MM/YYYY" em lugar
+  nenhum — nem no DTO, nem nos filtros, nem nas agregações. Duas datas no
+  mesmo mês são **dois orçamentos** (um card cada no dashboard).
+- **Orçamento sempre como DATA COMPLETA** ("30/11/2026") na tela: coluna
+  Orçamento, `<option>` do filtro e pill de filtro mostram a data. Filtrar por
+  orçamento não pode mudar a visualização do lançamento.
 - **Corte da lista**: a página de Lançamentos mostra no máximo 100 itens —
   o corte é feito pelo backend (`limit=100`), não no frontend.
 
@@ -373,7 +374,8 @@ routerAdd('POST', '/append-entry', (c) => {
 
 **`GET /get-sheet-entries`** — query params opcionais:
 `limit` (100 default, 0 = todas), `offset`, `q`, `conta`, `categoria`,
-`orcamento` (chave "MM/YYYY"), `dataInicio`, `dataFim` (`YYYY-MM-DD`),
+`orcamento` (serial da data-chave: "45991" — aceita também "30/11/2025" e
+"2025-11-30"), `dataInicio`, `dataFim` (`YYYY-MM-DD`),
 `tipo` (`todos|consolidado|futuro`), `sort` (`original|date|budget_date`),
 `hoje` (`YYYY-MM-DD`, dia local do cliente), `fresh=1` (ignora o cache do
 servidor).
@@ -486,7 +488,7 @@ Datas no Sheets são armazenadas como **Excel Epoch Serial** (dias desde 30/12/1
 > `pb_hooks/_lancamentos-domain.js`. Vide §6.1.
 >
 > O frontend **não converte mais nada**: consome os campos prontos do DTO
-> (`dataLabel`, `dataInput`, `orcamentoLabel`, `orcamentoKey`,
+> (`dataLabel`, `dataInput`, `orcamentoLabel`, `orcamentoSerial`,
 > `orcamentoInput`, `isFuturo`, `isTransferencia`...).
 
 Helpers (agora no backend, `pb_hooks/_lancamentos-domain.js`):
@@ -499,9 +501,8 @@ formatDateLabel(civil)              // "DD/MM/YYYY"
 formatDateTimeLabel(civil)          // "DD/MM/YYYY HH:MM"
 formatDateInput(civil)              // "YYYY-MM-DD"
 formatDateTimeInput(civil)          // "YYYY-MM-DDTHH:MM"
-civilToMonthKey(civil)              // "MM/YYYY"
-monthKeyToLabel("10/2025")          // "Outubro/2025"
 parseDateValue(raw)                 // serial | "DD/MM/YYYY" | "YYYY-MM-DD" → civil
+parseOrcamentoFiltro(raw)           // "45991" | "30/11/2025" | "2025-11-30" → serial
 normalizeWriteDate(raw, comHora)    // payload do form → texto pro Sheets
 ```
 
@@ -855,8 +856,8 @@ Frontend faz **DOIS POSTs** sequenciais em `/append-entry`:
 | **Abas Sheets hardcoded** | `Lançamentos` e `Categorias` são contrato. NÃO ler do `google_infos.sheet_name`. |
 | **`pb_public/` é output** | Não editar. Próximo build apaga. |
 | **`pwa/pwa/` commitado** | Output do build do PWA. Commitado pra rodar dev sem buildar, mas em prod o Dockerfile regenera. |
-| **Excel Serial** | Desde 2026-11-25 o **backend converte e devolve o DTO pronto** (`dataLabel`, `dataInput`, `orcamentoKey`...). Frontend não converte mais nada (§6.1). |
-| **Orçamento na tela** | Sempre **data completa** ("30/11/2026"). A chave "MM/YYYY" é interna. Antes de 2026-11-25 a coluna Orçamento usava `excelSerialToMonthLabel` e mostrava "11/2026" — não voltar atrás disso. |
+| **Excel Serial** | Desde 2026-11-25 o **backend converte e devolve o DTO pronto** (`dataLabel`, `dataInput`, `orcamentoSerial`...). Frontend não converte mais nada (§6.1). |
+| **Orçamento = DATA** | O orçamento é a **data-chave** (serial do dia). **Não existe chave de mês "MM/YYYY"** — nem no DTO, nem nos filtros, nem nas agregações. Duas datas no mesmo mês são DOIS orçamentos. Antes de 2026-11-25 a coluna Orçamento usava `excelSerialToMonthLabel` e mostrava "11/2026" — não voltar atrás disso. |
 | **`hoje` do cliente** | Toda chamada que dependa de "hoje" manda `hoje=YYYY-MM-DD` (dia local). O fuso do servidor não pode decidir data-chave nem intervalo. |
 | **`USER_ENTERED` no Sheets** | Permite enviar string `"31/10/2025 14:41"` e Sheets converte automaticamente pra serial. |
 | **OAuth login vs OAuth Sheets** | Dois fluxos distintos. Login usa PB nativo + redirect custom. Sheets/Drive usa hook custom `/google-oauth-callback`. |

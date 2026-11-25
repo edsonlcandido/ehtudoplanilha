@@ -61,10 +61,6 @@ export interface SheetEntry {
   orcamentoSerial: number | null;
   /** "31/10/2025" — pronto pra exibição */
   orcamentoLabel: string | null;
-  /** "10/2025" — chave do mês (usada nos filtros) */
-  orcamentoKey: string | null;
-  /** "Outubro/2025" — label amigável do mês */
-  orcamentoLabelMes: string | null;
   /** "2025-10-31" — pronto pra <input type="date"> */
   orcamentoInput: string | null;
 
@@ -102,16 +98,14 @@ export interface ResumoTotais {
 
 /**
  * Opção de orçamento para o filtro (montada pelo backend)
+ *
+ * O orçamento é a DATA: uma opção por data-chave.
  */
 export interface OrcamentoOption {
-  /** "10/2025" — chave do mês (é o value do <option>) */
-  key: string;
+  /** serial Excel do dia (é o value do <option>) */
+  serial: number;
   /** "31/10/2025" — DATA COMPLETA, é o texto exibido */
   label: string;
-  /** "Outubro/2025" — label amigável do mês (referência) */
-  labelMes: string;
-  /** serial Excel */
-  serial: number;
 }
 
 /**
@@ -178,16 +172,14 @@ export interface SheetEntriesResponse {
 
 /**
  * Resumo de um orçamento (card do dashboard)
+ *
+ * O orçamento é a DATA: cada data-chave é um orçamento.
  */
 export interface BudgetSummary {
   /** serial Excel da data-chave */
   serial: number;
-  /** "10/2025" */
-  key: string;
   /** "31/10/2025" */
   label: string;
-  /** "Outubro/2025" */
-  labelMes: string;
   sum: number;
   incomes: number;
   expenses: number;
