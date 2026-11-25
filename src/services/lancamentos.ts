@@ -1,75 +1,228 @@
 /**
  * Serviço de Lançamentos
- * Gerencia operações de lançamentos financeiros
- * Migrado de pb_public_/js/lancamentos-manager.js
+ *
+ * Fala com o backend (hooks do PocketBase) e devolve dados JÁ NORMALIZADOS:
+ * conversão de data, classificação (consolidado/futuro/transferência),
+ * filtros, ordenação e agregações são responsabilidade do backend.
+ *
+ * Ver pb_hooks/_lancamentos-domain.js (fonte única das regras).
  */
 
 import { pb } from '../main';
-import type { SheetEntry, SheetEntriesResponse, SortType } from '../types';
-import { excelSerialToDate } from '../utils/date-helpers';
+import type {
+  SheetEntriesResponse,
+  DashboardData,
+  DashboardDetails,
+  SortType,
+  SheetEntry
+} from '../types';
 import { CacheService, CACHE_KEYS } from './cache';
+
+/**
+ * Filtros/ordenações aceitos pelo endpoint /get-sheet-entries
+ */
+export interface LancamentosQuery {
+  /** máximo de registros (0 = todos) */
+  limit?: number;
+  offset?: number;
+  /** busca textual */
+  q?: string;
+  conta?: string;
+  categoria?: string;
+  /** chave do orçamento "MM/YYYY" */
+  orcamento?: string;
+  /** "YYYY-MM-DD" */
+  dataInicio?: string;
+  dataFim?: string;
+  tipo?: 'todos' | 'consolidado' | 'futuro';
+  sort?: SortType;
+  /** ignora o cache (botão "atualizar") */
+  fresh?: boolean;
+}
+
+const META_VAZIA = {
+  contas: [] as string[],
+  categorias: [] as string[],
+  descricoes: [] as string[],
+  orcamentos: [] as any[]
+};
+
+/**
+ * Monta a query string da API (só envia o que está preenchido)
+ */
+function buildQueryString(query: LancamentosQuery): string {
+  const params = new URLSearchParams();
+
+  if (query.limit !== undefined) params.set('limit', String(query.limit));
+  if (query.offset) params.set('offset', String(query.offset));
+  if (query.q) params.set('q', query.q);
+  if (query.conta) params.set('conta', query.conta);
+  if (query.categoria) params.set('categoria', query.categoria);
+  if (query.orcamento) params.set('orcamento', query.orcamento);
+  if (query.dataInicio) params.set('dataInicio', query.dataInicio);
+  if (query.dataFim) params.set('dataFim', query.dataFim);
+  if (query.tipo && query.tipo !== 'todos') params.set('tipo', query.tipo);
+  if (query.sort && query.sort !== 'original') params.set('sort', query.sort);
+  if (query.fresh) params.set('fresh', '1');
+
+  return params.toString();
+}
+
+/**
+ * Chave de cache do conjunto filtrado (inclui os filtros na chave)
+ */
+function entriesCacheKey(queryString: string): string {
+  return `${CACHE_KEYS.SHEET_ENTRIES}:${queryString}`;
+}
 
 /**
  * Serviço de gerenciamento de lançamentos
  */
 class LancamentosService {
-  
+
   /**
-   * Busca lançamentos da planilha
-   * @param limit - Número máximo de entradas (padrão: 100)
-   * @param forceRefresh - Se true, ignora o cache e busca do servidor
+   * Busca lançamentos já filtrados/ordenados pelo backend
    */
-  async fetchEntries(limit = 100, forceRefresh = false): Promise<SheetEntriesResponse> {
+  async fetchEntries(query: LancamentosQuery = {}): Promise<SheetEntriesResponse> {
     if (!pb) {
       throw new Error('PocketBase não inicializado');
     }
 
-    // Se não for forceRefresh, tenta usar o cache
-    // IMPORTANTE: só usa cache se tem dados (entries.length > 0).
-    // Cache vazio (0 entries) significa que o servidor retornou vazio numa
-    // chamada anterior — não cachear pra forçar nova tentativa.
-    if (!forceRefresh) {
-      const cacheKey = CACHE_KEYS.SHEET_ENTRIES;
-      const cached = CacheService.get<SheetEntriesResponse>(cacheKey);
+    const queryString = buildQueryString(query);
+    const cacheKey = entriesCacheKey(queryString);
 
-      if (cached && cached.entries && cached.entries.length > 0) {
+    if (!query.fresh) {
+      const cached = CacheService.get<SheetEntriesResponse>(cacheKey);
+      if (cached && cached.entries) {
         console.log('[LancamentosService] Usando dados do cache');
-        if (limit > 0 && cached.entries.length > limit) {
-          return {
-            ...cached,
-            entries: cached.entries.slice(0, limit),
-          };
-        }
         return cached;
       }
     }
 
-    // Busca do servidor
     try {
       console.log('[LancamentosService] Buscando dados do servidor');
-      // Usa `pb.send()` para que o SDK adicione automaticamente o header
-      // `Authorization: <authStore.token>` (lido do localStorage).
-      // PB autentica via esse header (não via cookie).
-      //
-      // IMPORTANTE: passar SÓ o path (sem `pb.baseURL`) — o SDK já prepende
-      // o baseURL automaticamente. Passar `pb.baseURL` aqui causaria URL
-      // duplicada tipo `https://host/https://host/path` e o PB não rotearia.
-      //
-      // Também: `pb.send()` JÁ retorna o JSON parseado (NÃO o Response).
-      // Se der 401/4xx/5xx, o SDK joga `ClientResponseError`.
-      const data = await pb.send(`/get-sheet-entries?limit=${limit}`, {
+      // `pb.send()` já devolve o JSON parseado e adiciona o header
+      // `Authorization: <authStore.token>` automaticamente.
+      // Passar SÓ o path — o SDK já prepende o baseURL.
+      const data = await pb.send(
+        `/get-sheet-entries${queryString ? `?${queryString}` : ''}`,
+        { method: 'GET' }
+      );
+
+      const response: SheetEntriesResponse = {
+        success: data.success,
+        entries: data.entries || [],
+        total: data.total ?? 0,
+        count: data.count ?? data.entries?.length ?? 0,
+        limit: data.limit ?? 0,
+        offset: data.offset ?? 0,
+        meta: data.meta || META_VAZIA,
+        resumo: data.resumo || { receitas: 0, despesas: 0, saldo: 0, count: 0 },
+        filtros: data.filtros
+      };
+
+      CacheService.set(cacheKey, response);
+      return response;
+    } catch (error: any) {
+      console.error('Erro ao buscar entradas da planilha:', error);
+      const msg = error?.data?.message || error?.message || 'Erro ao carregar entradas da planilha';
+      throw new Error(msg);
+    }
+  }
+
+  /**
+   * Dados agregados do dashboard (cards, contas, orçamentos em destaque)
+   * @param hoje - dia local no formato "YYYY-MM-DD"
+   */
+  async fetchDashboardData(hoje: string, fresh = false): Promise<DashboardData> {
+    if (!pb) {
+      throw new Error('PocketBase não inicializado');
+    }
+
+    const cacheKey = fresh ? `${CACHE_KEYS.DASHBOARD_DATA}:fresh` : CACHE_KEYS.DASHBOARD_DATA;
+
+    if (!fresh) {
+      const cached = CacheService.get<DashboardData>(cacheKey);
+      if (cached && cached.budgets) {
+        console.log('[LancamentosService] Usando dashboard do cache');
+        return cached;
+      }
+    }
+
+    try {
+      const params = new URLSearchParams({ hoje });
+      if (fresh) params.set('fresh', '1');
+
+      const data = await pb.send(`/get-dashboard-data?${params.toString()}`, {
         method: 'GET'
       });
 
-      // Salva no cache (sempre salva o resultado completo)
-      const cacheKey = CACHE_KEYS.SHEET_ENTRIES;
-      CacheService.set(cacheKey, data);
+      const response: DashboardData = {
+        success: data.success,
+        hoje: data.hoje || hoje,
+        intervalo: data.intervalo || { inicioSerial: 0, fimSerial: 0 },
+        budgets: data.budgets || [],
+        budgetsInInterval: data.budgetsInInterval || [],
+        accounts: data.accounts || [],
+        meta: data.meta || META_VAZIA,
+        resumo: data.resumo || { receitas: 0, despesas: 0, saldo: 0, count: 0 },
+        totalLancamentos: data.totalLancamentos || 0
+      };
 
-      return data;
+      CacheService.set(cacheKey, response);
+      return response;
     } catch (error: any) {
-      console.error('Erro ao buscar entradas da planilha:', error);
-      // ClientResponseError tem .data com a response do server
-      const msg = error?.data?.message || error?.message || 'Erro ao carregar entradas da planilha';
+      console.error('Erro ao buscar dados do dashboard:', error);
+      const msg = error?.data?.message || error?.message || 'Erro ao carregar dados do dashboard';
+      throw new Error(msg);
+    }
+  }
+
+  /**
+   * Bloco "Detalhes" do dashboard para os orçamentos selecionados
+   * @param orcamentos - seriais dos orçamentos selecionados
+   */
+  async fetchDashboardDetails(orcamentos: number[], fresh = false): Promise<DashboardDetails> {
+    if (!pb) {
+      throw new Error('PocketBase não inicializado');
+    }
+
+    const lista = (orcamentos || []).join(',');
+    const cacheKey = `${CACHE_KEYS.DASHBOARD_DETAILS}:${lista}${fresh ? ':fresh' : ''}`;
+
+    if (!fresh) {
+      const cached = CacheService.get<DashboardDetails>(cacheKey);
+      if (cached) {
+        console.log('[LancamentosService] Usando detalhes do cache');
+        return cached;
+      }
+    }
+
+    try {
+      const params = new URLSearchParams({ orcamentos: lista });
+      if (fresh) params.set('fresh', '1');
+
+      const data = await pb.send(`/get-dashboard-details?${params.toString()}`, {
+        method: 'GET'
+      });
+
+      const response: DashboardDetails = {
+        success: data.success,
+        orcamentos: data.orcamentos || [],
+        topCategorias: data.topCategorias || [],
+        contas: data.contas || [],
+        totalGeral: data.totalGeral || 0,
+        grafico: data.grafico || [],
+        graficoTotal: data.graficoTotal || 0,
+        entradasPorCategoria: data.entradasPorCategoria || {},
+        categoriasCompletas: data.categoriasCompletas || []
+      };
+
+      CacheService.set(cacheKey, response);
+      return response;
+    } catch (error: any) {
+      console.error('Erro ao buscar detalhes do dashboard:', error);
+      const msg = error?.data?.message || error?.message || 'Erro ao carregar detalhes do dashboard';
       throw new Error(msg);
     }
   }
@@ -80,8 +233,11 @@ class LancamentosService {
    */
   invalidateCache(): void {
     console.log('[LancamentosService] Invalidando caches de lançamentos');
-    CacheService.clear(CACHE_KEYS.SHEET_ENTRIES);
+    CacheService.clearPrefix(CACHE_KEYS.SHEET_ENTRIES);
+    CacheService.clearPrefix(CACHE_KEYS.DASHBOARD_DATA);
+    CacheService.clearPrefix(CACHE_KEYS.DASHBOARD_DETAILS);
     CacheService.clear(CACHE_KEYS.SHEET_CATEGORIES);
+    CacheService.clear(CACHE_KEYS.SHEET_CATEGORIES_COMPLETE);
   }
 
   /**
@@ -141,184 +297,6 @@ class LancamentosService {
       const msg = error?.data?.message || error?.message || 'Erro ao deletar lançamento';
       throw new Error(msg);
     }
-  }
-
-  /**
-   * Verifica se uma linha está totalmente em branco
-   */
-  isBlankEntry(entry: SheetEntry): boolean {
-    if (!entry) return true;
-    // Campos relevantes da interface SheetEntry
-    const campos: (keyof SheetEntry)[] = ['data', 'conta', 'valor', 'descricao', 'categoria', 'orcamento', 'obs'];
-    return campos.every(campo => {
-      const valor = entry[campo];
-      if (valor === null || valor === undefined) return true;
-      if (typeof valor === 'number') {
-        return false;
-      }
-      return String(valor).trim() === '';
-    });
-  }
-
-  /**
-   * Normaliza um lançamento (converte seriais para datas)
-   */
-  normalizeEntry(entry: SheetEntry): SheetEntry {
-    const normalized = { ...entry };
-
-    // Normaliza data
-    if (typeof normalized.data === 'number') {
-      const dateObj = excelSerialToDate(normalized.data);
-      if (dateObj) {
-        normalized.data = dateObj.toISOString();
-      }
-    }
-
-    // Normaliza orçamento
-    if (typeof normalized.orcamento === 'number') {
-      const dateObj = excelSerialToDate(normalized.orcamento);
-      if (dateObj) {
-        normalized.orcamento = dateObj.toISOString().split('T')[0];
-      }
-    }
-
-    return normalized;
-  }
-
-  /**
-   * Ordena lançamentos
-   */
-  sortEntries(entries: SheetEntry[], sortBy: SortType): SheetEntry[] {
-    const sorted = [...entries];
-
-    if (sortBy === 'original') {
-      return sorted.sort((a, b) => (b.rowIndex || 0) - (a.rowIndex || 0));
-    }
-
-    if (sortBy === 'date') {
-      return sorted.sort((a, b) => {
-        const dateA = this.getDateValue(a.data);
-        const dateB = this.getDateValue(b.data);
-        return dateB - dateA;
-      });
-    }
-
-    if (sortBy === 'budget_date') {
-      return sorted.sort((a, b) => {
-        const budgetA = this.getDateValue(a.orcamento);
-        const budgetB = this.getDateValue(b.orcamento);
-        if (budgetA !== budgetB) {
-          return budgetB - budgetA;
-        }
-        const dateA = this.getDateValue(a.data);
-        const dateB = this.getDateValue(b.data);
-        return dateB - dateA;
-      });
-    }
-
-    return sorted;
-  }
-
-  /**
-   * Obtém valor numérico de uma data para ordenação
-   * Retorna Number.MAX_SAFE_INTEGER para datas inválidas (coloca no final)
-   */
-  private getDateValue(date: string | number | undefined): number {
-    if (!date) return Number.MAX_SAFE_INTEGER;
-    if (typeof date === 'number') return date;
-    const parsed = new Date(date);
-    return isNaN(parsed.getTime()) ? Number.MAX_SAFE_INTEGER : parsed.getTime();
-  }
-
-  /**
-   * Filtra lançamentos por termo de pesquisa
-   */
-  filterEntries(entries: SheetEntry[], searchTerm: string): SheetEntry[] {
-    if (!searchTerm || searchTerm.trim() === '') {
-      return entries;
-    }
-
-    const term = searchTerm.toLowerCase().trim();
-
-    return entries.filter(entry => {
-      const data = this.formatDateForSearch(entry.data);
-      const valor = String(entry.valor || '');
-      const descricao = String(entry.descricao || '').toLowerCase();
-      const categoria = String(entry.categoria || '').toLowerCase();
-      const conta = String(entry.conta || '').toLowerCase();
-      const obs = String(entry.obs || '').toLowerCase();
-
-      return (
-        data.includes(term) ||
-        valor.includes(term) ||
-        descricao.includes(term) ||
-        categoria.includes(term) ||
-        conta.includes(term) ||
-        obs.includes(term)
-      );
-    });
-  }
-
-  /**
-   * Formata data para pesquisa
-   */
-  private formatDateForSearch(date: string | number | undefined): string {
-    if (!date) return '';
-    
-    let dateObj: Date | null = null;
-    
-    if (typeof date === 'number') {
-      dateObj = excelSerialToDate(date);
-    } else {
-      dateObj = new Date(date);
-    }
-
-    if (!dateObj || isNaN(dateObj.getTime())) return '';
-
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const year = dateObj.getFullYear();
-
-    return `${day}/${month}/${year}`;
-  }
-
-  /**
-   * Busca contas únicas dos lançamentos
-   */
-  getUniqueAccounts(entries: SheetEntry[]): string[] {
-    const accounts = new Set<string>();
-    entries.forEach(entry => {
-      if (entry.conta && typeof entry.conta === 'string') {
-        accounts.add(entry.conta.trim());
-      }
-    });
-    return Array.from(accounts).sort();
-  }
-
-  /**
-   * Busca categorias únicas dos lançamentos
-   */
-  getUniqueCategories(entries: SheetEntry[]): string[] {
-    const categories = new Set<string>();
-    entries.forEach(entry => {
-      if (entry.categoria && typeof entry.categoria === 'string') {
-        categories.add(entry.categoria.trim());
-      }
-    });
-    return Array.from(categories).sort();
-  }
-
-  /**
-   * Busca descrições únicas dos lançamentos
-   */
-  getUniqueDescriptions(entries: SheetEntry[]): string[] {
-    const descriptions = new Set<string>();
-    entries.forEach(entry => {
-      if (entry.descricao && typeof entry.descricao === 'string') {
-        descriptions.add(entry.descricao.trim());
-      }
-    });
-    return Array.from(descriptions).sort();
   }
 }
 

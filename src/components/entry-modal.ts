@@ -7,11 +7,6 @@ import { pb } from '../main';
 import type { EntryFormData, EntryPayload, OnEntryAddedCallback, SheetEntry, CategoryComplete } from '../types';
 import { SheetsService } from '../services/sheets';
 import lancamentosService from '../services/lancamentos';
-import {
-  excelSerialToDate,
-  dateInputToDate,
-  dateToDateTimeLocalString
-} from '../utils/date-helpers';
 
 // Singleton instance
 let modalInstance: EntryModal | null = null;
@@ -379,7 +374,7 @@ class EntryModal {
     try {
       // Busca entries usando LancamentosService (com cache)
       console.log('[EntryModal] Buscando entries com cache (limit=0)...');
-      const response = await lancamentosService.fetchEntries(0, false);
+      const response = await lancamentosService.fetchEntries({ limit: 0 });
       this.entries = response?.entries ?? [];
       
       console.log('[EntryModal] Entries recebidos:', this.entries.length);
@@ -433,33 +428,15 @@ class EntryModal {
   }
 
   /**
-   * Formata datetime-local "2025-10-31T14:41" para "31/10/2025 14:41"
+   * Data/hora no formato do input datetime-local ("YYYY-MM-DDTHH:MM")
    */
-  private formatDateTimeLocal(datetimeStr: string): string {
-    // Retorna string vazia se o campo estiver vazio
-    if (!datetimeStr || datetimeStr.trim() === '') {
-      return '';
-    }
-    
-    // "2025-10-31T14:41" -> ["2025-10-31", "14:41"]
-    const [datePart, timePart] = datetimeStr.split('T');
-    
-    // "2025-10-31" -> ["2025", "10", "31"]
-    const [year, month, day] = datePart.split('-');
-    
-    // Retorna no formato brasileiro: "31/10/2025 14:41"
-    return `${day}/${month}/${year} ${timePart}`;
-  }
-
-  /**
-   * Formata date "2025-10-31" para "31/10/2025"
-   */
-  private formatDate(dateStr: string): string {
-    // "2025-10-31" -> ["2025", "10", "31"]
-    const [year, month, day] = dateStr.split('-');
-    
-    // Retorna no formato brasileiro: "31/10/2025"
-    return `${day}/${month}/${year}`;
+  private formatDateTimeLocal(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
   }
 
   /**
@@ -515,7 +492,7 @@ class EntryModal {
     const dateInput = document.getElementById('expenseDate') as HTMLInputElement;
     if (dateInput) {
       const now = new Date();
-      dateInput.value = dateToDateTimeLocalString(now);
+      dateInput.value = this.formatDateTimeLocal(now);
     }
 
     // Conta
@@ -544,24 +521,10 @@ class EntryModal {
       categoryInput.value = data.categoria;
     }
 
-    // Orçamento - mantém o original
+    // Orçamento - mantém o original (vem pronto do backend em orcamentoInput)
     const budgetInput = document.getElementById('expenseBudget') as HTMLInputElement;
-    if (budgetInput && data.orcamento) {
-      let budgetValue = '';
-      if (typeof data.orcamento === 'number') {
-        // Converte Excel serial para Date sem hora
-        const dateObj = excelSerialToDate(data.orcamento, false);
-        if (dateObj) {
-          budgetValue = dateObj.toISOString().split('T')[0];
-        }
-      } else if (typeof data.orcamento === 'string') {
-        // Se for string, tenta parsear
-        const dateObj = dateInputToDate(data.orcamento);
-        if (dateObj) {
-          budgetValue = dateObj.toISOString().split('T')[0];
-        }
-      }
-      budgetInput.value = budgetValue;
+    if (budgetInput) {
+      budgetInput.value = data.orcamentoInput || '';
     }
 
     // Observações - mantém o original se existir
@@ -578,25 +541,21 @@ class EntryModal {
     if (!this.form) return;
 
     const formData = new FormData(this.form);
-    
+
     // Pega valores do formulário
     const dataStr = formData.get('data') as string;          // "2025-10-31T14:41"
     const orcamentoStr = formData.get('orcamento') as string; // "2025-10-31"
     const valorStr = formData.get('valor') as string;
-    
-    // Formata data de "2025-10-31T14:41" para "31/10/2025 14:41"
-    const dataFormatada = this.formatDateTimeLocal(dataStr);
-    
-    // Formata orçamento de "2025-10-31" para "31/10/2025"
-    const orcamentoFormatado = this.formatDate(orcamentoStr);
-    
+
+    // O payload vai no formato do formulário: a normalização pra "DD/MM/YYYY"
+    // é feita no BACKEND (pb_hooks/_lancamentos-domain.js).
     const data: EntryFormData = {
-      data: dataFormatada,           // Formato brasileiro DD/MM/YYYY HH:mm
+      data: dataStr,
       conta: formData.get('conta') as string,
       valor: parseFloat(valorStr),
       descricao: formData.get('descricao') as string,
       categoria: formData.get('categoria') as string,
-      orcamento: orcamentoFormatado, // Formato brasileiro DD/MM/YYYY
+      orcamento: orcamentoStr,
     };
 
     // Aplica o sinal ao valor
@@ -766,19 +725,21 @@ class EntryModal {
 
   /**
    * Preenche campo de orçamento com a próxima data disponível
+   *
+   * As datas-chave chegam prontas do backend em `orcamentoInput`
+   * ("YYYY-MM-DD"), então a comparação é feita por string (ISO).
    */
   private fillNextBudget(): void {
     const budgetInput = document.getElementById('expenseBudget') as HTMLInputElement;
     if (!budgetInput) return;
-    
+
     // Extrai datas de orçamento únicas dos entries
     const budgetDates = [...new Set(
       this.entries
-        .map(e => e.orcamento)
-        .filter(o => o !== null && o !== undefined && !isNaN(Number(o)))
-        .map(o => Number(o))
-    )].sort((a, b) => a - b); // Ordena do menor para o maior
-    
+        .map(e => e.orcamentoInput)
+        .filter((o): o is string => !!o)
+    )].sort();
+
     if (budgetDates.length === 0) {
       // Se não houver datas, usa o primeiro dia do mês atual
       const now = new Date();
@@ -787,36 +748,16 @@ class EntryModal {
       budgetInput.value = `${year}-${month}-01`;
       return;
     }
-    
-    // Converte data atual para Excel Serial para comparar
+
+    // Hoje no mesmo formato (YYYY-MM-DD)
     const now = new Date();
-    const todaySerial = Math.floor((now.getTime() - new Date(1899, 11, 31).getTime()) / 86400000) + 1;
-    
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
     // Busca a próxima data maior ou igual a hoje
-    const nextBudget = budgetDates.find(d => d >= todaySerial);
-    
-    if (nextBudget) {
-      // Converte de volta para Date
-      const date = new Date(1899, 11, 31);
-      date.setDate(date.getDate() + nextBudget - 1);
-      
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      
-      budgetInput.value = `${year}-${month}-${day}`;
-    } else {
-      // Se não houver próxima data, usa a última disponível
-      const lastBudget = budgetDates[budgetDates.length - 1];
-      const date = new Date(1899, 11, 31);
-      date.setDate(date.getDate() + lastBudget - 1);
-      
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      
-      budgetInput.value = `${year}-${month}-${day}`;
-    }
+    const nextBudget = budgetDates.find(d => d >= today);
+
+    // Se não houver próxima data, usa a última disponível
+    budgetInput.value = nextBudget || budgetDates[budgetDates.length - 1];
   }
 }
 

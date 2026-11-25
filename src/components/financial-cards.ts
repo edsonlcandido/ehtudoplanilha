@@ -1,18 +1,20 @@
 /**
  * Módulo para gerenciamento dos cards financeiros
  * Responsável por renderizar, atualizar e controlar interatividade dos cards
- * Versão TypeScript migrada de pb_public_/dashboard/js/components/financial-cards.js
+ *
+ * Os agregados (sum/incomes/expenses/count) e a marcação de "orçamento em
+ * destaque" chegam calculados do BACKEND. Aqui é só renderização.
  */
 
-import type { BudgetSummary } from '../utils/sheet-entries';
+import type { BudgetSummary } from '../types';
 
 /**
  * Formata valores para moeda brasileira
  */
 export function formatarMoeda(valor: number): string {
-  return Number(valor).toLocaleString('pt-BR', { 
-    style: 'currency', 
-    currency: 'BRL' 
+  return Number(valor).toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
   });
 }
 
@@ -20,39 +22,26 @@ export function formatarMoeda(valor: number): string {
  * Estado interno do módulo
  */
 let _summaryData: BudgetSummary[] = [];
-let _intervalBudgetsMap: Record<string, boolean> = {};
 
 /**
  * Renderiza os cards de resumo dos orçamentos
- * @param summary - Array de resumos dos orçamentos
- * @param intervalBudgets - Objeto com orçamentos no intervalo atual como chaves
+ * @param summary - Resumos dos orçamentos (vindos do backend)
  */
-export function renderizarCards(
-  summary: BudgetSummary[], 
-  intervalBudgets: Record<string, boolean>
-): void {
+export function renderizarCards(summary: BudgetSummary[]): void {
   const container = document.getElementById('summaryCards');
   if (!container) return;
 
   // Armazena os dados para atualizações futuras
   _summaryData = summary || [];
-  _intervalBudgetsMap = intervalBudgets || {};
-
-  // Ordena por orcamento (data) decrescente (mais recente primeiro)
-  const sorted = _summaryData.slice().sort((a, b) => b.orcamento - a.orcamento);
 
   container.className = 'financial-cards';
   container.innerHTML = '';
 
-  sorted.forEach(item => {
-    // Verifica se o orçamento está no intervalo atual
-    const isInInterval = _intervalBudgetsMap[item.label] === true;
-
-    if (isInInterval) {
-      // Cartão ativo - mostra todos os detalhes
+  _summaryData.forEach(item => {
+    // Cartão ativo (orçamento em destaque) mostra todos os detalhes
+    if (item.inInterval) {
       container.appendChild(criarCardAtivo(item));
     } else {
-      // Cartão inativo - clicável para mostrar detalhes
       container.appendChild(criarCardInativo(item));
     }
   });
@@ -79,14 +68,14 @@ function criarCardAtivo(item: BudgetSummary): HTMLElement {
   const card = document.createElement('div');
   const typeClass = item.sum >= 0 ? 'financial-card--incomes' : 'financial-card--expenses';
   card.className = `financial-card ${typeClass}`;
-  
+
   // Armazenar dados para uso posterior
   card.dataset.budget = item.label;
   card.dataset.sum = String(item.sum);
   card.dataset.incomes = String(item.incomes);
   card.dataset.expenses = String(item.expenses);
-  card.dataset.orcamento = String(item.orcamento);
-  
+  card.dataset.orcamento = String(item.serial);
+
   card.innerHTML = `
     <button class="financial-card__close" aria-label="Fechar cartão" data-budget="${item.label}">✕</button>
     <div class="financial-card__header">
@@ -103,7 +92,7 @@ function criarCardAtivo(item: BudgetSummary): HTMLElement {
       <div class="financial-card__detail">Despesas: ${formatarMoeda(item.expenses)}</div>
     </div>
   `;
-  
+
   return card;
 }
 
@@ -113,19 +102,19 @@ function criarCardAtivo(item: BudgetSummary): HTMLElement {
 function criarCardInativo(item: BudgetSummary): HTMLElement {
   const card = document.createElement('div');
   card.className = 'financial-card financial-card--inactive';
-  
+
   // Armazenar dados para uso posterior
   card.dataset.budget = item.label;
   card.dataset.sum = String(item.sum);
   card.dataset.incomes = String(item.incomes);
   card.dataset.expenses = String(item.expenses);
-  card.dataset.orcamento = String(item.orcamento);
+  card.dataset.orcamento = String(item.serial);
 
   card.innerHTML = `
     <div class="financial-card__title">${item.label}</div>
     <div class="financial-card__value">...</div>
   `;
-  
+
   return card;
 }
 
@@ -141,11 +130,11 @@ function cardClickHandler(this: HTMLElement): void {
 
   // Remove classe inativa
   this.classList.remove('financial-card--inactive');
-  
+
   // Adiciona classe de tipo apropriada
   const typeClass = sum >= 0 ? 'financial-card--incomes' : 'financial-card--expenses';
   this.classList.add(typeClass);
-  
+
   // Remove o cursor pointer
   this.style.cursor = 'default';
 
@@ -190,8 +179,8 @@ function cardClickHandler(this: HTMLElement): void {
   }
 
   // Dispara evento para mostrar detalhes
-  document.dispatchEvent(new CustomEvent('detail:show', { 
-    detail: { orcamento: orc } 
+  document.dispatchEvent(new CustomEvent('detail:show', {
+    detail: { orcamento: orc }
   }));
 }
 
@@ -200,14 +189,14 @@ function cardClickHandler(this: HTMLElement): void {
  */
 function handleCloseClick(this: HTMLElement, e: Event): void {
   e.stopPropagation();
-  
+
   const card = this.closest('.financial-card') as HTMLElement;
   const budget = card.dataset.budget!;
   const sum = card.dataset.sum!;
   const incomes = card.dataset.incomes!;
   const expenses = card.dataset.expenses!;
   const orcamento = card.dataset.orcamento!;
-  
+
   // Volta para o estado inativo
   card.className = 'financial-card financial-card--inactive';
   card.style.cursor = 'pointer';
@@ -222,25 +211,25 @@ function handleCloseClick(this: HTMLElement, e: Event): void {
   card.dataset.incomes = incomes;
   card.dataset.expenses = expenses;
   card.dataset.orcamento = orcamento;
-  
+
   // Remove todos os event listeners antigos antes de adicionar o novo
   const newCard = card.cloneNode(true) as HTMLElement;
   card.replaceWith(newCard);
-  
+
   // Recupera a referência após o cloneNode e reativa listener
   const reactivatedCard = document.querySelector(
     `.financial-card--inactive[data-budget="${budget}"]`
   ) as HTMLElement;
-  
+
   if (reactivatedCard) {
     reactivatedCard.style.cursor = 'pointer';
     reactivatedCard.addEventListener('click', cardClickHandler);
   }
-  
+
   // Notifica remoção do orçamento para atualizar detalhes
   const orc = Number(orcamento);
-  document.dispatchEvent(new CustomEvent('detail:show', { 
-    detail: { orcamento: orc } 
+  document.dispatchEvent(new CustomEvent('detail:show', {
+    detail: { orcamento: orc }
   }));
 }
 
@@ -250,7 +239,7 @@ function handleCloseClick(this: HTMLElement, e: Event): void {
 export function inicializarEventos(): void {
   // Toggle por delegação (funciona para cards estáticos e dinâmicos)
   const summaryCards = document.getElementById('summaryCards');
-  
+
   summaryCards?.addEventListener('click', (e) => {
     const target = e.target as HTMLElement;
     const btn = target.closest('.financial-card__toggle');
@@ -281,7 +270,7 @@ export function mostrarCardCarregamento(): void {
 export function mostrarErro(mensagem: string = 'Verifique sua conexão e tente novamente'): void {
   const container = document.getElementById('summaryCards');
   if (!container) return;
-  
+
   container.className = 'financial-cards';
   container.innerHTML = `
     <div class="financial-card financial-card--saldo">

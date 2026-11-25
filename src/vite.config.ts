@@ -26,6 +26,8 @@ const POCKETBASE_CUSTOM_ENDPOINTS = [
   '/edit-sheet-entry',
   '/delete-sheet-entry',
   '/get-sheet-entries',
+  '/get-dashboard-data',
+  '/get-dashboard-details',
   // Relatórios
   '/get-financial-summary',
   '/get-available-months',

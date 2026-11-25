@@ -1,13 +1,12 @@
 /**
  * Componente de Lista de Lançamentos
  * Renderiza a visualização de lançamentos em formato tabela (desktop) e lista (mobile)
+ *
+ * Os rótulos de data/orçamento já vêm prontos do backend (dataLabel,
+ * orcamentoLabel) — aqui não existe nenhuma conversão.
  */
 
 import type { SheetEntry } from '../types';
-import {
-  excelSerialToDateTimeLabel,
-  excelSerialToMonthLabel
-} from '../utils/date-helpers';
 
 /**
  * Formata valor monetário
@@ -20,31 +19,17 @@ function formatCurrency(value: number): string {
 }
 
 /**
- * Wrapper para exibição de data com hora
+ * Data com hora (já vem pronta do backend)
  */
-function formatDateTime(date: string | number | undefined): string {
-  if (!date) return '-';
-  
-  if (typeof date === 'number') {
-    return excelSerialToDateTimeLabel(date);
-  }
-  
-  // Se for string em português, retorna como está (já formatado pelo backend)
-  return String(date);
+function formatDateTime(entry: SheetEntry): string {
+  return entry.dataLabel || '-';
 }
 
 /**
- * Wrapper para exibição de apenas data (orçamento)
+ * Orçamento (já vem pronto do backend)
  */
-function formatDateSimple(date: string | number | undefined): string {
-  if (!date) return '-';
-  
-  if (typeof date === 'number') {
-    return excelSerialToMonthLabel(date);
-  }
-  
-  // Se for string em português, retorna como está (já formatado pelo backend)
-  return String(date);
+function formatDateSimple(entry: SheetEntry): string {
+  return entry.orcamentoLabel || '-';
 }
 
 /**
@@ -86,14 +71,14 @@ export function renderTable(entries: SheetEntry[]): string {
     return `
       <div class="lancamentos__table-row">
         <div class="lancamentos__table-cell">${entry.rowIndex || '-'}</div>
-        <div class="lancamentos__table-cell">${formatDateTime(entry.data)}</div>
+        <div class="lancamentos__table-cell">${formatDateTime(entry)}</div>
         <div class="lancamentos__table-cell">${entry.conta || '-'}</div>
         <div class="lancamentos__table-cell lancamentos__table-cell--number ${valorClass}">
           ${formatCurrency(entry.valor)}
         </div>
         <div class="lancamentos__table-cell">${entry.descricao || '-'}</div>
         <div class="lancamentos__table-cell">${entry.categoria || '-'}</div>
-        <div class="lancamentos__table-cell">${formatDateSimple(entry.orcamento)}</div>
+        <div class="lancamentos__table-cell">${formatDateSimple(entry)}</div>
         <div class="lancamentos__table-cell lancamentos__table-cell--actions">
           ${renderActions(entry)}
         </div>
@@ -149,7 +134,7 @@ export function renderList(entries: SheetEntry[]): string {
             </div>
             <div class="lancamentos__item-row">
               <span class="lancamentos__item-label">Data:</span>
-              <span class="lancamentos__item-value">${formatDateTime(entry.data)}</span>
+              <span class="lancamentos__item-value">${formatDateTime(entry)}</span>
             </div>
             <div class="lancamentos__item-row">
               <span class="lancamentos__item-label">Conta:</span>
@@ -171,7 +156,7 @@ export function renderList(entries: SheetEntry[]): string {
             </div>
             <div class="lancamentos__item-row">
               <span class="lancamentos__item-label">Orçamento:</span>
-              <span class="lancamentos__item-value">${formatDateSimple(entry.orcamento)}</span>
+              <span class="lancamentos__item-value">${formatDateSimple(entry)}</span>
             </div>
           </div>
         </div>

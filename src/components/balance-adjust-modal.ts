@@ -17,7 +17,6 @@
 import type { OnEntryAddedCallback, SheetEntry } from '../types';
 import lancamentosService from '../services/lancamentos';
 import { SheetsService } from '../services/sheets';
-import { excelSerialToDate } from '../utils/date-helpers';
 import { formatarMoeda } from './financial-cards';
 
 // Singleton instance
@@ -310,7 +309,7 @@ class BalanceAdjustModal {
    */
   private async loadData(): Promise<void> {
     try {
-      const response = await lancamentosService.fetchEntries(0, false);
+      const response = await lancamentosService.fetchEntries({ limit: 0 });
       this.entries = response?.entries ?? [];
       this.buildSaldoPorConta();
     } catch (error) {
@@ -522,7 +521,7 @@ class BalanceAdjustModal {
         valor: data.delta,
         descricao: this.buildDescription(data.novoSaldo),
         categoria: CATEGORIA_AJUSTE,
-        orcamento: this.formatDate(this.resolveBudgetDate())
+        orcamento: this.resolveBudgetDate()
       };
 
       console.log('[BalanceAdjustModal] 📤 Enviando:', payload);
@@ -560,62 +559,37 @@ class BalanceAdjustModal {
    * Resolve a data-chave (orçamento) do lançamento.
    * Usa a data-chave já existente no mês corrente; se não houver, usa o
    * primeiro dia do mês corrente.
+   *
+   * A data-chave chega pronta do backend em `orcamentoInput` ("YYYY-MM-DD"),
+   * então aqui é só comparação de string (sem matemática de data).
    */
-  private resolveBudgetDate(): Date {
+  private resolveBudgetDate(): string {
     const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-    const candidates: Date[] = [];
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-    this.entries.forEach(entry => {
-      const raw = entry.orcamento;
-      let date: Date | null = null;
-
-      if (typeof raw === 'number') {
-        date = excelSerialToDate(raw);
-      } else if (typeof raw === 'string' && raw.trim()) {
-        const parts = raw.trim().split('/');
-        if (parts.length === 3) {
-          const [day, month, year] = parts.map(n => parseInt(n, 10));
-          if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
-            date = new Date(year, month - 1, day);
-          }
-        }
-      }
-
-      if (date && date.getFullYear() === currentYear && date.getMonth() === currentMonth) {
-        candidates.push(date);
-      }
-    });
+    const candidates = this.entries
+      .map(entry => entry.orcamentoInput)
+      .filter((value): value is string => !!value)
+      .filter(value => value.slice(0, 7) === currentMonth)
+      .sort();
 
     if (candidates.length > 0) {
-      candidates.sort((a, b) => a.getTime() - b.getTime());
       return candidates[0];
     }
 
-    return new Date(currentYear, currentMonth, 1);
+    return `${currentMonth}-01`;
   }
 
   /**
-   * Formata Date para "DD/MM/YYYY HH:mm"
+   * Data/hora atual no formato do formulário ("YYYY-MM-DDTHH:MM")
    */
   private formatDateTime(date: Date): string {
-    const dd = String(date.getDate()).padStart(2, '0');
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
-    const yyyy = date.getFullYear();
-    const hh = String(date.getHours()).padStart(2, '0');
-    const mi = String(date.getMinutes()).padStart(2, '0');
-    return `${dd}/${mm}/${yyyy} ${hh}:${mi}`;
-  }
-
-  /**
-   * Formata Date para "DD/MM/YYYY"
-   */
-  private formatDate(date: Date): string {
-    const dd = String(date.getDate()).padStart(2, '0');
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
-    const yyyy = date.getFullYear();
-    return `${dd}/${mm}/${yyyy}`;
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
   }
 
   /**

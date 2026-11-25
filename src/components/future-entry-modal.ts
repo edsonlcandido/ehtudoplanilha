@@ -332,7 +332,7 @@ class FutureEntryModal {
     
     try {
       // Busca entries usando LancamentosService (com cache)
-      const response = await lancamentosService.fetchEntries(0, false);
+      const response = await lancamentosService.fetchEntries({ limit: 0 });
       this.entries = response?.entries ?? [];
       
       // Extrai descrições únicas
@@ -364,14 +364,6 @@ class FutureEntryModal {
     const signBtn = document.getElementById('futureExpenseSignBtn');
     const isExpense = signBtn?.textContent?.trim() === '−';
     this.setSignState(!isExpense);
-  }
-
-  /**
-   * Formata date "2025-10-31" para "31/10/2025"
-   */
-  private formatDate(dateStr: string): string {
-    const [year, month, day] = dateStr.split('-');
-    return `${day}/${month}/${year}`;
   }
 
   /**
@@ -424,13 +416,13 @@ class FutureEntryModal {
         return;
       }
       
-      const orcamentoFormatado = this.formatDate(orcamentoStr);
-      
+      // O payload vai no formato do formulário ("YYYY-MM-DD"): a normalização
+      // pra "DD/MM/YYYY" é feita no BACKEND.
       const data: FutureEntryFormData = {
         valor: valor,
         descricao: descricao,
         categoria: categoria,
-        orcamento: orcamentoFormatado,
+        orcamento: orcamentoStr,
       };
 
       // Aplica o sinal ao valor

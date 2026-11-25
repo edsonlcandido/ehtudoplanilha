@@ -268,7 +268,7 @@ class TransferEntryModal {
     
     try {
       // Busca entries usando LancamentosService (com cache)
-      const response = await lancamentosService.fetchEntries(0, false);
+      const response = await lancamentosService.fetchEntries({ limit: 0 });
       this.entries = response?.entries ?? [];
       
       // Extrai contas únicas
@@ -286,23 +286,6 @@ class TransferEntryModal {
   }
 
   /**
-   * Formata datetime-local "2025-10-31T14:41" para "31/10/2025 14:41"
-   */
-  private formatDateTimeLocal(datetimeStr: string): string {
-    const [datePart, timePart] = datetimeStr.split('T');
-    const [year, month, day] = datePart.split('-');
-    return `${day}/${month}/${year} ${timePart}`;
-  }
-
-  /**
-   * Formata date "2025-10-31" para "31/10/2025"
-   */
-  private formatDate(dateStr: string): string {
-    const [year, month, day] = dateStr.split('-');
-    return `${day}/${month}/${year}`;
-  }
-
-  /**
    * Manipula o submit do formulário
    */
   private async handleSubmit(e: Event): Promise<void> {
@@ -316,15 +299,14 @@ class TransferEntryModal {
     const orcamentoStr = formData.get('orcamento') as string;
     const valorStr = formData.get('valor') as string;
     
-    const dataFormatada = this.formatDateTimeLocal(dataStr);
-    const orcamentoFormatado = this.formatDate(orcamentoStr);
-    
+    // O payload vai no formato do formulário: a normalização pra "DD/MM/YYYY"
+    // é feita no BACKEND.
     const data: TransferEntryFormData = {
-      data: dataFormatada,
+      data: dataStr,
       valor: parseFloat(valorStr),
       contaSaida: formData.get('contaSaida') as string,
       contaEntrada: formData.get('contaEntrada') as string,
-      orcamento: orcamentoFormatado,
+      orcamento: orcamentoStr,
     };
 
     await this.submitTransfer(data);

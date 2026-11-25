@@ -298,13 +298,106 @@ routerAdd('POST', '/append-entry', (c) => {
 | POST | `/append-entry` | `append-entry.pb.js` | Adiciona lançamento |
 | POST | `/edit-sheet-entry` | `edit-sheet-entry.pb.js` | Edita lançamento |
 | POST | `/delete-sheet-entry` | `delete-sheet-entry.pb.js` | Deleta lançamento |
-| GET | `/get-sheet-entries` | `get-sheet-entries.pb.js` | Lista lançamentos (paginado) |
+| GET | `/get-sheet-entries` | `get-sheet-entries.pb.js` | Lançamentos **já filtrados/ordenados/normalizados** (ver §6.1) |
+| GET | `/get-dashboard-data` | `get-dashboard-data.pb.js` | Agregados do dashboard (cards, contas, orçamentos em destaque) |
+| GET | `/get-dashboard-details` | `get-dashboard-details.pb.js` | Detalhes (top 10 categorias, gráfico por tipo) dos orçamentos selecionados |
 | GET | `/get-sheet-categories` | `get-sheet-categories.pb.js` | Lista categorias (legado) |
 | GET | `/get-sheet-categories-complete` | `get-sheet-categories-complete.pb.js` | Categorias com tipo + orcamento |
 | GET | `/get-available-months` | `get-available-months.pb.js` | Meses disponíveis (pelos lançamentos) |
 | GET | `/get-financial-summary` | `get-financial-summary.pb.js` | Resumo financeiro agregado |
 | POST | `/post-categories` | `post-categories.pb.js` | Sobrescreve aba Categorias |
 | GET | `/pwa/{path...}` | `pwa-spa-fallback.pb.js` | SPA fallback pro PWA |
+
+---
+
+## 6.1. Camada de domínio (onde mora a regra de negócio)
+
+> **Desde 2026-11-25 toda regra de negócio de lançamentos foi pro backend.**
+> O frontend (`src/`) só monta o estado da tela e renderiza a resposta.
+
+### Arquivos
+
+| Arquivo | Papel |
+|---|---|
+| `pb_hooks/_lancamentos-domain.js` | **FONTE ÚNICA** das regras: conversão de data, normalização, classificação, filtros, ordenação, agregações. É JS puro (CommonJS) — sem `$app`/`$http` — então roda/testa fora do PB. |
+| `pb_hooks/_google-sheets-helper.js` | Leitura da planilha + cache curto (30s) em `$app.store()`. |
+| `tests/lancamentos-domain.test.mjs` | Teste diferencial: as regras novas precisam bater com as do frontend pré-migração (cópia literal no próprio arquivo). `node tests/lancamentos-domain.test.mjs` |
+
+### DTO do lançamento (o que o backend devolve)
+
+```jsonc
+{
+  "rowIndex": 2,
+  "data": 45961.6027777778,        // CRU (compat com PWA) — não usar pra exibir
+  "dataSerial": 45961.6027777778,
+  "dataLabel": "31/10/2025 14:28",  // pronto pra tela
+  "dataInput": "2025-10-31T14:28",  // pronto pro <input datetime-local>
+  "conta": "Carteira",
+  "valor": -150.5,
+  "descricao": "Mercado",
+  "categoria": "Alimentação",
+  "orcamento": 45961,              // CRU
+  "orcamentoSerial": 45961,
+  "orcamentoLabel": "31/10/2025",
+  "orcamentoKey": "10/2025",       // chave do mês (usada no filtro)
+  "orcamentoLabelMes": "Outubro/2025",
+  "orcamentoInput": "2025-10-31",  // pronto pro <input date>
+  "obs": "compras",
+  "isFuturo": false,               // sem data
+  "isTransferencia": false,        // categoria "Transferência"
+  "isReceita": false,
+  "isDespesa": true
+}
+```
+
+### Regras que hoje moram no backend (não replique no frontend!)
+
+- **Consolidado x futuro**: sem data → `isFuturo: true`
+- **Transferência**: categoria "Transferência" → entra **só no saldo**, não conta
+  como receita/despesa nem no `count` do resumo
+- **Resumo** (`resumo`): ignora futuros e lançamentos **sem orçamento**
+- **Intervalo do dashboard**: `hoje-5 .. hoje+35`, calculado a partir do
+  `hoje` que o **cliente** manda (o fuso do servidor não pode decidir isso)
+- **Gráfico por tipo**: ignora tipos `TRANSFERÊNCIA`, `TRANSFERENCIA`,
+  `SALDO`, `RENDA`, `RECEITA`; JOIN com a aba Categorias é case-insensitive
+  (fallback "Sem Tipo")
+- **Orçamento sem data-chave**: não gera orçamento "31/12/1899" (bug antigo)
+
+### Endpoints de leitura
+
+**`GET /get-sheet-entries`** — query params opcionais:
+`limit` (100 default, 0 = todas), `offset`, `q`, `conta`, `categoria`,
+`orcamento` (chave "MM/YYYY"), `dataInicio`, `dataFim` (`YYYY-MM-DD`),
+`tipo` (`todos|consolidado|futuro`), `sort` (`original|date|budget_date`),
+`fresh=1` (ignora o cache do servidor).
+
+Resposta: `{ success, entries[], total, count, limit, offset, meta, resumo, filtros }`
+- `meta` = opções dos filtros (`contas`, `categorias`, `descricoes`, `orcamentos`)
+  calculadas sobre **todos** os lançamentos (não só os filtrados)
+- `resumo` = `{ receitas, despesas, saldo, count }` do conjunto filtrado
+
+**`GET /get-dashboard-data?hoje=YYYY-MM-DD`** — `{ budgets[], budgetsInInterval[],
+accounts[], meta, resumo, intervalo }`
+
+**`GET /get-dashboard-details?orcamentos=45961,45963`** — `{ topCategorias[],
+contas[], totalGeral, grafico[], graficoTotal, entradasPorCategoria{} }`
+
+### Cache
+
+- **Servidor**: `$app.store()` (in-memory do processo) com TTL de 30s nas
+  linhas de lançamentos e 5min nas categorias. `fresh=1` ignora.
+  ⚠️ **Não use variável top-level nos hooks**: no PB 0.31 cada handler roda em
+  contexto isolado e `let cache = {}` no topo do arquivo é resetado a cada
+  requisição (dá `ReferenceError`). Use `$app.store()`.
+- **Cliente**: `localStorage` via `CacheService`, com a query como sufixo da
+  chave (`...:sheet-entries:conta=Carteira`). `invalidateCache()` limpa por
+  prefixo (`CacheService.clearPrefix`).
+
+### Escrita
+
+`/append-entry` e `/edit-sheet-entry` aceitam a data **crua do formulário**
+(`"2025-10-31T14:41"`, `"2025-10-31"`, `"31/10/2025 14:41"` ou serial numérico)
+e normalizam no backend com `normalizeWriteDate()`.
 
 ---
 
@@ -354,21 +447,41 @@ routerAdd('POST', '/append-entry', (c) => {
 ### Excel Serial (datas)
 
 Datas no Sheets são armazenadas como **Excel Epoch Serial** (dias desde 30/12/1899).
-Helpers em `src/utils/date-helpers.ts` (re-exportados por `src/types/index.ts`):
 
-```typescript
-toExcelSerial(date, dataHora=true)         // JS Date → serial
-toExcelSerialDia(date)                     // usa meio-dia p/ evitar timezone
-excelSerialToDate(serial, dataHora=false)  // serial → JS Date
-excelSerialToMonthLabel(serial)            // serial → "MM/YYYY"
-dateInputToDate('YYYY-MM-DD')              // input HTML5 → Date
-dateTimeLocalToDate('YYYY-MM-DDTHH:MM')    // input HTML5 → Date
+> ⚠️ **DESDE 2026-11-25 a conversão de data é responsabilidade do BACKEND.**
+> Os helpers `src/utils/date-helpers.ts`, `src/utils/sheet-entries.ts` e
+> `src/utils/grouping.ts` foram **removidos** — todas as regras que moravam
+> neles (conversão de serial, classificação consolidado/futuro, transferências,
+> agregações, filtros e ordenação) foram movidas para
+> `pb_hooks/_lancamentos-domain.js`. Vide §6.1.
+>
+> O frontend **não converte mais nada**: consome os campos prontos do DTO
+> (`dataLabel`, `dataInput`, `orcamentoLabel`, `orcamentoKey`,
+> `orcamentoInput`, `isFuturo`, `isTransferencia`...).
+
+Helpers (agora no backend, `pb_hooks/_lancamentos-domain.js`):
+
+```javascript
+excelSerialToCivil(serial)          // serial → {y,m,d,hh,mi,ss}
+civilToExcelSerial(civil)           // → serial
+civilToExcelSerialDia(civil)        // → serial (só dia)
+formatDateLabel(civil)              // "DD/MM/YYYY"
+formatDateTimeLabel(civil)          // "DD/MM/YYYY HH:MM"
+formatDateInput(civil)              // "YYYY-MM-DD"
+formatDateTimeInput(civil)          // "YYYY-MM-DDTHH:MM"
+civilToMonthKey(civil)              // "MM/YYYY"
+monthKeyToLabel("10/2025")          // "Outubro/2025"
+parseDateValue(raw)                 // serial | "DD/MM/YYYY" | "YYYY-MM-DD" → civil
+normalizeWriteDate(raw, comHora)    // payload do form → texto pro Sheets
 ```
 
-**Regra de formatação** (do `arquitetura.md`):
+**Regra de formatação** (do `arquitetura.md`, atualizada):
 - Planilha armazena como serial (Sheet faz auto-conversão com `USER_ENTERED`)
-- Backend recebe/devolve serial **sem converter**
-- Frontend converte via helpers só pra exibir e pra montar payload de POST
+- Backend **converte** e devolve o DTO pronto (label + input + flags)
+- Frontend só **exibe** os campos prontos
+- Na escrita, o frontend manda o valor cru do formulário
+  (`"2025-10-31T14:41"`, `"2025-10-31"`) e o backend normaliza pra
+  `DD/MM/YYYY HH:mm` / `DD/MM/YYYY` antes de gravar
 - Formato brasileiro `DD/MM/YYYY` é a "interface" com o Sheets
 
 ### Estrutura da planilha (criada no primeiro acesso)
@@ -423,6 +536,11 @@ salvo, teríamos ambiguidade (duas planilhas com mesmo nome, etc).
 
 ## 9. Frontend `src/` — convenções
 
+> ⚠️ **O frontend do dashboard NÃO tem regra de negócio.** Filtro, ordenação,
+> agregação, conversão de data e classificação são do backend (§6.1).
+> Se você precisa de um campo novo na tela, **adicione no DTO do backend** —
+> não converta nada no TS.
+
 ### Estrutura de arquivos
 - Cada página HTML tem um `<script type="module" src="...">` apontando pro TS
   correspondente. Ex: `dashboard/lancamentos.html` → `dashboard/lancamentos.ts`
@@ -430,6 +548,9 @@ salvo, teríamos ambiguidade (duas planilhas com mesmo nome, etc).
   vide `entry-modal.ts`, `lancamentos-list.ts`)
 - Lógica de página fica em `src/dashboard/*.ts` (controller)
 - Compartilhado vai pra `src/services/` ou `src/components/`
+- **`src/utils/` foi removido** (as regras foram pro backend). Se precisar
+  criar algo lá, pergunte antes — provavelmente é regra de negócio e o lugar
+  certo é `pb_hooks/_lancamentos-domain.js`.
 
 ### Padrão de serviço
 ```typescript
@@ -451,17 +572,27 @@ export class SheetsService {
 }
 ```
 
+### Serviço de lançamentos (`src/services/lancamentos.ts`)
+- `fetchEntries(query)` — manda os filtros pro backend e devolve
+  `{ entries, meta, resumo, total, ... }` já prontos
+- `fetchDashboardData(hoje, fresh)` / `fetchDashboardDetails(orcamentos, fresh)`
+- `invalidateCache()` — limpa por prefixo (as chaves carregam a query)
+
 ### Cache (localStorage)
 
 `src/services/cache.ts`:
 - **TTL padrão**: 5 minutos (300.000ms)
 - **Chaves** (`CACHE_KEYS`):
-  - `ehtudoplanilha:sheet-entries`
+  - `ehtudoplanilha:sheet-entries` (+ sufixo com a query)
   - `ehtudoplanilha:sheet-categories`
   - `ehtudoplanilha:sheet-categories-complete`
+  - `ehtudoplanilha:dashboard-data`
+  - `ehtudoplanilha:dashboard-details`
 - **Invalidação automática**: após `append`, `edit`, `delete` — sempre limpa
-  `sheet-entries` + `sheet-categories`
+  `sheet-entries` + `sheet-categories` + os caches do dashboard
 - **Logout**: `CacheService.clearAll()` antes de limpar auth
+- `CacheService.clearPrefix(prefix)` limpa todas as chaves com um prefixo
+  (necessário porque a chave de lançamentos inclui os filtros)
 
 ### Auth
 - **PocketBase SDK** (cliente `pocketbase` v0.26+)
@@ -615,6 +746,25 @@ Frontend faz **DOIS POSTs** sequenciais em `/append-entry`:
 6. **Não usar `import`** — só `require()`
 7. Se for mexer com Sheets, usar `gsheets.callWithRefresh()` e constante
    `SHEET_NAME_DEFAULT`
+8. Se a endpoint devolver lançamentos, **reusar o DTO** do
+   `pb_hooks/_lancamentos-domain.js` (`normalizeRows` + `serializeEntry`) —
+   nunca montar o payload na mão
+9. **Reinicie o PocketBase** depois de mexer em hooks (PB 0.31 não recarrega)
+
+### Adicionar/mudar uma regra de negócio de lançamentos
+1. Editar `pb_hooks/_lancamentos-domain.js` (é a fonte única)
+2. Rodar `node tests/lancamentos-domain.test.mjs` — o teste compara com as
+   regras do frontend pré-migração (se a mudança for intencional, atualizar
+   as duas pontas e o comentário do teste)
+3. Se a regra affecta o DTO, adicionar o campo em `src/types/index.ts`
+4. **Nunca** reintroduzir a regra no `src/` (o frontend só renderiza)
+
+### Adicionar campo novo no DTO (ex.: novo campo na planilha)
+1. Adicionar a coluna no DTO em `pb_hooks/_lancamentos-domain.js`
+   (`normalizeRows`)
+2. Propagar no `serializeEntry` (é o que vai pro JSON)
+3. Tipar em `src/types/index.ts`
+4. Renderizar no componente (`src/components/*.ts`)
 
 ### Adicionar página nova no dashboard (src/)
 1. Criar `src/<pagina>.html` + `src/<pagina>.ts`
@@ -655,13 +805,15 @@ Frontend faz **DOIS POSTs** sequenciais em `/append-entry`:
 | Tema | Detalhe |
 |---|---|
 | **PB JSVM handlers isolados** | Variáveis top-level num `.pb.js` NÃO são visíveis em outro. Use `require()` dentro do handler. |
+| **Estado entre requisições no PB** | Top-level **de dentro do handler** também não sobrevive: `let cache = {}` no topo do `.pb.js` dá `ReferenceError: cache is not defined` na 2ª request (PB 0.31 isola o escopo). Use `$app.store()` (in-memory do processo, não sobrevive restart). |
+| **Hook não faz hot-reload** | PB 0.31: alterar um `.pb.js` só loga "File ... changed, please restart the app manually". **Reinicie o processo** pra carregar a mudança. |
 | **Extensão de helper** | Helper compartilhado **deve ser `.js` puro** (não `.pb.js`). Senão PB rejeita com `ReferenceError: module is not defined`. |
 | **Path wildcard em `routerAdd`** | Usar `{path...}` (Go ServeMux), NÃO `*` (path-to-regexp). |
 | **`/pwa/login` no SW** | Deve estar no `denylist` do NavigationRoute senão OAuth callback perde os query params. |
 | **Abas Sheets hardcoded** | `Lançamentos` e `Categorias` são contrato. NÃO ler do `google_infos.sheet_name`. |
 | **`pb_public/` é output** | Não editar. Próximo build apaga. |
 | **`pwa/pwa/` commitado** | Output do build do PWA. Commitado pra rodar dev sem buildar, mas em prod o Dockerfile regenera. |
-| **Excel Serial** | Backend NÃO converte (devolve serial). Frontend converte via helpers pra exibir. |
+| **Excel Serial** | Desde 2026-11-25 o **backend converte e devolve o DTO pronto** (`dataLabel`, `dataInput`, `orcamentoKey`...). Frontend não converte mais nada (§6.1). |
 | **`USER_ENTERED` no Sheets** | Permite enviar string `"31/10/2025 14:41"` e Sheets converte automaticamente pra serial. |
 | **OAuth login vs OAuth Sheets** | Dois fluxos distintos. Login usa PB nativo + redirect custom. Sheets/Drive usa hook custom `/google-oauth-callback`. |
 | **CLIENT_SECRET** | Só no PB (env var ou Admin UI). Nunca no frontend. |
@@ -686,6 +838,7 @@ Prod: relativo → mesmo domínio. **POCKETBASE_URL sempre absoluto**
 | `CHANGELOG.md` | raiz | Changelog do PocketBase (parece ser o upstream). Não é changelog do projeto. |
 | `LICENSE.md` | raiz | MIT |
 | `pb_hooks/README.md` | `pb_hooks/` | Documenta endpoints Google OAuth |
+| `tests/lancamentos-domain.test.mjs` | `tests/` | Teste diferencial das regras de lançamentos (backend vs frontend antigo). Rodar: `node tests/lancamentos-domain.test.mjs` |
 | `pwa/OAUTH_CONFIG.md` | `pwa/` | **Setup OAuth login** do PWA — bem completo |
 | `pwa/ref/20251122 OAUTH_SETUP.md` | `pwa/ref/` | Idem, mais antigo |
 | `pwa/ref/20251122 OAUTH_IMPLEMENTATION_SUMMARY.md` | `pwa/ref/` | Resumo da implementação |

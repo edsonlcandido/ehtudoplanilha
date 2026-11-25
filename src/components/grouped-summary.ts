@@ -10,7 +10,7 @@
  * dos lançamentos que passaram pelos filtros.
  */
 
-import type { GroupedSummary } from '../types';
+import type { ResumoTotais } from '../types';
 
 const currencyFormatter = new Intl.NumberFormat('pt-BR', {
   style: 'currency',
@@ -91,14 +91,16 @@ export interface ActiveFilters {
  *
  * Mostra apenas o Total (saldo) e a quantidade de lançamentos,
  * em layout vertical (label, valor, contagem).
+ *
+ * Os totais (receitas/despesas/saldo/contagem) são calculados no BACKEND.
  */
-export function renderGroupedSummary(summary: GroupedSummary, filters: ActiveFilters): string {
-  if (!summary || summary.totals.count === 0) {
+export function renderGroupedSummary(resumo: ResumoTotais, filters: ActiveFilters): string {
+  if (!resumo || resumo.count === 0) {
     return '';
   }
 
   const filtersHtml = renderActiveFilters(filters);
-  const countLabel = summary.totals.count === 1 ? 'lançamento' : 'lançamentos';
+  const countLabel = resumo.count === 1 ? 'lançamento' : 'lançamentos';
 
   return `
     <section class="grouped-summary" aria-label="Resumo dos filtros aplicados">
@@ -109,8 +111,8 @@ export function renderGroupedSummary(summary: GroupedSummary, filters: ActiveFil
       <div class="grouped-summary__totals">
         <div class="grouped-summary__total">
           <span class="grouped-summary__total-label">Total</span>
-          <span class="grouped-summary__total-value ${saldoClass(summary.totals.saldo)}">${formatCurrency(summary.totals.saldo)}</span>
-          <span class="grouped-summary__total-count">${summary.totals.count} ${countLabel}</span>
+          <span class="grouped-summary__total-value ${saldoClass(resumo.saldo)}">${formatCurrency(resumo.saldo)}</span>
+          <span class="grouped-summary__total-count">${resumo.count} ${countLabel}</span>
         </div>
       </div>
     </section>

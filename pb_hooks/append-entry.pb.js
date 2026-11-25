@@ -14,6 +14,7 @@
 routerAdd('POST', '/append-entry', (c) => {
   try {
     const gsheets = require(`${__hooks}/_google-sheets-helper.js`);
+    const domain = require(`${__hooks}/_lancamentos-domain.js`);
 
     const auth = c.auth;
     if (!auth || !auth.id) {
@@ -33,13 +34,16 @@ routerAdd('POST', '/append-entry', (c) => {
     }
 
     // Ordem: data, conta, valor, descrição, categoria, orçamento, observação
+    // A data e o orçamento chegam no formato do formulário (ex: "2025-10-31T14:41"
+    // ou "2025-10-31"); a normalização pra "DD/MM/YYYY" é feita AQUI (backend),
+    // não no frontend.
     const newRow = [
-      data.data || '',
+      domain.normalizeWriteDate(data.data, true),
       data.conta || '',
       data.valor,
       data.descricao,
       data.categoria || '',
-      data.orcamento || '',
+      domain.normalizeWriteDate(data.orcamento, false),
       data.obs || ''
     ];
 

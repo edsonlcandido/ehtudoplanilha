@@ -72,7 +72,9 @@ export const API_ENDPOINTS = {
   deleteSheetEntry: '/delete-sheet-entry',            // DELETE - Deleta lançamento
   
   // Consultas (get-sheet-entries.pb.js)
-  getSheetEntries: '/get-sheet-entries',              // GET - Pega lançamentos da planilha
+  getSheetEntries: '/get-sheet-entries',              // GET - Lançamentos (filtros/orden/paginação no backend)
+  getDashboardData: '/get-dashboard-data',            // GET - Agregados do dashboard
+  getDashboardDetails: '/get-dashboard-details',      // GET - Detalhes (top categorias/gráfico) por orçamento
   
   // Relatórios (get-financial-summary.pb.js, get-available-months.pb.js, get-sheet-categories.pb.js)
   getFinancialSummary: '/get-financial-summary',      // GET - Resumo financeiro
