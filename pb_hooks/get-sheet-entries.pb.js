@@ -140,13 +140,11 @@ routerAdd('GET', '/get-sheet-entries', (c) => {
     const sorted = domain.sortEntries(filtered, filtros.sort);
 
     // O resumo é a última camada da pilha de filtros: soma exatamente o que
-    // passou pelos filtros. Como o conjunto já vem filtrado pelo `tipo`
-    // (checkbox "consolidados"/"futuros"), basta não descartar os futuros —
-    // assim, se "mostrar futuros" estiver marcado eles entram na soma, e se
-    // só "futuros" estiver marcado a soma é só dos futuros.
-    const resumo = domain.summarize(filtered, {
-      incluirFuturos: filtros.tipo === 'todos' || filtros.tipo === 'futuro'
-    });
+    // passou pelos filtros. O conjunto já vem filtrado pelo `tipo` (checkbox
+    // "consolidados"/"futuros"), então se "mostrar futuros" estiver marcado
+    // eles entram na soma, e se só "futuros" estiver marcado a soma é só dos
+    // futuros.
+    const resumo = domain.summarize(filtered);
 
     // Filtros ativos com o texto pronto pra tela (pills de "Filtros aplicados").
     // O frontend não converte data nem decide o que é "ativo".

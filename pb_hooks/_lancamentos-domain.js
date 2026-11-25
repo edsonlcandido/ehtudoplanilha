@@ -653,34 +653,29 @@ function aggregateByCategory(entries) {
 }
 
 /**
- * Resumo (receitas/despesas/saldo/contagem).
+ * Resumo (receitas/despesas/saldo/contagem) de um conjunto de lançamentos.
  *
- * Regras:
- *  - lançamento SEM data (futuro) só entra se `incluirFuturos` for true;
+ * A REGRA é simples: soma o que foi entregue. Quem decide o que entra no
+ * conjunto é a pilha de filtros (`applyFilters`), inclusive a camada de tipo
+ * (checkbox "consolidados"/"futuros"):
+ *   - página de Lançamentos: o conjunto já vem filtrado pelo `tipo`, então
+ *     se "mostrar futuros" estiver marcado os futuros entram na soma, e se
+ *     só "futuros" estiver marcado a soma é só dos futuros;
+ *   - dashboard: não tem filtro de tipo, então soma tudo (inclui futuros),
+ *     igual aos cards por orçamento e ao saldo por conta.
+ *
+ * Exceções (iguais às do agrupamento orçamento→conta do frontend antigo):
  *  - lançamento SEM data-chave (orçamento) NÃO entra;
  *  - transferências entram só no saldo (não contam como receita/despesa).
  *
- * As duas últimas regras reproduzem o agrupamento orçamento→conta do
- * frontend antigo.
- *
  * @param {Array<object>} entries conjunto (já filtrado, quando aplicável)
- * @param {{incluirFuturos?:boolean}} [opts]
- *        incluirFuturos=true soma também os lançamentos futuros.
- *        É o que a página de Lançamentos usa: lá o conjunto já vem
- *        filtrado pela camada de tipo (checkbox "consolidados"/"futuros"),
- *        então respeitar essa camada é só não descartar os futuros.
- *        Default false = total só dos EXECUTADOS (usado no dashboard).
  */
-function summarize(entries, opts) {
-  const incluirFuturos = !!(opts && opts.incluirFuturos);
-
+function summarize(entries) {
   let receitas = 0;
   let despesas = 0;
   let count = 0;
 
   (entries || []).forEach(function (e) {
-    // futuro (sem data): só entra se a camada de tipo permitir
-    if (e.isFuturo && !incluirFuturos) return;
     // sem data-chave não entra no resumo
     if (e.orcamentoSerial === null || e.orcamentoSerial === undefined) return;
 

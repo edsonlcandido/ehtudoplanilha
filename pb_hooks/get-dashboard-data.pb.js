@@ -97,6 +97,9 @@ routerAdd('GET', '/get-dashboard-data', (c) => {
       budgetsInInterval: budgetsInInterval,
       accounts: accounts,
       meta: meta,
+      // O dashboard não tem filtro de tipo: o total soma tudo, inclusive os
+      // lançamentos futuros — igual aos cards por orçamento e ao saldo por
+      // conta (mesma base).
       resumo: domain.summarize(entries),
       totalLancamentos: entries.length
     });

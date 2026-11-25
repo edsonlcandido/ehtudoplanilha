@@ -487,8 +487,11 @@ check('aggregateByAccount bate com o legado', () => {
 });
 
 check('resumo (summarize) bate com os totais do agrupamento legado', () => {
+  // O legado agrupava orçamento→conta e pulava os lançamentos SEM DATA
+  // (futuros). A regra equivalente agora é a camada de tipo "consolidado"
+  // (que é o estado padrão da página de Lançamentos).
   const legacy = legacyGroupEntriesByBudgetAndAccount(LEGACY_ENTRIES).totals;
-  const novo = domain.summarize(normalized);
+  const novo = domain.summarize(domain.filterByType(normalized, 'consolidado'));
   assert.equal(novo.receitas, legacy.receitas);
   assert.equal(novo.despesas, legacy.despesas);
   assert.equal(novo.saldo, legacy.saldo);
@@ -496,7 +499,7 @@ check('resumo (summarize) bate com os totais do agrupamento legado', () => {
 });
 
 check('transferência entra só no saldo (não conta como receita/despesa)', () => {
-  const resumo = domain.summarize(normalized);
+  const resumo = domain.summarize(domain.filterByType(normalized, 'consolidado'));
   // receitas: 2000 (salário) — transferências (100) e futuro (-50) fora
   assert.equal(resumo.receitas, 2000);
   // despesas: -150.5 (mercado) - 33.33 (café) - 75.25 (conta antiga) — transferências e futuro fora
@@ -776,18 +779,19 @@ check('meta traz as datas-chave sugeridas já prontas pro formulário', () => {
 });
 
 // --- camada de tipo (checkbox consolidados/futuros) --------------------------
-check('resumo só dos executados (padrão) ignora os futuros', () => {
+check('resumo soma exatamente o que passou pelos filtros', () => {
+  // conjunto sem filtro de tipo (caso do dashboard): soma tudo, inclusive
+  // o futuro — igual aos cards por orçamento e ao saldo por conta
   const r = domain.summarize(normalized);
-  // o legado também ignorava: Mercado, Salário, Conta de luz e Café
-  assert.equal(r.count, 4);
-  assert.equal(r.saldo, 1740.92);
-});
-
-check('resumo inclui os futuros quando a camada de tipo permite', () => {
-  const r = domain.summarize(normalized, { incluirFuturos: true });
-  // + Assinatura (futuro, -50)
   assert.equal(r.count, 5);
   assert.equal(r.saldo, 1690.92);
+});
+
+check('camada "consolidado": o resumo é só dos executados', () => {
+  const executados = domain.filterByType(normalized, 'consolidado');
+  const r = domain.summarize(executados);
+  assert.equal(r.count, 4);
+  assert.equal(r.saldo, 1740.92);
 });
 
 check('camada "somente futuros": o resumo soma só os futuros', () => {
@@ -795,7 +799,7 @@ check('camada "somente futuros": o resumo soma só os futuros', () => {
   assert.equal(futuros.length, 1);
   assert.equal(futuros[0].descricao, 'Assinatura');
 
-  const r = domain.summarize(futuros, { incluirFuturos: true });
+  const r = domain.summarize(futuros);
   assert.equal(r.count, 1);
   assert.equal(r.despesas, -50);
   assert.equal(r.saldo, -50);
@@ -805,7 +809,7 @@ check('camada "todos": o resumo soma executados + futuros', () => {
   const todos = domain.filterByType(normalized, 'todos');
   assert.equal(todos.length, normalized.length);
 
-  const r = domain.summarize(todos, { incluirFuturos: true });
+  const r = domain.summarize(todos);
   assert.equal(r.count, 5);
 });
 

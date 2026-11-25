@@ -353,13 +353,17 @@ routerAdd('POST', '/append-entry', (c) => {
 - **Consolidado x futuro**: sem data → `isFuturo: true`. A camada de tipo
   (`tipo`) tem 4 estados: `todos` (os dois checkboxes), `consolidado`,
   `futuro` e `nenhum` (os dois desmarcados).
-- **Resumo da página de Lançamentos** (`resumo` do `/get-sheet-entries`):
-  é a última camada da pilha de filtros — soma **exatamente o que passou
-  pelos filtros**. Se o checkbox "mostrar futuros" estiver marcado, os
-  futuros entram na soma; se só "futuros" estiver marcado, a soma é só dos
-  futuros. (`summarize(entries, {incluirFuturos: true})`)
-- **Resumo do dashboard**: `summarize(entries)` sem a opção — total só dos
-  EXECUTADOS (comportamento legado, igual ao saldo por conta).
+- **Resumo**: `summarize(entries)` soma **exatamente o conjunto que recebe**
+  (exceções: lançamento sem data-chave não entra; transferência entra só no
+  saldo, não como receita/despesa).
+  - **Página de Lançamentos**: o conjunto já vem filtrado pela pilha de
+    filtros, incluindo a camada de tipo → se o checkbox "mostrar futuros"
+    estiver marcado os futuros entram na soma; se só "futuros" estiver
+    marcado a soma é só dos futuros.
+  - **Dashboard**: não tem filtro de tipo → soma tudo, **inclusive os
+    futuros** — igual aos cards por orçamento e ao saldo por conta (mesma
+    base). O "só executados" do legado era a camada de tipo `consolidado`
+    (estado padrão da página de Lançamentos).
 - **Transferência**: categoria "Transferência" → entra **só no saldo**, não conta
   como receita/despesa nem no `count` do resumo
 - **Resumo** (`resumo`): ignora lançamentos **sem orçamento** (data-chave)
