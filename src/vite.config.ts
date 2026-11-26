@@ -26,6 +26,8 @@ const POCKETBASE_CUSTOM_ENDPOINTS = [
   '/edit-sheet-entry',
   '/delete-sheet-entry',
   '/get-sheet-entries',
+  '/get-dashboard-data',
+  '/get-dashboard-details',
   // Relatórios
   '/get-financial-summary',
   '/get-available-months',
@@ -64,18 +66,25 @@ function generateProxyConfig() {
 }
 
 /**
- * Plugin para adicionar timestamp nos imports de JS/CSS no HTML gerado
+ * Plugin para adicionar timestamp nos imports de JS/CSS no HTML gerado.
+ *
+ * IMPORTANTE: o `?v=` tem que ficar DENTRO das aspas do atributo
+ * (src="app.js?v=123"). Se ele ficar depois da aspa de fechamento, o parser
+ * do HTML trata `?v=123` como um atributo solto e o browser baixa a URL
+ * SEM a query string — ou seja, o cache NÃO é quebrado.
  */
 function htmlTransformPlugin() {
   const buildTimestamp = Date.now();
-  
+
   return {
     name: 'html-transform',
     transformIndexHtml(html: string) {
-      // Adiciona ?v=timestamp em todos os imports de .js e .css
-      return html
-        .replace(/(<script[^>]+src=["']([^"']+\.js)["'])/g, `$1?v=${buildTimestamp}`)
-        .replace(/(<link[^>]+href=["']([^"']+\.css)["'])/g, `$1?v=${buildTimestamp}`);
+      // troca a query antiga (?v=...) pela nova, sempre dentro das aspas
+      return html.replace(
+        /(\s(?:src|href)=["'])([^"']+?\.(?:js|css))(\?[^"']*)?(["'])/g,
+        (_match, attr, url, _oldQuery, close) =>
+          `${attr}${url}?v=${buildTimestamp}${close}`
+      );
     },
   };
 }

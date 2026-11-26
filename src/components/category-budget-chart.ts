@@ -1,18 +1,14 @@
 /**
  * Componente de Gráfico de Despesas por Tipo
  * Exibe gráfico de rosca (donut chart) mostrando distribuição de despesas por TIPO de categoria
- * Ignora: TRANSFERÊNCIA, SALDO, RENDA, RECEITA
- * Usa SVG puro para renderização
+ *
+ * Os dados (agregação por tipo, filtro dos tipos ignorados e percentual) são
+ * calculados no BACKEND — aqui é só a renderização do SVG.
  */
 
-interface ChartEntry {
-  categoria: string;
-  valor: number;
-  tipo: string;
-}
-
 interface CategoryExpenseData {
-  categoria: string;
+  /** rótulo exibido (nome do tipo da categoria) */
+  tipo: string;
   valor: number;
   percentual: number;
 }
@@ -34,7 +30,6 @@ function formatarMoeda(valor: number): string {
  */
 export class CategoryBudgetChart {
   private container: HTMLElement;
-  private entries: ChartEntry[] = [];
   private chartData: CategoryExpenseData[] = [];
 
   constructor(containerId: string) {
@@ -47,58 +42,17 @@ export class CategoryBudgetChart {
 
   /**
    * Atualiza os dados e renderiza o gráfico
+   * @param data - Fatias já calculadas pelo backend
    */
-  render(entries: ChartEntry[]): void {
-    this.entries = entries;
-    this.chartData = this.calculateExpenseData();
-    
+  render(data: CategoryExpenseData[]): void {
+    this.chartData = data || [];
+
     if (this.chartData.length === 0) {
       this.renderEmptyState();
       return;
     }
 
     this.renderChart();
-  }
-
-  /**
-   * Calcula dados de despesas agrupados por TIPO de categoria
-   */
-  private calculateExpenseData(): CategoryExpenseData[] {
-    // Tipos a ignorar conforme solicitado
-    const tiposIgnorados = ['TRANSFERÊNCIA', 'TRANSFERENCIA', 'SALDO', 'RENDA', 'RECEITA'];
-    
-    // Filtra apenas despesas válidas (valores negativos, não nos tipos ignorados)
-    const despesas = this.entries.filter(e => {
-      const tipoUpper = e.tipo.toUpperCase().trim();
-      return !tiposIgnorados.includes(tipoUpper) && e.valor < 0;
-    });
-
-    if (despesas.length === 0) {
-      return [];
-    }
-
-    // Agrupa por TIPO e soma valores
-    const porTipo = new Map<string, number>();
-    
-    for (const entry of despesas) {
-      const tipo = entry.tipo || 'Sem Tipo';
-      const valorAbs = Math.abs(entry.valor);
-      porTipo.set(tipo, (porTipo.get(tipo) || 0) + valorAbs);
-    }
-
-    // Calcula total para percentuais
-    const total = Array.from(porTipo.values()).reduce((sum, val) => sum + val, 0);
-
-    // Converte para array e ordena por valor (maior primeiro)
-    const data: CategoryExpenseData[] = Array.from(porTipo.entries())
-      .map(([tipo, valor]) => ({
-        categoria: tipo, // Usando 'categoria' para manter compatibilidade
-        valor,
-        percentual: (valor / total) * 100
-      }))
-      .sort((a, b) => b.valor - a.valor);
-
-    return data;
   }
 
   /**
@@ -129,7 +83,7 @@ export class CategoryBudgetChart {
         <div class="budget-chart__legend-item">
           <div class="budget-chart__legend-color" style="background-color: ${color};"></div>
           <div class="budget-chart__legend-content">
-            <div class="budget-chart__legend-label">${item.categoria}</div>
+            <div class="budget-chart__legend-label">${item.tipo}</div>
             <div class="budget-chart__legend-value">
               <span>${formatarMoeda(item.valor)}</span>
               <span class="budget-chart__legend-percent">${item.percentual.toFixed(1)}%</span>
@@ -215,10 +169,10 @@ export class CategoryBudgetChart {
           stroke="white" 
           stroke-width="2"
           class="budget-chart__segment"
-          data-category="${item.categoria}"
+          data-category="${item.tipo}"
           data-value="${item.valor}"
         >
-          <title>${item.categoria}: ${formatarMoeda(item.valor)} (${item.percentual.toFixed(1)}%)</title>
+          <title>${item.tipo}: ${formatarMoeda(item.valor)} (${item.percentual.toFixed(1)}%)</title>
         </path>
       `;
     }).join('');
@@ -275,12 +229,14 @@ export class CategoryBudgetChart {
 
 /**
  * Cria e renderiza um gráfico de despesas por tipo
+ * @param containerId - id do container no DOM
+ * @param data - fatias já calculadas pelo backend ({tipo, valor, percentual})
  */
 export function renderCategoryBudgetChart(
   containerId: string,
-  entries: ChartEntry[]
+  data: CategoryExpenseData[]
 ): CategoryBudgetChart {
   const chart = new CategoryBudgetChart(containerId);
-  chart.render(entries);
+  chart.render(data);
   return chart;
 }

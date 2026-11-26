@@ -1,6 +1,8 @@
 /**
  * Dashboard Principal
- * Integração completa: menu, cards financeiros, detalhes e modal de lançamento
+ *
+ * Consome /get-dashboard-data (cards e saldos) e /get-dashboard-details
+ * (bloco de detalhes). Nenhuma agregação é feita aqui.
  */
 
 import { pb } from '../main';
@@ -19,31 +21,7 @@ import {
   mostrarErro
 } from '../components/financial-cards';
 import { inicializarDetalhes } from '../components/details';
-import {
-  aggregateByBudget,
-  filterEntriesByInterval,
-  budgetsInEntries,
-  aggregateByAccount,  // ✨ PASSO 2
-  type Entry,
-  type BudgetSummary,
-  type BudgetInfo,
-  type AccountSummary  // ✨ PASSO 2
-} from '../utils/sheet-entries';
-import lancamentosService from '../services/lancamentos';
-
-// ============================================================================
-// Declarações globais para armazenar dados
-// ============================================================================
-declare global {
-  interface Window {
-    allEntries: Entry[];
-    filteredEntries: Entry[];
-    summaryByBudget: BudgetSummary[];
-    budgetsInInterval: BudgetInfo[];
-    allBudgets: BudgetInfo[];
-    accountSummary: AccountSummary[];  // ✨ PASSO 2
-  }
-}
+import lancamentosService, { hojeLocal } from '../services/lancamentos';
 
 // ============================================================================
 // Inicialização
@@ -226,48 +204,20 @@ async function loadAndRenderData(forceRefresh: boolean = false): Promise<void> {
   mostrarCardCarregamento();
 
   try {
-    // Busca os lançamentos usando o serviço (com cache)
-    // limit=0 significa buscar todas as entradas
-    const sheetEntriesData = await lancamentosService.fetchEntries(0, forceRefresh);
-    // As entradas vindas do backend já estão no formato correto para Entry
-    const entries: Entry[] = (sheetEntriesData?.entries ?? []) as any as Entry[];
+    // Tudo vem agregado do backend
+    const data = await lancamentosService.fetchDashboardData(hojeLocal(), forceRefresh);
 
     // Se não houver lançamentos, mostra mensagem
-    if (!entries || entries.length === 0) {
+    if (!data || data.totalLancamentos === 0) {
       showNoEntriesMessage();
       return;
     }
 
-    // Armazena globalmente
-    window.allEntries = entries;
+    // Renderiza cards de orçamento
+    renderizarCards(data.budgets || []);
 
-    // Processa orçamentos e filtra por intervalo
-    const allSummaries = aggregateByBudget(entries);
-    window.allBudgets = budgetsInEntries(entries);
-
-    const entriesInInterval = filterEntriesByInterval(entries);
-    const currentSummary = aggregateByBudget(entriesInInterval);
-    const budgetsInIntervalList = budgetsInEntries(entriesInInterval);
-
-    // ✨ PASSO 3: Agrega TODOS os lançamentos por conta (sem filtro de budget)
-    window.accountSummary = aggregateByAccount(entries);
-    console.log('📊 Contas agregadas:', window.accountSummary);
-
-    window.filteredEntries = entriesInInterval;
-    window.summaryByBudget = currentSummary;
-    window.budgetsInInterval = budgetsInIntervalList;
-
-    // Cria mapa de orçamentos no intervalo
-    const budgetsInIntervalMap: Record<string, boolean> = {};
-    currentSummary.forEach(budget => {
-      budgetsInIntervalMap[budget.label] = true;
-    });
-
-    // Renderiza cards e detalhes
-    renderizarCards(allSummaries, budgetsInIntervalMap);
-
-    // Inicializa detalhes (inclui agregados, top 10 categorias e gráfico de rosca)
-    await inicializarDetalhes(entries, budgetsInIntervalList);
+    // Inicializa detalhes (top 10 categorias, gráfico e contas)
+    await inicializarDetalhes(data.budgetsInInterval || [], data.accounts || []);
 
   } catch (error) {
     console.error('Erro ao carregar dados:', error);
@@ -305,4 +255,3 @@ if (document.readyState === 'loading') {
 } else {
   init();
 }
-

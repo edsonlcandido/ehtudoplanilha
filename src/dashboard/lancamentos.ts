@@ -1,6 +1,9 @@
 /**
  * Página de Lançamentos
- * Gerencia a lista de lançamentos e modais
+ *
+ * A página NÃO faz mais regra de negócio: ela monta o estado dos filtros,
+ * envia pro backend e renderiza a resposta (já filtrada, ordenada e
+ * normalizada). Ver pb_hooks/_lancamentos-domain.js.
  */
 
 import { verifyTokenValidity } from '../services/auth';
@@ -15,8 +18,6 @@ import { renderEntries } from '../components/lancamentos-list';
 import { renderGroupedSummary } from '../components/grouped-summary';
 import lancamentosService from '../services/lancamentos';
 import type { SortType, LancamentosState, SheetEntry } from '../types';
-import { excelSerialToDateTimeLabel, excelSerialToDate } from '../utils/date-helpers';
-import { groupEntriesByBudgetAndAccount, hasActiveFilters } from '../utils/grouping';
 import { showSuccessToast, showErrorToast, showInfoToast } from '../components/toast';
 
 // ============================================================================
@@ -25,8 +26,17 @@ import { showSuccessToast, showErrorToast, showInfoToast } from '../components/t
 
 const state: LancamentosState = {
   entries: [],
-  filteredEntries: [],
-  originalEntries: [],
+  total: 0,
+  meta: {
+    contas: [],
+    categorias: [],
+    descricoes: [],
+    orcamentos: [],
+    proximoOrcamento: '',
+    orcamentoMesAtual: ''
+  },
+  resumo: { receitas: 0, despesas: 0, saldo: 0, count: 0 },
+  filtrosAtivos: [],
   searchTerm: '',
   sortBy: 'original',
   showConsolidated: true,
@@ -42,13 +52,19 @@ const state: LancamentosState = {
   filterPanelOpen: false
 };
 
+/** Timer do debounce da busca */
+let searchTimer: number | null = null;
+
+/** Marca que precisa recarregar quando a request em andamento terminar */
+let pendingReload = false;
+
+/** Primeira carga da página (evita toast a cada filtro) */
+let firstLoad = true;
+
 // ============================================================================
 // Funções de UI
 // ============================================================================
 
-/**
- * Mostra indicador de loading
- */
 function showLoading(): void {
   const indicator = document.getElementById('loadingIndicator');
   if (indicator) {
@@ -56,9 +72,6 @@ function showLoading(): void {
   }
 }
 
-/**
- * Esconde indicador de loading
- */
 function hideLoading(): void {
   const indicator = document.getElementById('loadingIndicator');
   if (indicator) {
@@ -66,9 +79,6 @@ function hideLoading(): void {
   }
 }
 
-/**
- * Mostra mensagem de feedback usando toast
- */
 function showMessage(message: string, type: 'success' | 'error' | 'info' = 'info'): void {
   if (type === 'success') {
     showSuccessToast(message);
@@ -79,9 +89,6 @@ function showMessage(message: string, type: 'success' | 'error' | 'info' = 'info
   }
 }
 
-/**
- * Atualiza resultados de pesquisa
- */
 function updateSearchResults(): void {
   const searchResults = document.getElementById('searchResults');
   const searchCount = document.getElementById('searchCount');
@@ -90,7 +97,7 @@ function updateSearchResults(): void {
   if (!searchResults || !searchCount || !clearBtn) return;
 
   if (state.searchTerm) {
-    searchCount.textContent = `${state.filteredEntries.length} resultado(s) encontrado(s)`;
+    searchCount.textContent = `${state.total} resultado(s) encontrado(s)`;
     searchResults.classList.add('lancamentos__search-results--visible');
     clearBtn.style.display = 'flex';
   } else {
@@ -100,99 +107,100 @@ function updateSearchResults(): void {
 }
 
 // ============================================================================
-// Funções de gerenciamento de dados
+// Carregamento (tudo filtrado/ordenado no backend)
 // ============================================================================
 
 /**
- * Carrega lançamentos da planilha
- * @param forceRefresh - Se true, ignora cache e busca do servidor
+ * Monta a query do backend a partir do estado atual da página
+ */
+function buildQuery(fresh: boolean) {
+  return {
+    // A página exibe no máximo 100 lançamentos: o corte é feito no servidor.
+    limit: 100,
+    q: state.searchTerm,
+    conta: state.filters.conta,
+    categoria: state.filters.categoria,
+    orcamento: state.filters.orcamento,
+    dataInicio: state.filters.dataInicio,
+    dataFim: state.filters.dataFim,
+    tipo: currentTipo(),
+    sort: state.sortBy,
+    fresh
+  };
+}
+
+/**
+ * Tipo de lançamento conforme os checkboxes (consolidado / futuro).
+ *
+ * São 4 estados: os dois marcados = "todos", só um = aquele, nenhum
+ * marcado = "nenhum" (não mostra nenhum tipo).
+ */
+function currentTipo(): 'todos' | 'consolidado' | 'futuro' | 'nenhum' {
+  if (state.showConsolidated && state.showFuture) return 'todos';
+  if (state.showConsolidated) return 'consolidado';
+  if (state.showFuture) return 'futuro';
+  return 'nenhum';
+}
+
+/**
+ * Carrega lançamentos da planilha (filtros/ordenação aplicados no backend)
+ * @param forceRefresh - Se true, ignora o cache e busca do servidor
  */
 async function loadEntries(forceRefresh = false): Promise<void> {
-  if (state.isLoading) return;
+  if (state.isLoading) {
+    // já tem uma request em andamento — garante que o resultado mais novo
+    // (com os filtros atuais) seja carregado quando ela terminar
+    pendingReload = true;
+    return;
+  }
 
   state.isLoading = true;
-  state.entries = [];
-  renderEntriesList();
-  
+
   // Só mostra o loader grande se não for refresh manual (botão)
   if (!forceRefresh) {
     showLoading();
   }
 
   try {
-    const response = await lancamentosService.fetchEntries(0, forceRefresh);
-    const rawEntries = response.entries || [];
-    
-    // Filtra entradas em branco
-    const cleaned = rawEntries.filter(e => !lancamentosService.isBlankEntry(e));
-    
-    // Backend retorna dados já no formato correto
-    // lancamentos-list.ts encarrega de exibir corretamente
-    state.originalEntries = cleaned;
-    state.entries = [...state.originalEntries];
+    const response = await lancamentosService.fetchEntries(buildQuery(forceRefresh));
+
+    state.entries = response.entries || [];
+    state.total = response.total ?? state.entries.length;
+    state.meta = response.meta || state.meta;
+    state.resumo = response.resumo || state.resumo;
+    state.filtrosAtivos = response.filtros?.ativos || [];
 
     // Popula os filtros com as opções disponíveis
     populateContaFilter();
     populateOrcamentoFilter();
     populateCategoriaFilter();
 
-    applySortingAndFilters();
-    
-    const cacheMsg = forceRefresh ? ' (cache atualizado)' : '';
-    showMessage('Lançamentos carregados com sucesso' + cacheMsg, 'success');
+    renderEntriesList();
+
+    if (firstLoad || forceRefresh) {
+      const cacheMsg = forceRefresh ? ' (cache atualizado)' : '';
+      showMessage('Lançamentos carregados com sucesso' + cacheMsg, 'success');
+    }
+    firstLoad = false;
   } catch (error: any) {
     console.error('Erro ao carregar lançamentos:', error);
     showMessage('Erro ao carregar lançamentos: ' + error.message, 'error');
     state.entries = [];
-    state.filteredEntries = [];
+    state.resumo = { receitas: 0, despesas: 0, saldo: 0, count: 0 };
     renderEntriesList();
   } finally {
     state.isLoading = false;
-    
+
     // Só esconde o loader grande se não for refresh manual
     if (!forceRefresh) {
       hideLoading();
     }
-  }
-}
 
-/**
- * Aplica ordenação e filtros
- */
-function applySortingAndFilters(): void {
-  // Base para aplicar filtros
-  let viewEntries = [...state.originalEntries];
-
-  // Aplica filtros avançados PRIMEIRO
-  viewEntries = applyAdvancedFilters(viewEntries);
-
-  // Aplica pesquisa (busca nas entradas já filtradas)
-  if (state.searchTerm) {
-    viewEntries = lancamentosService.filterEntries(viewEntries, state.searchTerm);
-  }
-
-  // Filtra por tipo de lançamento (consolidado/futuro)
-  viewEntries = viewEntries.filter(entry => {
-    const hasDate = entry.data !== null 
-      && entry.data !== undefined 
-      && !(typeof entry.data === 'string' && entry.data.trim() === '');
-    
-    // Se tem data, é consolidado; se não tem, é futuro
-    if (hasDate) {
-      return state.showConsolidated;
-    } else {
-      return state.showFuture;
+    if (pendingReload) {
+      pendingReload = false;
+      loadEntries();
     }
-  });
-
-  // Ordena conforme configuração
-  viewEntries = lancamentosService.sortEntries(viewEntries, state.sortBy);
-
-  state.filteredEntries = viewEntries;
-  state.entries = viewEntries; // Atualiza state.entries com as entradas filtradas
-
-  renderEntriesList();
-  updateSearchResults();
+  }
 }
 
 /**
@@ -202,97 +210,79 @@ function renderEntriesList(): void {
   const container = document.getElementById('entriesContainer');
   if (!container) return;
 
-  // Sempre usa filteredEntries, que já contém o resultado dos filtros aplicados
-  const entriesToRender = state.filteredEntries;
+  // O corte dos 100 itens já foi feito pelo backend (limit=100)
 
-  // Limita aos 100 primeiros itens
-  const limitedEntries = entriesToRender.slice(0, 100);
-
-  // Renderiza o resumo dos filtros sempre que houver filtro ativo
+  // Renderiza o resumo dos filtros sempre que houver filtro ativo.
+  // Quem decide o que está ativo é o backend (filtros.ativos).
   const summaryContainer = document.getElementById('groupedSummaryContainer');
   if (summaryContainer) {
-    if (hasActiveFilters(state)) {
-      const summary = groupEntriesByBudgetAndAccount(entriesToRender);
-      summaryContainer.innerHTML = renderGroupedSummary(summary, {
-        conta: state.filters.conta,
-        dataInicio: state.filters.dataInicio,
-        dataFim: state.filters.dataFim,
-        orcamento: state.filters.orcamento,
-        categoria: state.filters.categoria,
-        searchTerm: state.searchTerm
-      });
+    if (state.filtrosAtivos.length > 0) {
+      summaryContainer.innerHTML = renderGroupedSummary(state.resumo, state.filtrosAtivos);
     } else {
       summaryContainer.innerHTML = '';
     }
   }
 
-  container.innerHTML = renderEntries(limitedEntries);
+  container.innerHTML = renderEntries(state.entries);
+  updateSearchResults();
 }
 
 // ============================================================================
 // Event Handlers
 // ============================================================================
 
-/**
- * Manipula mudança de ordenação
- */
 function handleSortChange(sortType: SortType): void {
   state.sortBy = sortType;
-  applySortingAndFilters();
+  loadEntries();
 }
 
-/**
- * Manipula mudança de checkbox de lançamentos consolidados
- */
 function handleShowConsolidatedChange(show: boolean): void {
   state.showConsolidated = show;
-  applySortingAndFilters();
+  loadEntries();
 }
 
-/**
- * Manipula mudança de checkbox de lançamentos futuros
- */
 function handleShowFutureChange(show: boolean): void {
   state.showFuture = show;
-  applySortingAndFilters();
+  loadEntries();
 }
 
 /**
- * Manipula pesquisa
+ * Manipula pesquisa (com debounce pra não spammar o backend)
  */
 function handleSearch(searchTerm: string): void {
   state.searchTerm = searchTerm.trim();
-  applySortingAndFilters();
+
+  if (searchTimer !== null) {
+    window.clearTimeout(searchTimer);
+  }
+
+  searchTimer = window.setTimeout(() => {
+    loadEntries();
+  }, 400);
 }
 
-/**
- * Limpa pesquisa
- */
 function clearSearch(): void {
   const searchInput = document.getElementById('searchInput') as HTMLInputElement;
   if (searchInput) {
     searchInput.value = '';
   }
   state.searchTerm = '';
-  applySortingAndFilters();
+  loadEntries();
 }
 
 // ============================================================================
-// Funções de gerenciamento do painel de filtros
+// Gerenciamento do painel de filtros
 // ============================================================================
 
-/**
- * Abre o painel de filtros
- */
 function openFilterPanel(): void {
   const panel = document.getElementById('filterPanel');
   const fabButton = document.getElementById('openFilterPanel');
-  
+
   if (panel && fabButton) {
     panel.setAttribute('aria-hidden', 'false');
     fabButton.classList.add('active');
     state.filterPanelOpen = true;
-    
+
     // Foca no primeiro campo do formulário
     setTimeout(() => {
       const firstInput = panel.querySelector('select, input') as HTMLElement;
@@ -303,13 +293,10 @@ function openFilterPanel(): void {
   }
 }
 
-/**
- * Fecha o painel de filtros
- */
 function closeFilterPanel(): void {
   const panel = document.getElementById('filterPanel');
   const fabButton = document.getElementById('openFilterPanel');
-  
+
   if (panel && fabButton) {
     panel.setAttribute('aria-hidden', 'true');
     fabButton.classList.remove('active');
@@ -318,30 +305,17 @@ function closeFilterPanel(): void {
 }
 
 /**
- * Popula as opções de conta no filtro
+ * Popula as opções de conta no filtro (opções vindas do backend)
  */
 function populateContaFilter(): void {
   const select = document.getElementById('filterConta') as HTMLSelectElement;
   if (!select) return;
 
-  // Extrai contas únicas dos lançamentos
-  const contas = new Set<string>();
-  state.originalEntries.forEach(entry => {
-    if (entry.conta && entry.conta.trim()) {
-      contas.add(entry.conta.trim());
-    }
-  });
-
-  // Ordena alfabeticamente
-  const sortedContas = Array.from(contas).sort();
-
-  // Mantém a opção "Todas as contas"
   const defaultOption = select.options[0];
   select.innerHTML = '';
   select.appendChild(defaultOption);
 
-  // Adiciona as opções
-  sortedContas.forEach(conta => {
+  state.meta.contas.forEach(conta => {
     const option = document.createElement('option');
     option.value = conta;
     option.textContent = conta;
@@ -353,46 +327,26 @@ function populateContaFilter(): void {
 }
 
 /**
- * Popula as opções de orçamento no filtro
+ * Popula as opções de orçamento no filtro (opções vindas do backend)
  */
 function populateOrcamentoFilter(): void {
   const select = document.getElementById('filterOrcamento') as HTMLSelectElement;
   if (!select) return;
 
-  // Extrai orçamentos únicos dos lançamentos
-  const orcamentos = new Set<string>();
-  state.originalEntries.forEach(entry => {
-    if (entry.orcamento) {
-      let orcamentoStr = '';
-      if (typeof entry.orcamento === 'number') {
-        // Converte número Excel para string de data
-        const date = excelSerialToDate(entry.orcamento);
-        if (date) {
-          orcamentoStr = `${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
-        }
-      } else if (typeof entry.orcamento === 'string') {
-        orcamentoStr = entry.orcamento.trim();
-      }
-      if (orcamentoStr) {
-        orcamentos.add(orcamentoStr);
-      }
-    }
-  });
-
-  // Ordena
-  const sortedOrcamentos = Array.from(orcamentos).sort().reverse(); // Mais recentes primeiro
-
-  // Mantém a opção "Todos os orçamentos"
   const defaultOption = select.options[0];
   select.innerHTML = '';
   select.appendChild(defaultOption);
 
-  // Adiciona as opções
-  sortedOrcamentos.forEach(orc => {
+  // O backend já devolve do mais recente pro mais antigo.
+  // O texto da option é a DATA COMPLETA do orçamento ("30/11/2026") — a mesma
+  // que aparece na coluna Orçamento da lista: filtrar não muda a visualização.
+  // O value é o serial da data-chave, que é como o backend identifica o
+  // orçamento (não existe chave de mês).
+  state.meta.orcamentos.forEach(orc => {
     const option = document.createElement('option');
-    option.value = orc;
-    option.textContent = orc;
-    if (state.filters.orcamento === orc) {
+    option.value = String(orc.serial);
+    option.textContent = orc.label;
+    if (state.filters.orcamento === String(orc.serial)) {
       option.selected = true;
     }
     select.appendChild(option);
@@ -400,26 +354,17 @@ function populateOrcamentoFilter(): void {
 }
 
 /**
- * Popula as opções de categoria no filtro
+ * Popula as opções de categoria no filtro (opções vindas do backend)
  */
 function populateCategoriaFilter(): void {
   const select = document.getElementById('filterCategoria') as HTMLSelectElement;
   if (!select) return;
 
-  const categorias = new Set<string>();
-  state.originalEntries.forEach(entry => {
-    if (entry.categoria && entry.categoria.trim()) {
-      categorias.add(entry.categoria.trim());
-    }
-  });
-
-  const sortedCategorias = Array.from(categorias).sort();
-
   const defaultOption = select.options[0];
   select.innerHTML = '';
   select.appendChild(defaultOption);
 
-  sortedCategorias.forEach(cat => {
+  state.meta.categorias.forEach(cat => {
     const option = document.createElement('option');
     option.value = cat;
     option.textContent = cat;
@@ -431,96 +376,7 @@ function populateCategoriaFilter(): void {
 }
 
 /**
- * Aplica os filtros avançados
- */
-function applyAdvancedFilters(entries: SheetEntry[]): SheetEntry[] {
-  let filtered = [...entries];
-
-  // Filtro por conta
-  if (state.filters.conta) {
-    filtered = filtered.filter(entry => 
-      entry.conta && entry.conta.trim() === state.filters.conta
-    );
-  }
-
-  // Filtro por data (intervalo)
-  if (state.filters.dataInicio || state.filters.dataFim) {
-    filtered = filtered.filter(entry => {
-      if (!entry.data) return false;
-
-      let entryDate: Date | null = null;
-      if (typeof entry.data === 'number') {
-        entryDate = excelSerialToDate(entry.data);
-        if (entryDate) {
-          // Normaliza para meia-noite do dia
-          entryDate.setHours(0, 0, 0, 0);
-        }
-      } else if (typeof entry.data === 'string') {
-        // Tenta parsear string de data no formato DD/MM/YYYY HH:mm
-        const parts = entry.data.split(' ')[0].split('/');
-        if (parts.length === 3) {
-          const [day, month, year] = parts;
-          entryDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-          // Normaliza para meia-noite do dia
-          entryDate.setHours(0, 0, 0, 0);
-        }
-      }
-
-      if (!entryDate || isNaN(entryDate.getTime())) return false;
-
-      // Verifica data início
-      if (state.filters.dataInicio) {
-        // Cria data a partir do input (formato YYYY-MM-DD)
-        const [year, month, day] = state.filters.dataInicio.split('-').map(Number);
-        const dataInicio = new Date(year, month - 1, day);
-        dataInicio.setHours(0, 0, 0, 0);
-        if (entryDate < dataInicio) return false;
-      }
-
-      // Verifica data fim
-      if (state.filters.dataFim) {
-        // Cria data a partir do input (formato YYYY-MM-DD)
-        const [year, month, day] = state.filters.dataFim.split('-').map(Number);
-        const dataFim = new Date(year, month - 1, day);
-        dataFim.setHours(23, 59, 59, 999);
-        if (entryDate > dataFim) return false;
-      }
-
-      return true;
-    });
-  }
-
-  // Filtro por categoria
-  if (state.filters.categoria) {
-    filtered = filtered.filter(entry =>
-      entry.categoria && entry.categoria.trim() === state.filters.categoria
-    );
-  }
-
-  // Filtro por orçamento
-  if (state.filters.orcamento) {
-    filtered = filtered.filter(entry => {
-      if (!entry.orcamento) return false;
-
-      let orcamentoStr = '';
-      if (typeof entry.orcamento === 'number') {
-        const date = excelSerialToDate(entry.orcamento);
-        if (date) {
-          orcamentoStr = `${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
-        }
-      } else if (typeof entry.orcamento === 'string') {
-        orcamentoStr = entry.orcamento.trim();
-      }
-
-      return orcamentoStr === state.filters.orcamento;
-    });
-  }
-
-  return filtered;
-}
-
-/**
- * Aplica os filtros do formulário
+ * Aplica os filtros do formulário (o filtro real é feito no backend)
  */
 function applyFilters(): void {
   const contaSelect = document.getElementById('filterConta') as HTMLSelectElement;
@@ -529,20 +385,14 @@ function applyFilters(): void {
   const categoriaSelect = document.getElementById('filterCategoria') as HTMLSelectElement;
   const orcamentoSelect = document.getElementById('filterOrcamento') as HTMLSelectElement;
 
-  // Atualiza o estado com os valores dos filtros
   if (contaSelect) state.filters.conta = contaSelect.value;
   if (dataInicioInput) state.filters.dataInicio = dataInicioInput.value;
   if (dataFimInput) state.filters.dataFim = dataFimInput.value;
   if (categoriaSelect) state.filters.categoria = categoriaSelect.value;
   if (orcamentoSelect) state.filters.orcamento = orcamentoSelect.value;
 
-  // Fecha o painel
   closeFilterPanel();
 
-  // Aplica os filtros
-  applySortingAndFilters();
-
-  // Mostra mensagem de feedback
   const activeFiltersCount = [
     state.filters.conta,
     state.filters.dataInicio,
@@ -550,6 +400,8 @@ function applyFilters(): void {
     state.filters.categoria,
     state.filters.orcamento
   ].filter(f => f).length;
+
+  loadEntries();
 
   if (activeFiltersCount > 0) {
     showMessage(`${activeFiltersCount} filtro(s) aplicado(s)`, 'success');
@@ -560,7 +412,6 @@ function applyFilters(): void {
  * Limpa todos os filtros
  */
 function clearFilters(): void {
-  // Limpa o estado
   state.filters = {
     conta: '',
     dataInicio: '',
@@ -569,24 +420,21 @@ function clearFilters(): void {
     categoria: ''
   };
 
-  // Limpa os campos do formulário
   const contaSelect = document.getElementById('filterConta') as HTMLSelectElement;
   const dataInicioInput = document.getElementById('filterDataInicio') as HTMLInputElement;
   const dataFimInput = document.getElementById('filterDataFim') as HTMLInputElement;
-  const orcamentoSelect = document.getElementById('filterOrcamento') as HTMLSelectElement;
   const categoriaSelect = document.getElementById('filterCategoria') as HTMLSelectElement;
+  const orcamentoSelect = document.getElementById('filterOrcamento') as HTMLSelectElement;
 
   if (contaSelect) contaSelect.value = '';
   if (dataInicioInput) dataInicioInput.value = '';
   if (dataFimInput) dataFimInput.value = '';
-  if (orcamentoSelect) orcamentoSelect.value = '';
   if (categoriaSelect) categoriaSelect.value = '';
+  if (orcamentoSelect) orcamentoSelect.value = '';
 
-  // Fecha o painel
   closeFilterPanel();
 
-  // Reaplica os filtros (agora sem filtros avançados)
-  applySortingAndFilters();
+  loadEntries();
 
   showMessage('Filtros limpos', 'info');
 }
@@ -599,7 +447,7 @@ function clearFilters(): void {
  * Edita um lançamento
  */
 function editEntry(rowIndex: number): void {
-  const entry = state.originalEntries.find(e => e.rowIndex === rowIndex);
+  const entry = state.entries.find(e => e.rowIndex === rowIndex);
   if (entry) {
     openEditEntryModal(entry);
   } else {
@@ -611,15 +459,16 @@ function editEntry(rowIndex: number): void {
  * Copia um lançamento (abre modal de adicionar com dados pré-preenchidos)
  */
 function copyEntry(rowIndex: number): void {
-  const entry = state.originalEntries.find(e => e.rowIndex === rowIndex);
+  const entry = state.entries.find(e => e.rowIndex === rowIndex);
   if (entry) {
     // Remove rowIndex e prepara dados para cópia
+    // (a data-chave vai pronta do backend em `orcamentoInput`)
     const dataToCopy: Partial<SheetEntry> = {
       conta: entry.conta,
       valor: entry.valor,
       descricao: entry.descricao,
       categoria: entry.categoria,
-      orcamento: entry.orcamento,
+      orcamentoInput: entry.orcamentoInput,
       obs: entry.obs
     };
     // Data será definida como atual no modal
@@ -639,7 +488,7 @@ let pendingDeleteRowIndex: number | null = null;
  * Abre o modal de confirmação de exclusão
  */
 function openDeleteModal(rowIndex: number): void {
-  const entry = state.originalEntries.find(e => e.rowIndex === rowIndex);
+  const entry = state.entries.find(e => e.rowIndex === rowIndex);
   if (!entry) {
     console.error('Lançamento não encontrado:', rowIndex);
     return;
@@ -654,26 +503,13 @@ function openDeleteModal(rowIndex: number): void {
   const deleteDescription = document.getElementById('deleteDescription');
 
   if (deleteRowNumber) deleteRowNumber.textContent = String(entry.rowIndex || '-');
-  
-  // Formata a data corretamente
-  if (deleteDate) {
-    let formattedDate = '-';
-    if (entry.data) {
-      if (typeof entry.data === 'number') {
-        // Se for número Excel serial, converte para formato brasileiro
-        formattedDate = excelSerialToDateTimeLabel(entry.data);
-      } else if (typeof entry.data === 'string') {
-        // Se já for string, usa como está (já está formatado)
-        formattedDate = entry.data;
-      }
-    }
-    deleteDate.textContent = formattedDate;
+  if (deleteDate) deleteDate.textContent = entry.dataLabel || '-';
+  if (deleteValue) {
+    deleteValue.textContent = new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(entry.valor);
   }
-  
-  if (deleteValue) deleteValue.textContent = new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
-  }).format(entry.valor);
   if (deleteDescription) deleteDescription.textContent = entry.descricao || '-';
 
   // Exibe o modal
@@ -688,6 +524,7 @@ function openDeleteModal(rowIndex: number): void {
  */
 function closeDeleteModal(): void {
   pendingDeleteRowIndex = null;
+
   const deleteModal = document.getElementById('deleteModal');
   if (deleteModal) {
     deleteModal.style.display = 'none';
@@ -716,7 +553,7 @@ async function confirmDelete(): Promise<void> {
     await lancamentosService.deleteEntry(rowIndex);
     showMessage('Lançamento excluído com sucesso', 'success');
     closeDeleteModal();
-    await loadEntries();
+    await loadEntries(true);
   } catch (error: any) {
     console.error('Erro ao deletar lançamento:', error);
     showMessage('Erro ao deletar lançamento: ' + error.message, 'error');
@@ -745,8 +582,8 @@ function deleteEntry(rowIndex: number): void {
   confirmDelete,
   // Stubs para funções do split modal (funcionalidade futura)
   closeSplitModal: () => {
-    const modal = document.getElementById('splitModal');
-    if (modal) modal.style.display = 'none';
+    const splitModal = document.getElementById('splitModal');
+    if (splitModal) splitModal.style.display = 'none';
   },
   confirmSplit: () => {
     console.warn('Funcionalidade de divisão de parcelas não implementada');
@@ -773,31 +610,31 @@ async function init(): Promise<void> {
   // Inicializa modal de adicionar lançamento
   await initEntryModal((result) => {
     console.log('✅ Lançamento adicionado:', result);
-    loadEntries();
+    loadEntries(true);
   });
 
   // Inicializa modal de edição
   await initEditEntryModal((result) => {
     console.log('✅ Lançamento editado:', result);
-    loadEntries();
+    loadEntries(true);
   });
 
   // Inicializa modal de lançamento futuro
   await initFutureEntryModal((result) => {
     console.log('✅ Lançamento futuro adicionado:', result);
-    loadEntries();
+    loadEntries(true);
   });
 
   // Inicializa modal de transferência
   await initTransferEntryModal((result) => {
     console.log('✅ Transferência realizada:', result);
-    loadEntries();
+    loadEntries(true);
   });
 
   // Inicializa modal de ajuste de saldo
   await initBalanceAdjustModal((result) => {
     console.log('✅ Saldo ajustado:', result);
-    loadEntries();
+    loadEntries(true);
   });
 
   // Inicializa o menu FAB com as opções
@@ -822,12 +659,12 @@ async function init(): Promise<void> {
   if (refreshBtn) {
     refreshBtn.addEventListener('click', async () => {
       console.log('🔄 Atualizando lançamentos (forceRefresh=true)...');
-      
+
       // Desabilita botão e mostra loader
       const originalText = refreshBtn.innerHTML;
       refreshBtn.disabled = true;
       refreshBtn.innerHTML = '⏳ Atualizando...';
-      
+
       try {
         await loadEntries(true); // força atualização do cache
       } finally {
@@ -932,7 +769,7 @@ async function init(): Promise<void> {
   document.addEventListener('entry:edited', () => {
     console.log('📝 Entrada editada, recarregando...');
     setTimeout(() => {
-      loadEntries();
+      loadEntries(true);
     }, 300);
   });
 
@@ -940,7 +777,7 @@ async function init(): Promise<void> {
   await loadEntries();
 
   // Atualiza autocomplete do modal de edição quando entradas são carregadas
-  setEditModalEntries(state.originalEntries);
+  setEditModalEntries(state.entries);
 
   // Verifica se há parâmetros de filtro na URL
   applyUrlFilters();
@@ -977,4 +814,3 @@ if (document.readyState === 'loading') {
 } else {
   init();
 }
-

@@ -13,6 +13,7 @@
 routerAdd('PUT', '/edit-sheet-entry', (c) => {
   try {
     const gsheets = require(`${__hooks}/_google-sheets-helper.js`);
+    const domain = require(`${__hooks}/_lancamentos-domain.js`);
 
     const auth = c.auth;
     if (!auth || !auth.id) {
@@ -47,13 +48,18 @@ routerAdd('PUT', '/edit-sheet-entry', (c) => {
     const sheetName = gsheets.SHEET_NAME_DEFAULT;
 
     // Valores na ordem: data, conta, valor, descrição, categoria, orçamento, observação
+    // Data/orçamento chegam no formato do formulário — a normalização pra
+    // "DD/MM/YYYY" acontece no backend (ver _lancamentos-domain.js).
+    const dataCell = domain.normalizeWriteDate(data.data, true);
+    const orcamentoCell = domain.normalizeWriteDate(data.orcamento, false);
+
     const values = [[
-      data.data || '',
+      dataCell,
       data.conta || '',
       data.valor,
       data.descricao || '',
       data.categoria,
-      data.orcamento,
+      orcamentoCell,
       data.obs || ''
     ]];
 
@@ -78,12 +84,12 @@ routerAdd('PUT', '/edit-sheet-entry', (c) => {
       message: 'Lançamento editado com sucesso na planilha',
       rowIndex: data.rowIndex,
       updated: {
-        data: data.data || '',
+        data: dataCell,
         conta: data.conta || '',
         valor: data.valor,
         descricao: data.descricao || '',
         categoria: data.categoria,
-        orcamento: data.orcamento,
+        orcamento: orcamentoCell,
         obs: data.obs || ''
       }
     });

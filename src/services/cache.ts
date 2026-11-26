@@ -16,7 +16,12 @@ export const CACHE_KEYS = {
   SHEET_ENTRIES: 'ehtudoplanilha:sheet-entries',
   SHEET_CATEGORIES: 'ehtudoplanilha:sheet-categories',
   SHEET_CATEGORIES_COMPLETE: 'ehtudoplanilha:sheet-categories-complete',
+  DASHBOARD_DATA: 'ehtudoplanilha:dashboard-data',
+  DASHBOARD_DETAILS: 'ehtudoplanilha:dashboard-details',
 } as const;
+
+/** Prefixo de todas as chaves do app (usado pra limpeza em massa) */
+export const CACHE_PREFIX = 'ehtudoplanilha:';
 
 /**
  * Serviço de cache com TTL
@@ -92,12 +97,32 @@ export class CacheService {
    */
   static clearAll(): void {
     try {
-      Object.values(CACHE_KEYS).forEach(key => {
-        CacheService.clear(key);
-      });
+      CacheService.clearPrefix(CACHE_PREFIX);
       console.log('[Cache] Todos os caches limpos');
     } catch (error) {
       console.error('[Cache] Erro ao limpar todos os caches:', error);
+    }
+  }
+
+  /**
+   * Remove todos os caches que começam com o prefixo informado.
+   * Usado quando a chave tem parâmetros (ex: "...:sheet-entries:conta=Carteira")
+   */
+  static clearPrefix(prefix: string): void {
+    try {
+      const keysToRemove: string[] = [];
+
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith(prefix)) {
+          keysToRemove.push(key);
+        }
+      }
+
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      console.log(`[Cache] Cache limpo (prefixo "${prefix}"): ${keysToRemove.length} item(ns)`);
+    } catch (error) {
+      console.error(`[Cache] Erro ao limpar cache com prefixo "${prefix}":`, error);
     }
   }
 

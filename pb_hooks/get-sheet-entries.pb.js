@@ -1,17 +1,53 @@
 /// <reference path="../pb_data/types.d.ts" />
 
 /**
- * Hook para buscar as últimas entradas da planilha do usuário
+ * Hook para buscar os lançamentos da planilha do usuário
  * Endpoint: GET /get-sheet-entries
- * Retorna as últimas linhas da aba "Lançamentos" formatadas para exibição
- * Query params opcionais: limit (padrão: 100; 0 = todas)
  *
- * Helper compartilhado em _google-sheets-helper.js.
+ * Este endpoint é o "read model" da aplicação: TODAS as regras de negócio
+ * (conversão de data, classificação consolidado/futuro, transferências,
+ * filtros, ordenação e agregações) são aplicadas AQUI, no backend.
+ * O frontend apenas envia o estado dos filtros e renderiza a resposta.
+ *
+ * Query params (todos opcionais):
+ *   - limit        int  (default 100; 0 = todas)
+ *   - offset       int  (default 0)
+ *   - q            str  busca textual (data, valor, descrição, categoria, conta, obs)
+ *   - conta        str  nome exato da conta
+ *   - categoria    str  nome exato da categoria
+ *   - orcamento    str  data-chave do orçamento (serial "45991"; aceita
+ *                          também "30/11/2025" e "2025-11-30")
+ *   - dataInicio   str  "YYYY-MM-DD"
+ *   - dataFim      str  "YYYY-MM-DD"
+ *   - tipo         str  'todos' (default) | 'consolidado' | 'futuro' | 'nenhum'
+ *   - sort         str  'original' (default) | 'date' | 'budget_date'
+ *   - hoje         str  "YYYY-MM-DD" dia local do cliente (define as datas-chave
+ *                            sugeridas nos formulários). Sem ele, usa o dia do
+ *                            servidor.
+ *   - fresh        '1'  ignora o cache do servidor (botão "atualizar")
+ *
+ * Resposta:
+ *   {
+ *     success, entries[], total, count, limit, offset,
+ *     meta:    { contas[], categorias[], descricoes[], orcamentos[] },
+ *     resumo:  { receitas, despesas, saldo, count },
+ *     filtros: { ...eco dos filtros aplicados, ativos[] }
+ *   }
+ *
+ * `filtros.ativos` é a lista de filtros realmente aplicados, cada um com o
+ * texto pronto pra tela ({tipo, rotulo, valor}). É ela que o frontend usa
+ * pra desenhar os pills de "Filtros aplicados" e pra decidir se mostra o
+ * resumo (lista vazia = nenhum filtro ativo).
+ *
+ * Helpers:
+ *   - _google-sheets-helper.js  (leitura da planilha + cache)
+ *   - _lancamentos-domain.js    (regras de negócio)
  */
 
 routerAdd('GET', '/get-sheet-entries', (c) => {
   try {
     const gsheets = require(`${__hooks}/_google-sheets-helper.js`);
+    const domain = require(`${__hooks}/_lancamentos-domain.js`);
 
     const auth = c.auth;
     if (!auth || !auth.id) {
@@ -19,6 +55,7 @@ routerAdd('GET', '/get-sheet-entries', (c) => {
     }
 
     const query = c.requestInfo().query || {};
+
     // Interpreta limit:
     //  - ausente        -> default 100
     //  - >0             -> retorna esse número
@@ -36,91 +73,97 @@ routerAdd('GET', '/get-sheet-entries', (c) => {
       }
     }
 
+    let offset = 0;
+    if (query.offset !== undefined) {
+      const parsed = parseInt(query.offset, 10);
+      if (!Number.isNaN(parsed) && parsed > 0) {
+        offset = parsed;
+      }
+    }
+
+    const fresh = query.fresh === '1' || query.fresh === 'true';
+
     const googleInfo = gsheets.getGoogleInfo(auth.id);
     if (!googleInfo) {
       return c.json(404, { error: 'Informações do Google não encontradas. Execute a autorização OAuth.' });
     }
 
-    // PREMISSA DO PRODUTO: nome da aba hardcoded
-    const sheetName = gsheets.SHEET_NAME_DEFAULT;
-
-    // GET /values/{range}?valueRenderOption=UNFORMATTED_VALUE&majorDimension=ROWS
-    const url = gsheets.buildSheetUrl(
-      sheetName + '!A1:G',
-      'majorDimension=ROWS&valueRenderOption=UNFORMATTED_VALUE'
-    );
-
-    const result = gsheets.callWithRefresh(googleInfo, {
-      method: 'GET',
-      url: url
-    });
-
-    if (!result.ok) {
-      console.log('[get-sheet-entries] Falha ao buscar:', result.status, result.error);
-      const status = result.status >= 400 && result.status < 600 ? result.status : 500;
+    // Leitura da planilha (com cache curto em $app.store())
+    const sheet = gsheets.getLancamentosRows(googleInfo, { fresh: fresh });
+    if (!sheet.ok) {
+      console.log('[get-sheet-entries] Falha ao buscar:', sheet.status, sheet.error);
+      const status = sheet.status >= 400 && sheet.status < 600 ? sheet.status : 500;
       return c.json(status, { error: 'Erro ao buscar dados da planilha' });
     }
 
-    const data = result.data;
-    if (!data || !data.values || data.values.length === 0) {
-      // DEBUG temporário: log o que o Google retornou
-      console.log('[get-sheet-entries] data.values vazio. Debug:', JSON.stringify({
-        dataIsNull: data === null,
-        dataKeys: data ? Object.keys(data) : null,
-        range: data?.range,
-        valuesLength: data?.values?.length,
-        sheetId: googleInfo.get('sheet_id')
-      }));
+    // Normalização: linhas cruas -> DTO (data/label/flags já calculados)
+    const allEntries = domain.normalizeRows(sheet.rows);
+
+    // "hoje" do cliente (o fuso do servidor não pode decidir a data-chave
+    // sugerida nos formulários). Sem o param, usa o dia do servidor.
+    const hoje = query.hoje ? String(query.hoje) : domain.formatDateInput(domain.civilToday());
+    const hojeCivil = domain.parseDateValue(hoje) || domain.civilToday();
+
+    const meta = domain.buildMeta(allEntries, hojeCivil);
+
+    if (allEntries.length === 0) {
       return c.json(200, {
         success: true,
         entries: [],
         total: 0,
-        message: 'Nenhum lançamento encontrado na planilha',
-        debug: {
-          range: data?.range,
-          sheetId: googleInfo.get('sheet_id')?.substring(0, 10) + '...'
+        count: 0,
+        limit: limit,
+        offset: offset,
+        meta: meta,
+        resumo: { receitas: 0, despesas: 0, saldo: 0, count: 0 },
+        filtros: {
+          q: '', conta: '', categoria: '', orcamento: '',
+          dataInicio: '', dataFim: '', tipo: 'todos', sort: 'original',
+          ativos: []
         }
       });
     }
 
-    // Pula a primeira linha (cabeçalho)
-    const rows = data.values.slice(1);
+    // Filtros
+    const filtros = {
+      q: query.q ? String(query.q) : '',
+      conta: query.conta ? String(query.conta) : '',
+      categoria: query.categoria ? String(query.categoria) : '',
+      orcamento: query.orcamento ? String(query.orcamento) : '',
+      dataInicio: query.dataInicio ? String(query.dataInicio) : '',
+      dataFim: query.dataFim ? String(query.dataFim) : '',
+      tipo: query.tipo ? String(query.tipo) : 'todos',
+      sort: query.sort ? String(query.sort) : 'original'
+    };
 
-    // Formatar entradas e filtrar linhas totalmente em branco
-    const entries = rows
-      .map((row, index) => ({
-        rowIndex: index + 2,
-        data: row[0] || '',
-        conta: String(row[1] || ''),
-        valor: (row[2] !== undefined && row[2] !== null && row[2] !== '') ? row[2] : 0,
-        descricao: String(row[3] || ''),
-        categoria: String(row[4] || ''),
-        orcamento: row[5] || '',
-        obs: String(row[6] || '')
-      }))
-      .filter(e => {
-        // Mantém se tem valor numérico != 0, OU se algum campo textual está preenchido
-        const temValorNumerico = typeof e.valor === 'number' && e.valor !== 0;
-        if (temValorNumerico) return true;
-        const campos = [e.data, e.conta, e.descricao, e.categoria, e.orcamento, e.obs];
-        return !campos.every(v => {
-          if (v === null || v === undefined) return true;
-          if (typeof v === 'number') return v === 0;
-          return String(v).trim() === '';
-        });
-      });
+    const filtered = domain.applyFilters(allEntries, filtros);
+    const sorted = domain.sortEntries(filtered, filtros.sort);
 
-    // Mais recentes primeiro (linhas maiores = mais embaixo na planilha)
-    let recentEntries = entries.sort((a, b) => b.rowIndex - a.rowIndex);
-    if (limit > 0) {
-      recentEntries = recentEntries.slice(0, limit);
-    }
+    // O resumo é a última camada da pilha de filtros: soma exatamente o que
+    // passou pelos filtros. O conjunto já vem filtrado pelo `tipo` (checkbox
+    // "consolidados"/"futuros"), então se "mostrar futuros" estiver marcado
+    // eles entram na soma, e se só "futuros" estiver marcado a soma é só dos
+    // futuros.
+    const resumo = domain.summarize(filtered);
+
+    // Filtros ativos com o texto pronto pra tela (pills de "Filtros aplicados").
+    // O frontend não converte data nem decide o que é "ativo".
+    filtros.ativos = domain.buildActiveFilters(filtros, meta);
+
+    // Paginação
+    const total = sorted.length;
+    const page = limit > 0 ? sorted.slice(offset, offset + limit) : sorted.slice(offset);
 
     return c.json(200, {
       success: true,
-      entries: recentEntries,
-      total: rows.length,
-      limit: limit
+      entries: page.map(domain.serializeEntry),
+      total: total,
+      count: page.length,
+      limit: limit,
+      offset: offset,
+      meta: meta,
+      resumo: resumo,
+      filtros: filtros
     });
   } catch (e) {
     console.log('[get-sheet-entries] EXCEÇÃO não tratada:', e && e.message, e && e.stack);

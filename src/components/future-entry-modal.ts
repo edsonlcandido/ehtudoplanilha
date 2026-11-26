@@ -3,9 +3,9 @@
  * Form simplificado com: valor, descrição, categoria, orçamento
  */
 
-import type { OnEntryAddedCallback, SheetEntry, CategoryComplete } from '../types';
+import type { OnEntryAddedCallback, SheetEntry, CategoryComplete, LancamentosMeta } from '../types';
 import { SheetsService } from '../services/sheets';
-import lancamentosService from '../services/lancamentos';
+import lancamentosService, { primeiroDiaDoMes } from '../services/lancamentos';
 
 // Singleton instance
 let modalInstance: FutureEntryModal | null = null;
@@ -28,6 +28,8 @@ class FutureEntryModal {
   private categoriesComplete: CategoryComplete[] = [];
   private descriptions: string[] = [];
   private entries: SheetEntry[] = [];
+  /** opções/datas-chave calculadas pelo backend */
+  private meta: LancamentosMeta | null = null;
 
   /**
    * Template HTML do modal
@@ -332,8 +334,9 @@ class FutureEntryModal {
     
     try {
       // Busca entries usando LancamentosService (com cache)
-      const response = await lancamentosService.fetchEntries(0, false);
+      const response = await lancamentosService.fetchEntries({ limit: 0 });
       this.entries = response?.entries ?? [];
+      this.meta = response?.meta ?? null;
       
       // Extrai descrições únicas
       this.descriptions = [...new Set(
@@ -364,14 +367,6 @@ class FutureEntryModal {
     const signBtn = document.getElementById('futureExpenseSignBtn');
     const isExpense = signBtn?.textContent?.trim() === '−';
     this.setSignState(!isExpense);
-  }
-
-  /**
-   * Formata date "2025-10-31" para "31/10/2025"
-   */
-  private formatDate(dateStr: string): string {
-    const [year, month, day] = dateStr.split('-');
-    return `${day}/${month}/${year}`;
   }
 
   /**
@@ -424,13 +419,13 @@ class FutureEntryModal {
         return;
       }
       
-      const orcamentoFormatado = this.formatDate(orcamentoStr);
-      
+      // O payload vai no formato do formulário ("YYYY-MM-DD"): a normalização
+      // pra "DD/MM/YYYY" é feita no BACKEND.
       const data: FutureEntryFormData = {
         valor: valor,
         descricao: descricao,
         categoria: categoria,
-        orcamento: orcamentoFormatado,
+        orcamento: orcamentoStr,
       };
 
       // Aplica o sinal ao valor
@@ -583,52 +578,16 @@ class FutureEntryModal {
 
   /**
    * Preenche campo de orçamento com a próxima data disponível
+   *
+   * A REGRA é do backend (`meta.proximoOrcamento`): primeira data-chave que
+   * ainda vai acontecer; se não houver, a última existente; se não existir
+   * nenhuma, o primeiro dia do mês.
    */
   private fillNextBudget(): void {
     const budgetInput = document.getElementById('futureExpenseBudget') as HTMLInputElement;
     if (!budgetInput) return;
-    
-    // Extrai datas de orçamento únicas dos entries
-    const budgetDates = [...new Set(
-      this.entries
-        .map(e => e.orcamento)
-        .filter(o => o !== null && o !== undefined && !isNaN(Number(o)))
-        .map(o => Number(o))
-    )].sort((a, b) => a - b);
-    
-    if (budgetDates.length === 0) {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      budgetInput.value = `${year}-${month}-01`;
-      return;
-    }
-    
-    const now = new Date();
-    const todaySerial = Math.floor((now.getTime() - new Date(1899, 11, 31).getTime()) / 86400000) + 1;
-    
-    const nextBudget = budgetDates.find(d => d >= todaySerial);
-    
-    if (nextBudget) {
-      const date = new Date(1899, 11, 31);
-      date.setDate(date.getDate() + nextBudget - 1);
-      
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      
-      budgetInput.value = `${year}-${month}-${day}`;
-    } else {
-      const lastBudget = budgetDates[budgetDates.length - 1];
-      const date = new Date(1899, 11, 31);
-      date.setDate(date.getDate() + lastBudget - 1);
-      
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      
-      budgetInput.value = `${year}-${month}-${day}`;
-    }
+
+    budgetInput.value = this.meta?.proximoOrcamento || primeiroDiaDoMes();
   }
 }
 

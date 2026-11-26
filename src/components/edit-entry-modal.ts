@@ -5,12 +5,6 @@
 
 import lancamentosService from '../services/lancamentos';
 import type { SheetEntry, OnEntryEditedCallback, CategoryComplete } from '../types';
-import {
-  excelSerialToDate,
-  dateTimeLocalToDate,
-  dateInputToDate,
-  dateToDateTimeLocalString
-} from '../utils/date-helpers';
 
 // Singleton instance
 let modalInstance: EditEntryModal | null = null;
@@ -366,31 +360,6 @@ class EditEntryModal {
   }
 
   /**
-   * Formata datetime-local "2025-10-31T14:41" para "31/10/2025 14:41"
-   */
-  private formatDateTimeLocal(datetimeStr: string): string {
-    // "2025-10-31T14:41" -> ["2025-10-31", "14:41"]
-    const [datePart, timePart] = datetimeStr.split('T');
-    
-    // "2025-10-31" -> ["2025", "10", "31"]
-    const [year, month, day] = datePart.split('-');
-    
-    // Retorna no formato brasileiro: "31/10/2025 14:41"
-    return `${day}/${month}/${year} ${timePart}`;
-  }
-
-  /**
-   * Formata date "2025-10-31" para "31/10/2025"
-   */
-  private formatDate(dateStr: string): string {
-    // "2025-10-31" -> ["2025", "10", "31"]
-    const [year, month, day] = dateStr.split('-');
-    
-    // Retorna no formato brasileiro: "31/10/2025"
-    return `${day}/${month}/${year}`;
-  }
-
-  /**
    * Alterna o sinal entre + e -
    */
   private toggleSign(): void {
@@ -473,29 +442,10 @@ class EditEntryModal {
    * Define o estado do sinal (despesa ou receita)
    */
   private populateForm(entry: SheetEntry): void {
-    // Data
+    // Data (já vem pronta do backend em dataInput)
     const dateInput = document.getElementById('editEntryDate') as HTMLInputElement;
-    if (dateInput && entry.data) {
-      let dateValue = '';
-      if (typeof entry.data === 'number') {
-        // Converte Excel serial para Date com hora
-        const dateObj = excelSerialToDate(entry.data, true);
-        if (dateObj) {
-          // Usa dateToDateTimeLocalString para evitar problemas de timezone
-          dateValue = dateToDateTimeLocalString(dateObj);
-        }
-      } else if (typeof entry.data === 'string') {
-        // Se for string, tenta parsear
-        const dateObj = dateTimeLocalToDate(entry.data);
-        if (dateObj) {
-          // Usa dateToDateTimeLocalString para evitar problemas de timezone
-          dateValue = dateToDateTimeLocalString(dateObj);
-        }
-      }
-      dateInput.value = dateValue;
-    } else if (dateInput) {
-      // Limpa o campo se não houver data
-      dateInput.value = '';
+    if (dateInput) {
+      dateInput.value = entry.dataInput || '';
     }
 
     // Conta
@@ -524,24 +474,10 @@ class EditEntryModal {
       categoryInput.value = entry.categoria || '';
     }
 
-    // Orçamento
+    // Orçamento (já vem pronto do backend em orcamentoInput)
     const budgetInput = document.getElementById('editEntryBudget') as HTMLInputElement;
-    if (budgetInput && entry.orcamento) {
-      let budgetValue = '';
-      if (typeof entry.orcamento === 'number') {
-        // Converte Excel serial para Date sem hora
-        const dateObj = excelSerialToDate(entry.orcamento, false);
-        if (dateObj) {
-          budgetValue = dateObj.toISOString().split('T')[0];
-        }
-      } else if (typeof entry.orcamento === 'string') {
-        // Se for string, tenta parsear
-        const dateObj = dateInputToDate(entry.orcamento);
-        if (dateObj) {
-          budgetValue = dateObj.toISOString().split('T')[0];
-        }
-      }
-      budgetInput.value = budgetValue;
+    if (budgetInput) {
+      budgetInput.value = entry.orcamentoInput || '';
     }
 
     // Observações
@@ -612,40 +548,33 @@ class EditEntryModal {
       const signValue = formData.get('sinal') as string;
 
       // Valida orçamento (obrigatório)
-      const budgetObj = new Date(budgetInput);
-      
-      if (isNaN(budgetObj.getTime())) {
+      if (!budgetInput || isNaN(new Date(budgetInput).getTime())) {
         throw new Error('Data de orçamento inválida');
       }
 
       // Valida data apenas se preenchida
-      let dataFormatada = '';
       if (dateValue && dateValue.trim() !== '') {
         // Valida formato datetime-local (YYYY-MM-DDTHH:MM)
         if (!dateValue.includes('T')) {
           throw new Error('Formato de data/hora inválido');
         }
-        
-        const dateObj = new Date(dateValue);
-        if (isNaN(dateObj.getTime())) {
+
+        if (isNaN(new Date(dateValue).getTime())) {
           throw new Error('Data inválida');
         }
-        // Formata data em formato brasileiro (como no entry-modal.ts)
-        dataFormatada = this.formatDateTimeLocal(dateValue);
       }
 
       const value = (signValue === '−' || signValue === '-') ? -Math.abs(valueInput) : Math.abs(valueInput);
 
-      // Formata orçamento em formato brasileiro
-      const orcamentoFormatado = this.formatDate(budgetInput);
-
+      // O payload vai no formato do formulário: a normalização pra "DD/MM/YYYY"
+      // é feita no BACKEND (pb_hooks/_lancamentos-domain.js).
       const payload: Partial<SheetEntry> = {
-        data: dataFormatada,
+        data: dateValue,
         conta: formData.get('conta') as string,
         valor: value,
         descricao: formData.get('descricao') as string,
         categoria: formData.get('categoria') as string,
-        orcamento: orcamentoFormatado,
+        orcamento: budgetInput,
         obs: formData.get('observacoes') as string || ''
       };
 
@@ -721,11 +650,19 @@ class EditEntryModal {
    */
   async setEntries(entries: SheetEntry[]): Promise<void> {
     this.entries = entries;
-    this.accounts = lancamentosService.getUniqueAccounts(entries);
-    this.descriptions = lancamentosService.getUniqueDescriptions(entries);
-    
+
+    // Contas e descrições únicas (para o autocomplete)
+    this.accounts = [...new Set(
+      entries.map(e => e.conta).filter(c => c && c.trim())
+    )].sort();
+    this.descriptions = [...new Set(
+      entries.map(e => e.descricao).filter(d => d && d.trim())
+    )].sort();
+
     // Extrai categorias únicas dos entries
-    const entriesCategories = lancamentosService.getUniqueCategories(entries);
+    const entriesCategories = [...new Set(
+      entries.map(e => e.categoria).filter(c => c && c.trim())
+    )].sort();
     
     // Tenta carregar categorias completas do backend (com cache)
     try {

@@ -8,9 +8,15 @@
  *
  * NÃO agrupa por orçamento/conta — apenas exibe o consolidado
  * dos lançamentos que passaram pelos filtros.
+ *
+ * Os pills e os totais vêm PRONTOS do backend:
+ * - `ativos` = lista de filtros aplicada, cada um já com rotulo e valor
+ *   formatados (ex.: Orçamento -> "30/11/2026")
+ * - `resumo` = totais calculados no backend
+ * Aqui não existe nenhuma conversão nem regra.
  */
 
-import type { GroupedSummary } from '../types';
+import type { FiltroAtivo, ResumoTotais } from '../types';
 
 const currencyFormatter = new Intl.NumberFormat('pt-BR', {
   style: 'currency',
@@ -37,68 +43,34 @@ function escapeHtml(str: string): string {
 }
 
 /**
- * Converte data no formato YYYY-MM-DD (input HTML5) para DD/MM/YYYY.
- * Retorna string vazia se inválida.
- */
-function formatIsoDateToBr(iso: string): string {
-  if (!iso) return '';
-  const parts = iso.split('-');
-  if (parts.length !== 3) return iso;
-  const [yyyy, mm, dd] = parts;
-  return `${dd}/${mm}/${yyyy}`;
-}
-
-/**
  * Renderiza os pills dos filtros que estão aplicados.
- * Retorna string vazia se nenhum filtro estiver ativo.
+ * A lista vem do backend (cada item já tem `rotulo` e `valor` prontos).
  */
-function renderActiveFilters(filters: ActiveFilters): string {
-  const pills: string[] = [];
-
-  if (filters.conta) {
-    pills.push(`<span class="grouped-summary__filter-pill">Conta: <strong>${escapeHtml(filters.conta)}</strong></span>`);
-  }
-  if (filters.categoria) {
-    pills.push(`<span class="grouped-summary__filter-pill">Categoria: <strong>${escapeHtml(filters.categoria)}</strong></span>`);
-  }
-  if (filters.orcamento) {
-    pills.push(`<span class="grouped-summary__filter-pill">Orçamento: <strong>${escapeHtml(filters.orcamento)}</strong></span>`);
-  }
-  if (filters.dataInicio || filters.dataFim) {
-    const inicio = filters.dataInicio ? formatIsoDateToBr(filters.dataInicio) : '...';
-    const fim = filters.dataFim ? formatIsoDateToBr(filters.dataFim) : '...';
-    pills.push(`<span class="grouped-summary__filter-pill">Período: <strong>${escapeHtml(inicio)} — ${escapeHtml(fim)}</strong></span>`);
-  }
-  if (filters.searchTerm) {
-    pills.push(`<span class="grouped-summary__filter-pill">Busca: <strong>&quot;${escapeHtml(filters.searchTerm)}&quot;</strong></span>`);
-  }
-
-  return pills.join('');
-}
-
-export interface ActiveFilters {
-  conta: string;
-  dataInicio: string;
-  dataFim: string;
-  orcamento: string;
-  categoria: string;
-  searchTerm: string;
+function renderActiveFilters(ativos: FiltroAtivo[]): string {
+  return (ativos || [])
+    .map(
+      (f) =>
+        `<span class="grouped-summary__filter-pill">${escapeHtml(f.rotulo)}: <strong>${escapeHtml(f.valor)}</strong></span>`
+    )
+    .join('');
 }
 
 /**
  * Renderiza o resumo simplificado dos filtros.
- * Retorna string vazia se não houver dados ou nenhum filtro ativo.
+ * Retorna string vazia se não houver dados.
  *
  * Mostra apenas o Total (saldo) e a quantidade de lançamentos,
  * em layout vertical (label, valor, contagem).
+ *
+ * Os totais (receitas/despesas/saldo/contagem) são calculados no BACKEND.
  */
-export function renderGroupedSummary(summary: GroupedSummary, filters: ActiveFilters): string {
-  if (!summary || summary.totals.count === 0) {
+export function renderGroupedSummary(resumo: ResumoTotais, ativos: FiltroAtivo[]): string {
+  if (!resumo || resumo.count === 0) {
     return '';
   }
 
-  const filtersHtml = renderActiveFilters(filters);
-  const countLabel = summary.totals.count === 1 ? 'lançamento' : 'lançamentos';
+  const filtersHtml = renderActiveFilters(ativos);
+  const countLabel = resumo.count === 1 ? 'lançamento' : 'lançamentos';
 
   return `
     <section class="grouped-summary" aria-label="Resumo dos filtros aplicados">
@@ -109,8 +81,8 @@ export function renderGroupedSummary(summary: GroupedSummary, filters: ActiveFil
       <div class="grouped-summary__totals">
         <div class="grouped-summary__total">
           <span class="grouped-summary__total-label">Total</span>
-          <span class="grouped-summary__total-value ${saldoClass(summary.totals.saldo)}">${formatCurrency(summary.totals.saldo)}</span>
-          <span class="grouped-summary__total-count">${summary.totals.count} ${countLabel}</span>
+          <span class="grouped-summary__total-value ${saldoClass(resumo.saldo)}">${formatCurrency(resumo.saldo)}</span>
+          <span class="grouped-summary__total-count">${resumo.count} ${countLabel}</span>
         </div>
       </div>
     </section>
