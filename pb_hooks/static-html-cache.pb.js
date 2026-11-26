@@ -14,37 +14,66 @@
  * `?v=timestamp` correto no HTML, um HTML velho no cache mantém o app velho.
  *
  * O QUE FAZ
- * Registra as rotas do site usando o MESMO handler estático do PocketBase
- * ($apis.static), só que com `Cache-Control: no-cache, must-revalidate`.
+ * Registra as rotas de HTML do site com `Cache-Control: no-cache,
+ * must-revalidate`, usando o mesmo serving de arquivo do PocketBase.
  *
  * Os assets em /assets/* continuam no handler padrão do PB: a query
  * `?v=timestamp` no HTML já quebra o cache deles a cada build.
  *
  * ⚠️ REGRA DO JSVM: dentro do handler não dá pra usar variável de topo do
- * arquivo (contexto isolado). Por isso o require() é feito DENTRO do
- * handler e o handler só passa literais.
+ * arquivo (escopo isolado) — só literais e o que vier do require() feito
+ * DENTRO do handler.
  *
- * ⚠️ O $apis.static do PB resolve o arquivo pelo PARÂMETRO {path...} da rota,
- * então as rotas precisam ter wildcard e o root do FS precisa ser a pasta à
- * qual esse wildcard é relativo.
+ * ⚠️ NÃO usar rota catch-all (ex.: `/{path}`) aqui: ela sombreia as rotas do
+ * próprio PocketBase. Foi o que quebrou o admin do PB: `/_` (que o PB
+ * redireciona 307 para `/_/`) caía no catch-all e voltava 404.
+ * Rotas literais não sombriam nada.
  */
 
-// a raiz "/" — '{path}' não casa com "/" (exige 1 segmento), e "/$" seria
-// catch-all. '{$}' casa SÓ com "/" e não sombreia as demais rotas.
+// landing page (index.html da raiz). '{$}'' casa SÓ com "/" e não sombreia
+// as demais rotas (ao contrário de "/", que é catch-all no Go ServeMux).
 routerAdd('GET', '/{$}', (c) => {
   const html = require(`${__hooks}/_static-html-cache.js`);
-  return html.serve(c, '', false);
+  return html.serveFile(c, 'index.html');
 });
 
-// arquivos de uma pasta só na raiz: /index.html, /login.html, /termos.html,
-// /favicon.ico, etc. (o "/" cai no index.html)
-routerAdd('GET', '/{path}', (c) => {
+// HTMLs da raiz do site (entry points do Vite — ver src/vite.config.ts).
+// ROTA LITERAL = não sombreia nada do PocketBase.
+routerAdd('GET', '/login.html', (c) => {
   const html = require(`${__hooks}/_static-html-cache.js`);
-  return html.serve(c, '', false);
+  return html.serveFile(c, 'login.html');
 });
 
-// páginas do dashboard (subpasta: /dashboard/lancamentos.html, ...)
+routerAdd('GET', '/registro.html', (c) => {
+  const html = require(`${__hooks}/_static-html-cache.js`);
+  return html.serveFile(c, 'registro.html');
+});
+
+routerAdd('GET', '/primeiros-passos.html', (c) => {
+  const html = require(`${__hooks}/_static-html-cache.js`);
+  return html.serveFile(c, 'primeiros-passos.html');
+});
+
+routerAdd('GET', '/prints.html', (c) => {
+  const html = require(`${__hooks}/_static-html-cache.js`);
+  return html.serveFile(c, 'prints.html');
+});
+
+routerAdd('GET', '/privacidade.html', (c) => {
+  const html = require(`${__hooks}/_static-html-cache.js`);
+  return html.serveFile(c, 'privacidade.html');
+});
+
+routerAdd('GET', '/termos.html', (c) => {
+  const html = require(`${__hooks}/_static-html-cache.js`);
+  return html.serveFile(c, 'termos.html');
+});
+
+// páginas do dashboard: subpasta, então o wildcard {path...} não colide com
+// nenhuma rota do PB (/dashboard/ não existe lá).
+// ⚠️ o $apis.static do PB resolve o arquivo pelo PARÂMETRO {path...} da rota
+// (não pela URL) — por isso o root do FS é a subpasta.
 routerAdd('GET', '/dashboard/{path...}', (c) => {
   const html = require(`${__hooks}/_static-html-cache.js`);
-  return html.serve(c, '/dashboard', false);
+  return html.serveDir(c, '/dashboard');
 });
