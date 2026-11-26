@@ -101,9 +101,10 @@ ehtudoplanilha/
 ## 3. ⚠️ Regra sagrada: `pb_public/` é OUTPUT, não editar
 
 **O conteúdo de `pb_public/` é regenerado pelo Dockerfile a cada build.**
-O diretório fica vazio no repo (`pb_public/` está no `.dockerignore`
-e `.gitignore`) — o conteúdo é montado em runtime pelo Dockerfile a
-partir dos builds de `src/` e `pwa/`. O `build-and-deploy.sh` faz:
+Ele está no `.dockerignore` (entra no container só via `COPY` dos builds),
+**mas continua versionado no git** (40 arquivos de um build antigo) — o
+Dockerfile regenera tudo em `/app/pb_public/`, então o que está commitado
+é só um artefato desatualizado (vide §15). O `build-and-deploy.sh` faz:
 
 1. Roda `npm run build` em `src/` → `src/dist/`
 2. **Apaga quase tudo de `pb_public/`** (preserva só `js/` + `pwa/`)
@@ -307,6 +308,7 @@ routerAdd('POST', '/append-entry', (c) => {
 | GET | `/get-financial-summary` | `get-financial-summary.pb.js` | Resumo financeiro agregado |
 | POST | `/post-categories` | `post-categories.pb.js` | Sobrescreve aba Categorias |
 | GET | `/pwa/{path...}` | `pwa-spa-fallback.pb.js` | SPA fallback pro PWA |
+| GET | `/{$}`, `/{path}`, `/dashboard/{path...}` | `static-html-cache.pb.js` | HTMLs do site com `Cache-Control: no-cache` (vide §9) |
 
 ---
 
@@ -642,6 +644,47 @@ export class SheetsService {
 - `CacheService.clearPrefix(prefix)` limpa todas as chaves com um prefixo
   (necessário porque a chave de lançamentos inclui os filtros)
 
+### Cache HTTP do site (`?v=` + `Cache-Control`)
+
+> Duas peças diferentes, ambas necessárias pro site atualizar no celular.
+
+**1. `?v=timestamp` nos assets** — plugin `htmlTransformPlugin` em
+`src/vite.config.ts`. O Vite **não** hasheia os nomes dos arquivos
+(`entryFileNames: 'assets/[name].js'`), então a query é o que quebra o
+cache do bundle.
+
+⚠️ **O `?v=` tem que ficar DENTRO das aspas**: `src="/assets/x.js?v=123"`.
+Se ficar depois (`src="/assets/x.js"?v=123`), o parser HTML trata o
+`?v=123` como atributo solto e o browser baixa a URL **sem** query — o
+cache nunca quebra. Esse bug ficou no ar até 2026-11-26.
+
+**2. `Cache-Control` no HTML** — hook `pb_hooks/static-html-cache.pb.js`
+(helper `pb_hooks/_static-html-cache.js`).
+
+O handler estático padrão do PB responde `pb_public/` com **só**
+`Last-Modified` (sem `Cache-Control` nem `ETag`). Sem Cache-Control o
+browser aplica cache **heurístico** (RFC 9111 §4.2.2: 10% da idade do
+arquivo, teto de 24h) e continua servindo o HTML velho — que aponta pros
+bundles velhos — por horas/dias. O `?v=` sozinho não resolve: ele só
+ajuda quando o HTML é servido fresco.
+
+O hook registra as rotas do site com o **mesmo** handler estático do PB
+(`$apis.static`), só que com `Cache-Control: no-cache, must-revalidate`:
+- `/{$}` → a raiz `/`
+- `/{path}` → arquivos de uma pasta só na raiz (`/login.html`, `/termos.html`...)
+- `/dashboard/{path...}` → páginas do dashboard
+
+⚠️ **Duas regras do PB 0.31 nesse hook**:
+- `$apis.static` resolve o arquivo pelo **parâmetro `{path...}` da rota**
+  (não pela URL) — por isso as rotas precisam de wildcard e o root do FS
+  precisa ser a pasta à qual o wildcard é relativo.
+- Dentro do handler **não dá pra usar variável de topo do `.pb.js`**
+  (escopo isolado) — só literais e o que vier do `require()` feito
+  DENTRO do handler.
+
+Os assets em `/assets/*` seguem no handler padrão do PB (sem
+`Cache-Control`): a query `?v=timestamp` no HTML já os busta a cada build.
+
 ### Auth
 - **PocketBase SDK** (cliente `pocketbase` v0.26+)
 - Token guardado no localStorage pelo SDK (chave `pocketbase_auth`)
@@ -867,7 +910,10 @@ Frontend faz **DOIS POSTs** sequenciais em `/append-entry`:
 | **Path wildcard em `routerAdd`** | Usar `{path...}` (Go ServeMux), NÃO `*` (path-to-regexp). |
 | **`/pwa/login` no SW** | Deve estar no `denylist` do NavigationRoute senão OAuth callback perde os query params. |
 | **Abas Sheets hardcoded** | `Lançamentos` e `Categorias` são contrato. NÃO ler do `google_infos.sheet_name`. |
-| **`pb_public/` é output** | Não editar. Próximo build apaga. |
+| **`pb_public/` é output** | Não editar. Próximo build apaga. **Mas está versionado no git** com um build antigo (40 arquivos) — não confie nele como fonte da verdade; o Dockerfile regenera. |
+| **`?v=` fora das aspas** | `src="/assets/x.js"?v=123` → o browser baixa SEM a query e o cache nunca quebra. Tem que ser `src="/assets/x.js?v=123"`. |
+| **HTML sem `Cache-Control`** | O PB só manda `Last-Modified` → cache heurístico (10% da idade) → o celular fica no app velho. Resolvido pelo hook `static-html-cache.pb.js` (vide §9). |
+| **`$apis.static` usa o wildcard** | O handler do PB resolve o arquivo pelo **parâmetro `{path...}` da rota**, não pela URL. Rota sem wildcard → 404/301 errado. |
 | **`pwa/pwa/` commitado** | Output do build do PWA. Commitado pra rodar dev sem buildar, mas em prod o Dockerfile regenera. |
 | **Excel Serial** | Desde 2026-11-25 o **backend converte e devolve o DTO pronto** (`dataLabel`, `dataInput`, `orcamentoSerial`...). Frontend não converte mais nada (§6.1). |
 | **Orçamento = DATA** | O orçamento é a **data-chave** (serial do dia). **Não existe chave de mês "MM/YYYY"** — nem no DTO, nem nos filtros, nem nas agregações. Duas datas no mesmo mês são DOIS orçamentos. Antes de 2026-11-25 a coluna Orçamento usava `excelSerialToMonthLabel` e mostrava "11/2026" — não voltar atrás disso. |
@@ -920,6 +966,11 @@ Itens que valem atenção mas não estão quebrando nada:
 - [ ] `principaisFluxos.md` desatualizado (estrutura antiga do `src/`)
 - [ ] Documentação duplicada entre `src/docs/`, `pwa/ref/`, `pwa/*.md`
 - [ ] Falta confirmar helper de `CATEGORIES_SHEET_NAME` no `_google-sheets-helper.js`
+- [ ] `pb_public/` continua **versionado no git** com um build antigo (pré-migração
+      das regras de negócio). O Dockerfile regenera em produção, então não quebra
+      o deploy — mas o artefato commitado é uma armadilha. Duas saídas:
+      desversionar (`git rm -r --cached pb_public` + `.gitignore`) ou passar a
+      rebuildar e commitar a cada deploy.
 
 **Já limpos nesta sessão (2026-08-06):**
 - ✅ `dockerfile.vite` (legado) — deletado
