@@ -308,7 +308,7 @@ routerAdd('POST', '/append-entry', (c) => {
 | GET | `/get-financial-summary` | `get-financial-summary.pb.js` | Resumo financeiro agregado |
 | POST | `/post-categories` | `post-categories.pb.js` | Sobrescreve aba Categorias |
 | GET | `/pwa/{path...}` | `pwa-spa-fallback.pb.js` | SPA fallback pro PWA |
-| GET | `/{$}`, `/{path}`, `/dashboard/{path...}` | `static-html-cache.pb.js` | HTMLs do site com `Cache-Control: no-cache` (vide §9) |
+| GET | `/{$}`, rotas literais da raiz, `/dashboard/{path...}` | `static-html-cache.pb.js` | HTMLs do site com `Cache-Control: no-cache` (vide §9) |
 
 ---
 
@@ -668,19 +668,31 @@ arquivo, teto de 24h) e continua servindo o HTML velho — que aponta pros
 bundles velhos — por horas/dias. O `?v=` sozinho não resolve: ele só
 ajuda quando o HTML é servido fresco.
 
-O hook registra as rotas do site com o **mesmo** handler estático do PB
-(`$apis.static`), só que com `Cache-Control: no-cache, must-revalidate`:
-- `/{$}` → a raiz `/`
-- `/{path}` → arquivos de uma pasta só na raiz (`/login.html`, `/termos.html`...)
-- `/dashboard/{path...}` → páginas do dashboard
+O hook registra as rotas de HTML do site com o **mesmo** serving de arquivo do
+PB, só que com `Cache-Control: no-cache, must-revalidate`:
+- `/{$}` → a raiz `/` (index.html)
+- rotas **literais** da raiz: `/login.html`, `/registro.html`,
+  `/primeiros-passos.html`, `/prints.html`, `/privacidade.html`, `/termos.html`
+- `/dashboard/{path...}` → páginas do dashboard (subpasta, sem colisão)
 
-⚠️ **Duas regras do PB 0.31 nesse hook**:
+⚠️ **NUNCA registrar rota catch-all (ex.: `/{path}`) nesse hook.** Ela
+sombreia as rotas do próprio PocketBase: foi exatamente o que quebrou o admin
+em 2026-11-26 — `/_` (que o PB redireciona 30x para `/_/`) caía no catch-all
+e voltava 404 ("File not found"). Rotas literais não sombriam nada.
+`/_`, `/_/` e `/_/index.html` têm de continuar respondendo como o PB manda.
+
+⚠️ **Regras do JSVM nesse hook**:
 - `$apis.static` resolve o arquivo pelo **parâmetro `{path...}` da rota**
-  (não pela URL) — por isso as rotas precisam de wildcard e o root do FS
-  precisa ser a pasta à qual o wildcard é relativo.
+  (não pela URL) — por isso as rotas com wildcard precisam de root de FS
+  relativo. Para rota **literal** use `c.fileFS($os.dirFS(dir), 'arquivo')`.
+- O binding é `$os.dirFS` (**minúsculo**). `$os.DirFS` não existe → 400.
 - Dentro do handler **não dá pra usar variável de topo do `.pb.js`**
   (escopo isolado) — só literais e o que vier do `require()` feito
   DENTRO do handler.
+
+Ao **adicionar uma página HTML nova na raiz** (entry point do Vite), lembrar
+de registrar a rota literal no `static-html-cache.pb.js` — senão ela volta pelo
+handler padrão do PB (com cache heurístico).
 
 Os assets em `/assets/*` seguem no handler padrão do PB (sem
 `Cache-Control`): a query `?v=timestamp` no HTML já os busta a cada build.
@@ -913,6 +925,8 @@ Frontend faz **DOIS POSTs** sequenciais em `/append-entry`:
 | **`pb_public/` é output** | Não editar. Próximo build apaga. **Mas está versionado no git** com um build antigo (40 arquivos) — não confie nele como fonte da verdade; o Dockerfile regenera. |
 | **`?v=` fora das aspas** | `src="/assets/x.js"?v=123` → o browser baixa SEM a query e o cache nunca quebra. Tem que ser `src="/assets/x.js?v=123"`. |
 | **HTML sem `Cache-Control`** | O PB só manda `Last-Modified` → cache heurístico (10% da idade) → o celular fica no app velho. Resolvido pelo hook `static-html-cache.pb.js` (vide §9). |
+| **Catch-all sombreia rota do PB** | `routerAdd('GET', '/{path}', ...)` casa paths de 1 segmento — inclusive `/_` (admin do PB), que voltava 404. **Nunca** usar catch-all; use rota literal. |
+| **`$os.dirFS` (minúsculo)** | O binding do JSVM é `$os.dirFS(dir)`. `$os.DirFS` não existe → `TypeError` → 400. |
 | **`$apis.static` usa o wildcard** | O handler do PB resolve o arquivo pelo **parâmetro `{path...}` da rota**, não pela URL. Rota sem wildcard → 404/301 errado. |
 | **`pwa/pwa/` commitado** | Output do build do PWA. Commitado pra rodar dev sem buildar, mas em prod o Dockerfile regenera. |
 | **Excel Serial** | Desde 2026-11-25 o **backend converte e devolve o DTO pronto** (`dataLabel`, `dataInput`, `orcamentoSerial`...). Frontend não converte mais nada (§6.1). |
